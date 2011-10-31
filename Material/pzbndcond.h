@@ -101,6 +101,10 @@ protected:
 	TPZFMatrix &Val1() { return fBCVal1; }
 	
 	TPZFMatrix &Val2() { return fBCVal2; }
+  
+  void SetVal1( TPZFMatrix v1 ) { fBCVal1 = v1; }
+	
+	void SetVal2( TPZFMatrix v2 ) { fBCVal2 = v2; }
 	
 	TPZAutoPointer<TPZMaterial> Material() { return fMaterial; }
 	
