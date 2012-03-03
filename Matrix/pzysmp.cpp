@@ -551,13 +551,27 @@ void TPZFYsmpMatrix::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y,
 	 int fOpt;
 	 int fStride;
 	 */
-	const int numthreads = 2;
-	pthread_t allthreads[numthreads];
-	TPZMThread alldata[numthreads];
-	int res[numthreads];
+  #warning "Modifiquei nthreads == 0"
+	const int numthreads = 0;
+	pthread_t allthreads[numthreads+1];
+	TPZMThread alldata[numthreads+1];
+	int res[numthreads+1];
 	int i;
-	int eqperthread = r/numthreads;
 	int firsteq = 0;
+  if (numthreads == 0) {
+		alldata[0].target = this;
+		alldata[0].fFirsteq = 0;
+		alldata[0].fLasteq = Rows();
+		alldata[0].fX = &x;
+		alldata[0].fZ = &z;
+		alldata[0].fAlpha = alpha;
+		alldata[0].fOpt = opt;
+		alldata[0].fStride = stride;
+    ExecuteMT(&alldata[0]);
+
+  }
+  else {
+	int eqperthread = r/numthreads;
 	for(i=0;i<numthreads;i++) 
 	{
 		alldata[i].target = this;
@@ -573,6 +587,7 @@ void TPZFYsmpMatrix::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y,
 		res[i] = pthread_create(&allthreads[i],NULL,ExecuteMT, &alldata[i]);
 	}
 	for(i=0;i<numthreads;i++) pthread_join(allthreads[i], NULL);
+  }
 	
 }
 
