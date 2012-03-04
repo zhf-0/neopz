@@ -551,7 +551,7 @@ void TPZFYsmpMatrix::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y,
 	 int fOpt;
 	 int fStride;
 	 */
-	const int numthreads = 2;
+	const int numthreads = 8;
 	pthread_t allthreads[numthreads];
 	TPZMThread alldata[numthreads];
 	int res[numthreads];
