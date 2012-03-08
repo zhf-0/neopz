@@ -18,6 +18,7 @@ using namespace std;
  */
 TPZSolver::~TPZSolver()
 {
+
 }
 
 TPZMatrixSolver::TPZMatrixSolver(TPZAutoPointer<TPZMatrix> Refmat) :
