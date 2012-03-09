@@ -1322,176 +1322,176 @@ void CMesh2DSlopeStability(TPZCompMesh *CMESH, TPZAutoPointer<TPZMaterial> mat)
 	CMESH->AutoBuild();
 }
 
-void PressureCilinder()
-{
-	
-	TPZFMatrix BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
-	TPZFMatrix val1(3,1,0.);TPZFMatrix val2(3,1,0.);TPZFMatrix BeginForce(3,1,0.);TPZFMatrix EndForce(3,1,0.);
-	
-	int BC1,BC2,nsteps,taxa,nnewton;
-	int h=3;
-	int order = 2;
-	REAL tol = 1.e-5;
-	nnewton = 10;
-	BC1 = -3;
-	nsteps =10;
-	taxa = 1;
-	BeginForce(0,0) = 0.;
-	EndForce(0,0) = 0.25;
-	
-	
-	TPZGeoMesh * MESH = new TPZGeoMesh;
-	
-	int refdir = 3;
-	MESH = BrazilianTestGeoMesh::MisesPressure(h,refdir);
-	
-	ofstream arg1("GeoMesh.txt");
-	MESH->Print(arg1);
-	TPZCompEl::SetgOrder(order);
-	TPZCompMesh *CMESH = new TPZCompMesh(MESH);
-	
-	//TPZDruckerPrager * Pstep = new TPZDruckerPrager();
-	TPZVonMises * Pstep = new TPZVonMises();
-	
-	REAL Yield = 0.24;//GPA
-	Pstep->fTFA.SetUp(Yield,1000.);
-	Pstep->fER.SetUp(/*young GPA */ 210., /*poisson*/ 0.30);
-	
-	TPZMatElastoPlastic2D<TPZVonMises> EPMat2(1,1);
-	EPMat2.SetPlasticity(*Pstep);
-	TPZAutoPointer<TPZMaterial> plastic(&EPMat2);
-	plastic->Print(cout);
-	CMESH->InsertMaterialObject(plastic);
-	
-	TPZElastoPlasticAnalysis::SetAllCreateFunctionsWithMem(CMESH);
-	
-	CMeshPressuredCilinder(CMESH,plastic);	
-	
-	ofstream arg("CMESHPLASTIC2D.txt");
-	CMESH->Print(arg);
-	
-	TPZElastoPlasticAnalysis EPAnalysis(CMESH,cout);
-	
-	SolveSist(EPAnalysis,CMESH);
-	
-	TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
-	TPZFStructMatrix structmatrix(PPAnalysis.Mesh());
-	PPAnalysis.SetStructuralMatrix(structmatrix);
-	TPZVec<int> PostProcMatIds(1,1);
-	TPZVec<std::string> PostProcVars, scalNames, vecNames;
-	SetUPPostProcessVariables(PostProcVars,scalNames,vecNames);
-	PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
-	
-	EPAnalysis.TransferSolution(PPAnalysis);
-	
-	cout << "\nDefining Graph Mesh\n";
-	int dimension =2;
-	
-	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess3.vtk");
-	
-	cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
-	
-	PPAnalysis.PostProcess(0/*pOrder*/);
-	
-	ManageIterativeProcess(EPAnalysis,cout,tol,nnewton,BC1,BC2,nsteps,taxa,BeginStress,EndStress,BeginForce,EndForce,&PPAnalysis,0);
-	
-	cout << "\nInitial Solution Exported. Solving Problem\n";
-	//		EPAnalysis.IterativeProcess(cout, tol, nnewton);
-	//		cout << EPAnalysis.Solution() << endl;
-	//		EPAnalysis.AcceptSolution();
-	//		EPAnalysis.TransferSolution(PPAnalysis);
-	//		PPAnalysis.PostProcess(0);
-	
-	
-	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess3.vtk");
-	PPAnalysis.PostProcess(0);
-	PPAnalysis.CloseGraphMesh();
-	
-	//	TPZFMatrix BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
-	//	TPZFMatrix val1(3,1,0.);TPZFMatrix val2(3,1,0.);TPZFMatrix BeginForce(3,1,0.);TPZFMatrix EndForce(3,1,0.);
-	//	
-	//	int BC1,BC2,nsteps,taxa,nnewton;
-	//	int h=3;
-	//	int order = 2;
-	//	REAL tol = 1.e-5;
-	//	nnewton = 10;
-	//	BC1 = -3;
-	//	nsteps =2;
-	//	taxa = 1;
-	//	BeginForce(0,0) = 0.;
-	//	EndForce(0,0) = 0.2;
-	//	
-	//	
-	//	TPZGeoMesh * MESH = new TPZGeoMesh;
-	//	
-	//	int refdir = 3;
-	//	MESH = BrazilianTestGeoMesh::MisesPressure(h,refdir);
-	//	
-	//	ofstream arg1("GeoMesh.txt");
-	//	MESH->Print(arg1);
-	//	TPZCompEl::SetgOrder(order);
-	//	TPZCompMesh *CMESH = new TPZCompMesh(MESH);
-	//	
-	//	//TPZDruckerPrager * Pstep = new TPZDruckerPrager();
-	//	TPZVonMises * Pstep = new TPZVonMises();
-	//	
-	//	REAL Yield = 0.24;//GPA
-	//	Pstep->fTFA.SetUp(Yield,1.);
-	//	Pstep->fER.SetUp(/*young GPA */ 210., /*poisson*/ 0.30);
-	//	
-	//	TPZMatElastoPlastic2D<TPZVonMises> EPMat2(1,1);
-	//	EPMat2.SetPlasticity(*Pstep);
-	//	TPZAutoPointer<TPZMaterial> plastic(&EPMat2);
-	//	//plastic->SetBulkDensity(20.);
-	//	plastic->Print(cout);
-	//	CMESH->InsertMaterialObject(plastic);
-	//	
-	//	TPZElastoPlasticAnalysis::SetAllCreateFunctionsWithMem();
-	//	
-	//	CMeshPressuredCilinder(CMESH,plastic);	
-	//	
-	//	ofstream arg("CMESHPLASTIC2D.txt");
-	//	CMESH->Print(arg);
-	//	
-	//	TPZElastoPlasticAnalysis EPAnalysis(CMESH,cout);
-	//	
-	//	SolveSist(EPAnalysis,CMESH);
-	//	
-	//	TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
-	//	TPZFStructMatrix structmatrix(PPAnalysis.Mesh());
-	//	PPAnalysis.SetStructuralMatrix(structmatrix);
-	//	TPZVec<int> PostProcMatIds(1,1);
-	//	TPZVec<std::string> PostProcVars, scalNames, vecNames;
-	//	SetUPPostProcessVariables(PostProcVars,scalNames,vecNames);
-	//	PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
-	//	
-	//	EPAnalysis.TransferSolution(PPAnalysis);
-	//	
-	//	cout << "\nDefining Graph Mesh\n";
-	//	int dimension =2;
-	//	
-	//	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess.vtk");
-	//	
-	//	cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
-	//	
-	//	PPAnalysis.PostProcess(0/*pOrder*/);
-	//	
-	//	ManageIterativeProcess(EPAnalysis,cout,tol,nnewton,BC1,BC2,nsteps,taxa,BeginStress,EndStress,BeginForce,EndForce,&PPAnalysis,0);
-	//	
-	//	cout << "\nInitial Solution Exported. Solving Problem\n";
-	//	//	EPAnalysis.IterativeProcess(cout, tol, nnewton);
-	//	//	cout << EPAnalysis.Solution() << endl;
-	//	//	EPAnalysis.AcceptSolution();
-	//	//	EPAnalysis.TransferSolution(PPAnalysis);
-	//	//	PPAnalysis.PostProcess(0);
-	//	
-	//	
-	//	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess.vtk");
-	//	PPAnalysis.PostProcess(0);
-	//	PPAnalysis.CloseGraphMesh();
-	
-}
-
+// void PressureCilinder()
+// {
+// 	
+// 	TPZFMatrix BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
+// 	TPZFMatrix val1(3,1,0.);TPZFMatrix val2(3,1,0.);TPZFMatrix BeginForce(3,1,0.);TPZFMatrix EndForce(3,1,0.);
+// 	
+// 	int BC1,BC2,nsteps,taxa,nnewton;
+// 	int h=3;
+// 	int order = 2;
+// 	REAL tol = 1.e-5;
+// 	nnewton = 10;
+// 	BC1 = -3;
+// 	nsteps =10;
+// 	taxa = 1;
+// 	BeginForce(0,0) = 0.;
+// 	EndForce(0,0) = 0.25;
+// 	
+// 	
+// 	TPZGeoMesh * MESH = new TPZGeoMesh;
+// 	
+// 	int refdir = 3;
+// 	MESH = BrazilianTestGeoMesh::MisesPressure(h,refdir);
+// 	
+// 	ofstream arg1("GeoMesh.txt");
+// 	MESH->Print(arg1);
+// 	TPZCompEl::SetgOrder(order);
+// 	TPZCompMesh *CMESH = new TPZCompMesh(MESH);
+// 	
+// 	//TPZDruckerPrager * Pstep = new TPZDruckerPrager();
+// 	TPZVonMises * Pstep = new TPZVonMises();
+// 	
+// 	REAL Yield = 0.24;//GPA
+// 	Pstep->fTFA.SetUp(Yield,1000.);
+// 	Pstep->fER.SetUp(/*young GPA */ 210., /*poisson*/ 0.30);
+// 	
+// 	TPZMatElastoPlastic2D<TPZVonMises> EPMat2(1,1);
+// 	EPMat2.SetPlasticity(*Pstep);
+// 	TPZAutoPointer<TPZMaterial> plastic(&EPMat2);
+// 	plastic->Print(cout);
+// 	CMESH->InsertMaterialObject(plastic);
+// 	
+// 	TPZElastoPlasticAnalysis::SetAllCreateFunctionsWithMem(CMESH);
+// 	
+// 	CMeshPressuredCilinder(CMESH,plastic);	
+// 	
+// 	ofstream arg("CMESHPLASTIC2D.txt");
+// 	CMESH->Print(arg);
+// 	
+// 	TPZElastoPlasticAnalysis EPAnalysis(CMESH,cout);
+// 	
+// 	SolveSist(EPAnalysis,CMESH);
+// 	
+// 	TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
+// 	TPZFStructMatrix structmatrix(PPAnalysis.Mesh());
+// 	PPAnalysis.SetStructuralMatrix(structmatrix);
+// 	TPZVec<int> PostProcMatIds(1,1);
+// 	TPZVec<std::string> PostProcVars, scalNames, vecNames;
+// 	SetUPPostProcessVariables(PostProcVars,scalNames,vecNames);
+// 	PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
+// 	
+// 	EPAnalysis.TransferSolution(PPAnalysis);
+// 	
+// 	cout << "\nDefining Graph Mesh\n";
+// 	int dimension =2;
+// 	
+// 	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess3.vtk");
+// 	
+// 	cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
+// 	
+// 	PPAnalysis.PostProcess(0/*pOrder*/);
+// 	
+// 	ManageIterativeProcess(EPAnalysis,cout,tol,nnewton,BC1,BC2,nsteps,taxa,BeginStress,EndStress,BeginForce,EndForce,&PPAnalysis,0);
+// 	
+// 	cout << "\nInitial Solution Exported. Solving Problem\n";
+// 	//		EPAnalysis.IterativeProcess(cout, tol, nnewton);
+// 	//		cout << EPAnalysis.Solution() << endl;
+// 	//		EPAnalysis.AcceptSolution();
+// 	//		EPAnalysis.TransferSolution(PPAnalysis);
+// 	//		PPAnalysis.PostProcess(0);
+// 	
+// 	
+// 	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess3.vtk");
+// 	PPAnalysis.PostProcess(0);
+// 	PPAnalysis.CloseGraphMesh();
+// 	
+// 	//	TPZFMatrix BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
+// 	//	TPZFMatrix val1(3,1,0.);TPZFMatrix val2(3,1,0.);TPZFMatrix BeginForce(3,1,0.);TPZFMatrix EndForce(3,1,0.);
+// 	//	
+// 	//	int BC1,BC2,nsteps,taxa,nnewton;
+// 	//	int h=3;
+// 	//	int order = 2;
+// 	//	REAL tol = 1.e-5;
+// 	//	nnewton = 10;
+// 	//	BC1 = -3;
+// 	//	nsteps =2;
+// 	//	taxa = 1;
+// 	//	BeginForce(0,0) = 0.;
+// 	//	EndForce(0,0) = 0.2;
+// 	//	
+// 	//	
+// 	//	TPZGeoMesh * MESH = new TPZGeoMesh;
+// 	//	
+// 	//	int refdir = 3;
+// 	//	MESH = BrazilianTestGeoMesh::MisesPressure(h,refdir);
+// 	//	
+// 	//	ofstream arg1("GeoMesh.txt");
+// 	//	MESH->Print(arg1);
+// 	//	TPZCompEl::SetgOrder(order);
+// 	//	TPZCompMesh *CMESH = new TPZCompMesh(MESH);
+// 	//	
+// 	//	//TPZDruckerPrager * Pstep = new TPZDruckerPrager();
+// 	//	TPZVonMises * Pstep = new TPZVonMises();
+// 	//	
+// 	//	REAL Yield = 0.24;//GPA
+// 	//	Pstep->fTFA.SetUp(Yield,1.);
+// 	//	Pstep->fER.SetUp(/*young GPA */ 210., /*poisson*/ 0.30);
+// 	//	
+// 	//	TPZMatElastoPlastic2D<TPZVonMises> EPMat2(1,1);
+// 	//	EPMat2.SetPlasticity(*Pstep);
+// 	//	TPZAutoPointer<TPZMaterial> plastic(&EPMat2);
+// 	//	//plastic->SetBulkDensity(20.);
+// 	//	plastic->Print(cout);
+// 	//	CMESH->InsertMaterialObject(plastic);
+// 	//	
+// 	//	TPZElastoPlasticAnalysis::SetAllCreateFunctionsWithMem();
+// 	//	
+// 	//	CMeshPressuredCilinder(CMESH,plastic);	
+// 	//	
+// 	//	ofstream arg("CMESHPLASTIC2D.txt");
+// 	//	CMESH->Print(arg);
+// 	//	
+// 	//	TPZElastoPlasticAnalysis EPAnalysis(CMESH,cout);
+// 	//	
+// 	//	SolveSist(EPAnalysis,CMESH);
+// 	//	
+// 	//	TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
+// 	//	TPZFStructMatrix structmatrix(PPAnalysis.Mesh());
+// 	//	PPAnalysis.SetStructuralMatrix(structmatrix);
+// 	//	TPZVec<int> PostProcMatIds(1,1);
+// 	//	TPZVec<std::string> PostProcVars, scalNames, vecNames;
+// 	//	SetUPPostProcessVariables(PostProcVars,scalNames,vecNames);
+// 	//	PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
+// 	//	
+// 	//	EPAnalysis.TransferSolution(PPAnalysis);
+// 	//	
+// 	//	cout << "\nDefining Graph Mesh\n";
+// 	//	int dimension =2;
+// 	//	
+// 	//	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess.vtk");
+// 	//	
+// 	//	cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
+// 	//	
+// 	//	PPAnalysis.PostProcess(0/*pOrder*/);
+// 	//	
+// 	//	ManageIterativeProcess(EPAnalysis,cout,tol,nnewton,BC1,BC2,nsteps,taxa,BeginStress,EndStress,BeginForce,EndForce,&PPAnalysis,0);
+// 	//	
+// 	//	cout << "\nInitial Solution Exported. Solving Problem\n";
+// 	//	//	EPAnalysis.IterativeProcess(cout, tol, nnewton);
+// 	//	//	cout << EPAnalysis.Solution() << endl;
+// 	//	//	EPAnalysis.AcceptSolution();
+// 	//	//	EPAnalysis.TransferSolution(PPAnalysis);
+// 	//	//	PPAnalysis.PostProcess(0);
+// 	//	
+// 	//	
+// 	//	PPAnalysis.DefineGraphMesh(dimension,scalNames,vecNames,"TuboNewPostProcess.vtk");
+// 	//	PPAnalysis.PostProcess(0);
+// 	//	PPAnalysis.CloseGraphMesh();
+// 	
+// }
+/*
 void CMeshPressuredCilinder(TPZCompMesh *CMESH, TPZAutoPointer<TPZMaterial> mat)
 {
 	
@@ -1583,9 +1583,9 @@ void CMeshPressuredCilinder(TPZCompMesh *CMESH, TPZAutoPointer<TPZMaterial> mat)
 	//	
 	//	CMESH->AutoBuild();
 	//	
-}
+//}
 
 
-
+//*/
 
 

@@ -119,6 +119,141 @@ void InitializeLOG()
 }
 
 
+void ManageIterativeProcess(TPZElastoPlasticAnalysis &analysis,std::ostream &out,REAL tol,int numiter,
+                                    int BCId, int nsteps, REAL PGRatio,
+                                    TPZFMatrix & val1Begin, TPZFMatrix & val1End,
+                                    TPZFMatrix & val2Begin, TPZFMatrix & val2End)
+{
+                                       
+                                       
+    // computing the initial value for the PG progression such that its sum equals one;
+    REAL a0;
+    if(fabs(PGRatio - 1.) < 1.e-3)
+    {
+        a0 = 1. / REAL(nsteps);
+    }else{
+        a0 = (PGRatio - 1) / (pow(PGRatio,nsteps) - 1.);
+    }
+    TPZFNMatrix<36> val1(6,6,0.), deltaVal1(6,6,0.);
+    TPZFNMatrix< 6> val2(6,1,0.), deltaVal2(6,1,0.);
+   
+    deltaVal1 = val1End;
+    deltaVal1.ZAXPY(-1., val1Begin);
+    deltaVal2 = val2End;
+    deltaVal2.ZAXPY(-1., val2Begin);
+   
+    // ZAXPY operation: *this += alpha * p           
+
+    TPZAutoPointer<TPZMaterial> mat = analysis.Mesh()->FindMaterial(BCId);
+    TPZBndCond * pBC = dynamic_cast<TPZBndCond *>(mat.operator->());
+    if(!pBC)return;
+ 
+    int i;
+    for(i = 0; i < nsteps; i++)
+    {
+        REAL stepLen;
+        if(fabs(PGRatio - 1.) < 1.e-3)
+        {
+            stepLen = REAL(i+1) / REAL(nsteps);
+        }else{
+            stepLen = a0 * (pow(PGRatio,i+1) - 1) / (PGRatio - 1.);
+        }
+       
+        val1 = val1Begin;
+        val1.ZAXPY(stepLen, deltaVal1);
+        val2 = val2Begin;
+        val2.ZAXPY(stepLen, deltaVal2);
+       
+        pBC->Val1() = val1;
+        pBC->Val2() = val2;
+     
+        analysis.IterativeProcess(out, tol, numiter);
+     
+           
+        }
+    
+}
+
+/*
+void ManageIterativeProcess(TPZElastoPlasticAnalysis &analysis , std::ostream &out,REAL tol,int numiter,
+                            int BCId,int BCId2, int nsteps, REAL PGRatio,
+                           TPZFMatrix & val1Begin, TPZFMatrix & val1End,
+                            TPZFMatrix & val2Begin,TPZFMatrix & val2End)
+{
+   
+   
+    if(!analysis.Mesh())return;
+   
+    // computing the initial value for the PG progression such that its sum equals one;
+    REAL a0;
+   
+    if(fabs(PGRatio - 1.) < 1.e-3)
+    {
+        a0 = 1. / REAL(nsteps);
+    }
+   
+    else
+    {
+        a0 = (PGRatio - 1) / (pow(PGRatio,nsteps) - 1.);
+    }
+    TPZFNMatrix<36> val1(6,6,0.), deltaVal1(6,6,0.);
+    TPZFNMatrix< 6> val2(6,1,0.), deltaVal2(6,1,0.);
+   
+    deltaVal1 = val1End;
+    deltaVal1.ZAXPY(-1., val1Begin);
+    deltaVal2 = val2End;
+    deltaVal2.ZAXPY(-1., val2Begin);   
+   
+    //-19
+    TPZAutoPointer<TPZMaterial> mat = analysis.Mesh()->FindMaterial(BCId);
+    TPZBndCond * pBC = dynamic_cast<TPZBndCond *>(mat.operator->());
+    if(!pBC)return;
+    
+    //-20
+    //COMENTAR NO CILINDRO
+        TPZAutoPointer<TPZMaterial> mat2 = analysis.Mesh()->FindMaterial(BCId2);
+        TPZBndCond * pBC2 = dynamic_cast<TPZBndCond *>(mat2.operator->());
+        if(!pBC2)return;
+   
+    int i;
+    for(i = 0; i < nsteps; i++)
+    {
+        REAL stepLen;
+        if(fabs(PGRatio - 1.) < 1.e-3)
+        {
+            stepLen = REAL(i+1) / REAL(nsteps);
+        }
+        else
+        {
+            stepLen = a0 * (pow(PGRatio,i+1) - 1) / (PGRatio - 1.);
+        }
+       
+        val1 = val1Begin;
+        val1.ZAXPY(stepLen, deltaVal1);
+        val2 = val2Begin;
+        val2.ZAXPY(stepLen, deltaVal2);
+       
+        pBC->Val1() = val1;
+        pBC->Val2() = val2;
+       
+        //TPZTimer time;
+        //time.start();
+        analysis.IterativeProcess(out, tol, numiter);
+       // time.stop();
+        //REAL timeelapsed = time.seconds();
+        //cout << " \n TEMPO  GASTO NO ITERATIVE PROCESS "<<timeelapsed<< endl;
+       
+       // time.reset();
+       // time.start();
+       // analysis.AcceptSolution();
+       // time.stop();
+       // REAL timeelapsed2 = time.seconds();
+        //cout << " \n TEMPO  GASTO NO AcceptSolution "<<timeelapsed2<< endl;
+       
+    }
+   
+}*/
+
 
 void SolveSistLin2(TPZAnalysis &an, TPZCompMesh *fCmesh)
 {
@@ -245,8 +380,8 @@ void WellboreLoadTest(stringstream & fileName, T & mat,
 	//Overconsolidating the material
 	
 	TPZTensor<REAL> OCStress, beginOCStress, loadStress, loadStress2, initialStrain, FarFieldStress, TestStress;
-	TPZFNMatrix<3*3> BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
-	TPZFNMatrix<3*1> val1(3,1,0.);
+	TPZFMatrix BeginStress(3,3,0.), EndStress(3,3,0.), EndStress2(3,3,0.);
+	TPZFMatrix val1(3,1,0.);
 	
 	const REAL a = 0.17046;
 	REAL PorePressure = s * GammaSea * L * a / Pa;
@@ -332,79 +467,74 @@ cout <<"<\n>"<<SigmaV;
 	
 	// Preparing Post Process
 		
-	TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
+	//TPZPostProcAnalysis PPAnalysis(&EPAnalysis);
 	
-	TPZSkylineStructMatrix structmatrix(PPAnalysis.Mesh());
-	PPAnalysis.SetStructuralMatrix(structmatrix);
+	//TPZSkylineStructMatrix structmatrix(PPAnalysis.Mesh());
+	//PPAnalysis.SetStructuralMatrix(structmatrix);
 	
-	EPAnalysis.TransferSolution(PPAnalysis);
+	//EPAnalysis.TransferSolution(PPAnalysis);
 	
-	TPZVec<int> PostProcMatIds(1,1);
-	TPZVec<std::string> PostProcVars, scalNames, vecNames;
+	//TPZVec<int> PostProcMatIds(1,1);
+	//TPZVec<std::string> PostProcVars, scalNames, vecNames;
 	
-	scalNames.Resize(7);
-	scalNames[0] = "Alpha";
-	scalNames[1] = "PlasticSteps";
-	scalNames[2] = "VolElasticStrain";
-	scalNames[3] = "VolPlasticStrain";
-	scalNames[4] = "VolTotalStrain";
-	scalNames[5] = "I1Stress";
-	scalNames[6] = "J2Stress";
+// 	scalNames.Resize(7);
+// 	scalNames[0] = "Alpha";
+// 	scalNames[1] = "PlasticSteps";
+// 	scalNames[2] = "VolElasticStrain";
+// 	scalNames[3] = "VolPlasticStrain";
+// 	scalNames[4] = "VolTotalStrain";
+// 	scalNames[5] = "I1Stress";
+// 	scalNames[6] = "J2Stress";
+// 	
+// 	vecNames.Resize(5);
+// 	vecNames[0] = "Displacement";
+// 	vecNames[1] = "NormalStress";
+// 	vecNames[2] = "ShearStress";
+// 	vecNames[3] = "NormalStrain";
+// 	vecNames[4] = "ShearStrain";
+// 	
+// 	PostProcVars.Resize(scalNames.NElements()+vecNames.NElements());
+// 	int i, k=0;
+// 	for(i = 0; i < scalNames.NElements(); i++)
+// 	{
+// 		PostProcVars[k] = scalNames[i];
+// 		k++;
+// 	}
+// 	for(i = 0; i < vecNames.NElements(); i++)
+// 	{
+// 		PostProcVars[k] = vecNames[i];
+// 		k++;
+// 	}
 	
-	vecNames.Resize(5);
-	vecNames[0] = "Displacement";
-	vecNames[1] = "NormalStress";
-	vecNames[2] = "ShearStress";
-	vecNames[3] = "NormalStrain";
-	vecNames[4] = "ShearStrain";
+	//PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
 	
-	PostProcVars.Resize(scalNames.NElements()+vecNames.NElements());
-	int i, k=0;
-	for(i = 0; i < scalNames.NElements(); i++)
-	{
-		PostProcVars[k] = scalNames[i];
-		k++;
-	}
-	for(i = 0; i < vecNames.NElements(); i++)
-	{
-		PostProcVars[k] = vecNames[i];
-		k++;
-	}
+	//cout << "\nTransfering initial Solutions\n";
 	
-	PPAnalysis.SetPostProcessVariables(PostProcMatIds, PostProcVars);
+	//EPAnalysis.TransferSolution(PPAnalysis);
 	
-	cout << "\nTransfering initial Solutions\n";
+	//cout << "\nDefining Graph Mesh\n";
 	
-	EPAnalysis.TransferSolution(PPAnalysis);
+	//PPAnalysis.DefineGraphMesh(3,scalNames,vecNames,fileName.str());
 	
-	cout << "\nDefining Graph Mesh\n";
+	//cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
 	
-	PPAnalysis.DefineGraphMesh(3,scalNames,vecNames,fileName.str());
-	
-	cout << "\nExporting First Solution without any refinement - initial solution might be smooth enough and a real mesh size output is of interest\n";
-	
-	PPAnalysis.PostProcess(0/*pOrder*/);
+	//PPAnalysis.PostProcess(0/*pOrder*/);
 	
 	cout << "\nInitial Solution Exported. Solving Problem\n";
+	/*
+void ManageIterativeProcess(TPZElastoPlasticAnalysis &analysis , std::ostream &out,REAL tol,int numiter,int BCId,int BCId2, int nsteps, REAL PGRatio,
+                            TPZFMatrix & val1Begin, TPZFMatrix & val1End,
+                            TPZFMatrix & val2Begin, TPZFMatrix & val2End)*/
+	ManageIterativeProcess(EPAnalysis, cout, 1.e-5, 10,-7 , 2 , 1, BeginStress, EndStress, val1, val1);
 	
-	EPAnalysis.ManageIterativeProcess(cout, 1.e-5, 10,
-									  -7 /*BCId*/, 2 /*nsteps*/, 1/*PGRatio*/,
-									  BeginStress/*val1Begin*/, EndStress/*val1End*/,
-									  val1/*val2Begin*/, val1/*val2End*/,
-									  &PPAnalysis, pOrder);
-	
-	EPAnalysis.ManageIterativeProcess(cout, 1.e-5, 10,
-									  -7 /*BCId*/, 2 /*nsteps*/, 1/*PGRatio*/,
-									  EndStress/*val1Begin*/, EndStress2/*val1End*/,
-									  val1/*val2Begin*/, val1/*val2End*/,
-									  &PPAnalysis, pOrder);
+	ManageIterativeProcess(EPAnalysis, cout, 1.e-5, 10,-7, 2,1 ,EndStress, EndStress2,val1, val1);
 	
 	
-	cout << "\nProblem Solved. Accepting new Solutions\n";
+	//cout << "\nProblem Solved. Accepting new Solutions\n";
 	
-	cout << "\nClosing Mesh\n";
+	//cout << "\nClosing Mesh\n";
 	
-	PPAnalysis.CloseGraphMesh();
+	//PPAnalysis.CloseGraphMesh();
 	
 	cout << "\nExiting\n";
 
@@ -740,7 +870,7 @@ void PorousWellboreLoadTest(stringstream & fileName, T & mat,
 
 #include "TPZPlasticityTest.h"
 
-int main_USANDO_MAIN_TESTS_CPP()
+int main()
 {
     InitializeLOG();
 	
