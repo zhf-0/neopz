@@ -47,18 +47,18 @@ using namespace std;
 
 template<class TSubStruct>
 TPZDohrPrecond<TSubStruct>::TPZDohrPrecond(TPZDohrMatrix<TSubStruct> &origin, TPZAutoPointer<TPZDohrAssembly> assemble)
-: TPZMatrix(origin), fGlobal(origin.SubStructures()), fCoarse(0), fNumCoarse(origin.NumCoarse()), fNumThreads(0), fAssemble(assemble)
+: TPZMatrix<REAL>(origin), fGlobal(origin.SubStructures()), fCoarse(0), fNumCoarse(origin.NumCoarse()), fNumThreads(0), fAssemble(assemble)
 {
 	fNumThreads = origin.NumThreads();
 	//  Initialize();
 }
 
 template<class TSubStruct>
-TPZDohrPrecond<TSubStruct>::TPZDohrPrecond(const TPZDohrPrecond<TSubStruct> &cp) : TPZMatrix(cp), fGlobal(cp.fGlobal), fCoarse(0), 
+TPZDohrPrecond<TSubStruct>::TPZDohrPrecond(const TPZDohrPrecond<TSubStruct> &cp) : TPZMatrix<REAL>(cp), fGlobal(cp.fGlobal), fCoarse(0), 
 fNumCoarse(cp.fNumCoarse), fNumThreads(cp.fNumThreads), fAssemble(cp.fAssemble) 
 {
 	if (cp.fCoarse) {
-		fCoarse = (TPZStepSolver *) cp.fCoarse->Clone();
+		fCoarse = (TPZStepSolver<REAL> *) cp.fCoarse->Clone();
 	}
 }
 template<class TSubStruct>
@@ -72,7 +72,7 @@ TPZDohrPrecond<TSubStruct>::~TPZDohrPrecond()
 }
 
 template<class TSubStruct>
-void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y, TPZFMatrix &z, const REAL alpha,const REAL beta,const int opt,const int stride) const {
+void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix<REAL> &x,const TPZFMatrix<REAL> &y, TPZFMatrix<REAL> &z, const REAL alpha,const REAL beta,const int opt,const int stride) const {
 	if ((!opt && Cols() != x.Rows()*stride) || Rows() != x.Rows()*stride)
 		Error( "Operator* <matrices with incompatible dimensions>" );
 	if(x.Cols() != y.Cols() || x.Cols() != z.Cols() || x.Rows() != y.Rows() || x.Rows() != z.Rows()) {
@@ -91,8 +91,8 @@ void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y
 		LOGPZ_DEBUG(loggerv1v2,sout.str())
 	}
 #endif
-	TPZFMatrix v1(cols,1,0.);
-	TPZFMatrix v2(cols,1,0.);
+	TPZFMatrix<REAL> v1(rows,x.Cols(),0.);
+	TPZFMatrix<REAL> v2(cols,x.Cols(),0.);
 	if(fNumThreads <= 0)
 	{
 		ComputeV1(x,v1);
@@ -116,7 +116,7 @@ void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y
 		//Criar tarefa que execute a distribuicao de cada elemento do fGlobal
 		for(it= fGlobal.begin(); it != fGlobal.end(); it++,isub++)
 		{
-			TPZFMatrix *Residual_local = new TPZFMatrix;
+			TPZFMatrix<REAL> *Residual_local = new TPZFMatrix<REAL>;
 			fAssemble->Extract(isub,x,*Residual_local);
 			TPZDohrPrecondV2SubData<TSubStruct> data(isub,*it,Residual_local);
 			v2work.AddItem(data);
@@ -146,7 +146,7 @@ void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y
 	{
 		TPZFNMatrix<100> v2Expand((*it)->fNEquations,1,0.), v3Expand((*it)->fNEquations,1,0.);
 		int neqs = (*it)->fGlobalEqs.NElements();
-		TPZFMatrix v3_local(neqs,1,0.), v2_local(neqs,1,0.);
+		TPZFMatrix<REAL> v3_local(neqs,1,0.), v2_local(neqs,1,0.);
 		fAssemble->Extract(isub,v2,v2_local);
 		int i;
 		for (i=0;i<neqs;i++) 
@@ -177,9 +177,13 @@ void TPZDohrPrecond<TSubStruct>::MultAdd(const TPZFMatrix &x,const TPZFMatrix &y
 	// wait task para finalizacao da chamada
 	// esperar a versao correta do v1
 	/* Sum v1+v2+v3 with z */
-	for (c=0; c<rows; c++) {
-		z(c,0) += v2(c,0);
-	}
+    int xcols = x.Cols();
+    for (int ic=0; ic<xcols; ic++) 
+    {
+        for (c=0; c<rows; c++) {
+            z(c,ic) += v2(c,ic);
+        }
+    }
 	tempo.fPreCond.Push(precondi.ReturnTimeDouble()); // end of timer
 }
 
@@ -209,10 +213,10 @@ void TPZDohrPrecond<TSubStruct>::Initialize()
 		}
 	}
 	/* Computing K(c) */
-	TPZMatrix *coarse = new TPZSkylMatrix(fNumCoarse,skyline);
+	TPZMatrix<REAL> *coarse = new TPZSkylMatrix<REAL>(fNumCoarse,skyline);
 #ifdef DEBUG
 	{
-		TPZFMatrix coarse2(*coarse);
+		TPZFMatrix<REAL> coarse2(*coarse);
 		for (isub=0; isub<nsub; isub++) {
 			int nc = fAssemble->fCoarseEqs[isub].NElements();
 			int ic;
@@ -235,20 +239,20 @@ void TPZDohrPrecond<TSubStruct>::Initialize()
 	{
 		(*it)->Contribute_Kc(*coarse,fAssemble->fCoarseEqs[count]);
 	}
-	fCoarse = new TPZStepSolver(coarse);
+	fCoarse = new TPZStepSolver<REAL>(coarse);
 }
 
 template<class TSubStruct>
-void TPZDohrPrecond<TSubStruct>::ComputeV1(const TPZFMatrix &x, TPZFMatrix &v1) const
+void TPZDohrPrecond<TSubStruct>::ComputeV1(const TPZFMatrix<REAL> &x, TPZFMatrix<REAL> &v1) const
 {
 	/* Computing r(c) */
-	TPZFMatrix CoarseResidual(fNumCoarse,1);
+	TPZFMatrix<REAL> CoarseResidual(fNumCoarse,x.Cols());
 	CoarseResidual.Zero();
 	typename std::list<TPZAutoPointer<TSubStruct> >::const_iterator it;
 	
 	int isub = 0;
 	for(it= fGlobal.begin(); it != fGlobal.end(); it++, isub++) {
-		TPZFMatrix xloc, CoarseResidual_local;
+		TPZFMatrix<REAL> xloc, CoarseResidual_local;
 		fAssemble->Extract(isub,x,xloc);
 		//		(*it)->LoadWeightedResidual(xloc);
 		(*it)->Contribute_rc_local(xloc,CoarseResidual_local);
@@ -264,7 +268,7 @@ void TPZDohrPrecond<TSubStruct>::ComputeV1(const TPZFMatrix &x, TPZFMatrix &v1) 
 	/* Computing K(c)_inverted*r(c) and stores it in "product" */
 	fCoarse->SetDirect(ELDLt);
 	//Dado global 
-	TPZFMatrix CoarseSolution(fNumCoarse,1);
+	TPZFMatrix<REAL> CoarseSolution(fNumCoarse,x.Cols());
 	fCoarse->Solve(CoarseResidual,CoarseSolution);
 #ifdef LOG4CXX
 	{
@@ -280,7 +284,7 @@ void TPZDohrPrecond<TSubStruct>::ComputeV1(const TPZFMatrix &x, TPZFMatrix &v1) 
 		// Gerenciamento Global->Local sobre o product
 		//product é administrado pelo DM mas permanece no processador 0
 		// tarefa separada, expansao da solucao coarse
-		TPZFMatrix v1_local,CoarseSolution_local;
+		TPZFMatrix<REAL> v1_local,CoarseSolution_local;
 		fAssemble->ExtractCoarse(isub,CoarseSolution,CoarseSolution_local);
 		(*it)->Contribute_v1_local(v1_local,CoarseSolution_local);
 		
@@ -296,7 +300,7 @@ void TPZDohrPrecond<TSubStruct>::ComputeV1(const TPZFMatrix &x, TPZFMatrix &v1) 
 }
 
 template<class TSubStruct>
-void TPZDohrPrecond<TSubStruct>::ComputeV2(const TPZFMatrix &x, TPZFMatrix &v2) const
+void TPZDohrPrecond<TSubStruct>::ComputeV2(const TPZFMatrix<REAL> &x, TPZFMatrix<REAL> &v2) const
 {
 	
 	typename std::list<TPZAutoPointer<TSubStruct> >::const_iterator it;
@@ -314,6 +318,7 @@ void TPZDohrPrecond<TSubStruct>::ComputeV2(const TPZFMatrix &x, TPZFMatrix &v2) 
 			std::stringstream sout;
 			sout << "Substructure " << isub << std::endl;
 			Residual_local.Print("Residual local",sout);
+            v2_local.Print("v2_local",sout);
 			LOGPZ_DEBUG(logger,sout.str())
 		}
 #endif

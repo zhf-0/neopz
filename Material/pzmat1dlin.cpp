@@ -16,14 +16,14 @@ using namespace std;
 
 void TPZMat1dLin::Contribute(TPZMaterialData &data,
                              REAL weight,
-                             TPZFMatrix &ek, 
-                             TPZFMatrix &ef){
-	TPZFMatrix &dphi = data.dphix;
-	// TPZFMatrix &dphiL = data.dphixl;
-	// TPZFMatrix &dphiR = data.dphixr;
-	TPZFMatrix &phi = data.phi;
-	// TPZFMatrix &phiL = data.phil;
-	// TPZFMatrix &phiR = data.phir;
+                             TPZFMatrix<STATE> &ek, 
+                             TPZFMatrix<STATE> &ef){
+	TPZFMatrix<REAL> &dphi = data.dphix;
+	// TPZFMatrix<REAL> &dphiL = data.dphixl;
+	// TPZFMatrix<REAL> &dphiR = data.dphixr;
+	TPZFMatrix<REAL> &phi = data.phi;
+	// TPZFMatrix<REAL> &phiL = data.phil;
+	// TPZFMatrix<REAL> &phiR = data.phir;
 	// TPZManVector<REAL,3> &normal = data.normal;
 	TPZManVector<REAL,3> &x = data.x;
 	// int &POrder=data.p;
@@ -32,12 +32,12 @@ void TPZMat1dLin::Contribute(TPZMaterialData &data,
 	// TPZVec<REAL> &sol=data.sol;
 	// TPZVec<REAL> &solL=data.soll;
 	// TPZVec<REAL> &solR=data.solr;
-	// TPZFMatrix &dsol=data.dsol;
-	// TPZFMatrix &dsolL=data.dsoll;
-	// TPZFMatrix &dsolR=data.dsolr;
+	// TPZFMatrix<REAL> &dsol=data.dsol;
+	// TPZFMatrix<REAL> &dsolL=data.dsoll;
+	// TPZFMatrix<REAL> &dsolR=data.dsolr;
 	// REAL &faceSize=data.HSize;
-	// TPZFMatrix &daxesdksi=data.daxesdksi;
-	// TPZFMatrix &axes=data.axes;
+	// TPZFMatrix<REAL> &daxesdksi=data.daxesdksi;
+	// TPZFMatrix<REAL> &axes=data.axes;
 	
 	// this method adds the contribution of the material to the stiffness
 	// matrix and right hand side
@@ -53,19 +53,25 @@ void TPZMat1dLin::Contribute(TPZMaterialData &data,
 	
 	if(fForcingFunction) {
 		TPZManVector<REAL> xfloat(fXf.Rows());
-		fForcingFunction(x,xfloat);//fXf = xfloat
+		fForcingFunction->Execute(x,xfloat);//fXf = xfloat
 		int i;
 		for(i=0; i<fXf.Rows(); i++) fXf(i,0) = xfloat[i];
 	}
 	int r = fXk.Rows();
 	int c = fXk.Cols();
-	TPZFMatrix submat(r,c);
+	TPZFMatrix<STATE> submat(r,c);
 	for(int in=0 ; in < phi.Rows() ; ++in){
-		ef.AddSub(in*r, 0, (fXf*(phi(in,0)*weight)));
+		STATE tmpef = (phi(in,0)*weight);
+		TPZFMatrix<STATE> tmpTPZFMatrix1 = fXf*tmpef;
+		ef.AddSub(in*r,0,tmpTPZFMatrix1);
+		
 		for(int jn=0 ; jn<phi.Rows() ; ++jn){
-			submat =  fXb*(phi(in,0)*phi(jn,0)*weight);
-			submat += fXk*(dphi(0,in)*dphi(0,jn)*weight);
-			submat += fXc*(phi(in,0)*dphi(0,jn)*weight);
+			STATE temp = (phi(in,0)*phi(jn,0)*weight);
+			submat =  fXb*temp;
+			STATE temp2 = (dphi(0,in)*dphi(0,jn)*weight);
+			submat += fXk*temp2;
+			STATE temp3 = (phi(in,0)*dphi(0,jn)*weight);
+			submat += fXc*temp3;
 			ek.AddSub(in*r,jn*c,submat);
 		}
 	}
@@ -73,15 +79,15 @@ void TPZMat1dLin::Contribute(TPZMaterialData &data,
 
 void TPZMat1dLin::ContributeBC(TPZMaterialData &data,
                                REAL weight,
-                               TPZFMatrix &ek,
-                               TPZFMatrix &ef,
+                               TPZFMatrix<STATE> &ek,
+                               TPZFMatrix<STATE> &ef,
                                TPZBndCond &bc){
-	// TPZFMatrix &dphi = data.dphix;
-	// TPZFMatrix &dphiL = data.dphixl;
-	// TPZFMatrix &dphiR = data.dphixr;
-	TPZFMatrix &phi = data.phi;
-	// TPZFMatrix &phiL = data.phil;
-	// TPZFMatrix &phiR = data.phir;
+	// TPZFMatrix<REAL> &dphi = data.dphix;
+	// TPZFMatrix<REAL> &dphiL = data.dphixl;
+	// TPZFMatrix<REAL> &dphiR = data.dphixr;
+	TPZFMatrix<REAL> &phi = data.phi;
+	// TPZFMatrix<REAL> &phiL = data.phil;
+	// TPZFMatrix<REAL> &phiR = data.phir;
 	// TPZManVector<REAL,3> &normal = data.normal;
 	// TPZManVector<REAL,3> &x = data.x;
 	// int &POrder=data.p;
@@ -90,12 +96,12 @@ void TPZMat1dLin::ContributeBC(TPZMaterialData &data,
 	// TPZVec<REAL> &sol=data.sol;
 	// TPZVec<REAL> &solL=data.soll;
 	// TPZVec<REAL> &solR=data.solr;
-	// TPZFMatrix &dsol=data.dsol;
-	// TPZFMatrix &dsolL=data.dsoll;
-	// TPZFMatrix &dsolR=data.dsolr;
+	// TPZFMatrix<REAL> &dsol=data.dsol;
+	// TPZFMatrix<REAL> &dsolL=data.dsoll;
+	// TPZFMatrix<REAL> &dsolR=data.dsolr;
 	// REAL &faceSize=data.HSize;
-	// TPZFMatrix &daxesdksi=data.daxesdksi;
-	// TPZFMatrix &axes=data.axes;
+	// TPZFMatrix<REAL> &daxesdksi=data.daxesdksi;
+	// TPZFMatrix<REAL> &axes=data.axes;
 	
 	//void TPZMat1dLin::ContributeBc(TPZVec<REAL> &/*x*/, TPZVec<REAL> &/*sol*/, TElementMatrix &ek, TElementMatrix &ef, TPZBndCond &bc, int nod) {
 	
@@ -181,7 +187,7 @@ void TPZMat1dLin::Print(std::ostream & out){
 	out << "Matrix xf ->  "; fXf.Print("fXf",out);
 }
 
-void TPZMat1dLin::Flux(TPZVec<REAL> &/*x*/, TPZVec<REAL> &/*u*/, TPZFMatrix &dudx, TPZFMatrix &/*axes*/, TPZVec<REAL> &fl) {
+void TPZMat1dLin::Flux(TPZVec<REAL> &/*x*/, TPZVec<REAL> &/*u*/, TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &/*axes*/, TPZVec<STATE> &fl) {
 	
 	int row = NStateVariables();
 	for(int i=0; i<row; i++){
@@ -192,16 +198,16 @@ void TPZMat1dLin::Flux(TPZVec<REAL> &/*x*/, TPZVec<REAL> &/*u*/, TPZFMatrix &dud
 	}
 }
 
-void TPZMat1dLin::Errors(TPZVec<REAL> &/*x*/,TPZVec<REAL> &u,TPZFMatrix &dudx,TPZFMatrix &/*axes*/, TPZVec<REAL> &flux,
-						 TPZVec<REAL> &u_exact,TPZFMatrix &du_exact,TPZVec<REAL> &values) {
+void TPZMat1dLin::Errors(TPZVec<REAL> &/*x*/,TPZVec<STATE> &u,TPZFMatrix<STATE> &dudx,TPZFMatrix<REAL> &/*axes*/, TPZVec<STATE> &flux,
+						 TPZVec<REAL> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<STATE> &values) {
 	
-	TPZVec<REAL> udif(u);
+	TPZVec<STATE> udif(u);
 	int nelem= udif.NElements(),i;
 	for(i=0; i<nelem; i++) udif[i] -= u_exact[i];
-	TPZFMatrix dudif(dudx);
+	TPZFMatrix<STATE> dudif(dudx);
 	
 	int r = NStateVariables();
-	TPZVec<REAL> flux_el( r );
+	TPZVec<STATE> flux_el( r );
 	short idf;
 	for(idf=0; idf<r; idf++) {
 		dudif(0,idf) -= du_exact(0,idf);
@@ -218,11 +224,11 @@ void TPZMat1dLin::Errors(TPZVec<REAL> &/*x*/,TPZVec<REAL> &u,TPZFMatrix &dudx,TP
 	}
 	
 	for (idf=0; idf<r; idf++) {
-		REAL dif = flux[idf]-flux_el[idf];
-		if(fabs(fXk(idf,idf)) >= 1.e-10)
+		STATE dif = flux[idf]-flux_el[idf];
+		if(std::abs(fXk(idf,idf)) >= 1.e-10)
 		{ //Erico cout<<endl<<fXk(idf,idf)<<endl;
-			values[2] += dif*dif/sqrt(fabs( fXk(idf,idf) ));
-		}
+			values[2] += dif*dif/sqrt(std::abs( fXk(idf,idf) ));
+		}	
 	}
 }
 

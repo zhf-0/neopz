@@ -87,7 +87,7 @@ add_definitions(-DREFPATTERNDIR=\"${PROJECT_SOURCE_DIR}/Refine/RefPatterns\")
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNODEBUG" CACHE STRING "c++ release flags go here" FORCE)
 	endif()
 #To search files or libraries
-	set(SEARCH_DIRS ENV PATH /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/lib /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib)
+	set(SEARCH_DIRS ENV PATH /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/lib /usr/lib64 /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib)
 
 #To install neopz/include
 	set(NEOPZ_INCLUDE ${PROJECT_SOURCE_DIR}/../externallibs/neopz/include)
@@ -97,8 +97,8 @@ add_definitions(-DREFPATTERNDIR=\"${PROJECT_SOURCE_DIR}/Refine/RefPatterns\")
 #ENABLING EXTERNAL LIBRARIES
 
 #enabling pthread library
-find_path(PTHREAD_INCLUDE pthread.h PATHS ${SEARCH_DIRS})
-find_path(PTHREAD_LIB NAMES libpthread.dylib pthread.lib libpthread.a PATHS ${SEARCH_DIRS})
+find_path(PTHREAD_INCLUDE NAMES PThread.h pthread.h PATHS ${SEARCH_DIRS})
+find_path(PTHREAD_LIB NAMES libpthread.dylib pthread.lib libPThread.a libpthread.a PATHS ${SEARCH_DIRS})
 if(PTHREAD_INCLUDE-NOTFOUND)
 	set (PTHREAD_INCLUDE "/usr/include" CACHE PATH "Directory where pthread.h can be found")
 endif()
@@ -136,7 +136,7 @@ endif(USING_FAD)
 option(USING_LOG4CXX "Whether the LOG4CXX library will be linked in" ON)
 if(USING_LOG4CXX)
 	find_path(LOG4CXX_INCLUDE log4cxx PATHS ${SEARCH_DIRS} ./../log4cxx ./../log4cxx/include)
-	find_path(LOG4CXX_LIB NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.a PATHS ${SEARCH_DIRS} ./../log4cxx ./../log4cxx/lib)
+	find_path(LOG4CXX_LIB NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.a liblog4cxx.so PATHS ${SEARCH_DIRS} ./../log4cxx ./../log4cxx/lib)
 	if(LOG4CXX_INCLUDE-NOTFOUND)
 		set (LOG4CXX_INCLUDE "/usr/local/include" CACHE PATH "Directory where log4cxx header files can be found")
 	endif()
@@ -167,8 +167,6 @@ if(USING_METIS)
 	link_libraries(metis)
 endif(USING_METIS)
 
-
-
 #To enable unit test using boost UnitTest framework
 option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
 if(BUILD_UNITTESTING)
@@ -189,6 +187,60 @@ endif()
 #To building all the specific projects developed with PZ environment
 option(BUILD_PROJECTS "To build specific projects." OFF)
 
+#To select type of REAL
+set(REALTypesAre "Types are: double, float, long double")
+set(REAL_TYPE "double" CACHE STRING "${REALTypesAre}")
+
+if (REAL_TYPE STREQUAL "double")
+  add_definitions(-DREALdouble)
+  set(REAL_TYPE_DEF "REALdouble")
+elseif (REAL_TYPE STREQUAL "float")
+  add_definitions(-DREALfloat)
+  set(REAL_TYPE_DEF "REALfloat")
+elseif (REAL_TYPE STREQUAL "long double")
+  add_definitions(-DREALlongdouble)
+  set(REAL_TYPE_DEF "REALlongdouble")
+else()
+  message (FATAL_ERROR "ERROR: Please specify a valid type for REAL. ${REALTypesAre}")
+endif()
+message ("Using REAL type = ${REAL_TYPE}")
+
+#To select type of STATE
+set(STATETypesAre "Types are: double, float, long double, complex<float>, complex<double>, complex<long double>")
+set(STATE_TYPE "double" CACHE STRING "${STATETypesAre}")
+
+if (STATE_TYPE STREQUAL "double")
+  add_definitions(-DSTATEdouble)
+  set(STATE_TYPE_DEF "STATEdouble")
+elseif (STATE_TYPE STREQUAL "float")
+  add_definitions(-DSTATEfloat)
+  set(STATE_TYPE_DEF "STATEfloat")
+elseif (STATE_TYPE STREQUAL "long double")
+  add_definitions(-DSTATElongdouble)
+  set(STATE_TYPE_DEF "STATElongdouble")
+elseif (STATE_TYPE STREQUAL "complex<float>")
+  add_definitions(-DSTATEcomplexf)
+  set(STATE_TYPE_DEF "STATEcomplexf")
+  set (BUILD_COMPLEX_PROJECTS ON)
+elseif (STATE_TYPE STREQUAL "complex<double>")
+  add_definitions(-DSTATEcomplexd)
+  set(STATE_TYPE_DEF "STATEcomplexd")
+  set (BUILD_COMPLEX_PROJECTS ON)
+elseif (STATE_TYPE STREQUAL "complex<long double>")
+  add_definitions(-DSTATEcomplexld)
+  set(STATE_TYPE_DEF "STATEcomplexld")
+  set (BUILD_COMPLEX_PROJECTS ON)
+else()
+  message (FATAL_ERROR "ERROR: Please specify a valid type for STATE. ${STATETypesAre}")
+endif()
+message ("Using STATE type = ${STATE_TYPE}")
+
+#Writing type definitions on config.h
+set(FILE_DEFINITIONS "${CMAKE_SOURCE_DIR}/Common/config.h")
+FILE(WRITE ${FILE_DEFINITIONS}
+"#ifndef ${REAL_TYPE_DEF}\n#define ${REAL_TYPE_DEF}\n#endif\n"
+"#ifndef ${STATE_TYPE_DEF}\n#define ${STATE_TYPE_DEF}\n#endif"
+)
 
 #increment all the directories where the sources files is
 add_subdirectory(Util)

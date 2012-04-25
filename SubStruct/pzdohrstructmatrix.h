@@ -2,13 +2,7 @@
  * @file
  * @brief Contains the TPZDohrStructMatrix class which implements structural matrix divided in sub structures.
  */
-/*
- *  pzdohrstructmatrix.h
- *  SubStruct
- *
- *  Created by Philippe Devloo on 28/06/10.
- *  Copyright 2010 UNICAMP. All rights reserved.
- */
+
 #ifndef PZDOHRSTRUCTMATRIX 
 #define PZDOHRSTRUCTMATRIX
 
@@ -20,6 +14,8 @@
 /**
  * @ingroup substructure structural
  * @brief Implements structural matrix divided in sub structures. \ref structural "Structural Matrix" \ref substructure "Sub structure"
+ * @author Philippe Devloo
+ * @since 28/06/2010
  */
 class TPZDohrStructMatrix : public TPZStructMatrix
 {
@@ -39,26 +35,26 @@ public:
 	void SubStructure(int nsub);
 	
 	/** @brief This will create a DohrMatrix */
-	virtual TPZMatrix * Create();
+	virtual TPZMatrix<REAL> * Create();
 	
 	/**
 	 * @brief This will return the pointer to the preconditioner AND abandon the pointer
 	 * @warning This method can only be called once
 	 */
-	TPZAutoPointer<TPZMatrix> Preconditioner()
+	TPZAutoPointer<TPZMatrix<REAL> > Preconditioner()
 	{
-		TPZAutoPointer<TPZMatrix> result = fDohrPrecond;
+		TPZAutoPointer<TPZMatrix<REAL> > result = fDohrPrecond;
 		fDohrPrecond = 0;
 		return result;
 	}
 	
 	/** @brief This will create a DohrMatrix and compute its matrices */
-	virtual TPZMatrix * CreateAssemble(TPZFMatrix &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
+	virtual TPZMatrix<REAL> * CreateAssemble(TPZFMatrix<REAL> &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
 	
 	/**
 	 * @brief Assemble the global right hand side
 	 */
-	virtual void Assemble(TPZFMatrix & rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
+	virtual void Assemble(TPZFMatrix<REAL> & rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
 	
 	/** @brief Creates a copy of itself */
 	virtual TPZStructMatrix * Clone()
@@ -86,16 +82,13 @@ protected:
 	
 	TPZAutoPointer<TPZDohrAssembly> fDohrAssembly;
 	
-	TPZAutoPointer<TPZMatrix > fDohrPrecond;
+	TPZAutoPointer<TPZMatrix<REAL> > fDohrPrecond;
 	
 	/* @brief Get the global equation numbers of a substructure (and their inverse) */
 	void IdentifyEqNumbers(TPZSubCompMesh *sub, std::map<int,int> &global, std::map<int,int> &globinv);
 	
-	/**
-	 * @brief Computes the permutation vectors from the subcompmesh ordening to the "internal first" ordering
-	 */ 
-	 /** The mesh is modified during this method but is returned to its original state at the end of execution
-	 */
+	/** @brief Computes the permutation vectors from the subcompmesh ordening to the "internal first" ordering */ 
+	/** The mesh is modified during this method but is returned to its original state at the end of execution */
 	void ComputeInternalEquationPermutation(TPZSubCompMesh *sub,
 											TPZVec<int> &scatterpermute, TPZVec<int> &gatherpermute);
 	
@@ -123,7 +116,7 @@ private:
 	/** @brief Mutexes (to choose which submesh is next) */
 	pthread_mutex_t fAccessElement;
 	
-	friend class ThreadDohrmanAssembly;
+	friend struct ThreadDohrmanAssembly;
 	
 };
 

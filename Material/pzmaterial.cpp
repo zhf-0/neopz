@@ -22,7 +22,7 @@
 static LoggerPtr logger(Logger::getLogger("pz.material"));
 #endif
 
-TPZVec< void(*) ( TPZVec<REAL> &, TPZVec<REAL>& ) > GFORCINGVEC;
+TPZVec< void(*) ( TPZVec<REAL> &, TPZVec<STATE>& ) > GFORCINGVEC;
 
 using namespace std;
 REAL TPZMaterial::gBigNumber = 1.e12;
@@ -149,16 +149,17 @@ void TPZMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<REA
 	}
 }
 
-void TPZMaterial::Solution(TPZVec<REAL> &Sol,TPZFMatrix &/*DSol*/,TPZFMatrix &/*axes*/,int var,
+void TPZMaterial::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &/*DSol*/,TPZFMatrix<REAL> &/*axes*/,int var,
 						   TPZVec<REAL> &Solout){
-	if(var == 0) Solout = Sol;
-	else if(var == 99 || var == 100 || var == 101 || var == 102) {
-		//  	PZError << "TPZMaterial var = "<< var << " the element should treat this case\n";
-		Solout[0] = Sol[0]; // = 0.;
-	} else Solout.Resize(0);
+	DebugStop();
+	//	if(var == 0) Solout = Sol;
+	//	else if(var == 99 || var == 100 || var == 101 || var == 102) {
+	//  	PZError << "TPZMaterial var = "<< var << " the element should treat this case\n";
+	//		Solout[0] = Sol[0]; // = 0.;
+	//	} else Solout.Resize(0);
 }
 
-TPZBndCond *TPZMaterial::CreateBC(TPZAutoPointer<TPZMaterial> &reference, int id, int typ, TPZFMatrix &val1, TPZFMatrix &val2) {
+TPZBndCond *TPZMaterial::CreateBC(TPZAutoPointer<TPZMaterial> &reference, int id, int typ, TPZFMatrix<STATE> &val1, TPZFMatrix<STATE> &val2) {
 	return new TPZBndCond(reference,id,typ,val1,val2);
 }
 
@@ -172,25 +173,25 @@ TPZAutoPointer<TPZMaterial> TPZMaterial::NewMaterial() {
 	return 0;
 }
 
-void TPZMaterial::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix &ef){
-	TPZFMatrix fakeek(ef.Rows(), ef.Rows(), 0.);
+void TPZMaterial::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef){
+	TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
 	this->Contribute(data, weight, fakeek, ef);
 }
 
-void TPZMaterial::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix &ef, TPZBndCond &bc){
-	TPZFMatrix fakeek(ef.Rows(), ef.Rows(), 0.);
+void TPZMaterial::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+	TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
 	this->ContributeBC(data, weight, fakeek, ef, bc);
 }
 
-void TPZMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix &ek, TPZFMatrix &ef){
+void TPZMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
 	int nref=datavec.size();
 	if (nref== 1) {
 		this->Contribute(datavec[0], weight, ek,ef);
 	}
 }
 
-void TPZMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix &ek, 
-							   TPZFMatrix &ef, TPZBndCond &bc){
+void TPZMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, 
+							   TPZFMatrix<STATE> &ef, TPZBndCond &bc){
 	int nref=datavec.size();
 	if (nref== 1) {
 		this->ContributeBC(datavec[0], weight, ek,ef,bc);
@@ -276,23 +277,26 @@ void TPZMaterial::Write(TPZStream &buf, int withclassid)
 	TPZSaveable::Write(buf,withclassid);
 	buf.Write(&fId,1);
 	buf.Write(&gBigNumber,1);
-	int forcingIdx = -1;
-	if (fForcingFunction)
-	{
-		for (forcingIdx=0;forcingIdx<GFORCINGVEC.NElements();forcingIdx++)
-		{
-			if (GFORCINGVEC[ forcingIdx ] == fForcingFunction) break;
-		}
-		if ( forcingIdx == GFORCINGVEC.NElements() ) forcingIdx = -1;
-	}
-#ifdef DEBUG2
-	{
-		std::stringstream sout;
-		sout << __PRETTY_FUNCTION__ << " writing forcing function index " << forcingIdx;
-		LOGPZ_DEBUG( logger,sout.str().c_str() );
-	}
-#endif
-	buf.Write( &forcingIdx,1 );
+    fForcingFunction->Write(buf, 1);
+    /*
+	 int forcingIdx = -1;
+	 if (fForcingFunction)
+	 {
+	 for (forcingIdx=0;forcingIdx<GFORCINGVEC.NElements();forcingIdx++)
+	 {
+	 if (GFORCINGVEC[ forcingIdx ] == fForcingFunction) break;
+	 }
+	 if ( forcingIdx == GFORCINGVEC.NElements() ) forcingIdx = -1;
+	 }
+	 #ifdef DEBUG2
+	 {
+	 std::stringstream sout;
+	 sout << __PRETTY_FUNCTION__ << " writing forcing function index " << forcingIdx;
+	 LOGPZ_DEBUG( logger,sout.str().c_str() );
+	 }
+	 #endif
+	 buf.Write( &forcingIdx,1 );
+     */
 }
 
 /*
@@ -303,26 +307,37 @@ void TPZMaterial::Read(TPZStream &buf, void *context)
 	TPZSaveable::Read(buf,context);
 	buf.Read(&fId,1);
 	buf.Read(&gBigNumber,1);
-	int forcingIdx = -1;
-	buf.Read( &forcingIdx,1 );
-#ifdef DEBUG2
-	{
-		std::stringstream sout;
-		sout << " Read forcing function index " << forcingIdx;
-		LOGPZ_DEBUG( logger,sout.str().c_str() );
-	}
-#endif
-	
-	if ( forcingIdx > -1 && forcingIdx < GFORCINGVEC.NElements() )
-	{
-		fForcingFunction = GFORCINGVEC[ forcingIdx ] ;
-#ifdef DEBUG2
-		{
-			std::stringstream sout;
-			sout << " Seting forcing function index " << forcingIdx;
-			LOGPZ_DEBUG( logger,sout.str().c_str() );
-		}
-#endif
-	}
+    TPZSaveable *sav = TPZSaveable::Restore(buf, context);
+    {
+        TPZFunction *func = dynamic_cast<TPZFunction *>(sav);
+        if(!func) 
+        {
+            DebugStop();
+        }
+        fForcingFunction = func;
+    }
+    /*
+	 int forcingIdx = -1;
+	 buf.Read( &forcingIdx,1 );
+	 #ifdef DEBUG2
+	 {
+	 std::stringstream sout;
+	 sout << " Read forcing function index " << forcingIdx;
+	 LOGPZ_DEBUG( logger,sout.str().c_str() );
+	 }
+	 #endif
+	 
+	 if ( forcingIdx > -1 && forcingIdx < GFORCINGVEC.NElements() )
+	 {
+	 fForcingFunction = GFORCINGVEC[ forcingIdx ] ;
+	 #ifdef DEBUG2
+	 {
+	 std::stringstream sout;
+	 sout << " Seting forcing function index " << forcingIdx;
+	 LOGPZ_DEBUG( logger,sout.str().c_str() );
+	 }
+	 #endif
+	 }
+	 */
 }
 

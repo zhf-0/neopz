@@ -72,6 +72,12 @@ class TPZPlasticTest
 		
 		template <class T>
 		static void GlobalCheckConv(T & plasticModel, TPZTensor<REAL> & strain, REAL maxDeltaStrain = 0.01);
+        
+        static void LadeKimTriaxialLooseSand();
+        
+        
+        template <class T>
+        static void MultiDirectionsMaterialPointTest(T & plasticModel);
 		
 		static void DruckerPragerTest();
 		
@@ -88,7 +94,24 @@ class TPZPlasticTest
 		static void UndocumentedTest3();
 		
 		static void UndocumentedTest4();
+        
+        static void SandlerDimaggioIsotropicCompression();
+        
+        static void LKFineSilicaLoadTest();
 		
+        static void LKIsotropicCompression();
+        
+        static void LKKoCompressionLoadTest();
+        
+        static void LKLoadingTest();
+        
+        static void DruckerIsotropicCompression();
+        
+        static void DruckerTest();
+        
+        static void LKBiaxialTest();
+        
+        //static void MaterialPointTests();
 		//////////////////CheckConv related methods/////////////////////
 		
 		/**
@@ -108,13 +131,13 @@ class TPZPlasticTest
 			LoadState will keep a given state as static variable of the class
 		*/
 		
-		void LoadState(TPZFMatrix &state)
+		void LoadState(TPZFMatrix<REAL> &state)
 		{
 			int i;
 			for(i=0; i<6; i++) gRefTension.fData[i] = state(i,0);
 		}
 		
-		void ComputeTangent(TPZFMatrix &tangent, TPZVec<REAL> &coefs, int icase)
+		void ComputeTangent(TPZFMatrix<REAL> &tangent, TPZVec<REAL> &coefs, int icase)
 		{
 			switch(icase)
 			{
@@ -133,7 +156,7 @@ class TPZPlasticTest
 			}
 		}
 		
-		void Residual(TPZFMatrix &res,int icase)
+		void Residual(TPZFMatrix<REAL> &res,int icase)
 		{
 			
 			res.Redim(1,1);
@@ -157,16 +180,1092 @@ class TPZPlasticTest
 		
 		
 		
-		static void RotateMatrix(TPZFMatrix &Mat, double thetaRad,int rotateaboutaxes);
+		static void RotateMatrix(TPZFMatrix<REAL> &Mat, double thetaRad,int rotateaboutaxes);
 		
-		//static void RotationMatrix(TPZFMatrix &R, double thetaRad, int axis);
+		//static void RotationMatrix(TPZFMatrix<REAL> &R, double thetaRad, int axis);
 		
 		template <class T>
 		static void PlasticIntegratorCheck(int thetaintervals,T mat);
 		
 		static void VerifyIntegrationAtPoint(TPZVec< TPZTensor<REAL> > vectensor);
-		static void DruckerTest();
+	//	static void DruckerTest();
+        
+        
 	};
+
+inline void LadeKimTriaxialLooseSand()
+{
+
+    ofstream outfiletxt("LadeKimTriaxialLooseSand.txt");
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    
+    
+    TPZLadeKim LK;
+    TPZLadeKim::LooseSantaMonicaBeachSand(LK);
+    LK.ApplyLoad(stress,strain);
+    deltastress.XX() = -0.005;//Confining stress = 17.07 Psi
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -0.0003;//Confining stress = 17.07 Psi
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -0.0003;//Confining stress = 17.07 Psi
+    stress=deltastress;    
+        
+    LK.ApplyLoad(stress,strain);
+    
+    
+    int steps=60;
+    for(int i=0;i<steps;i++)
+    {
+        
+        LK.ApplyLoad(stress,strain);
+        outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()-stress.ZZ()) << "\n";
+        stress+=deltastress;
+    }
+    
+    
+    
+
+}
+//inline void MaterialPointTests()
+//{
+//    
+//    cout << "\nChoose Plasticity test:";
+//    cout << "\n0 - Isotropic compression ";
+//    cout << "\n1 - Biaxial Tests ";
+//    cout << "\n2 - Uniaxial traction ";
+//    cout << "\n";
+//    int choice;
+//    cin >> choice;
+//    
+//    switch(choice)
+//    {
+//        case(0):
+//            cout << "\n Choose the Plastic model tou need to run Isotropic compression: ";
+//            cout << "\n0 - Lade - Kim ";
+//            cout << "\n1 - Sandler Dimaggio ";
+//            cout << "\n2 - Drucker Prager ";
+//            cout << "\n";
+//            int choice2;
+//            cin >> choice2;
+//            switch(choice2)
+//        {
+//            case(0):
+//                LKIsotropicCompression();
+//                break;
+//            case(1):
+//                SandlerDimaggioIsotropicCompression();
+//                break;
+//            case(2):
+//                DruckerIsotropicCompression();
+//                break;
+//        }
+//            
+//            
+//            break;
+//        case(1):
+//            LKBiaxialTest();
+//            break;
+//        case(2):
+//            cout << "NOT IMPLEMENTED YET";
+//            //    LadeKim_ReversalTest();
+//            break;
+//        default:
+//            cout << "Unknown Test Type. Exiting...";
+//    }
+//    
+//}
+
+
+
+inline void SandlerDimaggioIsotropicCompression()//
+{
+    ofstream outfiletxt5("SDMcCormicRanchSand.txt");
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    
+    
+    TPZSandlerDimaggio SD;
+    
+    cout << "\n Put the value of strain you want to add in each step of your loat test: (sugg.0.0001) ";
+    REAL straininput;
+    cin >> straininput;
+    deltastrain.XX() = -straininput;
+    deltastrain.XY() = 0.;
+    deltastrain.XZ() = 0.;
+    deltastrain.YY() = -straininput;
+    deltastrain.YZ() = 0.;
+    deltastrain.ZZ() = -straininput;
+    strain=deltastrain;    
+    cout << "Choose the material pareameters you want to set to SandlerDimaggio Test :";
+    cout << "\n0 - McCormicRanchSandMod";
+    cout << "\n1 - McCormicRanchSandMod2 ";
+    cout << "\n2 - UncDeepSandRes ";
+    cout << "\n3 - UncDeepSandResPSI";
+    cout << "\n4 - UncDeepSandResMPa";
+    cout << "\n5 - Put the material parameters you want ";
+    int choice;
+    cin >> choice;
+    
+    cout << "\n Put the numbers of steps you want: (sugg. 20)";
+    int length;
+    cin >> length;
+    
+    switch (choice) {
+        case(0):
+        {
+            TPZSandlerDimaggio::McCormicRanchSandMod(SD);
+            std::ofstream outfiletxt("TPZSandlerDimaggioMcCormicRanchSandMod(SD).txt");
+            
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+            }
+            break;
+        }
+        case(1):
+        {
+            TPZSandlerDimaggio::McCormicRanchSandMod2(SD);
+            std::ofstream outfiletxt("TPZSandlerDimaggioMcCormicRanchSandMod2.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        case(2):
+        {
+            TPZSandlerDimaggio::UncDeepSandRes(SD);
+            std::ofstream outfiletxt("TPZLadeKimUncDeepSandRes.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        case(3):
+        {
+            TPZSandlerDimaggio::UncDeepSandResPSI(SD);
+            std::ofstream outfiletxt("TPZLadeKimUncDeepSandResPSI.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        case(4):
+        {
+            TPZSandlerDimaggio::UncDeepSandResMPa(SD);
+            std::ofstream outfiletxt("TPZLadeKimUncDeepSandResMPa.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+            
+            break;
+            
+        }    
+        case(5):
+        {
+            
+//            REAL E = 9000, 
+//            poisson = 0.25;
+//            
+//            material.fER.SetUp(E, poisson);
+//            
+//            REAL A = 18, 
+//            B = 0.0245, 
+//            C = 17.7, 
+//            D = 0.00735, 
+//            R = 1.5,
+//            W = 0.0908;
+            cout<< "\n Young Modulus 9000.";
+            REAL E; 
+            cin >> E;
+            
+            cout<< "\n poisson 0.25 ";
+            REAL poisson;
+            cin >> poisson;
+            
+            
+            SD.fER.SetUp(E, poisson);
+            
+            cout<< "\n A (sugg.18)"; 
+            REAL A;
+            cin >> A;
+            
+            cout << "\n B (sugg. 0.0245) ";
+            REAL B;
+            cin >> B;
+            
+            cout << "\n C (sugg. 17.7) ";
+            REAL C;
+            cin >> C;
+            
+            cout << "\n D (sugg.0.00735) ";
+            REAL D;
+            cin >> D;
+            
+            cout << "\n R (sugg. 1.5) ";
+            REAL R;
+            cin >> R;
+            
+            cout << "\n W (sugg. 0.0908) ";
+            REAL W;
+            cin >> W;
+            
+            SD.fYC.SetUp(A, B, C, D, R, W);
+            
+            std::ofstream outfiletxt("SandlerDimaggioYOURMODEL.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                SD.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        default:
+        {
+            cout << "Unknown Test Type. Exiting...";
+            break;
+        }
+    }
+    
+    
+    
+}
+
+inline void LKFineSilicaLoadTest()//
+{
+    ofstream outfiletxt1("FineSilica.txt");
+    TPZLadeKim LK;
+    TPZLadeKim::FineSilicaSand(LK);
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    deltastress.XX() = -4.;
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -4.;
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -4.;
+    stress = deltastress;
+    
+    
+    int length =30;
+    for(int step=0;step<length;step++)
+    {
+        cout << "\nstep "<< step;
+        if(step == 69)deltastress *=-1.;
+        LK.ApplyLoad(stress,strain);            
+        outfiletxt1 << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+        stress +=  deltastress;
+        cout << "strain = "<<strain <<"\n";
+        cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
+        
+    }
+    
+    
+    
+    
+}
+
+
+
+inline void LKIsotropicCompression()
+{
+    
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+
+    deltastress.XX() = -147.;
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -147.;
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -147.;
+    stress=deltastress;
+    
+ 
+    TPZLadeKim LK2;
+   // TPZLadeKim::FineSilicaSandPaperIII(LK2);
+  //  std::ofstream outfiletxt("TPZLadeKim_IsotropicCompression_FineSilicaSand.txt");
+    TPZLadeKim::PlainConcrete(LK2);
+    std::ofstream outfiletxt("TPZLadeKim_IsotropicCompression_PlaneConcrete.txt");
+            
+    int length =120;
+    for(int i=0;i<length;i++)
+    {
+       // if(i==9)deltastress*=-1;
+        cout << "\nstep = "<< i << endl;
+        LK2.ApplyLoad(stress,strain);
+        outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX())/14.7 << "\n";
+         stress+=deltastress;
+    }
+        
+}
+
+
+//inline void LKIsotropicCompression()
+//{
+//    
+//    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+//    TPZFNMatrix<6*6> Dep(6,6,0.);
+//    
+//    cout << "\n Put the value of strain you want to add in each step of your loat test: (sugg. 0.0001) ";
+//    REAL straininput = 0.00001;
+//    // cin >> straininput;
+//    /*    
+//     deltastrain.XX() = -straininput;
+//     deltastrain.XY() = 0.;
+//     deltastrain.XZ() = 0.;
+//     deltastrain.YY() = -straininput;
+//     deltastrain.YZ() = 0.;
+//     deltastrain.ZZ() = -straininput;
+//     strain=deltastrain;
+//     */  
+//    deltastrain.XX() = -0.0001;
+//    deltastrain.XY() = 0.;
+//    deltastrain.XZ() = 0.;
+//    deltastrain.YY() = -0.00005;
+//    deltastrain.YZ() = 0.;
+//    deltastrain.ZZ() = -0.;
+//    strain=deltastrain;
+//    
+//    cout << "Choose the material pareameters you want to set to Lade Kim Test :";
+//    cout << "\n0 - Plain Concrete ";
+//    cout << "\n1 - Loose Sacramento River Sand ";
+//    cout << "\n2 - Dense Sacramento River Sand ";
+//    cout << "\n3 - Fine Silica Sand";
+//    cout << "\n4 - Put the material parameters you want";
+//    int choice = 0;
+//    //cin >> choice;
+//    
+//    cout << "\n Put the numbers of steps you want:(sugg. 20)";
+//    int length =120;
+//    //cin >> length;
+//    
+//    TPZLadeKim LK2;
+//    switch (choice) {
+//        case(0):
+//        {
+//            TPZLadeKim::PlainConcrete(LK2);
+//            std::ofstream outfiletxt("TPZLadeKim::PlainConcrete.txt");
+//            
+//            for(int step=0;step<length;step++)
+//            {
+//                cout << "\nstep "<< step;
+//                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+//                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+//                strain += deltastrain;
+//            }
+//            break;
+//        }
+//        case(1):
+//        {
+//            TPZLadeKim::LooseSacrRiverSand(LK2);
+//            std::ofstream outfiletxt("TPZLadeKim::LooseSacrRiverSand.txt");
+//            for(int step=0;step<length;step++)
+//            {
+//                cout << "\nstep "<< step;
+//                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+//                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+//                strain += deltastrain;
+//                
+//            }
+//            break;
+//        }
+//        case(2):
+//        {
+//            TPZLadeKim::DenseSacrRiverSand(LK2);
+//            std::ofstream outfiletxt("TPZLadeKim::DenseSacrRiverSand.txt");
+//            for(int step=0;step<length;step++)
+//            {
+//                cout << "\nstep "<< step;
+//                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+//                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+//                strain += deltastrain;
+//                
+//            }
+//            break;
+//        }
+//        case(3):
+//        {
+//            TPZLadeKim::FineSilicaSand(LK2);
+//            std::ofstream outfiletxt("TPZLadeKim::FineSilicaSand.txt");
+//            for(int step=0;step<length;step++)
+//            {
+//                cout << "\nstep "<< step;
+//                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+//                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+//                strain += deltastrain;
+//                
+//            }
+//            break;
+//        }
+//        case(4):
+//        {
+//            cout << "\n poisson (sugg. 0.18)";
+//            REAL poisson;// = 0.18;
+//            cin>>poisson; 
+//            
+//            cout << "\n M (sugg. 361800.)";
+//            REAL M;//       = 361800.;
+//            cin >> M;
+//            
+//            cout << "\nlambda (sugg. 0.)";
+//            REAL lambda;//  = 0.;
+//            cin >> lambda;
+//            
+//            cout << "\n a (sugg. 28.5)";
+//            REAL a;//       = 28.5;
+//            cin >> a;
+//            
+//            cout << "\n m (sugg. 1.113)";
+//            REAL m;//       = 1.113;
+//            cin >> m;
+//            
+//            cout << "\n neta1 (sugg. 159800.)";
+//            REAL neta1;//   = 159800.;
+//            cin >> neta1;
+//            
+//            cout << "\n ksi2 (sugg. -2.92)";
+//            REAL ksi2; //   = -2.92;
+//            cin >> ksi2;
+//            
+//            cout << "\n mu (sugg. 5.06)";
+//            REAL mu;//     = 5.06;
+//            cin >> mu;
+//            
+//            cout << "\n C (sugg. 0.712E-12)";
+//            REAL C;//       = 0.712E-12;
+//            cin >> C;
+//            
+//            cout << "\n p (sugg. 3.8)";
+//            REAL p;//       = 3.8;
+//            cin >> p;
+//            
+//            cout <<"\n h (sugg. 1.990) ";
+//            REAL h;//       = 1.990;
+//            cin >> h;
+//            
+//            cout << "\n alpha (sugg. 0.75) ";
+//            REAL alpha;//   = 0.75;
+//            cin >> alpha;
+//            
+//            cout << "\n pa (sugg. 14.7) ";
+//            REAL pa;//      = 14.7;
+//            cin >> pa;
+//            
+//            REAL restol;
+//            cout << "\n Tolerance (sugg. 0.0001) ";
+//            cin >> restol;
+//            
+//            LK2.fResTol = restol;
+//            
+//            LK2.SetUp(poisson, M, lambda,
+//                      a, m, neta1,
+//                      ksi2, mu,
+//                      C, p,
+//                      h, alpha,
+//                      pa);
+//            std::ofstream outfiletxt("TPZLadeKim::YOURMODEL.txt");
+//            for(int step=0;step<length;step++)
+//            {
+//                cout << "\nstep "<< step;
+//                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+//                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+//                strain += deltastrain;
+//                
+//            }
+//            break;
+//        }
+//        default:
+//        {
+//            cout << "Unknown Test Type. Exiting...";
+//            break;
+//        }
+//    }
+//    
+//}
+
+
+
+inline void LKKoCompressionLoadTest()
+{
+    ofstream outfiletxt1("LKKoCompressionLoadTest.txt");
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    
+    deltastress.XX()=-1.;
+    deltastress.YY()=-0.5;
+    deltastress.ZZ()=-0.5;
+    stress=deltastress;
+    
+    
+    TPZLadeKim LK2;
+    TPZLadeKim::FineSilicaSand(LK2);
+    
+    int length2 =20;
+    for(int step=0;step<length2;step++)
+    {
+        cout << "\nstep "<< step;
+        LK2.ApplyLoad(stress,strain);
+        LK2.ApplyStrainComputeDep(strain, stress, Dep);
+        outfiletxt1 << fabs(strain.I1()) << " " << fabs(stress.XX()/stress.ZZ()) << "\n";
+        stress += deltastress;
+        cout << "strain = "<<strain <<"\n";
+        cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
+        
+    }
+    
+}
+
+
+
+
+inline void LKLoadingTest()
+{
+    
+    ofstream outfiletxt1("FineSilica.txt");
+    ofstream outfiletxt2("PlainConcretee1.txt");
+    ofstream outfiletxt3("PlainConcretee2.txt");
+    ofstream outfiletxt4("PlainConcretee3.txt");
+    ofstream outfiletxt5("SDMcCormicRanchSand.txt");
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    
+    
+    
+    
+    deltastress.XX() = -0.001;
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -0.001;
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -0.001;
+    stress = deltastress;
+    
+    TPZLadeKim LK;
+    
+    TPZLadeKim::FineSilicaSand(LK);
+    //    LK.ApplyLoad(stress,deltastrain);
+    
+    deltastress.XX() = -4.;
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -4.;
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -4.;
+    stress = deltastress;
+    
+    
+    //    deltastrain.XX() = -0.0001;
+    //    deltastrain.XY() = 0.;
+    //    deltastrain.XZ() = 0.;
+    //    deltastrain.YY() = -0.0001;
+    //    deltastrain.YZ() = 0.;
+    //    deltastrain.ZZ() = -0.0001;
+    //    strain=deltastrain;
+    
+    int length =72;
+    for(int step=0;step<length;step++)
+    {
+        cout << "\nstep "<< step;
+        if(step == 69)deltastress *=-1.;
+        LK.ApplyLoad(stress,strain);
+        //        if(step == 16)deltastrain *=-1.;
+        //        LK.ApplyStrainComputeDep(strain, stress,Dep);
+        if(step==0)
+        {
+            
+            //outfiletxt1 << 0. << " " << 0. << "\n";
+            
+        }
+        
+        else
+        {
+            
+            outfiletxt1 << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+            
+        }
+        
+        //        deltastress.Multiply(1.1, 1.);
+        stress +=  deltastress;
+        //        strain +=deltastrain;
+        cout << "strain = "<<strain <<"\n";
+        cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
+        
+    }
+    
+    
+    deltastrain.XX() = -0.0001;
+    deltastrain.XY() = 0.;
+    deltastrain.XZ() = 0.;
+    deltastrain.YY() = -0.;
+    deltastrain.YZ() = 0.;
+    deltastrain.ZZ() = -0.;
+    strain=deltastrain;
+    TPZLadeKim LK2;
+    TPZLadeKim::PlainConcrete(LK2);
+    
+    int length2 =30;
+    for(int step=0;step<length2;step++)
+    {
+        cout << "\nstep "<< step;
+        //    if(step == 10 || step == 16|| step == 40 || step==51 || step==80)deltastrain *=-1.;
+        LK2.ApplyStrainComputeDep(strain, stress,Dep);
+        outfiletxt2 << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+        outfiletxt3 << fabs(strain.YY()) << " " << fabs(stress.XX()) << "\n";
+        outfiletxt4 << fabs(strain.ZZ()) << " " << fabs(stress.XX()) << "\n";
+        strain += deltastrain;
+        cout << "strain = "<<strain <<"\n";
+        cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
+        
+    }
+    
+    TPZSandlerDimaggio SD;
+    TPZSandlerDimaggio::McCormicRanchSand(SD);
+    
+    deltastrain.XX() = -0.005;
+    deltastrain.XY() = 0.;
+    deltastrain.XZ() = 0.;
+    deltastrain.YY() = -0.;
+    deltastrain.YZ() = 0.;
+    deltastrain.ZZ() = -0.;
+    strain=deltastrain;
+    
+    int length3 =23;
+    for(int step=0;step<length3;step++)
+    {
+        cout << "\nstep "<< step;
+        if(step == 14 )deltastrain *=-1.;
+        SD.ApplyStrainComputeDep(strain, stress,Dep);
+        outfiletxt5 << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+        strain += deltastrain;
+        cout << "strain = "<<strain <<"\n";
+        cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
+        
+    }    
+    
+    
+}
+
+
+
+//int main()
+//{
+//
+//    
+//    
+//    
+//    PressureCilinder();
+//    return 0;
+//}
+
+
+inline void DruckerIsotropicCompression()
+{
+    TPZDruckerPrager DP;
+    ofstream outfiletxt("DruckerPragerIsotropicCompression.txt");
+    cout << "\n Put the value of strain you want to add in each step of your loat test: (sugg. 0.0001)";
+    REAL straininput;
+    cin >> straininput;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    TPZTensor<REAL> deltastrain,strain,stress,deltastress;
+    deltastrain.XX() = -straininput;
+    deltastrain.XY() = 0.;
+    deltastrain.XZ() = 0.;
+    deltastrain.YY() = -straininput;
+    deltastrain.YZ() = 0.;
+    deltastrain.ZZ() = -straininput;
+    strain=deltastrain;
+    
+    cout << "\n4 - Put the material parameters you want";
+    
+    cout << "\n Young modulus (sugg. 20000.)";
+    REAL E;
+    cin >> E;
+    
+    cout << "\n Poisson (sugg. 0.2)";
+    REAL poisson;
+    cin >> poisson;
+    
+    int mcfit;
+    cout << "\n choose 0 for Iner Morh-Coulomb fit or 1 for outer Morh-Coulomb Fit (sugg. 0) ";
+    cin >> mcfit;
+    
+//    if(mcfit!= 0 || mcfit!= 1)
+//    {
+//        cout << "\n wrong choice in Morh-Coulomb fit tipe 0 or 1";
+//        return;
+//    }
+    
+    REAL phi;
+    cout << "\n Type the internal frictional angle in degrees(sugg. 20.)";
+    cin >> phi;
+    
+    REAL c;
+    cout << "\n Type the material coesion (sugg. 9.)";
+    cin >> c;
+    
+    REAL h;
+    cout << "\n Type the material hardening modulus (sugg. 1000.)";
+    cin >> h;
+    
+    DP.fYC.SetUp(phi/180. *M_PI ,mcfit);
+    DP.fTFA.SetUp(c,h);
+    DP.fER.SetUp(E,poisson);
+    
+    int length =100;
+    for(int step=0;step<length;step++)
+    {
+        cout << "\nstep "<< step;    
+        DP.ApplyStrainComputeDep(strain, stress, Dep);
+        strain += deltastrain;
+        outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+    }
+    
+}
+
+inline void DruckerBiaxialTest()
+{
+    TPZDruckerPrager DP;
+    ofstream outfiletxt("DruckerBiaxialTest.txt");
+    cout << "\n Put the value of strain you want to add in each step of your loat test: (sugg. 0.0001)";
+    REAL straininput;
+    cin >> straininput;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    TPZTensor<REAL> deltastrain,strain,stress,deltastress;
+    deltastrain.XX() = -straininput;
+    deltastrain.XY() = 0.;
+    deltastrain.XZ() = 0.;
+    deltastrain.YY() = -straininput/0.52;
+    deltastrain.YZ() = 0.;
+    deltastrain.ZZ() = 0.;
+    strain=deltastrain;
+    
+    cout << "\n4 - Put the material parameters you want";
+    
+    cout << "\n Young modulus (sugg. 20000.)";
+    REAL E;
+    cin >> E;
+    
+    cout << "\n Poisson (sugg. 0.2)";
+    REAL poisson;
+    cin >> poisson;
+    
+    int mcfit;
+    cout << "\n choose 0 for Iner Morh-Coulomb fit or 1 for outer Morh-Coulomb Fit (sugg. 0) ";
+    cin >> mcfit;
+    
+    //    if(mcfit!= 0 || mcfit!= 1)
+    //    {
+    //        cout << "\n wrong choice in Morh-Coulomb fit tipe 0 or 1";
+    //        return;
+    //    }
+    
+    REAL phi;
+    cout << "\n Type the internal frictional angle in degrees(sugg. 20.)";
+    cin >> phi;
+    
+    REAL c;
+    cout << "\n Type the material coesion (sugg. 9.)";
+    cin >> c;
+    
+    REAL h;
+    cout << "\n Type the material hardening modulus (sugg. 1000.)";
+    cin >> h;
+    
+    DP.fYC.SetUp(phi/180. *M_PI ,mcfit);
+    DP.fTFA.SetUp(c,h);
+    DP.fER.SetUp(E,poisson);
+    
+    int length =100;
+    for(int step=0;step<length;step++)
+    {
+        cout << "\nstep "<< step;    
+        DP.ApplyStrainComputeDep(strain, stress, Dep);
+        strain += deltastrain;
+        outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+    }
+    
+}
+
+
+inline void LKBiaxialTest()
+{
+    TPZTensor<REAL> stress, strain, deltastress, deltastrain;
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    
+    cout << "\n Put the value of stress you want to put sx ";
+    REAL stressinputx;
+    cin >> stressinputx;
+    
+    cout << "\n Put the value of stress you want to put sy ";
+    REAL stressinputy;
+    cin >> stressinputy;
+    
+    cout << "\n Put the value of stress you want to put sz ";
+    REAL stressinputz;
+    cin >> stressinputz;
+    
+    deltastress.XX() = -stressinputx;
+    deltastress.XY() = 0.;
+    deltastress.XZ() = 0.;
+    deltastress.YY() = -stressinputy;
+    deltastress.YZ() = 0.;
+    deltastress.ZZ() = -stressinputz;
+    stress=deltastress;
+    
+    cout << "Choose the material pareameters you want to set to Lade Kim Test :";
+    cout << "\n0 - Plain Concrete ";
+    cout << "\n1 - Loose Sacramento River Sand ";
+    cout << "\n2 - Dense Sacramento River Sand ";
+    cout << "\n3 - Fine Silica Sand";
+    cout << "\n4 - Put the material parameters you want";
+    int choice;
+    cin >> choice;
+    
+    cout << "\n Put the numbers of steps you want: (sugg. 20)";
+    int length;
+    cin >> length;
+    
+    TPZLadeKim LK2;
+    switch (choice) {
+        case(0):
+        {
+            TPZLadeKim::PlainConcrete(LK2);
+            std::ofstream outfiletxt1("BiaxialXTPZLadeKimPlainConcrete.txt");
+            std::ofstream outfiletxt2("BiaxialYTPZLadeKimPlainConcrete.txt");
+            std::ofstream outfiletxt3("BiaxialZTPZLadeKimPlainConcrete.txt");
+            LK2.ApplyLoad(stress, strain);
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                LK2.ApplyLoad(stress, strain);
+                outfiletxt1 << -strain.XX() << " " << fabs(stress.XX()/14.7) << "\n";
+                outfiletxt2 << -strain.YY() << " " << fabs(stress.XX()/14.7) << "\n";
+                outfiletxt3 << -strain.ZZ() << " " << fabs(stress.XX()/14.7) << "\n";
+                stress += deltastress;
+            }
+            break;
+        }
+        case(1):
+        {
+            TPZLadeKim::LooseSacrRiverSand(LK2);
+            std::ofstream outfiletxt1("BiaxialXTPZLadeKimLooseSacrRiverSand.txt");
+            std::ofstream outfiletxt2("BiaxialYTPZLadeKimLooseSacrRiverSand.txt");
+            std::ofstream outfiletxt3("BiaxialZTPZLadeKimLooseSacrRiverSand.txt");
+            LK2.ApplyLoad(stress, strain);
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                LK2.ApplyLoad(stress, strain);
+                outfiletxt1 << strain.XX() << " " << fabs(stress.XX()) << "\n";
+                outfiletxt2 << strain.YY() << " " << fabs(stress.XX()) << "\n";
+                outfiletxt3 << strain.ZZ() << " " << fabs(stress.XX()) << "\n";
+                stress += deltastress;
+            }
+            break;
+        }
+        case(2):
+        {
+            TPZLadeKim::DenseSacrRiverSand(LK2);
+            std::ofstream outfiletxt("TPZLadeKim::DenseSacrRiverSand.txt");
+            LK2.ApplyLoad(stress, strain);
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.YY()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.ZZ()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        case(3):
+        {
+            TPZLadeKim::FineSilicaSand(LK2);
+            std::ofstream outfiletxt("TPZLadeKim::FineSilicaSand.txt");
+            LK2.ApplyLoad(stress, strain);
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.YY()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.ZZ()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        case(4):
+        {
+            cout << "\n poisson (sugg. 0.18)";
+            REAL poisson;// = 0.18;
+            cin>>poisson; 
+            
+            cout << "\n M (sugg. 361800.)";
+            REAL M;//       = 361800.;
+            cin >> M;
+            
+            cout << "\nlambda (sugg. 0.)";
+            REAL lambda;//  = 0.;
+            cin >> lambda;
+            
+            cout << "\n a (sugg. 28.5)";
+            REAL a;//       = 28.5;
+            cin >> a;
+            
+            cout << "\n m (sugg. 1.113)";
+            REAL m;//       = 1.113;
+            cin >> m;
+            
+            cout << "\n neta1 (sugg. 159800.)";
+            REAL neta1;//   = 159800.;
+            cin >> neta1;
+            
+            cout << "\n ksi2 (sugg. -2.92)";
+            REAL ksi2; //   = -2.92;
+            cin >> ksi2;
+            
+            cout << "\n mu (sugg. 5.06)";
+            REAL mu;//     = 5.06;
+            cin >> mu;
+            
+            cout << "\n C (sugg. 0.712E-12)";
+            REAL C;//       = 0.712E-12;
+            cin >> C;
+            
+            cout << "\n p (sugg. 3.8)";
+            REAL p;//       = 3.8;
+            cin >> p;
+            
+            cout <<"\n h (sugg. 1.990) ";
+            REAL h;//       = 1.990;
+            cin >> h;
+            
+            cout << "\n alpha (sugg. 0.75) ";
+            REAL alpha;//   = 0.75;
+            cin >> alpha;
+            
+            cout << "\n pa (sugg. 14.7) ";
+            REAL pa;//      = 14.7;
+            cin >> pa;
+            
+            REAL restol;
+            cout << "\n Tolerance (sugg. 0.0001) ";
+            cin >> restol;
+            
+            LK2.fResTol = restol;
+            
+            LK2.SetUp(poisson, M, lambda,
+                      a, m, neta1,
+                      ksi2, mu,
+                      C, p,
+                      h, alpha,
+                      pa);
+            std::ofstream outfiletxt("TPZLadeKim::YOURMODEL.txt");
+            for(int step=0;step<length;step++)
+            {
+                cout << "\nstep "<< step;
+                LK2.ApplyStrainComputeDep(strain, stress,Dep);
+                outfiletxt << fabs(strain.XX()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.YY()) << " " << fabs(stress.XX()) << "\n";
+                outfiletxt << fabs(strain.ZZ()) << " " << fabs(stress.XX()) << "\n";
+                strain += deltastrain;
+                
+            }
+            break;
+        }
+        default:
+        {
+            cout << "Unknown Test Type. Exiting...";
+            break;
+        }
+    }
+    
+    
+    
+    
+}
+
+
+//inline void MaterialPointTests()
+//{
+//    
+//    cout << "\nChoose Plasticity test:";
+//    cout << "\n0 - Isotropic compression ";
+//    cout << "\n1 - Biaxial Tests ";
+//    cout << "\n2 - Uniaxial traction ";
+//    cout << "\n";
+//    int choice;
+//    cin >> choice;
+//    
+//    switch(choice)
+//    {
+//        case(0):
+//            cout << "\n Choose the Plastic model tou need to run Isotropic compression: ";
+//            cout << "\n0 - Lade - Kim ";
+//            cout << "\n1 - Sandler Dimaggio ";
+//            cout << "\n2 - Drucker Prager ";
+//            cout << "\n";
+//            int choice2;
+//            cin >> choice2;
+//            switch(choice2)
+//        {
+//            case(0):
+//                TPZPlasticTest::LKIsotropicCompression();
+//                break;
+//            case(1):
+//                TPZPlasticTest::SandlerDimaggioIsotropicCompression();
+//                break;
+//            case(2):
+//                TPZPlasticTest::DruckerIsotropicCompression();
+//                break;
+//        }
+//            
+//            
+//            break;
+//        case(1):
+//            TPZPlasticTest::LKBiaxialTest();
+//            break;
+//        case(2):
+//            cout << "NOT IMPLEMENTED YET";
+//            //    LadeKim_ReversalTest();
+//            break;
+//        default:
+//            cout << "Unknown Test Type. Exiting...";
+//    }
+//    
+//}
 
 
 
@@ -433,16 +1532,29 @@ inline void TPZPlasticTest::StrainTest(T & plasticModel, const char * filename, 
 	
 	for(i = 0; i < nsteps; i++)
 	{
-		TPZTensor<REAL> tempStrain(strainPath[i]);
+        TPZTensor<REAL> tempStrain(strainPath[i]);
 		for(j=0;j<6;j++)tempStrain.fData[j]*=strainMultiplier;
 		if(i > 1)stressPath[i] = stressPath[i-1];
 		
 		plasticModel.ApplyStrain(tempStrain);
-		plasticModel.Sigma(tempStrain, stressPath[i], tangent);
+		plasticModel.ApplyStrainComputeDep(tempStrain, stressPath[i], tangent);
 		
-		TPZTensor<REAL> epsp;
-		plasticModel.GetPlasticStrain(epsp);
-		REAL alpha = plasticModel.GetAlpha();
+        TPZPlasticState<REAL> state = plasticModel.GetState();
+        TPZTensor<REAL> epsp(state.EpsP());
+        REAL alpha=state.Alpha();
+        
+        
+//		TPZTensor<REAL> tempStrain(strainPath[i]);
+//		for(j=0;j<6;j++)tempStrain.fData[j]*=strainMultiplier;
+//		if(i > 1)stressPath[i] = stressPath[i-1];
+//		plasticModel.ApplyStrain(tempStrain);
+//		plasticModel.Sigma(tempStrain, stressPath[i], tangent);
+//		TPZTensor<REAL> epsp;
+//		plasticModel.GetPlasticStrain(epsp);
+//		REAL alpha = plasticModel.GetAlpha();
+        
+        
+        
 		std::stringstream outputLine;
 		outputLine << "step " << i << ", imposedEps: " << strainPath[i] 
 		<< ", sigma: " << stressPath[i]
@@ -495,11 +1607,12 @@ inline void TPZPlasticTest::LoadTest(const char * filename)
 		cout << "\nFile not open.\nExiting...\n";
 		return;
 	}
-	
-	//reading test description line
+    
+	////reading test description line
 	file.getline(line, linelen);
 	strncpy(outfilename, filename, 120);
-	strcpy(outfilename+strlen(outfilename), ".out");
+	////strcpy(outfilename+strlen(outfilename), ".out");
+    strcpy(outfilename+strlen(outfilename), ".txt");
 	
 #ifdef LOG4CXX_PLASTICITY
 	{
@@ -569,13 +1682,21 @@ inline void TPZPlasticTest::LoadTest(const char * filename)
 			
 			std::stringstream outputLine;
 			
-			outputLine << "stress step " << j 
-			<< ", strain: " << strain 
-			<< ", stress: " << stress
-			<< ", epsP = " << strainP
-			<< ", alpha = " << pPlasticModel->GetState().fAlpha
-			<< ", integrationSteps = " << pPlasticModel->IntegrationSteps() << endl; 		 
-			
+//			outputLine << "stress step " << j 
+//			<< ", strain: " << strain.XX() 
+//			<< ", stress: " << stress.XX()
+//			<< ", epsP = " << strainP
+//			<< ", alpha = " << pPlasticModel->GetState().fAlpha
+//			<< ", integrationSteps = " << pPlasticModel->IntegrationSteps() << endl; 
+            cout
+			<< " " << strain.XX() 
+			<< " " << stress.XX() << endl; 
+            
+            
+            outputLine 
+			<< " " << strain.XX() 
+			<< " " << stress.XX() << endl; 
+            
 			outFile << outputLine.str();
 			outFile.flush();
 #ifdef LOG4CXX_PLASTICITY
@@ -608,15 +1729,26 @@ inline void TPZPlasticTest::LoadTest(const char * filename)
 			
 			tempStress.CopyTo(stress);
 			for(i = 0; i < 6; i++)stress.fData[i]/=stressMultiplier;		 
-			
-			std::stringstream outputLine;
-			
-			outputLine << "stress step " << j 
-			<< ", strain: " << strain 
-			<< ", stress: " << stress
-			<< ", epsP = " << strainP
-			<< ", alpha = " << pPlasticModel->GetState().fAlpha
-			<< ", integrationSteps = " << intSteps << endl; 	
+
+            
+            std::stringstream outputLine;
+            
+		
+//			outputLine << "stress step " << j 
+//			<< ", strain: " << strain.XX() 
+//			<< ", stress: " << stress.XX()
+//			<< ", epsP = " << strainP
+//			<< ", alpha = " << pPlasticModel->GetState().fAlpha
+//			<< ", integrationSteps = " << intSteps << endl; 
+            
+            cout
+			<< " " << strain.XX() 
+			<< " " << stress.XX() << endl; 
+            
+            
+            outputLine 
+			<< " " << strain.XX() 
+			<< " " << stress.XX() << endl; 
 			
 			outFile << outputLine.str();
 			outFile.flush();
@@ -1213,7 +2345,7 @@ inline void TPZPlasticTest::WillamWarnkeTest()
 
 
 #include <math.h>
-inline void RotationMatrix(TPZFMatrix &R, double thetaRad, int axis)
+inline void RotationMatrix(TPZFMatrix<REAL> &R, double thetaRad, int axis)
 {
 	R.Resize(3,3);
 	
@@ -1263,6 +2395,111 @@ inline void RotationMatrix(TPZFMatrix &R, double thetaRad, int axis)
 }
 
 
+template <class T>
+inline void MultiDirectionsMaterialPointTest(T & plasticModel)
+{
+    
+    std::ifstream input("../SnubDodecahedron.txt");
+    
+	int sizedirs;
+	input >>sizedirs; 
+	TPZFMatrix<REAL> directions(sizedirs,3,0.);
+	
+	TPZTensor<REAL> DiagonalStress,epst,epsp,DeltaDiagonalStress;
+	int nyield = plasticModel.NYield;
+	
+	TPZVec<REAL>  funcs(nyield);
+    TPZFNMatrix<6*6> Dep(6,6,0.);
+    REAL coordxx,coordyy,coordzz;
+	for(int i=0;i<sizedirs;i++)
+	{
+
+        input >> coordxx >> coordyy >> coordzz;
+        DiagonalStress.XX()=coordxx;
+        DiagonalStress.YY()=coordyy;
+        DiagonalStress.ZZ()=coordzz;
+        DiagonalStress*=1.;
+        
+        plasticModel.ApplyLoad(DiagonalStress,epst);
+//        TPZPlasticState<REAL> stateN =  plasticModel.GetState();
+//        TPZPlasticState<REAL> stateN1;
+//        plasticModel.FindPointAtYield(epst,stateN1);
+
+ //       cout << "\n stateN " << stateN << endl;
+  //      cout << "\n stateN1 " << stateN1 << endl;
+        
+        bool Plastifica = false;
+        
+#ifdef LOG4CXX
+        {
+            
+            std::stringstream sout;
+            sout << " \n Dep = " << Dep << endl;
+            sout << " \n DIRECTION Number = " << i << "\n " <<endl;
+            sout << " \n DiagonalStress = " << DiagonalStress << "\n " <<endl;
+            LOGPZ_INFO(plasticIntegrLogger,sout.str());
+        }
+#endif
+        int count =0;
+        
+		do{
+        
+			
+            //epst*=1.1;
+            DiagonalStress*=1.1;
+            cout << " \ncount "<< count << endl;
+            cout << "\n DiagonalStress " << DiagonalStress << endl;
+            cout << "\n epsT " << epst << endl;
+            cout << "\n funcs " << funcs << endl;
+            plasticModel.Phi(epst, funcs);
+            //plasticModel.ApplyStrainComputeDep(epst,DiagonalStress,Dep);
+            plasticModel.ApplyLoad(DiagonalStress,epst);
+
+         //   Dep.VerifySymmetry();
+#ifdef LOG4CXX
+			{
+				
+				std::stringstream sout;
+                
+            
+                sout << " \n\n While loop number  = " << count << endl;
+				sout << " \n\n Dep = " << Dep << endl;
+				sout << " \n\n funcs = " << funcs <<"\n"<< endl;
+				sout << " \n\n DiagonalStressInsideWhile = " << DiagonalStress <<endl;
+                sout<< "\nvector"<<count<<" = {" << DiagonalStress.XX()<<","<<DiagonalStress.YY()<<","<<DiagonalStress.ZZ()<< "};" << endl;
+				sout << " \n fTFA = " << plasticModel.fTFA.Compute( plasticModel.GetState().Alpha() ) <<endl;
+				sout << " \n Alpha() = " << plasticModel.GetState().Alpha() << endl;
+				sout << " \n epst = " << plasticModel.GetState().EpsT() <<endl;
+				sout << " \n epsP = " << plasticModel.GetState().EpsP() <<endl;
+                sout << "\n Dep  = " << Dep << endl;
+             
+				LOGPZ_INFO(plasticIntegrLogger,sout.str());
+			}
+#endif
+            if(funcs[0] < -1000.)break;
+             
+            for(int j = 0;j<nyield;j++)
+            {
+                if(funcs[j]>=0.)
+                {
+                    Plastifica = true;
+                }
+               
+            }
+            count++;
+        }while(Plastifica==false);
+#ifdef LOG4CXX
+        {
+            
+            std::stringstream sout;
+            sout << " ######## saindo do while  =####### "<< endl;
+            LOGPZ_INFO(plasticIntegrLogger,sout.str());
+        }
+#endif
+	}
+        
+}
+
 
 //Metodo que aplica a tensao e calcula a deformacao de um estado de tensoes um pouco fora da zona elastica.
 //Este metodo tambem rotaciona este estado de tensoes de forma a cobrir toda a superficie do plano em questao oriunda das constantes materiais escolhida pelo usuario.
@@ -1274,10 +2511,10 @@ template <class T>
 inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 {
 	
-	std::ifstream input("SnubDodecahedron.txt");
+	std::ifstream input("../SnubDodecahedron.txt");
 	int sizedirs;
 	input >>sizedirs; 
-	TPZFMatrix directions(sizedirs,3,0.);
+	TPZFMatrix<REAL> directions(sizedirs,3,0.);
 	
 	TPZTensor<REAL> DiagonalStress,epst,epsp;
 	
@@ -1301,7 +2538,7 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 	int checkForcedYield;
 	
 	
-	
+	REAL pa = 14.7;
 	
 	for(int i=0;i<sizedirs;i++)
 	{
@@ -1318,12 +2555,14 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 			REAL coordxx,coordyy,coordzz;
 			input >> coordxx >> coordyy >> coordzz;
 		
-			DiagonalStress.XX()=coordxx;
-			DiagonalStress.YY()=coordyy;
-			DiagonalStress.ZZ()=coordzz;
-			DiagonalStress*=0.5;
+			DiagonalStress.XX()=pa*coordxx;
+			DiagonalStress.YY()=pa*coordyy;
+			DiagonalStress.ZZ()=pa*coordzz;
+			//DiagonalStress*=0.5;
 			cout << " i "<< i <<endl;
 			T plasticModelCopy(mat);
+            
+          //  plasticModelCopy.ApplyLoad(DiagonalStress,epst);
 #ifdef LOG4CXX
 		{
 			std::stringstream sout;
@@ -1339,8 +2578,8 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 			//PHIS MAIORES DO QUE ZERO SEMPRE com 1.1 nao comentado
 			plasticModelCopy.fYC.Compute(DiagonalStress,plasticModelCopy.fTFA.Compute( plasticModelCopy.GetState().Alpha() ),funcs,checkForcedYield);
 			plasticModelCopy.ApplyLoad(DiagonalStress,epst);
-			TPZFNMatrix<6*6> Dep(6,6,0.);
-			plasticModelCopy.ApplyStrainComputeDep(plasticModelCopy.GetState().EpsT(),DiagonalStress,Dep);
+		//	TPZFNMatrix<6*6> Dep(6,6,0.);
+		//	plasticModelCopy.ApplyStrainComputeDep(plasticModelCopy.GetState().EpsT(),DiagonalStress,Dep);
 			DiagonalStress*=1.1;
 
 			
@@ -1349,7 +2588,7 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 			{
 				
 				std::stringstream sout;
-				sout << " \n Dep = " << Dep << endl;
+	//			sout << " \n Dep = " << Dep << endl;
 				sout << " \n funcs[0] = " << funcs[0] << endl;
 				sout << " \n DiagonalStress = " << DiagonalStress <<endl;
 				sout << " \n fTFA = " << plasticModelCopy.fTFA.Compute( plasticModelCopy.GetState().Alpha() ) <<endl;
@@ -1388,11 +2627,11 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 		Range = input * (1./19.);
 		TPZVec< REAL > Coefs(1,1.);
 		TPZPlasticTest test;
-		CheckConvergence(test, input, Range, Coefs);
+	//	CheckConvergence(test, input, Range, Coefs);
 		
 		epst = plasticModelCopy.GetState().EpsT();
 	
-	//	GlobalCheckConv(plasticModelCopy, epst, 0.0001);
+		GlobalCheckConv(plasticModelCopy, epst, 0.0001);
 		
 		
 		/*
@@ -1421,7 +2660,7 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 	
 	TPZVec<REAL>  funcs(nyield);
 	int checkForcedYield;
-	TPZFMatrix sigma1(3,1,0.);//Cria um vetor no espaco das tensoes principais que quase ultrapassa a superficie de plastificacao
+	TPZFMatrix<REAL> sigma1(3,1,0.);//Cria um vetor no espaco das tensoes principais que quase ultrapassa a superficie de plastificacao
 	
 	REAL thetatotal = 2.* M_PI;
 	REAL theta = 0.;
@@ -1456,7 +2695,7 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 		for(int i=0;i<thetaintervals;i++)
 		{
 			
-			TPZFMatrix R,resp;
+			TPZFMatrix<REAL> R,resp;
 			TPZFNMatrix<6> Dep(6,6,0.);
 			RotationMatrix(R, theta,rotateaboutaxes);
 			R.Multiply(sigma1,resp);
@@ -1499,10 +2738,10 @@ inline void TPZPlasticTest::PlasticIntegratorCheck(int thetaintervals, T mat)
 inline void TPZPlasticTest::DruckerTest()
 {
 	
-	ofstream outfiletxt1("e1LK.txt");
-	ofstream outfiletxt2("e2LK.txt");
-	ofstream outfiletxt3("e3LK.txt"); 
-    ofstream outfiletxt4("VolLK.txt"); 	
+	ofstream outfiletxt1("e1dp052NewThermoAModulusCorrected.txt");
+	ofstream outfiletxt2("e2dp052NewThermoAModulusCorrected.txt");
+	ofstream outfiletxt3("e3dp052NewThermoAModulusCorrected.txt"); 
+    ofstream outfiletxt4("Voldp052NewThermoAModulusCorrected.txt"); 	
 	TPZTensor<REAL> stress, strain, deltastress, deltastrain;
 //
 //	deltastress.XX() = -0.5;
@@ -1512,12 +2751,12 @@ inline void TPZPlasticTest::DruckerTest()
 //	deltastress.YZ() = -0.001;
 //	deltastress.ZZ() = -0.001;
 	
-	deltastress.XX() = -0.1;
-	deltastress.XY() = -0.001;
-	deltastress.XZ() = -0.003;
-	deltastress.YY() = -0.15;
-	deltastress.YZ() = -0.0015;
-	deltastress.ZZ() = -0.17;
+	deltastress.XX() = -60.;
+	deltastress.XY() = -0.;
+	deltastress.XZ() = -0.;
+	deltastress.YY() = -0.;
+	deltastress.YZ() = -0.;
+	deltastress.ZZ() = -3.18;
 	
 	
 	
@@ -1543,12 +2782,12 @@ inline void TPZPlasticTest::DruckerTest()
 	/*innerMCFit = 0*/
 	/*OuterMCFit = 1*/
 	DP.fYC.SetUp(/*phi=20*/ 20./180. * pi ,/*MCFit*/0);
-	REAL coesao = 9.2376;
-	DP.fTFA.SetUp(/*yield- coesao inicial correspondeno a fck igual 32 Mpa */ coesao, /*k Modulo de hardening da coesao equivante 1 Mpa a cada 0.1% de deformacao */1000.);
-	DP.fER.SetUp(/*young*/ 20000., /*poisson*/ 0.2);
+	REAL coesao = 1351;//PSI//9.2376;
+	DP.fTFA.SetUp(/*yield- coesao inicial correspondeno a fck igual 32 Mpa */ coesao, /*k Modulo de hardening da coesao equivante 1 Mpa a cada 0.1% de deformacao */1.);
+	DP.fER.SetUp(/*young*/5318389., /*poisson*/ 0.18);
 	
 //	LK.Print(cout);
-	LK.ApplyLoad(stress, strain);
+	DP.ApplyLoad(stress, strain);
 	
 //	deltastress.XX() = -0.8;
 //	deltastress.XY() = -0.001;
@@ -1556,24 +2795,29 @@ inline void TPZPlasticTest::DruckerTest()
 //	deltastress.YY() = -0.001;
 //	deltastress.YZ() = -0.001;
 //	deltastress.ZZ() = -0.001;
-	deltastress.XX() = -1000.;
-	deltastress.XY() = -0.001;
-	deltastress.XZ() = -0.003;
-	deltastress.YY() = -0.15;
-	deltastress.YZ() = -0.0015;
-	deltastress.ZZ() = -0.17;
+//	deltastress.XX() = -1000.;
+//	deltastress.XY() = -0.001;
+//	deltastress.XZ() = -0.003;
+//	deltastress.YY() = -0.15;
+//	deltastress.YZ() = -0.0015;
+//	deltastress.ZZ() = -0.17;
 	stress = deltastress;
 	
-	int length =30;
+	int length =100;
 	for(int step=0;step<length;step++)
 	{
+        /*if(step == 40 || step == 80){
+        
+            deltastress*=-1.;
+        
+        }*/
 		cout << "\nstep "<< step;	
-		LK.ApplyLoad(stress,strain);
+		DP.ApplyLoad(stress,strain);
 		REAL pa = stress.I1()/3.;
 		outfiletxt1 << strain.XX() << " " << fabs(stress.XX()) << "\n";
 		outfiletxt2 << strain.YY() << " " << fabs(stress.XX()) << "\n";
 		outfiletxt3 << strain.ZZ() << " " << fabs(stress.XX()) << "\n"; 
-		outfiletxt4 << strain.I1() << " " << fabs(stress.XX()) << "\n"; 
+		outfiletxt4 << strain.I1() << " " << fabs(stress.I1()) << "\n"; 
 		stress += deltastress;
 		cout << "strain = "<<strain <<"\n";
 		cout << "sigma = "<< stress <<"\t "<< "I1 = "<< stress.I1() <<"\n";
@@ -1733,8 +2977,8 @@ inline void TPZPlasticTest::UndocumentedTest4()
 	TPZVec<TFAD> res_FAD(2);
 	TPZVec<TPZTensor<REAL> > NDir(2);
 	
-	YCSD.N(sigma, A, NDir);
-	YCSD.Compute(sigma_FAD, A_FAD, res_FAD);
+	YCSD.N(sigma, A, NDir,0);
+	YCSD.Compute(sigma_FAD, A_FAD, res_FAD,0);
 	
 	cout << "\nNDir = " << NDir;
 	cout << "\nres_FAD = " << res_FAD;

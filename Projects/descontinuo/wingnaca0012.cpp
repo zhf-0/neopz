@@ -223,7 +223,7 @@ int main() {
 			//TPZSpStructMatrix stiff(cmesh);
 			an.SetStructuralMatrix(stiff);
 			an.Solution().Zero();
-			TPZStepSolver solver;
+			TPZStepSolver<REAL> solver;
 			solver.SetDirect(ELDLt);//ELU, ECholesky
 			an.SetSolver(solver);
 			if(1){
@@ -590,12 +590,12 @@ TPZMaterial *Wing2d(int grau,TPZStack<TPZGeoElSide> &elembc){
 	
 	int dim = 2;
 	TPZMaterial *mat = (TPZEulerConsLaw *) new TPZEulerConsLaw(nummat,delta_t,gama,dim,artdiff);
-	mat->SetForcingFunction(Function);
+	DebugStop(); //mat->SetForcingFunction(Function);
 	cmesh->InsertMaterialObject(mat);
 	
 	// boundary conditions
 	TPZBndCond *bc;
-	TPZFMatrix val1(4,4),val2(4,1);
+	TPZFMatrix<REAL> val1(4,4),val2(4,1);
 	
 	//CC : a vizinhan�a geometrica foi preenchida
 	val1.Zero();
@@ -698,12 +698,12 @@ TPZMaterial *Wing3d(int grau,TPZStack<TPZGeoElSide> &elembc){
 	
 	int dim = 3;
 	TPZMaterial *mat = (TPZEulerConsLaw *) new TPZEulerConsLaw(nummat,delta_t,gama,dim,artdiff);
-	mat->SetForcingFunction(Function);
+	DebugStop(); //mat->SetForcingFunction(Function);
 	cmesh->InsertMaterialObject(mat);
 	
 	// boundary conditions
 	TPZBndCond *bc;
-	TPZFMatrix val1(5,4),val2(5,1);
+	TPZFMatrix<REAL> val1(5,4),val2(5,1);
 	
 	//CC : a geometric neighboard was filled
 	val1.Zero();

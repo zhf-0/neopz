@@ -33,11 +33,59 @@ void FillFractureDotsExampleCrazy(TPZVec<REAL> &fractureDots);
 
 #include "TPZTimer.h"
 
+/** Exemplo da utilizacao da quadratura adaptativa (integral adaptativa) */
+/*
+
+#include "adapt.h"
+
+class funcao
+{
+public:
+    
+    funcao()
+    {
+        
+    }
+    ~funcao()
+    {
+        
+    }
+    double operator()(double x)
+    {
+        double val = this->func(x);
+        return val;
+    }
+    
+    static REAL func(REAL x)
+    {
+        REAL val = sin(log10(x) + x*4.*atan(1.))*x*x;
+        return val;
+    }
+};
+
+int main(int argc, char * const argv[])
+{
+    Adapt intRule(1.E-100);
+    
+    funcao funcaoOBJ;
+    
+    const REAL a = 2.;
+    const REAL b = 10.;
+    double integr = intRule.integrate(funcaoOBJ,a,b);
+    
+    std::cout.precision(16);
+    std::cout << std::endl << integr << std::endl;
+    
+    return 0;
+}
+*/
+
 int main(int argc, char * const argv[])
 {	
     std::cout << "\e";
     TPZTimer readRef("ReadingRefPatterns");
-    readRef.start();    
+    readRef.start();
+    
     //#define writeAgain
     #ifdef writeAgain
         gRefDBase.InitializeRefPatterns();
@@ -45,6 +93,7 @@ int main(int argc, char * const argv[])
         std::ifstream inRefP("RefPatternsUsed.txt");
         gRefDBase.ReadRefPatternDBase("RefPatternsUsed.txt");
     #endif
+    
     readRef.stop();
     std::cout << "DeltaT leitura refpatterns = " << readRef.seconds() << " s" << std::endl;
     
@@ -79,20 +128,6 @@ int main(int argc, char * const argv[])
     
     clockIni2.stop();
     std::cout << "DeltaT get fracture cmesh = " << clockIni2.seconds() << " s" << std::endl;
-    
-    /////just4fun (to see quarterpoints in vtk in a better way) AQUICAJU
-//      TPZGeoMesh * fractureGMesh = fractureCMesh->Reference();
-//    int nelem = fractureGMesh->NElements();
-//    for(int el = 0; el < nelem; el++)
-//    {
-//        TPZGeoEl * gel = fractureGMesh->ElementVec()[el];
-//        if(!gel->IsLinearMapping() && !gel->HasSubElement())
-//        {
-//            TPZVec<TPZGeoEl *> sons;
-//            gel->Divide(sons);
-//        }
-//    }
-    /////
   
     std::ofstream outRefP("RefPatternsUsed.txt");
     gRefDBase.WriteRefPatternDBase(outRefP);
@@ -246,7 +281,7 @@ int mainTestes(int argc, char * const argv[])
     cmesh->InsertMaterialObject(materialQpoint);
     
     ////BCs    
-    TPZFMatrix k(3,3,0.), f(3,1,0.);
+    TPZFMatrix<REAL> k(3,3,0.), f(3,1,0.);
     int dirichlet = 0;
     
     //    //teste 2: mov. corpo rigido (rotacao)
@@ -274,7 +309,7 @@ int mainTestes(int argc, char * const argv[])
 	TPZAnalysis an(cmesh);
     
 	TPZSkylineStructMatrix skylin(cmesh); //caso simetrico
-	TPZStepSolver step;
+	TPZStepSolver<REAL> step;
 	step.SetDirect(ECholesky);
     
     an.SetStructuralMatrix(skylin);
@@ -309,6 +344,7 @@ void FillFractureDotsExampleEllipse(TPZVec<REAL> &fractureDots)
     fractureDots.Resize(2*nnodes, 0.);
     int node;
     double shiftZ = -100.;
+    
     node = 0;
     
     fractureDots[2*node] = 0.5; fractureDots[2*node+1] = shiftZ + 95.;

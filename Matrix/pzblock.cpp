@@ -1,23 +1,12 @@
 /**
  * @file
- * @brief Contains the implementation of the TPZBlock methods.
+ * @brief Contains the implementation of the TPZBlock methods. Purpose: Let to see selected block of a matrix.
  */
-//
-// Author: MISAEL LUIS SANTANA MANDUJANO.
-//
-// File:   tblock.cc
-//
-// Class:  TPZBlock
-//
-// Obs.:   Permite a visualizacao de matrizes atraves de blocos.
-//
-// Versao: 12 / 1994.
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "pzerror.h"
 #include "pzblock.h"
-#include "pzmatrixid.h"
 #include "pzstream.h"
 
 #include <sstream>
@@ -27,15 +16,16 @@ static LoggerPtr logger(Logger::getLogger("pz.matrix.tpzblock"));
 #endif
 
 using namespace std;
-REAL TPZBlock::gZero = 0;//Cedric
+template<class TVar>
+REAL TPZBlock<TVar>::gZero = 0;
 
 
 /*************************** Public ***************************/
 
 /******************/
 /*** Construtor ***/
-
-TPZBlock::TPZBlock( TPZMatrix *const pMatrix,const int nBlocks,const int dim )
+template<class TVar>
+TPZBlock<TVar>::TPZBlock( TPZMatrix<TVar> *const pMatrix,const int nBlocks,const int dim )
 {
 	int MaxBlocks = 0;
 	if(pMatrix) MaxBlocks = ( nBlocks ? nBlocks : pMatrix->Rows() );
@@ -70,54 +60,41 @@ TPZBlock::TPZBlock( TPZMatrix *const pMatrix,const int nBlocks,const int dim )
 	else if(MaxBlocks) fBlock[MaxBlocks-1].dim = mat_size-dim2;
 }
 
-TPZBlock::TPZBlock(const TPZBlock &bl) : fBlock(bl.fBlock) {
-	//  fBlock = bl.fBlock;
-	//  fMaxBlocks = bl.fMaxBlocks;
-	//  fBlock = new( TNode[fMaxBlocks] );
-	//  int ibl;
-	//  for(ibl=0; ibl<fMaxBlocks; ibl++) {
-	//    fBlock[ibl].pos = bl.fBlock[ibl].pos;
-	//    fBlock[ibl].dim = bl.fBlock[ibl].dim;
-	//  }
+template<class TVar>
+TPZBlock<TVar>::TPZBlock(const TPZBlock<TVar> &bl) : fBlock(bl.fBlock) {
 	fpMatrix = bl.fpMatrix;
 }
 
 /*******************/
 /*** operator =  ***/
-TPZBlock &TPZBlock::operator=(const TPZBlock & bl) {
+template<class TVar>
+TPZBlock<TVar> &TPZBlock<TVar>::operator=(const TPZBlock<TVar> & bl) {
 	if(this == &bl) return *this;
-	//  if(fMaxBlocks != bl.fMaxBlocks) {
-	//    delete [] fBlock;
-	//    fBlock = new( TNode[bl.fMaxBlocks] );
-	//  }
 	fBlock = bl.fBlock;
-	//  fMaxBlocks = bl.fMaxBlocks;
-	//  int ibl;
-	//  for(ibl=0; ibl<fMaxBlocks; ibl++) {
-	//    fBlock[ibl] = bl.fBlock[ibl];
-	//  }
 	fpMatrix = bl.fpMatrix;
 	return *this;
 }
 
 /******************/
 /***  Destrutor ***/
-TPZBlock::~TPZBlock() {
-	//  delete[] fBlock;
+template<class TVar>
+TPZBlock<TVar>::~TPZBlock() {
 }
 
 /******************/
 /*** SetMatrix ****/
+template<class TVar>
 void
-TPZBlock::SetMatrix(TPZMatrix *const other){
+TPZBlock<TVar>::SetMatrix(TPZMatrix<TVar> *const other){
 	fpMatrix = other;
 }
 
 
 /******************/
 /*** Set Blocks ***/
+template<class TVar>
 int
-TPZBlock::SetNBlocks(const int num_of_blocks )
+TPZBlock<TVar>::SetNBlocks(const int num_of_blocks )
 {
 	//modified Philippe 24/7/97
 	// a small optimization
@@ -126,35 +103,11 @@ TPZBlock::SetNBlocks(const int num_of_blocks )
 	TNode copy;
 	fBlock.Resize(num_of_blocks,copy);
 	if(num_of_blocks == MaxBlocks) return 1;
-	/*
-	 if ( num_of_blocks <= MaxBlocks )
-	 {
-	 int i;
-	 for (i = num_of_blocks; i < MaxBlocks; i++ ){
-	 fBlock[i].pos=0;fBlock[i].dim=0;
-	 }
-	 MaxBlocks = num_of_blocks;
-	 return( 1 );
-	 }
-	 
-	 TNode *newBlocks = new( TNode[num_of_blocks] );
-	 int i;
-	 int lastpos = Dim();
-	 for ( i = 0; i < fMaxBlocks; i++ )
-	 newBlocks[i] = fBlock[i];
-	 for ( ; i < num_of_blocks; i++ ) {
-	 newBlocks[i].dim = 0;
-	 newBlocks[i].pos = lastpos;
-	 }
-	 
-	 delete []fBlock;
-	 fBlock     = newBlocks;
-	 fMaxBlocks = num_of_blocks;
-	 */
 	return ( 1 );
 }
 
-int TPZBlock::Set(const int b,const int dim,const int pos ) {
+template<class TVar>
+int TPZBlock<TVar>::Set(const int b,const int dim,const int pos ) {
 	if ( b >= fBlock.NElements() ) {
 		cout << "TPZBlock::Set called with parameter out of range\n";
 		return( 0 );
@@ -172,15 +125,16 @@ int TPZBlock::Set(const int b,const int dim,const int pos ) {
 
 /**************/
 /*** SetAll ***/
+template<class TVar>
 int
-TPZBlock::SetAll( TPZVec<int> & dimensions )
+TPZBlock<TVar>::SetAll( TPZVec<int> & dimensions )
 {
 	int total_dim=0;
 	int i,nel = dimensions.NElements() ;
 	for(i=0;i<nel;i++) total_dim += dimensions[i];
 	if ( total_dim != fpMatrix->Rows() ||
 		total_dim > fpMatrix->Rows() )
-		TPZMatrix::Error(__PRETTY_FUNCTION__,"SetAll <new block dimensions not compatible whit matrix dimension>");
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__,"SetAll <new block dimensions not compatible whit matrix dimension>");
 	
 	int pos=0;
 	
@@ -198,7 +152,8 @@ TPZBlock::SetAll( TPZVec<int> & dimensions )
 
 /*****************/
 /*** Resequence **/
-int TPZBlock::Resequence(const int start) {
+template<class TVar>
+int TPZBlock<TVar>::Resequence(const int start) {
 	int MaxBlocks = fBlock.NElements();
 	if (start>=MaxBlocks) return 0;
 	for (int i= start+1; i < MaxBlocks; i++)
@@ -208,8 +163,9 @@ int TPZBlock::Resequence(const int start) {
 
 /**************/
 /*** Remove ***/
+template<class TVar>
 int
-TPZBlock::Remove(const int index )
+TPZBlock<TVar>::Remove(const int index )
 {
 	int MaxBlocks = fBlock.NElements();
 	if ( index >= MaxBlocks )
@@ -219,12 +175,11 @@ TPZBlock::Remove(const int index )
 	return( 1 );
 }
 
-
-
 /***************/
 /*** Verify ****/
+template<class TVar>
 int
-TPZBlock::Verify() const
+TPZBlock<TVar>::Verify() const
 {
 	int MaxBlocks = fBlock.NElements();
 	for ( int i = 0; i < MaxBlocks-1; i++ )
@@ -235,70 +190,69 @@ TPZBlock::Verify() const
 	return ( 1 );
 }
 
-
 /***********/
 /*** Get ***/
-const REAL &
-TPZBlock::Get(const int bRow,const int bCol,const int r,const int c ) const
+template<class TVar>
+const TVar &
+TPZBlock<TVar>::Get(const int bRow,const int bCol,const int r,const int c ) const
 {
 	int row(r),col(c);
 	int MaxBlocks = fBlock.NElements();
 	if ( (bRow >= MaxBlocks) || (bCol >= MaxBlocks) )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <block index out of range>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <block index out of range>" );
 	
 	int rowDim = fBlock[bRow].dim;
 	int colDim = fBlock[bCol].dim;
 	
 	
 	if ( !rowDim || !colDim )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <inexistent block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <inexistent block>" );
 	
 	if ( (row >= rowDim) || (col >= colDim) )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <elemente is out of the block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <elemente is out of the block>" );
 	
 	row += fBlock[bRow].pos;
 	col += fBlock[bCol].pos;
 	return( fpMatrix->Get( row, col ) );
 }
 
-
-
 /***********/
 /*** Put ***/
+template<class TVar>
 int
-TPZBlock::Put(const int bRow,const int bCol,const int r,const int c,
-			  const REAL& value )
+TPZBlock<TVar>::Put(const int bRow,const int bCol,const int r,const int c,
+					const TVar& value )
 {
 	int MaxBlocks = fBlock.NElements();
 	int row(r),col(c);
 	if ( (bRow >= MaxBlocks) || (bCol >= MaxBlocks) )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <block index out of range>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <block index out of range>" );
 	
 	int rowDim = fBlock[bRow].dim;
 	int colDim = fBlock[bCol].dim;
 	
 	if ( !rowDim || !colDim )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <inexistent block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <inexistent block>" );
 	
 	if ( (row >= rowDim) || (col >= colDim) )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <elemente is out of the block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <elemente is out of the block>" );
 	
 	row += fBlock[bRow].pos;
 	col += fBlock[bCol].pos;
 	return( fpMatrix->Put( row, col, value ) );
 }
 
-
 /***********/
 /*** Get ***/
-const REAL &
-TPZBlock::Get(const int bRow,const int r,const int c ) const
+template<class TVar>
+const TVar &
+TPZBlock<TVar>::Get(const int bRow,const int r,const int c ) const
 {
 	int row(r),col(c);
 	int MaxBlocks = fBlock.NElements();
 	if ( (bRow >= MaxBlocks)  )
 	{
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <block index out of range>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <block index out of range>" );
 	}
 	
 	int rowDim = fBlock[bRow].dim;
@@ -306,49 +260,47 @@ TPZBlock::Get(const int bRow,const int r,const int c ) const
 	
 	if ( !rowDim  )
 	{
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <inexistent block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <inexistent block>" );
 	}
 	
 	if ( (row >= rowDim) || (col >= fpMatrix->Cols()) )
 	{
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Get <elemente is out of the block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Get <elemente is out of the block>" );
 	}
 	
 	row += fBlock[bRow].pos;
 	return( fpMatrix->Get( row, col ) );
 }
 
-
-
 /***********/
 /*** Put ***/
+template<class TVar>
 int
-TPZBlock::Put(const int bRow,const int r,const int c,
-			  const REAL& value )
+TPZBlock<TVar>::Put(const int bRow,const int r,const int c,
+					const TVar& value )
 {
 	int MaxBlocks = fBlock.NElements();
 	int row(r),col(c);
 	if ( (bRow >= MaxBlocks)  )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <block index out of range>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <block index out of range>" );
 	
 	int rowDim = fBlock[bRow].dim;
 	
 	if ( !rowDim )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <inexistent block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <inexistent block>" );
 	
 	if ( (row >= rowDim) || (col >= fpMatrix->Cols()) )
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "Put <elemente is out of the block>" );
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "Put <elemente is out of the block>" );
 	
 	row += fBlock[bRow].pos;
 	return( fpMatrix->Put( row, col, value ) );
 }
 
-
-
 /**************/
 /*** GetVal ***/
-const REAL &
-TPZBlock::GetVal(const int bRow,const int bCol,const int r,const int c ) const
+template<class TVar>
+const TVar &
+TPZBlock<TVar>::GetVal(const int bRow,const int bCol,const int r,const int c ) const
 {
 	int MaxBlocks = fBlock.NElements();
 	int row(r),col(c);
@@ -361,9 +313,9 @@ TPZBlock::GetVal(const int bRow,const int bCol,const int r,const int c ) const
 	return( fpMatrix->Get( row, col ) );
 }
 
-
-REAL &
-TPZBlock::operator()(const int bRow,const int bCol,const int r,const int c ) const
+template<class TVar>
+TVar &
+TPZBlock<TVar>::operator()(const int bRow,const int bCol,const int r,const int c ) const
 {
 	int MaxBlocks = fBlock.NElements();
 	int row(r),col(c);
@@ -376,13 +328,12 @@ TPZBlock::operator()(const int bRow,const int bCol,const int r,const int c ) con
 	return( (*fpMatrix)( row, col ) );
 }
 
-
-
 /**************/
 /*** PutVal ***/
+template<class TVar>
 int
-TPZBlock::PutVal(const int bRow,const int bCol,const int r,const int c,
-				 const REAL& value )
+TPZBlock<TVar>::PutVal(const int bRow,const int bCol,const int r,const int c,
+					   const TVar& value )
 {
 	int row(r),col(c);
 	row += fBlock[bRow].pos;
@@ -390,23 +341,21 @@ TPZBlock::PutVal(const int bRow,const int bCol,const int r,const int c,
 	return( fpMatrix->Put( row, col, value ) );
 }
 
-
-
 /*****************/
 /*** Put Block ***/
+template<class TVar>
 int
-TPZBlock::PutBlock(const int bRow,const int bCol,const TPZFMatrix & block )
+TPZBlock<TVar>::PutBlock(const int bRow,const int bCol,const TPZFMatrix<TVar> & block )
 {
 	return( fpMatrix->PutSub( fBlock[bRow].pos,
 							 fBlock[bCol].pos, block ) );
 }
 
-
-
 /*****************/
 /*** Get Block ***/
+template<class TVar>
 int
-TPZBlock::GetBlock(const int bRow,const int bCol, TPZFMatrix *const block ) const
+TPZBlock<TVar>::GetBlock(const int bRow,const int bCol, TPZFMatrix<TVar> *const block ) const
 {
 	int row = fBlock[bRow].pos;
 	int col = fBlock[bCol].pos;
@@ -418,21 +367,22 @@ TPZBlock::GetBlock(const int bRow,const int bCol, TPZFMatrix *const block ) cons
 		return( 0 );
 }
 
-
-
 /*****************/
 /*** Add Block ***/
+template<class TVar>
 int
-TPZBlock::AddBlock(const int bRow,const int bCol,const TPZFMatrix& block )
+TPZBlock<TVar>::AddBlock(const int bRow,const int bCol,const TPZFMatrix<TVar>& block )
 {
 	return( fpMatrix->AddSub( fBlock[bRow].pos,
 							 fBlock[bCol].pos, block ) );
 }
+
 /********************/
 /**** InsertBLock****/
+template<class TVar>
 int
-TPZBlock::InsertBlock(const int block_row,const int block_col,
-					  const int target_row,const int target_col, TPZMatrix &target) const
+TPZBlock<TVar>::InsertBlock(const int block_row,const int block_col,
+							const int target_row,const int target_col, TPZMatrix<TVar> &target) const
 {
 	int rowDim = fBlock[block_row].dim;
 	int colDim = fBlock[block_col].dim;
@@ -441,7 +391,7 @@ TPZBlock::InsertBlock(const int block_row,const int block_col,
 	
 	if ( ((target_row + rowDim) > target.Rows()) ||
 		((target_col + colDim) > target.Cols()) ) {
-		TPZMatrix::Error(__PRETTY_FUNCTION__, "GetSub <the sub-matrix is too big>" ) ;
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "GetSub <the sub-matrix is too big>" ) ;
 		return ( 0 );
 	}
 	
@@ -454,16 +404,12 @@ TPZBlock::InsertBlock(const int block_row,const int block_col,
 	return( 1 );
 }
 
-
-
-
-
-
 /*******************/
 /*** Print Block ***/
+template<class TVar>
 int
-TPZBlock::PrintBlock(const int bRow,const int bCol,const char *title,
-					 TPZostream &out ) const
+TPZBlock<TVar>::PrintBlock(const int bRow,const int bCol,const char *title,
+						   TPZostream &out ) const
 {
 	out << title << ":";
 	
@@ -477,13 +423,12 @@ TPZBlock::PrintBlock(const int bRow,const int bCol,const char *title,
 	return( 1 );
 }
 
-
-
 /*************/
 /*** Print ***/
+template<class TVar>
 void
-TPZBlock::Print(const char *title, TPZostream &out,TPZMatrix *mat) {
-	TPZMatrix *sol=fpMatrix;
+TPZBlock<TVar>::Print(const char *title, TPZostream &out,TPZMatrix<TVar> *mat) {
+	TPZMatrix<TVar> *sol=fpMatrix;
 	if (mat) SetMatrix(mat);
 	char block_title[32];
 	
@@ -506,9 +451,10 @@ TPZBlock::Print(const char *title, TPZostream &out,TPZMatrix *mat) {
 
 /*************/
 /*** Print ***/
+template<class TVar>
 void
-TPZBlock::PrintSolution(const char *title, TPZostream &out) {
-	TPZMatrix *sol=fpMatrix;
+TPZBlock<TVar>::PrintSolution(const char *title, TPZostream &out) {
+	TPZMatrix<TVar> *sol=fpMatrix;
 	
 	char block_title[32];
 	
@@ -527,58 +473,46 @@ TPZBlock::PrintSolution(const char *title, TPZostream &out) {
 
 /*************************** Private ***************************/
 
-/*************/
-/*** Error ***/
-/*int
- TPZBlock::Error(const char *msg )
- {
- ostringstream out;
- out << "TPZBlock::" << msg << ".\n";
- // pzerror.Show();
- LOGPZ_ERROR (logger, out.str().c_str());
- DebugStop();
- }
- */
-void TPZBlock::TNode::Read(TPZStream &buf, void *context)
+template<class TVar>
+void TPZBlock<TVar>::TNode::Read(TPZStream &buf, void *context)
 {
 	buf.Read(&dim,1);
 	buf.Read(&pos,1);
 }
 
-void TPZBlock::TNode::Write(TPZStream &buf, void *context)
+template<class TVar>
+void TPZBlock<TVar>::TNode::Write(TPZStream &buf, void *context)
 {
 	buf.Write(&dim,1);
 	buf.Write(&pos,1);
 }
 
-/**
- * returns the unique identifier for reading/writing objects to streams
- */
-int TPZBlock::ClassId() const
+/** Returns the unique identifier for reading/writing objects to streams */
+template<class TVar>
+int TPZBlock<TVar>::ClassId() const
 {
 	return TPZBLOCKID;
 }
 
-template class TPZRestoreClass< TPZBlock, TPZBLOCKID>;
 
-/**
- Save the element data to a stream
- */
-void TPZBlock::Write(TPZStream &buf, int withclassid)
+template class TPZRestoreClass< TPZBlock<REAL> , TPZBLOCKID>;
+
+/** Saves the element data to a stream */
+template<class TVar>
+void TPZBlock<TVar>::Write(TPZStream &buf, int withclassid)
 {
 	TPZSaveable::Write(buf,withclassid);
 	TPZSaveable::WriteObjects<TNode>(buf,fBlock);
 	
 }
 
-/**
- Read the element data from a stream
- */
-void TPZBlock::Read(TPZStream &buf, void *context)
+/** Reads the element data from a stream */
+template<class TVar>
+void TPZBlock<TVar>::Read(TPZStream &buf, void *context)
 {
-	fpMatrix = (TPZMatrix *) context;
+	fpMatrix = (TPZMatrix<TVar> *) context;
 	TPZSaveable::Read(buf,context);
 	ReadObjects<TNode>(buf,fBlock,context);
 }
 
-
+template class TPZBlock<REAL>;

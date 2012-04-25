@@ -558,7 +558,7 @@ void TPZInterfaceElement::ComputeNormal(TPZVec<REAL>&qsi, TPZVec<REAL> &normal){
 	this->ComputeNormal(axes,normal);
 }
 
-void TPZInterfaceElement::ComputeNormal(TPZFMatrix &axes, TPZVec<REAL> &normal){
+void TPZInterfaceElement::ComputeNormal(TPZFMatrix<REAL> &axes, TPZVec<REAL> &normal){
 	
 	normal.Resize(3);
 	
@@ -678,7 +678,7 @@ void TPZInterfaceElement::CenterNormal(TPZVec<REAL> &CenterNormal) const{
 	for(int i = 0; i < n; i++) CenterNormal[i] = fCenterNormal[i];
 }
 
-void TPZInterfaceElement::Normal(TPZFMatrix &axes, TPZVec<REAL> &normal){
+void TPZInterfaceElement::Normal(TPZFMatrix<REAL> &axes, TPZVec<REAL> &normal){
 	TPZGeoEl * gel = this->Reference();
 	if(gel->IsLinearMapping()) return this->CenterNormal(normal);
 	return this->ComputeNormal(axes, normal);
@@ -690,8 +690,8 @@ void TPZInterfaceElement::Normal(TPZVec<REAL>&qsi, TPZVec<REAL> &normal){
 	return this->ComputeNormal(qsi, normal);
 }
 
-void TPZInterfaceElement::EvaluateError(void (*fp)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix &deriv),
-										TPZVec<REAL> &errors, TPZBlock * /*flux */) {
+void TPZInterfaceElement::EvaluateError(void (*fp)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix<REAL> &deriv),
+										TPZVec<REAL> &errors, TPZBlock<REAL> * /*flux */) {
 	errors.Fill(0.0);
 }
 
@@ -1167,8 +1167,8 @@ void TPZInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
 #ifdef LOG4CXX
 	{
 		std::stringstream sout;
-		sout << "ordem maxima na esquerda-->H1 " << leftmaxp<<std::endl;
-		sout << "ordem maxima na direita-->Hdiv " << rightmaxp<<std::endl;
+		sout << "ordem maxima na esquerda " << leftmaxp<<std::endl;
+		sout << "ordem maxima na direita " << rightmaxp<<std::endl;
 		
 		LOGPZ_DEBUG(logger, sout.str().c_str());
 	}
@@ -1215,13 +1215,14 @@ void TPZInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
 		this->CheckConsistencyOfMappedQsi(this->LeftElementSide(), intpoint, LeftIntPoint);
 		this->CheckConsistencyOfMappedQsi(this->RightElementSide(), intpoint, RightIntPoint);
 #endif
-		
+
+        left->ComputeShape(LeftIntPoint, dataleft.x, dataleft.jacobian, dataleft.axes, dataleft.detjac, dataleft.jacinv, dataleft.phi, dataleft.dphix);
+		right->ComputeShape(RightIntPoint, dataright.x, dataright.jacobian, dataright.axes, dataright.detjac, dataright.jacinv, dataright.phi, dataright.dphix);
+        data.x = dataleft.x;
 		this->ComputeRequiredData(dataleft, left, LeftIntPoint);
 		this->ComputeRequiredData(dataright, right, RightIntPoint);
 		this->ComputeRequiredData(data);
 		
-		left->ComputeShape(LeftIntPoint, dataleft.x, dataleft.jacobian, dataleft.axes, dataleft.detjac, dataleft.jacinv, dataleft.phi, dataleft.dphix);
-		right->ComputeShape(RightIntPoint, dataright.x, dataright.jacobian, dataright.axes, dataright.detjac, dataright.jacinv, dataright.phi, dataright.dphix);
 		
 		mat->ContributeInterface(data,dataleft,dataright, weight, ek.fMat, ef.fMat);
 		
@@ -1511,7 +1512,7 @@ void TPZInterfaceElement::IntegrateInterface(int variable, TPZVec<REAL> & value)
 //		this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
 		this->NeighbourSolution(this->LeftElementSide(), intpoint, datal.sol, datal.dsol, datal.axes);
 		this->NeighbourSolution(this->RightElementSide(), intpoint, datar.sol, datar.dsol, datar.axes);
-		discgal->Solution(data, datal, datar, variable, locval);
+		discgal->SolutionDisc(data, datal, datar, variable, locval);
 		for(iv = 0; iv < varsize; iv++){
 			value[iv] += locval[iv]*weight;
 		}//for iv
@@ -1567,7 +1568,7 @@ bool TPZInterfaceElement::CheckConsistencyOfMappedQsi(TPZCompElSide &Neighbor, T
 
 void TPZInterfaceElement::NeighbourSolution(TPZCompElSide & Neighbor, TPZVec<REAL> & qsi,
                                             TPZSolVec &sol, TPZGradSolVec &dsol,
-                                            TPZFMatrix &NeighborAxes){
+                                            TPZFMatrix<REAL> &NeighborAxes){
 	TPZGeoEl * neighel = Neighbor.Element()->Reference();
 	const int neighdim = neighel->Dimension();
 	TPZManVector<REAL,3> NeighIntPoint(neighdim);
@@ -1575,14 +1576,14 @@ void TPZInterfaceElement::NeighbourSolution(TPZCompElSide & Neighbor, TPZVec<REA
 	Neighbor.Element()->ComputeSolution(NeighIntPoint, sol, dsol, NeighborAxes);
 }
 
-void TPZInterfaceElement::ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix &phi, TPZFMatrix &dphix,
-                                          const TPZFMatrix &axes, TPZSolVec &sol, TPZGradSolVec &dsol){
+void TPZInterfaceElement::ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphix,
+                                          const TPZFMatrix<REAL> &axes, TPZSolVec &sol, TPZGradSolVec &dsol){
 	sol.Resize(0);
 	dsol.Resize(0);
 }
 
 void TPZInterfaceElement::ComputeSolution(TPZVec<REAL> &qsi,
-                                          TPZSolVec &sol, TPZGradSolVec &dsol,TPZFMatrix &axes){
+                                          TPZSolVec &sol, TPZGradSolVec &dsol,TPZFMatrix<REAL> &axes){
 	sol.Resize(0);
 	dsol.Resize(0);
 	axes.Zero();
@@ -1590,8 +1591,8 @@ void TPZInterfaceElement::ComputeSolution(TPZVec<REAL> &qsi,
 
 void TPZInterfaceElement::ComputeSolution(TPZVec<REAL> &qsi,
 										  TPZVec<REAL> &normal,
-										  TPZSolVec &leftsol, TPZGradSolVec &dleftsol,TPZFMatrix &leftaxes,
-										  TPZSolVec &rightsol, TPZGradSolVec &drightsol,TPZFMatrix &rightaxes){
+										  TPZSolVec &leftsol, TPZGradSolVec &dleftsol,TPZFMatrix<REAL> &leftaxes,
+										  TPZSolVec &rightsol, TPZGradSolVec &drightsol,TPZFMatrix<REAL> &rightaxes){
 	this->Normal(qsi, normal);
 	this->NeighbourSolution(this->fLeftElSide, qsi, leftsol, dleftsol, leftaxes);
 	this->NeighbourSolution(this->fRightElSide, qsi, rightsol, drightsol, rightaxes);
@@ -1613,6 +1614,7 @@ void TPZInterfaceElement::InitMaterialData(TPZMaterialData &data, TPZInterpolati
 	data.axes.Redim(dim,3);
 	data.jacobian.Redim(dim,dim);
 	data.jacinv.Redim(dim,dim);
+    data.x.Resize(3, 0.);
     int numbersol = Mesh()->Solution().Cols();
     data.sol.resize(numbersol);
     data.dsol.resize(numbersol);

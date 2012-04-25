@@ -49,6 +49,8 @@
 #include "TPZRefPatternDataBase.h"
 #include "TPZFrontStructMatrix.h"
 
+#include "pzfunction.h"
+
 #ifdef LOG4CXX
 
 static LoggerPtr logger(Logger::getLogger("Acoplamento.main"));
@@ -196,11 +198,7 @@ void PrintGMeshVTK(TPZGeoMesh * gmesh, std::ofstream &file)
 
 void PrintRefPatternVTK(TPZAutoPointer<TPZRefPattern> refp, std::ofstream &file)
 {
-		TPZGeoMesh *gmesh;
-		
-		//	RefPatternMesh();
-		//TPZGeoMesh * gmesh = refp->Mesh();
-		PrintGMeshVTK(gmesh, file);
+    refp->PrintVTK(file);
 }
 
 /**
@@ -217,27 +215,27 @@ TPZGeoMesh * MalhaGeoT(const int h);
 /**
  *Matrix de rotacao
  */
-TPZFMatrix MatrixR(REAL ang);
+TPZFMatrix<REAL> MatrixR(REAL ang);
 
-void Forcing1(TPZVec<REAL> &pt, TPZVec<REAL> &disp) {
+void Forcing1(const TPZVec<REAL> &pt, TPZVec<REAL> &disp) {
 	/*	double x = pt[0];
 		double y = pt[1];
 		disp[0]= -2.*(1.-x*x) -2.*(1.-y*y);
 		*/
 		double x = pt[0];
 		double y = pt[1];
-		disp[0]= -2.*pow(Pi,2.)*sin(Pi*x)*sin(Pi*y);
+		disp[0]= -2.*pow(Pi,(REAL)2.)*sin(Pi*x)*sin(Pi*y);
 		return;
 }
 
-void SolExata(TPZVec<REAL> &pt, TPZVec<REAL> &p, TPZFMatrix &flux ) {
+void SolExata(TPZVec<REAL> &pt, TPZVec<REAL> &p, TPZFMatrix<REAL> &flux ) {
 		double x = pt[0];
 		double y = pt[1];
 		TPZVec<REAL> disp;
     p[0]= sin(Pi*x)*sin(Pi*y);
 		flux(0,0)= -Pi*cos(Pi*x)*sin(Pi*y);
 		flux(1,0)= - Pi*cos(Pi*y)*sin(Pi*x);
-		flux(2,0)=2.*pow(Pi,2.)*sin(Pi*x)*sin(Pi*y);//coloco o divergente aq para testar
+		flux(2,0)=2.*pow(Pi,(REAL)2.)*sin(Pi*x)*sin(Pi*y);//coloco o divergente aq para testar
 		
 		return;		
 		
@@ -253,7 +251,7 @@ int main()
 {
 		
 		std::ofstream erro("CoupleSemEnrriqP2h5.txt");
-		REAL PI=4.*atan(1);
+//		REAL PI=4.*atan(1);
 	//REAL a = PI/2.;
 		
 		for(int jorder=2;jorder<3;jorder++){
@@ -347,7 +345,7 @@ TPZGeoMesh *MalhaGeoGen(int h, REAL &anglo)
 		TPZVec<TPZGeoNode> Node(Qnodes);
 		
 		//indice dos nos
-		TPZFMatrix mA(2,6,0.), mR(2,2), mRA(2,9);
+		TPZFMatrix<REAL> mA(2,6,0.), mR(2,2), mRA(2,9);
 	
 	/*	
 		mA.Put(0,0,0.); mA.Put(1,0,0.);//(0,0)      
@@ -504,9 +502,9 @@ TPZGeoMesh *MalhaGeoGen(int h, REAL &anglo)
 		return gMesh;	
 }
 
-TPZFMatrix MatrixR(REAL ang)
+TPZFMatrix<REAL> MatrixR(REAL ang)
 {
-		TPZFMatrix r(2,2,0.);
+		TPZFMatrix<REAL> r(2,2,0.);
 		r(0,0) = cos(ang); r(0,1) = -sin(ang);
 		r(1,0) = sin(ang);	r(1,1) =  cos(ang);
 		
@@ -561,13 +559,13 @@ TPZCompMesh *MalhaCompGen(TPZGeoMesh * gMesh, int porder)
 		
 		
 		//setando forcing function para os dois materiais- Omega1 e 2
-		
-	  mat1->SetForcingFunction(Forcing1);
-		mat2->SetForcingFunction(Forcing1);
+        TPZAutoPointer<TPZFunction> force = new TPZDummyFunction(Forcing1);
+	  mat1->SetForcingFunction(force);
+		mat2->SetForcingFunction(force);
 		mat1->SetForcingFunctionExact(SolExata);
 		mat2->SetForcingFunctionExact(SolExata);
 		
-		TPZFMatrix k(1,1,0.),f(1,1,0.);
+		TPZFMatrix<REAL> k(1,1,0.),f(1,1,0.);
 		//k(0,0)=BIG;
 		//	k(1,1)=BIG;
 		
@@ -578,7 +576,7 @@ TPZCompMesh *MalhaCompGen(TPZGeoMesh * gMesh, int porder)
 		
 			//condicoes em omega2
 		TPZMaterial *bnd3 =  automat2->CreateBC(automat2, mat2BC1, dirichlet,k,f);
-		//TPZFMatrix k2(1,1,0.),f2(1,1,1.);
+		//TPZFMatrix<REAL> k2(1,1,0.),f2(1,1,1.);
 		TPZMaterial *bnd4 =  automat2->CreateBC(automat2, mat2BC2, dirichlet,k,f);
 		TPZMaterial *bnd5 =  automat2->CreateBC(automat2, mat2BC3, dirichlet,k,f);
 		
@@ -678,7 +676,7 @@ TPZCompMesh *MalhaCompGen(TPZGeoMesh * gMesh, int porder)
 								if (nneig==1) {
 										int idneig = neighbours[0].Reference().Element()->MaterialId();
 										if (idneig==quadmat1) {
-												TPZInterfaceElement * FaceElem = InterpEl->CreateInterface(is,true);
+												/*TPZInterfaceElement * FaceElem =*/ InterpEl->CreateInterface(is,true);
 												
 										}
 								}
@@ -699,7 +697,7 @@ void SolveLU ( TPZAnalysis &an ){
 	//	TPZFrontStructMatrix<TPZFrontNonSym> mat ( malha );// não funciona com método iterativo
 		TPZFStructMatrix mat( malha );
 		//	TPZSpStructMatrix mat( malha );
-		TPZStepSolver solv;
+		TPZStepSolver<REAL> solv;
 		
 		solv.SetDirect ( ELU );
 		//		solv.SetDirect(ECholesky);

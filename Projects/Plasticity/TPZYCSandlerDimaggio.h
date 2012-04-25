@@ -202,11 +202,11 @@ public:
     /**
     LoadState will keep a given state as static variable of the class
     */
-    inline void LoadState(TPZFMatrix &state);
+    inline void LoadState(TPZFMatrix<REAL> &state);
 
-    inline void ComputeTangent(TPZFMatrix &tangent, TPZVec<REAL> &, int icase);
+    inline void ComputeTangent(TPZFMatrix<REAL> &tangent, TPZVec<REAL> &, int icase);
 
-    inline void Residual(TPZFMatrix &res,int icase);
+    inline void Residual(TPZFMatrix<REAL> &res,int icase);
 
     static void CheckConv();
 	
@@ -221,7 +221,7 @@ public:
 };
 
 template <class T>
-inline void TPZYCSandlerDimaggio::Compute(const TPZTensor<T> & sigma,const T & A, TPZVec<T> &res, int checkForcedYield = 0) const
+inline void TPZYCSandlerDimaggio::Compute(const TPZTensor<T> & sigma,const T & A, TPZVec<T> &res, int checkForcedYield) const
 {
 	// the termoforce A in this case is assumed to be the
 	// plastic volumetric strain itself. In fact it is not,
@@ -289,7 +289,7 @@ inline void TPZYCSandlerDimaggio::Compute(const TPZTensor<T> & sigma,const T & A
 }
 
 template <class T> 
-inline void TPZYCSandlerDimaggio::N(const TPZTensor<T> & sigma, const T & A, TPZVec<TPZTensor<T> > & Ndir, int checkForcedYield = 0) const
+inline void TPZYCSandlerDimaggio::N(const TPZTensor<T> & sigma, const T & A, TPZVec<TPZTensor<T> > & Ndir, int checkForcedYield) const
 {
 
 	// the termoforce A in this case is assumed to be the
@@ -403,7 +403,7 @@ inline void TPZYCSandlerDimaggio::N(const TPZTensor<T> & sigma, const T & A, TPZ
 }
 
 template <class T> 
-inline void TPZYCSandlerDimaggio::H(const TPZTensor<T> & sigma,const T & A, TPZVec<T> & h, int checkForcedYield = 0) const
+inline void TPZYCSandlerDimaggio::H(const TPZTensor<T> & sigma,const T & A, TPZVec<T> & h, int checkForcedYield) const
 {
 
  	// the termoforce A in this case is assumed to be the
@@ -538,7 +538,7 @@ inline int TPZYCSandlerDimaggio::NumCases()
     return 4;
 }
 
-inline void TPZYCSandlerDimaggio::LoadState(TPZFMatrix &state)
+inline void TPZYCSandlerDimaggio::LoadState(TPZFMatrix<REAL> &state)
 {
 
   int i;
@@ -555,7 +555,7 @@ inline void TPZYCSandlerDimaggio::LoadState(TPZFMatrix &state)
 #endif
 }
 
-inline void TPZYCSandlerDimaggio::ComputeTangent(TPZFMatrix &tangent, TPZVec<REAL> &, int icase)
+inline void TPZYCSandlerDimaggio::ComputeTangent(TPZFMatrix<REAL> &tangent, TPZVec<REAL> &, int icase)
 {
 
   const int nVars = 6;
@@ -600,7 +600,7 @@ inline void TPZYCSandlerDimaggio::ComputeTangent(TPZFMatrix &tangent, TPZVec<REA
 #endif
 }
 
-inline void TPZYCSandlerDimaggio::Residual(TPZFMatrix &res,int icase)
+inline void TPZYCSandlerDimaggio::Residual(TPZFMatrix<REAL> &res,int icase)
 {
 
   int i;

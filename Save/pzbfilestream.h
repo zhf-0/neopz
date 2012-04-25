@@ -2,16 +2,6 @@
  * @file
  * @brief Contains declaration of the TPZBFileStream class which implements the interface to a binary file.
  */
-//
-// C++ Interface: TPZBFileStream
-//
-// Description: 
-//
-//
-// Author: Thiago M. N. Oliveira <thiago@labmec.fec.unicamp.br>, (C) 2004
-//
-// Copyright: See COPYING file that comes with this distribution
-//
 
 #ifndef STDPZBFILESTREAM_H
 #define STDPZBFILESTREAM_H
@@ -60,8 +50,16 @@ public:
 		Writes<int>(p,size);
 	}
 	/** @brief Writes size floating points at pointer location p */
-	virtual void Write(REAL *p, int size) {
-		Writes<REAL>(p,size);
+	virtual void Write(float *p, int size) {
+		Writes<float>(p,size);
+	}
+	/** @brief Writes size floating points at pointer location p */
+	virtual void Write(double *p, int size) {
+		Writes<double>(p,size);
+	}
+	/** @brief Writes size floating points at pointer location p */
+	virtual void Write(long double *p, int size) {
+		Writes<long double>(p,size);
 	}
 	/** @brief Writes size chars at pointer location p */
 	virtual void Write(const char *p, int size) {
@@ -77,9 +75,21 @@ public:
 			Write(p[c].c_str(),p[c].size());
 		}
 	}
+	/** @brief Writes size complex-float at pointer location p */
+	virtual void Write(std::complex <float> *p, int size) {
+		Writes< std::complex <float> >(p,size);
+	}
+	/** @brief Writes size complex-double at pointer location p */
+	virtual void Write(std::complex <double> *p, int size) {
+		Writes< std::complex <double> >(p,size);
+	}
+	/** @brief Writes size complex-long double at pointer location p */
+	virtual void Write(std::complex <long double> *p, int size) {
+		Writes< std::complex <long double> >(p,size);
+	}
 	/** @brief Writes size objects of the class T at pointer location p */
 	template<class T>
-    void  Writes(const T *p, int size) 
+	void  Writes(const T *p, int size) 
 	{
 		fwrite(p,sizeof(T),size,ofd);
 	}
@@ -88,8 +98,16 @@ public:
 		Reads<int>(p,size);
 	}
 	/** @brief Reads size floating points from pointer location p */
-	virtual void Read(REAL *p, int size) {
-		Reads<REAL>(p,size);
+	virtual void Read(float *p, int size) {
+		Reads<float>(p,size);
+	}
+	/** @brief Reads size floating points from pointer location p */
+	virtual void Read(double *p, int size) {
+		Reads<double>(p,size);
+	}
+	/** @brief Reads size floating points from pointer location p */
+	virtual void Read(long double *p, int size) {
+		Reads<long double>(p,size);
 	}
 	/** @brief Reads size chars from pointer location p */
 	virtual void Read(char *p, int size) {
@@ -109,9 +127,21 @@ public:
 			p[c] = buf;
 		}
 	}
+	/** @brief Reads size complex-float from pointer location p */
+	virtual void Read(std::complex <float> *p, int size) {
+		Reads< std::complex <float> >(p,size);
+	}
+	/** @brief Reads size complex-double from pointer location p */
+	virtual void Read(std::complex <double> *p, int size) {
+		Reads< std::complex <double> >(p,size);
+	}
+	/** @brief Reads size complex-long double from pointer location p */
+	virtual void Read(std::complex <long double> *p, int size) {
+		Reads< std::complex <long double> >(p,size);
+	}
 	/** @brief Reads size objects of the class T from pointer location p */
 	template<class T>
-    void Reads(T *p, int size)
+	void Reads(T *p, int size)
 	{
 		if(ifd)
 		{

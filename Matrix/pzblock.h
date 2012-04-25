@@ -1,71 +1,56 @@
 /**
  * @file pzadmchunk.h
- * @brief Declarates the TPZBlock class which implements block matrices.
+ * @brief Declarates the TPZBlock<REAL>class which implements block matrices.
  */
-
-/*
-  // Author: MISAEL LUIS SANTANA MANDUJANO.
-  //
-  // File:   tblock.hh
-  //
-  // Class:  TPZBlock
-  //
-  // Obs.:   Permite a visualizacao de matrizes atraves de blocos.
-  //         So' podem ser inseridos, removidos ou modificados os
-  //         blocos da diagonal da matriz. Os blocos da diagonal
-  //         devem ser quadrados.
-  //
-  //
-  // Versao: 12 / 1994.
-*/
-
 
 #ifndef _TBLOCKHH_
 #define _TBLOCKHH_
-
 
 #include "pzmatrix.h"
 #include "pzmanvector.h"
 #include "pzreal.h"
 #include "pzsave.h"
 
+/** @brief Id of the diagonal block matrix */
+/** @ingroup matrixutility */
+const int TPZBLOCKID = 101;
+
 /**
  * @brief Implements block matrices. \ref matrixutility "Matrix utility"
+ * @author Misael Luis Santana Mandujano
+ * @since 12/1994
  * @ingroup matrixutility
  */
+template<class TVar>
 class TPZBlock : public TPZSaveable
 {
-public:
+public: 
 	/**
 	 * @brief For each elements on matrix a size 1 block is created
 	 * @param matrix_to_represent Indicates which matrix is to be represented
 	 * @param num_of_blocks Indicates number of blocks
 	 * @param initial_blocks_size Indicates initial block size, default value is 1
 	 */
-	TPZBlock(TPZMatrix *const matrix_to_represent = 0,const int num_of_blocks = 0,
+	TPZBlock(TPZMatrix<TVar> *const matrix_to_represent = 0,const int num_of_blocks = 0,
 			 const int initial_blocks_size = 1 );
 	
 	/**
 	 * @brief Copy constructor
 	 * @param bl New object is created based on bl
 	 */
-	TPZBlock(const TPZBlock &bl);
+	TPZBlock(const TPZBlock<TVar> &bl);
 	
-	/**
-     @brief Simple Destrutor
-	 */
+	/** @brief Simple Destrutor */
 	virtual ~TPZBlock();
 	
 	/**
-	 * @brief Changes pointer to other
+     * @brief Changes pointer to other
      * @param other New matrix to be pointed to
 	 */
-	virtual void SetMatrix(TPZMatrix *const other);
+	virtual void SetMatrix(TPZMatrix<TVar> *const other);
 	
-	/**
-     * @brief Returns a pointer to current matrix
-	 */
-	TPZMatrix *Matrix(){ return fpMatrix;}
+	/** @brief Returns a pointer to current matrix */
+	TPZMatrix<TVar> *Matrix(){ return fpMatrix;}
 	
 	/**
      * @brief Sets number of blocks on diagonal matrix
@@ -86,7 +71,7 @@ public:
      * @param dimensions Contains blocks sequence
 	 */
 	int SetAll( TPZVec<int> & dimensions );
-	
+
 	/**
      * @brief Resequences blocks positioning
      * @param start Starting position
@@ -104,19 +89,22 @@ public:
 	 */
 	int Verify() const;
 	
-	REAL & operator()(const int block_row,const int block_col,const int r,const int c ) const;
+	TVar & operator()(const int block_row,const int block_col,const int r,const int c ) const;
 	
-	/// Get or put a element from or to matrix verifiying
-	const REAL & Get(const int block_row,const int block_col,const int r,const int c ) const;
-	int Put(const int block_row,const int block_col,const int r,const int c,const REAL& value );
+	/** @brief Gets a element from matrix verifying */
+	const TVar & Get(const int block_row,const int block_col,const int r,const int c ) const;
+	/** @brief Puts a element to matrix verifying */
+	int Put(const int block_row,const int block_col,const int r,const int c,const TVar& value );
 	
-	/// Get or put a element from or to matrix verifiying
-	const REAL & Get(const int block_row,const int r,const int c ) const;
-	int Put(const int block_row,const int r,const int c,const REAL& value );
+	/** @brief Gets a element from a matrix verifying the existence */
+	const TVar & Get(const int block_row,const int r,const int c ) const;
+	/** @brief Puts a element to matrix verifying the existence */
+	int Put(const int block_row,const int r,const int c,const TVar& value );
 	
-	/// Get or put a element from or to matrix, don't make verifiying
-	const REAL & GetVal(const int bRow,const int bCol,const int r,const int c ) const;
-	int PutVal(const int bRow,const int bCol,const int r,const int c,const REAL& value );
+	/** @brief Gets a element from matrix but not verify the existence */
+	const TVar & GetVal(const int bRow,const int bCol,const int r,const int c ) const;
+	/** @brief Puts a element to matrix but not verify the existence */
+	int PutVal(const int bRow,const int bCol,const int r,const int c,const TVar& value );
 	
 	/**
      * @brief Puts a block on current matrix
@@ -124,21 +112,21 @@ public:
      * @param block_col Contains block column
      * @param block Block to be inserted
 	 */
-	int PutBlock(const int block_row,const int block_col,const TPZFMatrix & block );
+	int PutBlock(const int block_row,const int block_col,const TPZFMatrix<TVar> & block );
 	/**
      * @brief Gets a block on current matrix
      * @param block_row Contains block row
      * @param block_col Contains block column
      * @param block Block to be inserted
 	 */
-	int GetBlock(const int block_row,const int block_col, TPZFMatrix *const block ) const;
+	int GetBlock(const int block_row,const int block_col, TPZFMatrix<TVar> *const block ) const;
 	/**
      * @brief Adds a block on current matrix
      * @param block_row Contains block row
      * @param block_col Contains block column
      * @param block Block to be inserted
 	 */
-	int AddBlock(const int block_row,const int block_col, const TPZFMatrix & block );
+	int AddBlock(const int block_row,const int block_col, const TPZFMatrix<TVar> & block );
 		
 	/**
      * @brief Inserts a block (block_row , block_col) on current matrix target
@@ -149,10 +137,10 @@ public:
      * @param col Starting column position
 	 */
 	int InsertBlock(const int block_row,const int block_col,
-					const int row,const int col, TPZMatrix &target) const;
+					const int row,const int col, TPZMatrix<TVar> &target) const;
 	
-	TPZBlock &operator=(const TPZBlock & );
-	
+	TPZBlock<TVar>&operator=(const TPZBlock<TVar>& ); 
+	 
 	/**
      * @brief Prints a matrix block
      * @param block_row Contains block row
@@ -163,7 +151,7 @@ public:
 	int  PrintBlock(const int block_row,const int block_col,const char *title = "",TPZostream &out = std::cout ) const;
 	
 	/// Prints all the blocks of the matrix
-	void Print(const char *title = "",TPZostream &out = std::cout,TPZMatrix *mat=NULL);
+	void Print(const char *title = "",TPZostream &out = std::cout,TPZMatrix<TVar> *mat=NULL);
 	
 	void PrintSolution(const char *title, TPZostream &out);
 	
@@ -216,8 +204,8 @@ private:
 	
 	/** @brief Nodes vector */
 	TPZManVector<TNode>    fBlock;
-	/** @brief Pointer to TPZMatrix */
-	TPZMatrix *fpMatrix;
+	/**  @brief Pointer to TPZMatrix */
+	TPZMatrix<TVar> *fpMatrix;
 	static REAL gZero;//zero
 	
 };

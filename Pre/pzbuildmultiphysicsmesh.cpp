@@ -1,14 +1,11 @@
 /*
- *  pzbuildmultiphysicsmesh.cpp
- *  PZ
- *
- *  Created by Agnaldo on 10/31/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
+ * @file
+ * @brief Implementations to mesh multiphysics
  */
 
 #include "pzbuildmultiphysicsmesh.h"
 #include "pzmultiphysicselement.h"
+#include "pzmaterial.h"
 
 #include "TPZInterfaceEl.h"
 
@@ -155,10 +152,10 @@ void TPZBuildMultiphysicsMesh::TransferFromMeshes(TPZVec<TPZCompMesh *> &cmeshVe
     for (imesh = 0; imesh < nmeshes; imesh++) {
 		FirstConnectIndex[imesh+1] = FirstConnectIndex[imesh]+cmeshVec[imesh]->NConnects();
     }
-    TPZBlock &blockMF = MFMesh->Block();
+    TPZBlock<REAL> &blockMF = MFMesh->Block();
     for (imesh = 0; imesh < nmeshes; imesh++) {
 		int ncon = cmeshVec[imesh]->NConnects();
-		TPZBlock &block = cmeshVec[imesh]->Block();
+		TPZBlock<REAL> &block = cmeshVec[imesh]->Block();
 		int ic;
 		for (ic=0; ic<ncon; ic++) {
 			TPZConnect &con = cmeshVec[imesh]->ConnectVec()[ic];
@@ -183,10 +180,10 @@ void TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(TPZVec<TPZCompMesh *> &c
     for (imesh = 0; imesh < nmeshes; imesh++) {
 		FirstConnectIndex[imesh+1] = FirstConnectIndex[imesh]+cmeshVec[imesh]->NConnects();
     }
-    TPZBlock &blockMF = MFMesh->Block();
+    TPZBlock<REAL> &blockMF = MFMesh->Block();
     for (imesh = 0; imesh < nmeshes; imesh++) {
 		int ncon = cmeshVec[imesh]->NConnects();
-		TPZBlock &block = cmeshVec[imesh]->Block();
+		TPZBlock<REAL> &block = cmeshVec[imesh]->Block();
 		int ic;
 		for (ic=0; ic<ncon; ic++) {
 			TPZConnect &con = cmeshVec[imesh]->ConnectVec()[ic];

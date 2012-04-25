@@ -10,6 +10,8 @@ if(BUILD_TUTORIAL)
 
 	#Curso PZ:
 	add_subdirectory(CursoPZ)
+	add_subdirectory(PDElinear1D)
+	add_subdirectory(PDElinear2D)
 
 	#Generic Example 2D with elasticity, using matrices phi, phi, etc
 	add_subdirectory(testmat)
@@ -70,7 +72,6 @@ if(BUILD_PROJECTS)
 	
 	#projeto agnaldo 09-09-2011
 	add_subdirectory(DoubleProjection1D)
-	add_subdirectory(PDElinear1D)
 	add_subdirectory(Poroelastic2D)
 	add_subdirectory(SubStruct)
 	add_subdirectory(MultiphysicsSimulation)
@@ -78,7 +79,25 @@ if(BUILD_PROJECTS)
 
 	#projeto Diogo 08-FEB-2012
 	add_subdirectory(Plasticity)
-#	add_subdirectory(prodindex)
+	#add_subdirectory(prodindex)
+
+	#Projeto Lua 2012
+	add_subdirectory(Lua01)
 	
 	
 endif(BUILD_PROJECTS)
+
+#
+# COMPLEX NUMBER PROJECTS
+#
+# If your project use Complex numbers (STATE type = complex any type), please add it on the list below
+if(BUILD_COMPLEX_PROJECTS)
+
+	#Example to work with scalar as complex
+	add_subdirectory(Helmholtz1D)
+
+	#Examples used as tutorial for FEEC group (Prof Hugo)
+	add_subdirectory(PDElinear1D)
+	add_subdirectory(PDElinear2D)
+
+endif(BUILD_COMPLEX_PROJECTS)
