@@ -205,8 +205,8 @@ void ManageIterativeProcess(TPZElastoPlasticAnalysis &analysis , std::ostream &o
 
 void ManageIterativeProcess(TPZElastoPlasticAnalysis &analysis,std::ostream &out,REAL tol,int numiter,
                                     int BCId, int nsteps, REAL PGRatio,
-                                    TPZFMatrix & val1Begin, TPZFMatrix & val1End,
-                                    TPZFMatrix & val2Begin, TPZFMatrix & val2End)
+                                    TPZFMatrix<REAL> & val1Begin, TPZFMatrix<REAL> & val1End,
+                                    TPZFMatrix<REAL> & val2Begin, TPZFMatrix<REAL> & val2End)
 {
                                        
                                        

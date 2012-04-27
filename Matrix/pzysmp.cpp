@@ -577,7 +577,7 @@ void TPZFYsmpMatrix<TVar>::MultAdd(const TPZFMatrix<TVar> &x,const TPZFMatrix<TV
   if (numthreads == 0) {
 		alldata[0].target = this;
 		alldata[0].fFirsteq = 0;
-		alldata[0].fLasteq = Rows();
+		alldata[0].fLasteq = this->Rows();
 		alldata[0].fX = &x;
 		alldata[0].fZ = &z;
 		alldata[0].fAlpha = alpha;
