@@ -172,7 +172,7 @@ TPZInterpolationSpace(mesh,copy,index), fConnectIndex(-1), fCenterPoint(copy.fCe
 TPZCompElDisc::TPZCompElDisc(TPZCompMesh &mesh,TPZGeoEl *ref,int &index) :
 TPZInterpolationSpace(mesh,ref,index), fConnectIndex(-1), fExternalShape(), fCenterPoint(3)
 {
-	this->fShapefunctionType = pzshape::TPZShapeDisc::ETensorial;  
+	this->fShapefunctionType = pzshape::TPZShapeDisc::ETensorialFull;  //ETensorial;  
 	ref->SetReference(this);
 	CreateMidSideConnect();
 	this->SetDegree( fMesh->GetDefaultOrder() );

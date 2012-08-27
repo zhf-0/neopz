@@ -107,7 +107,7 @@ void TPZBndCond::ContributeInterfaceErrors( TPZMaterialData &data, TPZMaterialDa
 	TPZDiscontinuousGalerkin *mat = dynamic_cast<TPZDiscontinuousGalerkin *>(this->fMaterial);
 	if(!mat) return;
 	
-    this->UpdataBCValues( data );
+    this->UpdataBCValues( dataleft );
 	
 	if(dataleft.sol.NElements() < dataright.sol.NElements()){
 		//		data.InvertLeftRightData();

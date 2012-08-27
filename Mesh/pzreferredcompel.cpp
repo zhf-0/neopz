@@ -144,18 +144,23 @@ void TPZReferredCompEl< TCOMPEL >::AppendOtherSolution(TPZVec<REAL> &qsi, TPZSol
 	TPZGradSolVec OtherDSol,OtherDSol2;
 	TPZFNMatrix<9> otheraxes(3,3,0.);
 	other->ComputeSolution(qsi, OtherSol, OtherDSol, otheraxes);
-    int numbersol = sol.size();
-    for (int is=0; is<numbersol; is++) {
-        if(sol[is].NElements()){
-            AdjustSolutionDerivatives(OtherDSol[is],otheraxes,OtherDSol2[is],axes);
-        }
-        else if(OtherSol[is].NElements()){
-            OtherDSol2[is] = OtherDSol[is];
-            //axes = otheraxes;
-        }
-        Append(ThisSol[is],OtherSol[is],sol[is]);
-        Append(ThisDSol[is],OtherDSol2[is],dsol[is]);
-    }
+	int numbersol = sol.size();
+	OtherDSol2.Resize(numbersol);
+       for (int is=0; is<numbersol; is++) 
+       {
+		   if(sol[is].NElements())
+		   {
+			   AdjustSolutionDerivatives(OtherDSol[is],otheraxes,OtherDSol2[is],axes);
+		   }
+		   else if(OtherSol[is].NElements())
+		   {
+			   OtherDSol2[is] = OtherDSol[is];
+			   //axes = otheraxes;
+		   }
+		   Append(ThisSol[is],OtherSol[is],sol[is]);
+		   Append(ThisDSol[is],OtherDSol2[is],dsol[is]);
+	}
+
 }
 
 template < class TCOMPEL >

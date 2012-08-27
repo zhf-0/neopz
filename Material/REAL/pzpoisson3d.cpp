@@ -1,7 +1,9 @@
 /**
- * @file
+ * \file
  * @brief Contains implementations of the TPZMatPoisson3d methods.
  */
+
+//$Id: pzpoisson3d.cpp, joao$
 
 #include "pzpoisson3d.h"
 #include "pzelmat.h"
@@ -19,6 +21,10 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.poisson3d"));
 #endif
 
+void (* TPZMatPoisson3d::fPrimalExactSolution)(TPZVec<REAL> &loc,TPZVec<REAL> &result, TPZFMatrix<REAL> &derivada, int sol_id) = NULL;
+void (* TPZMatPoisson3d::fDualExactSolution)(TPZVec<REAL> &loc,TPZVec<REAL> &result, TPZFMatrix<REAL> &derivada, int sol_id) = NULL;
+
+
 using namespace std;
 REAL TPZMatPoisson3d::gAlfa = 0.5;
 
@@ -28,10 +34,11 @@ TPZMatPoisson3d::TPZMatPoisson3d(int nummat, int dim) : TPZDiscontinuousGalerkin
 	fConvDir[0] = 0.;
 	fConvDir[1] = 0.;
 	fConvDir[2] = 0.;
-	fPenaltyConstant = 0.;
+	fPenaltyConstant = 10.;
 	this->SetNonSymmetric();
+//	this->SetSymmetric();
 	this->SetRightK(fK);
-	this->SetNoPenalty();
+//	this->SetNoPenalty();
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1), fSD(0.){
@@ -40,10 +47,11 @@ TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1),
 	fConvDir[0] = 0.;
 	fConvDir[1] = 0.;
 	fConvDir[2] = 0.;
-	fPenaltyConstant = 0.;
-	this->SetNonSymmetric();
+	fPenaltyConstant = 10.;
+    this->SetNonSymmetric();
+//  this->SetSymmetric();
 	this->SetRightK(fK);
-	this->SetNoPenalty();
+//	this->SetNoPenalty();
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d(const TPZMatPoisson3d &copy):TPZDiscontinuousGalerkin(copy){
@@ -100,7 +108,7 @@ void TPZMatPoisson3d::Print(std::ostream &out) {
 	out << "\n";
 }
 
-void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef) {
+void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef) {
 	
 	if(data.numberdualfunctions)
 	{
@@ -117,7 +125,7 @@ void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<ST
 	int phr = phi.Rows();
 	
 	if(fForcingFunction) {            // phi(in, 0) = phi_in
-		TPZManVector<STATE> res(1);
+		TPZManVector<REAL> res(1);
 		fForcingFunction->Execute(x,res);       // dphi(i,j) = dphi_j/dxi
 		fXf = res[0];
 	}
@@ -136,13 +144,21 @@ void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<ST
 		
 		switch(fDim) {
 			case 1:
+				//        delx = jacinv(0,0);
 				ConvDirAx[0] = axes(0,0)*fConvDir[0]+axes(0,1)*fConvDir[1]+axes(0,2)*fConvDir[2];
 				break;
 			case 2:
-				ConvDirAx[0] = axes(0,0)*fConvDir[0]+axes(0,1)*fConvDir[1]+axes(0,2)*fConvDir[2];
-				ConvDirAx[1] = axes(1,0)*fConvDir[0]+axes(1,1)*fConvDir[1]+axes(1,2)*fConvDir[2];
+				//        delx = jacinv(0,0)*jacinv(1,1)-jacinv(1,0)*jacinv(0,1);
+				ConvDirAx[0] = axes(0,0)*fConvDir[0]+axes(0,1)*fConvDir[1];//+axes(0,2)*fConvDir[2];
+				ConvDirAx[1] = axes(1,0)*fConvDir[0]+axes(1,1)*fConvDir[1];//+axes(1,2)*fConvDir[2];
 				break;
 			case 3:
+				//        delx = jacinv(0,0)*jacinv(1,1)*jacinv(2,2)+
+				//          jacinv(0,1)*jacinv(1,2)*jacinv(2,0)+
+				//          jacinv(1,0)*jacinv(2,1)*jacinv(0,2)-
+				//          jacinv(2,0)*jacinv(1,1)*jacinv(0,2)-
+				//          jacinv(1,0)*jacinv(0,1)*jacinv(2,2)-
+				//          jacinv(2,1)*jacinv(2,1)*jacinv(0,0);
 				ConvDirAx[0] = axes(0,0)*fConvDir[0]+axes(0,1)*fConvDir[1]+axes(0,2)*fConvDir[2];
 				ConvDirAx[1] = axes(1,0)*fConvDir[0]+axes(1,1)*fConvDir[1]+axes(1,2)*fConvDir[2];
 				ConvDirAx[2] = axes(2,0)*fConvDir[0]+axes(2,1)*fConvDir[1]+axes(2,2)*fConvDir[2];
@@ -189,7 +205,7 @@ void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<ST
 }
 
 /// Compute the contribution at an integration point to the stiffness matrix of the HDiv formulation
-void TPZMatPoisson3d::ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef)
+void TPZMatPoisson3d::ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef)
 {
 	/** monta a matriz
 	 |A B^T |  = |0 |
@@ -197,14 +213,31 @@ void TPZMatPoisson3d::ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatri
 	 
 	 **/
 	if(fForcingFunction) {            // phi(in, 0) = phi_in
-		TPZManVector<STATE> res(1);
+		TPZManVector<REAL> res(1);
 		fForcingFunction->Execute(data.x,res);       // dphi(i,j) = dphi_j/dxi
 		fXf = res[0];
 	}
 	int numvec = data.fVecShapeIndex.NElements();
 	int numdual = data.numberdualfunctions;
 	int numprimalshape = data.phi.Rows()-numdual;
-	
+	/*
+	 #ifdef LOG4CXX
+	 {
+	 std::stringstream sout;
+	 sout << "number of vector functions " << numvec << " number of dual functions " << numdual<< " number of primal shape functions " << numprimalshape<<std::endl;
+	 sout <<"Verificando as phi's " <<std::endl;
+	 LOGPZ_DEBUG(logger,sout.str())
+	 }
+	 #endif
+	 
+	 #ifdef LOG4CXX
+	 {
+	 std::stringstream sout;
+	 sout << " phi's para fluxo " << data.phi;
+	 LOGPZ_DEBUG(logger,sout.str())
+	 }
+	 #endif
+	 */
 	int i,j;
 	for(i=0; i<numvec; i++)
 	{
@@ -233,6 +266,20 @@ void TPZMatPoisson3d::ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatri
 		{
 			divwq += axesvec(iloc,0)*data.dphix(iloc,ishapeind);
 		}
+		/*
+		 #ifdef LOG4CXX2
+		 {
+		 std::stringstream sout;
+		 data.axes.Print("axes",sout);
+		 ivec.Print("ivec",sout);
+		 axesvec.Print("axesvec",sout);
+		 data.dphix.Print("dphix",sout);
+		 data.phi.Print("dphix",sout);
+		 sout << "divwq " << divwq;
+		 LOGPZ_DEBUG(logger,sout.str())
+		 }
+		 #endif
+		 */
 		for (j=0; j<numdual; j++) {
 			REAL fact = (-1.)*weight*data.phi(numprimalshape+j,0)*divwq;//calcula o termo da matriz B^T  e B
 			ek(i,numvec+j) += fact;
@@ -243,16 +290,32 @@ void TPZMatPoisson3d::ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatri
 	{
 		ef(numvec+i,0) += weight*fXf*data.phi(numprimalshape+i,0);//calcula o termo da matriz f
 	}
+	
+	//	 #ifdef LOG4CXX
+	//	 {
+	//	 std::stringstream sout;
+	//	 ek.Print("Matrix Rigidez El",sout);
+	//	 LOGPZ_DEBUG(logger,sout.str())
+	//	 }
+	//	 #endif
+	
+	
 }
 
 void TPZMatPoisson3d::ContributeBCHDiv(TPZMaterialData &data,REAL weight,
-									   TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
+									   TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc) {
 	int numvec = data.fVecShapeIndex.NElements();
+	//int numdual = data.numberdualfunctions;
+	//	int numprimalshape = data.phi.Rows()-numdual;
 	
 	TPZFMatrix<REAL>  &phi = data.phi;
+	//int numvec= phi.Rows();
+	//numvec=phi.Rows();
+	//   TPZFMatrix<REAL> &dphi = data.dphix;
+	//   TPZVec<REAL>  &x = data.x;
 	REAL v2[1];
 	v2[0] = bc.Val2()(0,0);
-	
+	//		cout << v2 <<endl;
 	switch (bc.Type()) {
 		case 1 :			// Neumann condition
 			int i,j;
@@ -270,6 +333,14 @@ void TPZMatPoisson3d::ContributeBCHDiv(TPZMaterialData &data,REAL weight,
 		{// Dirichlet condition
 			int in;
 			for(in = 0 ; in < numvec; in++) {
+				//int ishapeind = data.fVecShapeIndex[in].second;
+				/*#ifdef LOG4CXX
+				 {
+				 std::stringstream sout;
+				 sout<< " vec "<< in << "shape "<<ishapeind<<std::endl;
+				 LOGPZ_DEBUG(logger,sout.str())
+				 }
+				 #endif*/
 				ef(in,0) += v2[0] * phi(in,0) * weight;
 			}
 		}
@@ -298,7 +369,7 @@ void TPZMatPoisson3d::ContributeBCHDiv(TPZMaterialData &data,REAL weight,
 	
 }
 void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
-								   TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
+								   TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc) {
 	
 	if(data.fVecShapeIndex.NElements())
 	{
@@ -310,6 +381,8 @@ void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
 	}
 	
 	TPZFMatrix<REAL>  &phi = data.phi;
+	//   TPZFMatrix<REAL> &dphi = data.dphix;
+	//   TPZVec<REAL>  &x = data.x;
 	TPZFMatrix<REAL> &axes = data.axes;
 	int phr = phi.Rows();
 	short in,jn;
@@ -374,57 +447,134 @@ void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
 
 /** Returns the variable index associated with the name */
 int TPZMatPoisson3d::VariableIndex(const std::string &name){
+	/*how choose the variable index:
+	 0- no overwriting indexes
+	 1- to approximations quantities (example: solution, derivatives, ...) use 1 or 2 digits numbers
+	 2- to exact solutions use 3 digits numbers
+	 3- to other quantities use 4 digits numbers */
+	
+	/*Approximations*/
 	if(!strcmp("Solution",name.c_str()))        return  1;
-	if(!strcmp("Derivate",name.c_str()))        return  2;
+	if(!strcmp("Solution2",name.c_str()))        return  1;
+	if(!strcmp("SolutionDual",name.c_str()))        return  1;
+	if(!strcmp("Derivate",name.c_str()))        return  2;/**/
+	if(!strcmp("Derivate2",name.c_str()))        return  2;/**/
+	if(!strcmp("DerivateDual",name.c_str()))        return  2;/**/
 	if(!strcmp("KDuDx",name.c_str()))           return  3;
+	if(!strcmp("dx",name.c_str()))           return  3;
+	if(!strcmp("dx2",name.c_str()))           return  3;
+	if(!strcmp("dxDual",name.c_str()))           return  3;
 	if(!strcmp("KDuDy",name.c_str()))           return  4;
+	if(!strcmp("dy",name.c_str()))           return  4;
+	if(!strcmp("dy2",name.c_str()))           return  4;
+	if(!strcmp("dyDual",name.c_str()))           return  4;
 	if(!strcmp("KDuDz",name.c_str()))           return  5;
+	if(!strcmp("Laplaciano",name.c_str()))          return  9;
+	if(!strcmp("Laplaciano2",name.c_str()))          return  9;
+	if(!strcmp("LaplacianoDual",name.c_str()))          return  9;	
+	if(!strcmp("Laplac",name.c_str()))          return  9;	
 	if(!strcmp("NormKDu",name.c_str()))         return  6;
-	if(!strcmp("MinusKGradU",name.c_str()))     return  7;
-	if(!strcmp("p",name.c_str()))               return  8;
-	if(!strcmp("Laplac",name.c_str()))          return  9;
-	if(!strcmp("Flux",name.c_str()))            return  10;
+	if(!strcmp("MinusKGradU",name.c_str()))     return  7;/**/
+	if(!strcmp("Flux",name.c_str()))            return  10;/**/
 	if(!strcmp("Pressure",name.c_str()))        return  11;
-	
-	if(!strcmp("ExactPressure",name.c_str()))        return  12;
-	if(!strcmp("ExactFlux",name.c_str()))        return  13;
 	if(!strcmp("Divergence",name.c_str()))        return  14;
-	if(!strcmp("ExactDiv",name.c_str()))        return  15;
-	
 	if(!strcmp("PressureOmega1",name.c_str()))        return  16;
 	if(!strcmp("PressureOmega2",name.c_str()))        return  17;
 	if(!strcmp("FluxOmega1",name.c_str()))        return  18;
+	if(!strcmp("dxx",name.c_str()))             return  51;
+	if(!strcmp("dyy",name.c_str()))             return  52;
+	if(!strcmp("dxy",name.c_str()))             return  53;
+	if(!strcmp("dxx2",name.c_str()))             return  51;
+	if(!strcmp("dyy2",name.c_str()))             return  52;
+	if(!strcmp("dxy2",name.c_str()))             return  53;
+	if(!strcmp("dxxDual",name.c_str()))         return  51;
+	if(!strcmp("dyyDual",name.c_str()))         return  52;
+	if(!strcmp("dxyDual",name.c_str()))         return  53;
+	
+	/*Exact solutions*/
+	if(!strcmp("ExactSolution",name.c_str()))        return  101;	
+	if(!strcmp("Exactdx",name.c_str()))        return  103;	
+	if(!strcmp("Exactdy",name.c_str()))        return  104;	
+	if(!strcmp("ExactLaplaciano",name.c_str()))        return  105;
+	if(!strcmp("Exactdxx",name.c_str()))        return  151;		
+	if(!strcmp("Exactdyy",name.c_str()))        return  152;	
+	if(!strcmp("Exactdxy",name.c_str()))        return  153;	
+	
+	if(!strcmp("ExactSolutionDual",name.c_str()))        return  60;	
+	if(!strcmp("ExactdxDual",name.c_str()))        return  70;	
+	if(!strcmp("ExactdyDual",name.c_str()))        return  80;	
+	if(!strcmp("ExactLaplacianoDual",name.c_str()))        return  90;
+	if(!strcmp("ExactdxxDual",name.c_str()))        return  901;		
+	if(!strcmp("ExactdyyDual",name.c_str()))        return  902;	
+	if(!strcmp("ExactdxyDual",name.c_str()))        return  903;	
+	if(!strcmp("ExactPressure",name.c_str()))        return  112;
+	if(!strcmp("ExactFlux",name.c_str()))        return  113;/**/
+	if(!strcmp("ExactDiv",name.c_str()))        return  115;
+	
+	/*Other quantities*/
+	if(!strcmp("GOEstimator",name.c_str()))               return 1006;
+	if(!strcmp("GOError",name.c_str()))                   return 1007;
+	if(!strcmp("uDGxPsi",name.c_str()))                    return 1011;
+	if(!strcmp("uExataxPsi",name.c_str()))                    return 1012;
+	if(!strcmp("EfetivityIndex",name.c_str()))            return 1009;
+	if(!strcmp("POrder",name.c_str()))                    return 1010;
+	if(!strcmp("p",name.c_str()))               return  1010;	
+	if(!strcmp("Jek",name.c_str()))                    return 1013;
+	if(!strcmp("Jek_plus",name.c_str()))                    return 1023;
+	if(!strcmp("Jek_plusplus",name.c_str()))                    return 1033;	
+	if(!strcmp("Ortogonalidade",name.c_str()))                    return 1014; 
+	if(!strcmp("GOErrorEnriquecido",name.c_str()))        return 1008;	
+	if(!strcmp("MU_k",name.c_str()))                              return 1026;
+	if(!strcmp("MU_k_plus",name.c_str()))                              return 1025;
+	if(!strcmp("MU_k_plusplus",name.c_str()))                              return 1024;	
+	if(!strcmp("MU_k_ComExatas",name.c_str()))           return 1027;
+	if(!strcmp("MU_k_ortog",name.c_str()))                    return 1028;
+	if(!strcmp("HHSS_k",name.c_str()))                              return 1036;
+	if(!strcmp("HHSS_k_plus",name.c_str()))                              return 1035;	
+	if(!strcmp("HHSS_k_plusplus",name.c_str()))                              return 1034;	
+	if(!strcmp("HHSS_k_ComExatas",name.c_str()))           return 1037;
+	if(!strcmp("HHSS_k_ortog",name.c_str()))                    return 1038;
+	if(!strcmp("HGS_k",name.c_str()))                              return 1046;
+	if(!strcmp("HGS_k_plus",name.c_str()))                              return 1045;	
+	if(!strcmp("HGS_k_plusplus",name.c_str()))                              return 1044;	
+	if(!strcmp("HGS_k_ComExatas",name.c_str()))           return 1047;
+	if(!strcmp("HGS_k_ortog",name.c_str()))                    return 1048;
+	if(!strcmp("Geo_Id",name.c_str()))                    return 1015;
+	if(!strcmp("Geo_Id_father",name.c_str()))                    return 1016;
+	if(!strcmp("Regularidade",name.c_str()))                    return 1017;
+	//
 	return TPZMaterial::VariableIndex(name);
 }
 
 int TPZMatPoisson3d::NSolutionVariables(int var){
-	if(var == 1) return 1;
-	if(var == 2) return fDim;//arrumar o fluxo de hdiv para ser fdim tbem enquanto isso faco isso
-	if ((var == 3) || (var == 4) || (var == 5) || (var == 6)) return 1;
-	if (var == 7) return fDim;
-	if (var == 8) return 1;
-	if (var == 9) return 1;
-	if (var==10) return fDim;
-	if (var==11) return 1;
 	
-	if (var==12) return 1;
-	if (var==13) return fDim;
-	if (var==14) return 1;
-	if (var==15) return 1;
-	//teste de acoplamento
-	if (var==16) return 1;
-	if (var==17) return 1;
 	if (var==18) return 3;
 	
+	if((var == 2)||(var==10)||(var==113)||(var == 7)) return fDim;
+	
+	if((var == 1)||(var == 3) || (var == 4) || (var == 5) || (var == 6)||(var == 8)||(var == 9)||(var==11)||(var==12)||(var==14)||(var==15)||(var==16)||(var==17)||(var==51)||(var==52)||(var==53)||(var==60)||(var==70)||(var==61)||(var==71)||(var==81)||(var==91)) return 1;
+	
+	if((var==911)||(var==912)||(var==913)||(var==80)||(var==90)||(var==901)||(var==902)||(var==903)||(var==106)||(var==107)||(var==111)||(var==112)||(var==109)||(var==110)||(var==113)||(var==114)||(var==115)||(var==116)||(var==117)||(var==126)||(var==127)||(var==128)||(var==136)||(var==137)||(var==138)||(var==146)||(var==147)||(var==148)||(var==123)||(var==133)||(var==124)||(var==125)||(var==134)||(var==135)||(var==144)||(var==145)) return 1;
+	
+	if((var==1006)||(var==1007)||(var==1011)||(var==1012)||(var==1009)||(var==1010)||(var==1013)||(var==1023)||(var==1033)||(var==1014)||(var==1008)||(var==1026)||(var==1025)||(var==1024)||(var==1027)||(var==1028)||(var==1036)||(var==1035)||(var==1034)||(var==1037)||(var==1038)||(var==1046)||(var==1045)||(var==1044)||(var==1047)||(var==1048)||(var==1015)||(var==1016)||(var==1017)) return 1;
 	
 	return TPZMaterial::NSolutionVariables(var);
 }
 
-void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
+void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<REAL> &Solout){
 	
-	TPZVec<STATE> pressure(1);
+	TPZVec<REAL> pressure(1);
 	TPZVec<REAL> pto(3);
-	TPZFMatrix<STATE> flux(3,1);
+	TPZFMatrix<REAL> flux(3,1);
+	
+	TPZVec<REAL> Sol(data.sol[0]);
+	TPZFMatrix<REAL> DSol(data.dsol[0]);
+	TPZVec<REAL> x(data.x);
+	TPZVec<REAL> ExactSolPrimal;
+	TPZFMatrix<REAL> ExactDSolPrimal;
+	TPZVec<REAL> ExactSolDual;
+	TPZFMatrix<REAL> ExactDSolDual;
+	
 	
     int numbersol = data.sol.size();
     if (numbersol != 1) {
@@ -433,15 +583,13 @@ void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
 	
 	
 	switch (var) {
-		case 8:
+		case 1010:
 			Solout[0] = data.p;
 			break;
 		case 10:
 			if (data.numberdualfunctions) {
-				
 				Solout[0]=data.sol[0][0];
 				Solout[1]=data.sol[0][1];
-				
 			}
 			else {
 				this->Solution(data.sol[0], data.dsol[0], data.axes, 2, Solout);
@@ -457,66 +605,247 @@ void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
 			}
 			break;
 			
-		case 12:
-				fForcingFunctionExact->Execute(data.x,pressure,flux);
-				
-				Solout[0]=pressure[0];
+		case 112:
+			//if (fForcingFunctionExact) {
+			//TPZVec<REAL> pressure(1);
+			//TPZVec<REAL> pto(3);
+			//	TPZFMatrix<REAL> flux(3,1);		
+			fForcingFunctionExact->Execute(data.x,pressure,flux);
+			Solout[0]=pressure[0];
+			//}
 			break;
-		case 13:
-				fForcingFunctionExact->Execute(data.x,pressure,flux);
-				
-				Solout[0]=flux(0,0);
-				Solout[1]=flux(1,0);
-				break;
-			case 14:
-				Solout[0]=data.sol[0][data.sol[0].NElements()-1];
-				break;
-			case 16:
-				if (data.numberdualfunctions) {
-					Solout[0]=data.sol[0][2];
-				}
-				else {
-					std::cout<<"Pressao somente em Omega1"<<std::endl;
-					Solout[0]=NULL;
-				}
-				
-				break;
-			case 17:
-				if (!data.numberdualfunctions) {
-					Solout[0]=data.sol[0][0];
-				}
-				else {
-					std::cout<<"Pressao somente em omega2"<<std::endl;
-					Solout[0]=NULL;
-				}
-				
-				break;
-			case 18:
-				if( data.numberdualfunctions){
-					Solout[0]=data.sol[0][0];//fluxo de omega1
-					Solout[1]=data.sol[0][1];
-					//	Solout[2]=data.sol[2];
-					return;
-				}
-				else {
-					std::cout<<"Pressao somente em omega2"<<std::endl;
-					Solout[0]=NULL;
-				}
-				
-				break;
-				
-				
-			default:
-				break;
 			
+		case 113:
+			//if (fForcingFunctionExact) {
+			fForcingFunctionExact->Execute(data.x,pressure,flux);
+			Solout[0]=flux(0,0);
+			Solout[1]=flux(1,0);
+			break;
+		case 14:
+			Solout[0]=data.sol[0][data.sol[0].NElements()-1];
+			break;
+		case 16:
+			if (data.numberdualfunctions) {
+				Solout[0]=data.sol[0][2];
+			}
+			else {
+				std::cout<<"Pressao somente em Omega1"<<std::endl;
+				Solout[0]=NULL;
+			}
+			break;
+		case 17:
+			if (!data.numberdualfunctions) {
+				Solout[0]=data.sol[0][0];
+			}
+			else {
+				std::cout<<"Pressao somente em omega2"<<std::endl;
+				Solout[0]=NULL;
+			}
+			
+			break;
+		case 18:
+			if( data.numberdualfunctions){
+				Solout[0]=data.sol[0][0];//fluxo de omega1
+				Solout[1]=data.sol[0][1];
+				//	Solout[2]=data.sol[2];
+				return;
+			}
+			else {
+				std::cout<<"Pressao somente em omega2"<<std::endl;
+				Solout[0]=NULL;
+			}
+			break;
+		case 51:
+			Solout[0] = DSol(5,0);//dxx
+			if (DSol.Rows()<6) {
+				std::cout<< "dxx was not computed"<< std::endl;
+				return;
+			}			
+			break;
+		case 52:
+			Solout[0] = DSol(6,0);//dyy
+			if (DSol.Rows()<7) {
+				std::cout<< "dyy was not computed"<< std::endl;
+				return;
+			}			
+			break;
+		case 53:
+			if (DSol.Rows()<8) {
+				std::cout<< "dxy was not computed"<< std::endl;
+				return;
+			}			
+			Solout[0] = DSol(7,0);//dxy
+			break;
+		case 101:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(data.x,ExactSolPrimal,ExactDSolPrimal, 1);
+				Solout[0] = ExactSolPrimal[0];//ExactSolution primal
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 103:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 2);
+				Solout[0] = ExactDSolPrimal(0,0);//Exactdx primal
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 104:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 3);
+				Solout[0] = ExactDSolPrimal(1,0);//Exactdy primal
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 105:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 4);
+				Solout[0] = ExactDSolPrimal(2,0);//ExactLaplaciano primal
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 151:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 5);
+				Solout[0] = ExactDSolPrimal(5,0);//dxx
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 152:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 6);
+				Solout[0] = ExactDSolPrimal(6,0);//dyy
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+		case 153:
+			if(TPZMatPoisson3d::fPrimalExactSolution)
+			{
+				TPZMatPoisson3d::fPrimalExactSolution(x,ExactSolPrimal,ExactDSolPrimal, 7);
+				Solout[0] = ExactDSolPrimal(7,0);//dxy
+			}
+			else
+			{
+				std::cout<< "not found primal exact solution"<< std::endl;
+			}
+			break;
+			
+			
+			if(TPZMatPoisson3d::fDualExactSolution)
+				
+				case 60:
+				if(TPZMatPoisson3d::fDualExactSolution)
+				{
+					TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 1);
+					Solout[0] = ExactSolDual[0];//ExactSolution dual
+				}
+				else
+				{
+					std::cout<< "not found dual exact solution"<< std::endl;
+				}
+			break;
+		case 70:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 2);
+				Solout[0] = ExactDSolDual(0,0);//Exactdx dual
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+		case 80:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 3);
+				Solout[0] = ExactDSolDual(1,0);//Exactdy dual
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+		case 90:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 4);
+				Solout[0] = ExactDSolDual(2,0);//ExactLaplaciano dual
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+		case 901:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 5);
+				Solout[0] = ExactDSolDual(5,0);//dxx
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+		case 902:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 6);
+				Solout[0] = ExactDSolDual(6,0);//dyy
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+		case 903:
+			if(TPZMatPoisson3d::fDualExactSolution)
+			{
+				TPZMatPoisson3d::fDualExactSolution(x,ExactSolDual,ExactDSolDual, 7);
+				Solout[0] = ExactDSolDual(7,0);//dxy
+			}
+			else
+			{
+				std::cout<< "not found dual exact solution"<< std::endl;
+			}
+			break;
+			
+			
+		default:
 			this->Solution(data.sol[0], data.dsol[0], data.axes, var, Solout);	
+			break;			
 			
 	}
 	
 }
 
 #include "pzaxestools.h"
-void TPZMatPoisson3d::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<STATE> &Solout){
+void TPZMatPoisson3d::Solution(TPZVec<REAL> &Sol,TPZFMatrix<REAL> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<REAL> &Solout){
 	
 	Solout.Resize( this->NSolutionVariables( var ) );
 	
@@ -528,26 +857,26 @@ void TPZMatPoisson3d::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 		int id;
 		for(id=0 ; id<fDim; id++) {
 			TPZFNMatrix<9> dsoldx;
-			TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
+			TPZAxesTools<REAL>::Axes2XYZ(DSol, dsoldx, axes);
 			Solout[id] = dsoldx(id,0);//derivate
 		}
 		return;
 	}//var == 2
 	if (var == 3){ //KDuDx
 		TPZFNMatrix<9> dsoldx;
-		TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
+		TPZAxesTools<REAL>::Axes2XYZ(DSol, dsoldx, axes);
 		Solout[0] = dsoldx(0,0) * this->fK;
 		return;
 	}//var ==3
 	if (var == 4){ //KDuDy
 		TPZFNMatrix<9> dsoldx;
-		TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
+		TPZAxesTools<REAL>::Axes2XYZ(DSol, dsoldx, axes);
 		Solout[0] = dsoldx(1,0) * this->fK;
 		return;
 	}//var == 4 
 	if (var == 5){ //KDuDz
 		TPZFNMatrix<9> dsoldx;
-		TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
+		TPZAxesTools<REAL>::Axes2XYZ(DSol, dsoldx, axes);
 		Solout[0] = dsoldx(2,0) * this->fK;
 		return;
 	}//var == 5
@@ -564,7 +893,7 @@ void TPZMatPoisson3d::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 		int id;
 		//REAL val = 0.;
 		TPZFNMatrix<9> dsoldx;
-		TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
+		TPZAxesTools<REAL>::Axes2XYZ(DSol, dsoldx, axes);
 		for(id=0 ; id<fDim; id++) {
 			Solout[id] = -1. * this->fK * dsoldx(id,0);
 		}
@@ -572,6 +901,10 @@ void TPZMatPoisson3d::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 	}//var == 7  
 	if(var == 9){//Laplac
 		Solout.Resize(1);
+		if (DSol.Rows()<3) {
+			std::cout<< "the laplacian was not computed"<< std::endl;
+			return;
+		}
 		Solout[0] = DSol(2,0);
 		return;
 	}//Laplac
@@ -580,10 +913,13 @@ void TPZMatPoisson3d::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 	
 }//method
 
-void TPZMatPoisson3d::Flux(TPZVec<REAL> &/*x*/, TPZVec<STATE> &/*Sol*/, TPZFMatrix<STATE> &/*DSol*/, TPZFMatrix<REAL> &/*axes*/, TPZVec<STATE> &/*flux*/) {
+void TPZMatPoisson3d::Flux(TPZVec<REAL> &/*x*/, TPZVec<REAL> &/*Sol*/, TPZFMatrix<REAL> &/*DSol*/, TPZFMatrix<REAL> &/*axes*/, TPZVec<REAL> &/*flux*/) {
 	//Flux(TPZVec<REAL> &x, TPZVec<REAL> &Sol, TPZFMatrix<REAL> &DSol, TPZFMatrix<REAL> &axes, TPZVec<REAL> &flux)
 }
-void TPZMatPoisson3d::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values){
+void TPZMatPoisson3d::ErrorsHdiv(TPZMaterialData &data,TPZVec<REAL> &u_exact,TPZFMatrix<REAL> &du_exact,TPZVec<REAL> &values){
+	
+	//	std::cout<<"vetor VALUES no ERROSHDIV "<<values<<std::endl;
+	
 	
 	TPZVec<REAL> sol(1),dsol(fDim),div(1);
 	Solution(data,11,sol);//pressao
@@ -608,9 +944,14 @@ void TPZMatPoisson3d::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TP
 	//values[3] : Hdiv norm => values[1]+values[2];
 	values[3]= values[1]+values[2];
 	
+	
 	std::cout<< "erro pressao  "<<values[0]<<" erro fluxo "<<values[1]<<std::endl;
+	
+	//std::cout<<"vetor VALUES no FINAL de ERROSHDIV "<<values<<std::endl;
+	
 }
 
+//ofstream ErroFile("erro.txt");
 void TPZMatPoisson3d::Errors(TPZVec<REAL> &x,TPZVec<REAL> &u,
 							 TPZFMatrix<REAL> &dudx, TPZFMatrix<REAL> &axes, TPZVec<REAL> &/*flux*/,
 							 TPZVec<REAL> &u_exact,TPZFMatrix<REAL> &du_exact,TPZVec<REAL> &values) {
@@ -635,6 +976,11 @@ void TPZMatPoisson3d::Errors(TPZVec<REAL> &x,TPZVec<REAL> &u,
 	}
 	//values[0] : erro em norma H1 <=> norma Energia
 	values[0]  = values[1]+values[2];
+	
+	//  ErroFile << x[0] << "  " << x[1] << "  " << u_exact[0] << "  " << sol[0] << "  " <<  du_exact(0,0) << "  " << dsol[0] << "  " << du_exact(1,0) << "  " << dsol[1] << endl;
+	
+	
+	
 }
 
 void TPZMatPoisson3d::BCInterfaceJump(TPZVec<REAL> &x, TPZSolVec &leftu,TPZBndCond &bc,TPZSolVec & jump){
@@ -661,7 +1007,13 @@ void TPZMatPoisson3d::ContributeEnergy(TPZVec<REAL> &x,
 	int dim = dsol.NElements()/sol.NElements();
 	
 	//Equa�o de Poisson
+	
+	//      int i, eqs = dsol.NElements()/dim;
 	if(sol.NElements() != 1) PZError << "";
+	
+	//cout << "FADREAL init : \n" << FADREAL(weight * fXf(0,0));
+	
+	//FADFADREAL Buff;
 	
 	U+= sol[0] * FADREAL(weight * fXf);
 	
@@ -688,11 +1040,17 @@ void TPZMatPoisson3d::ContributeEnergy(TPZVec<REAL> &x,
 			 U += Buff * FADREAL(weight/2.); //  U=((du/dx)^2+(du/dy)^2+(du/dz)^2)/2*/
 			break;
 	}
+	//cout << "\nCalcEnergy\n" << U;
+	
 }
 
-void TPZMatPoisson3d::ContributeBCEnergy(TPZVec<REAL> & x,TPZVec<FADFADREAL> & sol, FADFADREAL &U, REAL weight, TPZBndCond &bc) {	
+void TPZMatPoisson3d::ContributeBCEnergy(TPZVec<REAL> & x,TPZVec<FADFADREAL> & sol, FADFADREAL &U, REAL weight, TPZBndCond &bc)
+{
+	//int i, phr=sol[0].size();
+	
 	FADFADREAL solMinBC = sol[0] - FADREAL( bc.Val2()(0,0) );
 	
+	//cout << "\nsolution " << sol[0];
 	
 	switch (bc.Type()) {
 		case 0 :	// Dirichlet condition
@@ -713,16 +1071,46 @@ void TPZMatPoisson3d::ContributeBCEnergy(TPZVec<REAL> & x,TPZVec<FADFADREAL> & s
 
 #endif
 
+// bool IsIdentity(TPZFMatrix<REAL> &axes){
+//   int dim = axes.Rows();
+//   if(dim > axes.Cols()) dim = axes.Cols();
+//   double val;
+//   for(int i = 0; i < dim; i++){
+//     for(int j = 0; j < dim; j++){
+//       val = axes(i,j);
+//       if (i==j){
+//         if(fabs(val-1.) > 1e-5){
+//           return false;
+//         }
+//       }
+//       else{
+//         if(fabs(val-0.) > 1e-5){
+//           return false;
+//         }
+//       }
+//     }
+//   }
+//   return true;
+// }
 
 void TPZMatPoisson3d::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright,
                                           REAL weight,
-                                          TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
+                                          TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef){
 	
 	TPZFMatrix<REAL> &dphiLdAxes = dataleft.dphix;
 	TPZFMatrix<REAL> &dphiRdAxes = dataright.dphix;
 	TPZFMatrix<REAL> &phiL = dataleft.phi;
 	TPZFMatrix<REAL> &phiR = dataright.phi;
 	TPZManVector<REAL,3> &normal = data.normal;
+	
+	
+	// if(IsIdentity( data.axesleft ) == false){
+	//   int iiii = 23489423;
+	// }
+	// 
+	// if(IsIdentity( data.axesright ) == false){
+	//   int iiii = 23489423;
+	// }
 	
 	TPZFNMatrix<660> dphiL, dphiR;
 	TPZAxesTools<REAL>::Axes2XYZ(dphiLdAxes, dphiL, dataleft.axes);
@@ -957,7 +1345,7 @@ void TPZMatPoisson3d::ContributeInterface(TPZMaterialData &data, TPZMaterialData
 /** Termos de penalidade. */
 void TPZMatPoisson3d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, 
                                             REAL weight,
-                                            TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+                                            TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc){
 	
 	TPZFMatrix<REAL> &dphiL = dataleft.dphix;
 	TPZFMatrix<REAL> &phiL = dataleft.phi;
@@ -972,6 +1360,16 @@ void TPZMatPoisson3d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialDa
 	for(id=0; id<fDim; id++) ConvNormal += fC*fConvDir[id]*normal[id];
 	switch(bc.Type()) {
 		case 0: // DIRICHLET
+			
+			/** ***************************** */
+			/*    for(int in = 0 ; in < nrowl; in++) {
+			 ef(in,0) += gBigNumber * bc.Val2()(0,0) * phiL(in,0) * weight;
+			 for (int jn = 0 ; jn < nrowl; jn++) {
+			 ek(in,jn) += gBigNumber * phiL(in,0) * phiL(jn,0) * weight;
+			 }
+			 }    
+			 return;*/
+			/** ***************************** */
 			
 			//Diffusion
 			for(il=0; il<nrowl; il++) {
@@ -1190,3 +1588,5 @@ void TPZMatPoisson3d::Read(TPZStream &buf, void *context){
 }
 
 template class TPZRestoreClass < TPZMatPoisson3d, TPZMATPOISSON3D> ;
+
+

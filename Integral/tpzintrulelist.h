@@ -7,6 +7,7 @@
 #define TPZINTRULELIST_H
 
 #include "pzvec.h"
+#include "pzmanvector.h"
 
 class TPZGaussRule;
 class TPZGaussLegendreRule;
@@ -23,14 +24,14 @@ class TPZIntRuleP3D;
 class TPZIntRuleList {
 	
 	/** @brief Pointer to an array of integration rules (Gauss Legendre) for line, quad and cube elements */
-    TPZVec<TPZGaussRule* >	fintlist;
+    TPZManVector<TPZGaussRule* >	fintlist;
 
 	/** @brief Pointer to an array of integration rules for triangle */
-    TPZVec<TPZIntRuleT* >   fintlistT;
+    TPZManVector<TPZIntRuleT* >   fintlistT;
 	/** @brief Pointer to an array of integration rules for tetrahedra */
-    TPZVec<TPZIntRuleT3D* > fintlistT3D;
+    TPZManVector<TPZIntRuleT3D* > fintlistT3D;
 	/** @brief Pointer to an array of integration rules for pyramid */
-    TPZVec<TPZIntRuleP3D* > fintlistP3D;
+    TPZManVector<TPZIntRuleP3D* > fintlistP3D;
 	
     public :
 	

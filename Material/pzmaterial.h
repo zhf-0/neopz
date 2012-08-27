@@ -112,7 +112,8 @@ public:
             std::cout << "*** This Will Be a Disaster!!! ***\n";
             DebugStop();
         }
-        fId = id; }
+        fId = id;
+    }
     
     /** @brief Returns the number of state variables associated with the material */
     virtual int NStateVariables() = 0;

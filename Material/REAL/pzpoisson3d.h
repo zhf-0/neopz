@@ -1,7 +1,9 @@
 /**
- * @file
+ * \file
  * @brief Contains the TPZMatPoisson3d class.
  */
+
+//$Id: pzpoisson3d.h,v 1.36 2011-05-30 19:22:18 denise Exp $
 
 #ifndef MATPOISSON3DH
 #define MATPOISSON3DH
@@ -10,6 +12,7 @@
 #include "pzdiscgal.h"
 #include "pzfmatrix.h"
 
+//#include "pzmanvector.h"
 
 #ifdef _AUTODIFF
 #include "fadType.h"
@@ -66,6 +69,12 @@ class TPZMatPoisson3d : public TPZDiscontinuousGalerkin {
 	
 public:
 	
+	/**
+	 * @brief Implemts the exact solution (primal or adjunt) associated with the sol_id index. Used to validation and a priori error estimation
+	 */	
+	static void (*fPrimalExactSolution)(TPZVec<REAL> &loc,TPZVec<REAL> &result, TPZFMatrix<REAL> &derivada, int sol_id);
+	static void (*fDualExactSolution)(TPZVec<REAL> &loc,TPZVec<REAL> &result, TPZFMatrix<REAL> &derivada, int sol_id);
+	
 	/** @brief Constant multiplyer of penalty term, when required is set. */
 	REAL fPenaltyConstant;
 	
@@ -111,7 +120,7 @@ public:
 		return false;
 	}
 	
-	virtual TPZMaterial * NewMaterial(){
+	virtual TPZMaterial *NewMaterial(){
 		return new TPZMatPoisson3d(*this);
 	}
 	
@@ -140,7 +149,7 @@ public:
 	 * Attention that method SetParameters override the modifications of this method. \n
 	 * Then call it after SetParameters and never before or it will have no effect.
 	 */
-	void SetRightK(REAL rightK) {
+	void SetRightK(REAL rightK){
 		this->fRightK = rightK;
 	}
 	REAL GetRightK(){
@@ -150,20 +159,15 @@ public:
 	virtual void Print(std::ostream & out);
 	
 	virtual std::string Name() { return "TPZMatPoisson3d"; }
-
-	/**
-	 * @name Contribute methods (weak formulation)
-	 * @{
-	 */
-	 
-	virtual void Contribute(TPZMaterialData &data,REAL weight,
-							TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
-	virtual void ContributeBCHDiv(TPZMaterialData &data,REAL weight,
-								  TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
-	virtual void ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
 	
 	virtual void Contribute(TPZMaterialData &data,REAL weight,
-							TPZFMatrix<STATE> &ef)
+							TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef);
+	virtual void ContributeBCHDiv(TPZMaterialData &data,REAL weight,
+								  TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc);
+	virtual void ContributeHDiv(TPZMaterialData &data,REAL weight,TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef);
+	
+	virtual void Contribute(TPZMaterialData &data,REAL weight,
+							TPZFMatrix<REAL> &ef)
 	{
 		TPZDiscontinuousGalerkin::Contribute(data,weight,ef);
 	}
@@ -177,30 +181,14 @@ public:
 #endif
 	
 	virtual void ContributeBC(TPZMaterialData &data,REAL weight,
-							  TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
+							  TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc);
 	
 	virtual void ContributeBC(TPZMaterialData &data,REAL weight,
-							  TPZFMatrix<STATE> &ef,TPZBndCond &bc)
+							  TPZFMatrix<REAL> &ef,TPZBndCond &bc)
 	{
 		TPZDiscontinuousGalerkin::ContributeBC(data,weight,ef,bc);
 	}
-
-	virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
 	
-	virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight,
-									 TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
-	
-	virtual void ContributeBCInterface(TPZMaterialData &data,TPZMaterialData &dataleft,REAL weight,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
-	{
-		TPZDiscontinuousGalerkin::ContributeBCInterface(data,dataleft,weight,ef,bc);
-	}
-	
-	virtual void ContributeInterface(TPZMaterialData &data,TPZMaterialData &dataleft,TPZMaterialData &dataright,REAL weight,
-									 TPZFMatrix<STATE> &ef)
-	{
-		TPZDiscontinuousGalerkin::ContributeInterface(data,dataleft,dataright,weight,ef);
-	}
-
 #ifdef _AUTODIFF
 	
 	virtual void ContributeBCEnergy(TPZVec<REAL> & x,
@@ -208,8 +196,6 @@ public:
 									REAL weight, TPZBndCond &bc);
 	
 #endif
-
-	/** @} */
 	
 	virtual int VariableIndex(const std::string &name);
 	
@@ -218,20 +204,37 @@ public:
 	virtual int NFluxes(){ return 3;}
 	
 protected:
-	virtual void Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<STATE> &Solout);
+	virtual void Solution(TPZVec<REAL> &Sol,TPZFMatrix<REAL> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<REAL> &Solout);
 public:
 	
-	virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+	virtual void Solution(TPZMaterialData &data, int var, TPZVec<REAL> &Solout);
 	
-	virtual void Flux(TPZVec<REAL> &x, TPZVec<STATE> &Sol, TPZFMatrix<STATE> &DSol, TPZFMatrix<REAL> &axes, TPZVec<STATE> &flux);
+	virtual void Flux(TPZVec<REAL> &x, TPZVec<REAL> &Sol, TPZFMatrix<REAL> &DSol, TPZFMatrix<REAL> &axes, TPZVec<REAL> &flux);
 	
-	void Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
-				TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &flux,
-				TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);
-	void ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);
+	void Errors(TPZVec<REAL> &x,TPZVec<REAL> &u,
+				TPZFMatrix<REAL> &dudx, TPZFMatrix<REAL> &axes, TPZVec<REAL> &flux,
+				TPZVec<REAL> &u_exact,TPZFMatrix<REAL> &du_exact,TPZVec<REAL> &values);
+	void ErrorsHdiv(TPZMaterialData &data,TPZVec<REAL> &u_exact,TPZFMatrix<REAL> &du_exact,TPZVec<REAL> &values);
 	
 	
 	virtual int NEvalErrors() {return 5;}
+	
+	
+	virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight,TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef,TPZBndCond &bc);
+	
+	virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight,
+									 TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef);
+	
+	virtual void ContributeBCInterface(TPZMaterialData &data,TPZMaterialData &dataleft,REAL weight,TPZFMatrix<REAL> &ef,TPZBndCond &bc)
+	{
+		TPZDiscontinuousGalerkin::ContributeBCInterface(data,dataleft,weight,ef,bc);
+	}
+	
+	virtual void ContributeInterface(TPZMaterialData &data,TPZMaterialData &dataleft,TPZMaterialData &dataright,REAL weight,
+									 TPZFMatrix<REAL> &ef)
+	{
+		TPZDiscontinuousGalerkin::ContributeInterface(data,dataleft,dataright,weight,ef);
+	}
 	
 	/**
 	 * @brief Compute square of residual of the differential equation at one integration point.

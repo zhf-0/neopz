@@ -28,7 +28,8 @@ using namespace std;
 #include "pzlog.h"
 
 #ifdef LOG4CXX
-static LoggerPtr logger(Logger::getLogger("pz.strmatrix.tpzstructmatrix"));
+//static LoggerPtr logger(Logger::getLogger("pz.strmatrix.tpzstructmatrix"));
+static LoggerPtr logger(Logger::getLogger("pz.strmatrix"));
 static LoggerPtr loggerel(Logger::getLogger("pz.strmatrix.element"));
 static LoggerPtr loggerel2(Logger::getLogger("pz.strmatrix.elementinterface"));
 static LoggerPtr loggerelmat(Logger::getLogger("pz.strmatrix.elementmat"));
@@ -85,12 +86,12 @@ TPZStructMatrix *TPZStructMatrix::Clone() {
 }
 
 void TPZStructMatrix::Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
-	if(this->fNumThreads){
-		this->MultiThread_Assemble(stiffness,rhs,guiInterface);
-	}
-	else{
+//	if(this->fNumThreads){
+//		this->MultiThread_Assemble(stiffness,rhs,guiInterface);
+//	}
+//	else{
 		this->Serial_Assemble(stiffness,rhs,guiInterface);
-	}
+//	}
 }
 
 void TPZStructMatrix::Assemble(TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
@@ -128,6 +129,10 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 	TPZTimer assemble("Assembling the stiffness matrices");
 	TPZAdmChunkVector<TPZCompEl *> &elementvec = fMesh->ElementVec();
 	
+		TPZFileStream ElemMatrix, ElemRightSide;
+//		ElemMatrix.OpenWrite("eksJoao620.dat");
+//		ElemRightSide.OpenWrite("efsJoao620.dat");
+
 	int count = 0;
 	for(iel=0; iel < nelem; iel++) {
 		TPZCompEl *el = elementvec[iel];
@@ -163,49 +168,55 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 		calcstiff.start();
 		
 		el->CalcStiff(ek,ef);
+//		if(iel>499 && iel<619)
+//		{
+//		ek.fMat.Write(ElemMatrix,1);
+//		ef.fMat.Write(ElemRightSide,1);
+//		}
+//		std::cout<< "el="<< iel<<std::endl;
 		
 		if(guiInterface) if(guiInterface->AmIKilled()){
 			return;
 		}
 		
-#ifdef LOG4CXX
-		if(dynamic_cast<TPZSubCompMesh * >(fMesh))
-		{
-			std::stringstream objname;
-			objname << "Element" << iel;
-			std::string name = objname.str();
-			objname << " = ";
-			std::stringstream sout;
-			ek.fMat.Print(objname.str().c_str(),sout,EMathematicaInput);
-			sout << "AppendTo[AllEig,Eigenvalues[" << name << "]];";
-			
-			LOGPZ_DEBUG(loggerelmat,sout.str())
-			/*		  if(iel == 133)
-			 {
-			 std::stringstream sout2;
-			 el->Reference()->Print(sout2);
-			 el->Print(sout2);
-			 LOGPZ_DEBUG(logger,sout2.str())
-			 }
-			 */
-		}
+//#ifdef LOG4CXX
+//		if(dynamic_cast<TPZSubCompMesh * >(fMesh))
+//		{
+//			std::stringstream objname;
+//			objname << "Element" << iel;
+//			std::string name = objname.str();
+//			objname << " = ";
+//			std::stringstream sout;
+//			ek.fMat.Print(objname.str().c_str(),sout,EMathematicaInput);
+//			sout << "AppendTo[AllEig,Eigenvalues[" << name << "]];";
+//			
+//			LOGPZ_DEBUG(loggerelmat,sout.str())
+//			/*		  if(iel == 133)
+//			 {
+//			 std::stringstream sout2;
+//			 el->Reference()->Print(sout2);
+//			 el->Print(sout2);
+//			 LOGPZ_DEBUG(logger,sout2.str())
+//			 }
+//			 */
+//		}
+//		
+//#endif
 		
-#endif
-		
-#ifdef CHECKCONSISTENCY
-		//extern TPZCheckConsistency stiffconsist("ElementStiff");
-		stiffconsist.SetOverWrite(true);
-		bool result;
-		result = stiffconsist.CheckObject(ek.fMat);
-		if(!result)
-		{
-			globalresult = false;
-			std::stringstream sout;
-			sout << "element " << iel << " computed differently";
-			LOGPZ_ERROR(loggerCheck,sout.str())
-		}
-		
-#endif
+//#ifdef CHECKCONSISTENCY
+//		//extern TPZCheckConsistency stiffconsist("ElementStiff");
+//		stiffconsist.SetOverWrite(true);
+//		bool result;
+//		result = stiffconsist.CheckObject(ek.fMat);
+//		if(!result)
+//		{
+//			globalresult = false;
+//			std::stringstream sout;
+//			sout << "element " << iel << " computed differently";
+//			LOGPZ_ERROR(loggerCheck,sout.str())
+//		}
+//		
+//#endif
 		
 		calcstiff.stop();
 		assemble.start();
@@ -218,24 +229,24 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 			}
 			stiffness.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
 			rhs.AddFel(ef.fMat,ek.fSourceIndex,ek.fDestinationIndex);
-#ifdef LOG4CXX
-			if(loggerel->isDebugEnabled() && ! dynamic_cast<TPZSubCompMesh *>(fMesh))
-			{
-				std::stringstream sout;
-				sout << "Element index " << iel << std::endl;
-                TPZGeoEl *gel = el->Reference();
-                int nsides = gel->NSides();
-                TPZManVector<REAL> ksi(gel->Dimension()), co(3);
-                gel->CenterPoint(nsides-1, ksi);
-                gel->X(ksi, co);
-                sout << "center point " << co << std::endl;
-//				sout << "Element stiffness matrix\n";
-//				ek.fMat.Print("Element Stiffness Matrix", sout);
-				ek.Print(sout);
-				ef.Print(sout);
-				LOGPZ_DEBUG(loggerel,sout.str())
-			}
-#endif
+//#ifdef LOG4CXX
+//			if(loggerel->isDebugEnabled() && ! dynamic_cast<TPZSubCompMesh *>(fMesh))
+//			{
+//				std::stringstream sout;
+//				sout << "Element index " << iel << std::endl;
+//                TPZGeoEl *gel = el->Reference();
+//                int nsides = gel->NSides();
+//                TPZManVector<REAL> ksi(gel->Dimension()), co(3);
+//                gel->CenterPoint(nsides-1, ksi);
+//                gel->X(ksi, co);
+//                sout << "center point " << co << std::endl;
+////				sout << "Element stiffness matrix\n";
+////				ek.fMat.Print("Element Stiffness Matrix", sout);
+//				ek.Print(sout);
+//				ef.Print(sout);
+//				LOGPZ_DEBUG(loggerel,sout.str())
+//			}
+//#endif
 		} else {
 			// the element has dependent nodes
 			ek.ApplyConstraints();
@@ -247,32 +258,34 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 			}
 			stiffness.AddKel(ek.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
 			rhs.AddFel(ef.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
-#ifdef LOG4CXX
-			if(loggerel->isDebugEnabled() && ! dynamic_cast<TPZSubCompMesh *>(fMesh))
-			{
-				std::stringstream sout;
-				ek.Print(sout);
-				ef.Print(sout);
-				LOGPZ_DEBUG(loggerel,sout.str())
-			}
-#endif
+//#ifdef LOG4CXX
+//			if(loggerel->isDebugEnabled() && ! dynamic_cast<TPZSubCompMesh *>(fMesh))
+//			{
+//				std::stringstream sout;
+//				ek.Print(sout);
+//				ef.Print(sout);
+//				LOGPZ_DEBUG(loggerel,sout.str())
+//			}
+//#endif
 		}
 		
 		assemble.stop();
 	}//fim for iel
+	
+	
 	if(count > 20) std::cout << std::endl;
     
-#ifdef LOG4CXX
-    if(loggerCheck->isDebugEnabled())
-	{
-		std::stringstream sout;
-		sout << "The comparaison results are : consistency check " << globalresult << " write read check " << writereadresult;
-		stiffness.Print("Matriz de Rigidez: ",sout);
-		rhs.Print("Right Handside", sout);
-		LOGPZ_DEBUG(loggerCheck,sout.str())
-	}
-	
-#endif
+//#ifdef LOG4CXX
+//    if(loggerCheck->isDebugEnabled())
+//	{
+//		std::stringstream sout;
+//		sout << "The comparaison results are : consistency check " << globalresult << " write read check " << writereadresult;
+//		stiffness.Print("Matriz de Rigidez: ",sout);
+//		rhs.Print("Right Handside", sout);
+//		LOGPZ_DEBUG(loggerCheck,sout.str())
+//	}
+//	
+//#endif
 	
 }
 

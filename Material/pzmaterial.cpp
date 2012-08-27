@@ -32,16 +32,41 @@ TPZMaterial::TPZMaterial(){
 	this->fId = -666;
 	this->fForcingFunction = NULL;
 	this->fLinearContext = true;
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        sout<< "\n criando o material que aponta para: " << (void*)this<< "\n";
+        LOGPZ_DEBUG(logger,sout.str());
+    }
+#endif
+
+    
 }
 
 TPZMaterial::TPZMaterial(int id) {
 	this->SetId(id);
 	fForcingFunction = 0;
 	this->fLinearContext = true;
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        sout<< "\n criando o material que aponta para: " << (void*)this<< "\n";
+        LOGPZ_DEBUG(logger,sout.str());
+    }
+#endif
+
 }
 
 TPZMaterial::~TPZMaterial()
 {
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        sout<< "\n deletando o material que aponta para: " << (void*)this<< "\n";
+        LOGPZ_DEBUG(logger,sout.str());
+    }
+#endif
+
 }
 
 
@@ -49,6 +74,14 @@ TPZMaterial::TPZMaterial(const TPZMaterial &material) {
 	fId = material.fId;
 	fForcingFunction = material.fForcingFunction;
 	fLinearContext = material.fLinearContext;
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        sout<< "\n criando material que aponta para: " << (void*)this<< "\n";
+        LOGPZ_DEBUG(logger,sout.str());
+    }
+#endif
+
 }
 
 void TPZMaterial::SetLinearContext(bool IsLinear){

@@ -444,7 +444,7 @@ void  TPZShapeDisc::Shape3D(REAL C,TPZVec<REAL> &X0,TPZVec<REAL> &X,int degree,T
 }
 
 
-void  TPZShapeDisc::Shape2DFull(REAL C,TPZVec<REAL> &X0,TPZVec<REAL> &X,int degree,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi, MShapeType type){
+/*void  TPZShapeDisc::Shape2DFull(REAL C,TPZVec<REAL> &X0,TPZVec<REAL> &X,int degree,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi, MShapeType type){
 
   REAL x0 = X0[0];
   REAL y0 = X0[1];
@@ -493,8 +493,65 @@ void  TPZShapeDisc::Shape2DFull(REAL C,TPZVec<REAL> &X0,TPZVec<REAL> &X,int degr
 
   phi(nshape-1) = phi0;
   for(i=0; i<8; i++) dphi(i,nshape-1) = dphi0[i];
-}
+}*/
 
+void  TPZShapeDisc::Shape2DFull(REAL C,TPZVec<REAL> &X0,TPZVec<REAL> &X,int degree,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi, MShapeType type){
+		
+	REAL x0 = X0[0];
+	REAL y0 = X0[1];
+	REAL x = X[0];
+	REAL y = X[1];
+	
+	
+	TPZFNMatrix<30> phix(degree+1,1),phiy(degree+1,1),dphix(3,degree+1),dphiy(3,degree+1);
+	
+	//  fOrthogonal(C,x0,x,degree,phix,dphix,3);//joao
+	//  fOrthogonal(C,y0,y,degree,phiy,dphiy,3);//joao
+	Legendre(C,x0,x,degree,phix,dphix,4);
+	Legendre(C,y0,y,degree,phiy,dphiy,4);//o 4 é pro estimador dual do Biharmonic		
+	
+	
+	int i,j,counter=0,num = degree+1;
+	
+	int nshape = NShapeF(degree,2,type);
+	//  int count=num,ind=0;
+	phi.Redim(nshape,1);
+	//  dphi.Redim(8,nshape);//joao
+	dphi.Redim(9,nshape);	
+	phi.Zero();
+	dphi.Zero();
+	
+	//valor da fun�o
+	for(i=0;i<num;i++){
+		for(j=0;j<num;j++){
+			if(i+j > degree && type == EOrdemTotalFull) break;
+			phi(counter,0) = phix(i,0)*phiy(j,0);
+			dphi(0,counter) = dphix(0,i)* phiy(j,0); // dx 
+			dphi(1,counter) =  phix(i,0)*dphiy(0,j); // dy
+			dphi(2,counter) = dphix(1,i)* phiy(j,0)+ phix(i,0)*dphiy(1,j); // Laplaciano
+			dphi(3,counter) = dphix(2,i)* phiy(j,0)+dphix(0,i)*dphiy(1,j); // D/Dx Laplaciano
+			dphi(4,counter) = dphix(1,i)*dphiy(0,j)+ phix(i,0)*dphiy(2,j); // D/Dy Laplaciano
+			dphi(5,counter) = dphix(1,i)* phiy(j,0);   // dxx 
+			dphi(6,counter) =  phix(i,0)*dphiy(1,j);   // dyy 
+			dphi(7,counter) = dphix(0,i)*dphiy(0,j);   // dxy 
+			dphi(8,counter) = dphix(3,i)* phiy(j,0) + phix(i,0)*dphiy(3,j) + 2.*dphix(1,i)*dphiy(1,j); //laplaciano(laplaciano) pra estimador dual do biharmonico //joao
+			counter++;
+		}
+	}
+	if(counter != nshape) {
+		PZError << "TPZShapeDisc::Shape2D wrong shape count\n";
+	}
+	REAL phi0,dphi0[9];
+	phi0 = phi(0);
+	for(i=0; i<9; i++) dphi0[i] = dphi(i,0);
+	phi(0) = phi(nshape-1);
+	for(i=0; i<9; i++) dphi(i,0) = dphi(i,nshape-1);
+	
+	phi(nshape-1) = phi0;
+	for(i=0; i<9; i++) dphi(i,nshape-1) = dphi0[i];
+}
+	
+	
 int  TPZShapeDisc::NShapeF(int degree, int dimension, MShapeType type) {
   int sum =0,i;
   switch(dimension) {

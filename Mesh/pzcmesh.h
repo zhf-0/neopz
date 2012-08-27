@@ -98,6 +98,12 @@ protected:
 public:
 	
 	/**
+	 * @brief Container that group elements by p-order
+	 */
+	std::map< int,std::set<int> > fpOrder_elIds;
+	int fpOrder_elIdsDim;
+	
+	/**
 	 * @brief Constructor from geometrical mesh
 	 * @param gr pointer to geometrical reference mesh
 	 */
@@ -382,6 +388,10 @@ public:
 	 */
 	void AssembleError(TPZFMatrix<REAL> &estimator, int errorid);
 	
+	void RemoveCompElfromPorderContainer(TPZCompEl * cel);
+	
+	void AddCompElfromPorderContainer(TPZCompEl * cel);
+	
 	/**
 	 * @brief Builds the transfer matrix from the current grid to the coarse grid
 	 * @param coarsemesh grid for where the matrix will be transfered
@@ -611,5 +621,7 @@ inline void TPZCompMesh::SetReference(TPZAutoPointer<TPZGeoMesh> & gmesh){
     this->fReference = gmesh.operator->();
     fGMesh = gmesh;
 }
+
+
 
 #endif

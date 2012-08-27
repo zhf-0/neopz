@@ -121,6 +121,8 @@ public:
 	 */
 	void SetF(const TPZFMatrix<TVar> & F);
     
+   	void GetF( TPZFMatrix<TVar> & F);
+    
     /** @brief indicate how many degrees of freedom are reserved for rigid body modes */
     void SetMaxNumberRigidBodyModes(int maxrigid)
     {

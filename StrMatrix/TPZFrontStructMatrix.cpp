@@ -369,7 +369,7 @@ void TPZFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & stiffness, TPZFMat
 		el->CalcStiff(ek,ef);
 		
 		
-		std::cout<< " assemblando elemento frontal " << iel <<std::endl;
+//		std::cout<< " assemblando elemento frontal " << iel <<std::endl;
 		
 #ifdef LOG4CXX
 		{

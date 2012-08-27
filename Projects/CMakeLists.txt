@@ -55,58 +55,7 @@ else()
 
 	if(BUILD_PROJECTS)
 		
-		# the auto adaptive process is working again!!!
-		add_subdirectory(adaptivity)
-		
-		#Inserting project to hp adaptive development
-		add_subdirectory(Adapt_HP_Jorge)
-
-		add_subdirectory(Cubo_do_Nathan)
-		
-		add_subdirectory(HyperElasticityFAD)
-
-		#Increment singular shape function: SingularShapeFunction
-		add_subdirectory(SingularShapeFunction)
-		add_subdirectory(angletest)
-		add_subdirectory(checkconv)
-
-		#Orthogonalization process of Gram-Schmidt
-		add_subdirectory(matrix)
-
-		#Inserting material and boundary conditions by function
-		add_subdirectory(termica)
-		add_subdirectory(Steam)
-		add_subdirectory(QuadraticElements)
-		add_subdirectory(ThermalStress)
-		add_subdirectory(HDiv)
-		add_subdirectory(AcoplamentoH1Hdiv)
-		add_subdirectory(Validacao)
-		add_subdirectory(Conductivity)
-		add_subdirectory(ConsLaw)
-		add_subdirectory(Descontinuo2)
-		add_subdirectory(HydraulicFracturePropagation)
-
-		add_subdirectory(SteamInjection)
-		
-		#projeto agnaldo 09-09-2011
-		add_subdirectory(DoubleProjection1D)
-		add_subdirectory(Poroelastic2D)
-		add_subdirectory(SubStruct)
-		add_subdirectory(MultiphysicsSimulation)
-		add_subdirectory(ProblemGirkmann)
-		
-		add_subdirectory(multplaca)
-
-		#projeto Diogo 08-FEB-2012
-		add_subdirectory(Plasticity)
-		#add_subdirectory(prodindex)
-
-		#Projeto Teo Refinamento Paralelo
-		add_subdirectory(RefThread)
-
-		#Projeto Lua 2012
-		add_subdirectory(Lua01)
-		
+		add_subdirectory(${PROJECT_SOURCE_DIR}/../ProdIndex-Source ${PROJECT_SOURCE_DIR}/../ProdIndex-Source)
 		
 	endif(BUILD_PROJECTS)
 

@@ -177,7 +177,7 @@ void TPZFlowCompMesh::SetContributionTime(TPZContributeTime time)
 	}
 }
 
-void TPZFlowCompMesh::SetFlowforcingFunction(TPZAutoPointer<TPZFunction<STATE> > fp)
+void TPZFlowCompMesh::SetFlowforcingFunction(TPZFunction<STATE> *fp)
 {
 	std::map<int, TPZMaterial * >::iterator matit;
 	for(matit=fFluidMaterial.begin(); matit!=fFluidMaterial.end(); matit++)

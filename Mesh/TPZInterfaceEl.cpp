@@ -1265,7 +1265,18 @@ void TPZInterfaceElement::ComputeErrorFace(int errorid,
 	this->InitMaterialData(datal,left);
 	this->InitMaterialData(datar,right);
 	this->InitMaterialData(data);
-   
+	
+	datal.fNeedsSol = true;
+	datal.fNeedsNeighborSol = true;
+	datar.fNeedsSol = true;
+	datar.fNeedsNeighborSol = true;
+	data.fNeedsSol = true;
+	data.fNeedsNeighborSol = true;
+
+	//   data.fPrimalExactSol = fp;
+	//   data.fDualExactSol = fd;
+	
+	
 	const int dim = this->Dimension();
 	const int diml = left->Dimension();
 	const int dimr = right->Dimension();
@@ -1314,7 +1325,9 @@ void TPZInterfaceElement::ComputeErrorFace(int errorid,
 		
 		left->ComputeShape(LeftIntPoint, datal.x, datal.jacobian, datal.axes, datal.detjac, datal.jacinv, datal.phi, datal.dphix);
 		right->ComputeShape(RightIntPoint, datar.x, datar.jacobian, datar.axes, datar.detjac, datar.jacinv, datar.phi, datar.dphix);
-		
+
+		datal.fNeedsHSize=true;
+        datar.fNeedsHSize=true;
 		this->ComputeRequiredData(datal, left, LeftIntPoint);
 		this->ComputeRequiredData(datar, right, RightIntPoint);
         //data.SetAllRequirements(true);
@@ -1544,6 +1557,18 @@ void TPZInterfaceElement::ComputeRequiredData(TPZMaterialData &data,
 	if (data.fNeedsNeighborSol){
 		elem->ComputeSolution(  IntPoint, data.phi, data.dphix, data.axes, data.sol, data.dsol );
 	}
+    if (data.fNeedsHSize){
+		const int dim = this->Dimension();
+		REAL faceSize;
+		if (dim == 0){//it means I am a point
+            faceSize = 1.;
+		}
+		else{
+			faceSize = 2.*this->Reference()->ElementRadius();//It works well for elements with small aspect ratio
+		}
+		data.HSize = faceSize;
+	}
+
 
 }
 void TPZInterfaceElement::ComputeRequiredData(TPZMaterialData &data)
@@ -1551,18 +1576,22 @@ void TPZInterfaceElement::ComputeRequiredData(TPZMaterialData &data)
 
 	if (data.fNeedsSol){
         // the interface elements have no approximation space!!
-        DebugStop();
+	// The left and Right solutions will be computed separately
+	//this->ComputeSolution(qsi, data.phi, data.dphix, data.axes, data.sol, data.dsol);
 	}
 	
 	if (data.fNeedsHSize){
 		const int dim = this->Dimension();
 		REAL faceSize;
 		if (dim == 0){//it means I am a point
-            DebugStop();
+			//2*(a+b)/2
+//            // the formulation cannot depend on the face size in this case
+//            DebugStop();
             faceSize = 1.;
+//			faceSize = left->InnerRadius() + right->InnerRadius();
 		}
 		else{
-			faceSize = 2.*this->Reference()->ElementRadius();//Igor Mozolevski's suggestion. It works well for elements with small aspect ratio
+			faceSize = 2.*this->Reference()->ElementRadius();//It works well for elements with small aspect ratio
 		}
 		data.HSize = faceSize;
 	}

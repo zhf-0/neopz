@@ -370,15 +370,23 @@ void TPZCompEl::EvaluateError(void (* /*fp*/)(const TPZVec<REAL> &loc,TPZVec<STA
 }
 
 void TPZCompEl::Solution(TPZVec<REAL> &/*qsi*/,int var,TPZVec<STATE> &sol){
-	if(var >= 100) {
+
+	if(var >= 1000) {
 		int ind = Index();
-		if(fMesh->ElementSolution().Cols() > var-100) {
-			sol[0] = fMesh->ElementSolution()(ind,var-100);
-		} else {
-			sol[0] = 0.;
-		}
+		if(fMesh->ElementSolution().Cols() > var-1000) {
+			sol[0] = fMesh->ElementSolution()(ind,var-1000);
+		} 
 	} else {
+		if(var >= 100) {
+			int ind = Index();
+			if(fMesh->ElementSolution().Cols() > var-100) {
+				sol[0] = fMesh->ElementSolution()(ind,var-100);
+			} else {
+				sol[0] = 0.;
+			}
+		} else {
 		sol.Resize(0);
+		}
 	}
 }
 
@@ -460,7 +468,7 @@ void TPZCompEl::CalcResidual(TPZElementMatrix &ef){
 	TPZElementMatrix ek(this->Mesh(), TPZElementMatrix::EK);
 	CalcStiff(ek,ef);
 }
-
+/*
 TPZGeoEl * TPZCompEl::GetRefElPatch(){
 	TPZGeoEl *ref = Reference();
 	if (!ref) {
@@ -516,7 +524,51 @@ TPZGeoEl * TPZCompEl::GetRefElPatch(){
 	LOGPZ_DEBUG(logger, "Exit GetRefElPatch - Element is its own patch");
 	return (Reference());
 }
+*/
 
+
+TPZGeoEl * TPZCompEl::GetRefElPatch(){
+	std::stringstream sout;
+	sout << "Obtendo elemento geometrico de referencia " << Index() << endl;
+	Print(sout);
+	TPZGeoEl *ref = Reference();
+	if (!ref) {
+		LOGPZ_WARN(logger, "reached a null reference");
+		return (0);
+		}
+	ref->Print(sout);
+	TPZStack <TPZGeoEl *> father;
+	father.Push(ref);
+	while(ref->Father()){
+		father.Push(ref->Father());
+		ref = ref->Father();
+		ref->Print(sout);
+		}
+	int j;
+	LOGPZ_DEBUG(logger, sout.str());
+	while(father.NElements()) {
+		TPZGeoEl *aux = father.Pop();
+		for (j=0; j<aux->NSides(); j++){
+			int sidedimension = aux->SideDimension(j);
+			if(!sidedimension){
+				continue;
+				}
+			TPZGeoElSide side(aux,j);
+			TPZStack <TPZCompElSide> stack;
+			side.EqualLevelCompElementList(stack,1,1);
+			if(stack.NElements()){
+			//cout << " \n \n \n ==================================\n ================================\nElemento PatchReference\n";
+			//aux->Print();
+			LOGPZ_INFO(logger, "Exing GetRefElPatch");
+			return aux;
+			}
+			}
+		}
+	//cout << " \n \n \n ==================================\n ================================\nElemento PatchReference falho\n";
+	//Reference()->Print();
+	LOGPZ_WARN(logger, "Exing GetRefElPatch - Elemento PatchReference falho");
+	return (Reference());
+}
 REAL TPZCompEl::MaximumRadiusOfEl(){
 	//O elemento deve ser a envoltura convexa dos seus v�tices
 	if(!this) {
@@ -657,16 +709,56 @@ void TPZCompElSide::HigherDimensionElementList(TPZStack<TPZCompElSide> &elsideve
 
 
 void TPZCompElSide::RemoveDuplicates(TPZStack<TPZCompElSide> &elvec) {
+//#ifdef LOG4CXX
+//	{
+//		std::stringstream str;
+//		elvec.Print(str);
+//		LOGPZ_DEBUG(logger,str.str());
+//	}
+//#endif
 	RemoveConnectDuplicates(elvec);
+//#ifdef LOG4CXX
+//	{
+//		std::stringstream str;
+//		elvec.Print(str);
+//		str<< "---------------";
+//		LOGPZ_DEBUG(logger,str.str());
+//	}
+//#endif
+	
+
 	int i, nelem = elvec.NElements();
 	for(i=0; i<nelem; i++) {
 		TPZGeoElSide geli = elvec[i].Reference();
 		if(!geli.Exists()) continue;
 		int j;
 		for(j=i+1; j<nelem; j++) {
+#ifdef LOG4CXX
+			{
+				std::stringstream str;
+				str<< "elvec[i]"<<endl;
+				str<<"i= "<< i <<endl;
+				str<<"Side= "<<elvec[i].Side()<<endl;
+				str<< "---------------";
+				str<< "elvec[j]"<<endl;
+				str<<"j= "<< j <<endl;
+				str<<"Side= "<<elvec[j].Side()<<endl;
+				str<< "---------------";
+				str<< "---------------";
+				LOGPZ_DEBUG(logger,str.str());
+			}
+#endif
+			
 			TPZGeoElSide gelj = elvec[j].Reference();
 			if(!gelj.Exists()) continue;
 			if(geli.NeighbourExists(gelj)) {
+#ifdef LOG4CXX
+				{
+					std::stringstream str;
+//					geli.Print(str);
+					LOGPZ_DEBUG(logger,str.str());
+				}
+#endif
 				int k;
 				LOGPZ_ERROR(loggerSide, "case not identified by RemoveConnectDuplicates");
 				for(k=j;k<nelem-1;k++) elvec[k] = elvec[k+1];

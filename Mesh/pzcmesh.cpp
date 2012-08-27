@@ -187,7 +187,7 @@ void TPZCompMesh::Print (std::ostream & out) const {
 	}
 	out << "\n\tMaterial Information:\n\n";
 	std::map<int, TPZMaterial * >::const_iterator mit;
-	nelem = NMaterials();
+	nelem = NMaterials(); //nelem ???????
 	for(mit=fMaterialVec.begin(); mit!= fMaterialVec.end(); mit++) {
 		mit->second->Print(out);
 	}
@@ -1892,12 +1892,12 @@ void TPZCompMesh::ConvertDiscontinuous2Continuous(REAL eps, int opt, int dim, TP
 	
 }//method
 
-void TPZCompMesh::AssembleError(TPZFMatrix<REAL> &estimator, int errorid){
+/*void TPZCompMesh::AssembleError(TPZFMatrix<REAL> &estimator, int errorid){
 	int iel, i;
 	const int nelem = this->NElements();
-	TPZManVector<REAL> locerror(7), errorL(7), errorR(7);
+	TPZManVector<REAL> locerror(16), errorL(16), errorR(16);
 	
-	estimator.Resize(nelem, 7);
+	estimator.Resize(nelem, 16);
 	estimator.Zero();
 	for(iel=0; iel < nelem; iel++) {
 		TPZCompEl *el = fElementVec[iel];
@@ -1937,6 +1937,78 @@ void TPZCompMesh::AssembleError(TPZFMatrix<REAL> &estimator, int errorid){
 		}
 	}
 	
+}*/
+
+void TPZCompMesh::AssembleError(TPZFMatrix<REAL> &estimator, int errorid){
+	
+	// 0= J(u-u_{DG})
+	// 1= mu_k  (sem ortogonalidade)
+	// 2= mu_k usando solucoes exatas ou aprox. enriquecidas
+	// 3= mu_k ortogonalidade
+	// 4= HHSS_k  (sem ortogonalidade)
+	// 5= HHSS_k usando solucoes exatas ou aprox. enriquecidas
+	// 6= HHSS_k ortogonalidade
+	// 7= HGS_k  (sem ortogonalidade)
+	// 8= HGS_k usando solucoes exatas ou aprox. enriquecidas
+	// 9= HGS_k ortogonalidade
+	// 10= p_k
+	// 11= indice do elemento geometrico
+	// 12= indice do elemento geometrico pai
+	// 13= dimensao
+	// 14= erro proveniente do interior do elemento (igual pra todos os indicadores) (sem ortogonalidade)
+	// 15= erro provenente das interfaces (depende do indicador)
+	int iel, i;	
+	const int nelem = this->NElements();
+	estimator.Resize(nelem,16);
+	TPZManVector<REAL> locerror(16), errorL(16), errorR(16);
+	estimator.Zero();
+
+	for(iel=0; iel < nelem; iel++)
+	{
+		TPZCompEl *el = fElementVec[iel];
+		if (!el) continue;
+//		TPZCompElDisc * eldisc = dynamic_cast<TPZCompElDisc*>(el);
+//		if (!eldisc) continue;
+//		eldisc->SetTensorialShapeFull();
+		estimator(iel,11) = el->Reference()->Index();
+		estimator(iel,13)=el->Reference()->Dimension();
+		TPZGeoEl * gel = el->Reference();
+		TPZGeoEl * father = gel->Father();
+		int fatherIdx = -1;
+		if (father) fatherIdx = father->Index(); 
+		estimator(iel,12) = fatherIdx;
+		TPZInterfaceElement * face = dynamic_cast<TPZInterfaceElement*>(el);
+		if (face)
+		{
+			errorL.Fill(0.); errorR.Fill(0.);
+			face->ComputeErrorFace(errorid, errorL, errorR);
+			///face->ComputeError(errorid, errorL, errorR, iel);
+			for(i = 0; i < errorL.NElements(); i++)
+			{
+				estimator(face->LeftElement()->Index(),i) += errorL[i];
+			}//for i
+			for(i = 0; i < errorR.NElements(); i++)
+			{
+				estimator(face->RightElement()->Index(),i) += errorR[i];
+			}//for i
+		}
+		else if(el->Dimension()==2)
+		{
+			locerror.Fill(0.);
+			el->ComputeError(errorid, locerror);
+			for(i = 0; i < locerror.NElements(); i++)
+			{
+				estimator(iel, i) += locerror[i];
+			}
+			TPZInterpolationSpace * sp = dynamic_cast<TPZInterpolationSpace*>(el);
+			if(!sp) continue;
+			estimator(iel,10) =  el->Connect(0).Order();
+			estimator(iel, 14) += locerror[1]; // 1-> mu // 4-> hhss //7->hgs, tanto faz as contribuicoes internas sao todas iguais.
+		}
+//OBS.: sabendo a contrib. interna as contribuicoes de contorno e de interface sao o complemento.
+        estimator(iel, 15)=estimator(iel, 1/*1==mu , 4==hhss , 7==hgs*/) - estimator(iel, 14);
+	}
+
 }
 
 void TPZCompMesh::SaddlePermute()
@@ -2016,4 +2088,40 @@ void TPZCompMesh::SaddlePermute()
         Permute(permute);
         
     }		
+}
+
+
+void TPZCompMesh::RemoveCompElfromPorderContainer(TPZCompEl * cel)
+{
+	int celDim = cel->Dimension();
+	if(fpOrder_elIdsDim > -1 && celDim != fpOrder_elIdsDim)
+	{
+		return; //dimensao nao confere com a estipulada
+	}
+	
+	int p = cel->Connect(0).Order();
+	int id = cel->Index();
+	
+	std::map< int,std::set<int> >::iterator mapIt = fpOrder_elIds.find(p);
+	if(mapIt != fpOrder_elIds.end())
+	{
+		std::set<int>::iterator setIt = mapIt->second.find(id);
+		if(setIt != mapIt->second.end())
+		{
+			mapIt->second.erase(setIt);
+		}
+	}
+}
+
+void TPZCompMesh::AddCompElfromPorderContainer(TPZCompEl * cel)
+{
+	int celDim = cel->Dimension();
+	if(fpOrder_elIdsDim > -1 && celDim != fpOrder_elIdsDim)
+	{
+		return; //dimensao nao confere com a estipulada
+	}
+	int p = cel->Connect(0).Order();
+	int id = cel->Index();
+	
+	fpOrder_elIds[p].insert(id);
 }

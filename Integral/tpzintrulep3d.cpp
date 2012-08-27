@@ -103,10 +103,10 @@ void TPZIntRuleP3D::ComputingCubatureRuleForPyramid(int order) {
 	long double wi, wj, wk, xi, xj, xk;
 	long double volume;
 
-	TPZVec<long double> leg_w;
-	TPZVec<long double> leg_x;
-	TPZVec<long double> jacobi_w;
-	TPZVec<long double> jacobi_x;
+	TPZManVector<long double> leg_w;
+	TPZManVector<long double> leg_x;
+	TPZManVector<long double> jacobi_w;
+	TPZManVector<long double> jacobi_x;
 
 	// Determining the number of points needed for order
 	int plane_order = (int)(0.51*(order+2));

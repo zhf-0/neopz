@@ -19,7 +19,7 @@ static LoggerPtr logger(Logger::getLogger("pz.matrix.tpzfmatrix"));
 static LoggerPtr loggerCheck(Logger::getLogger("pz.checkconsistency"));
 #endif
 
-TPZMaterialData::TPZMaterialData() : numberdualfunctions(0){
+TPZMaterialData::TPZMaterialData() : numberdualfunctions(0), p(0), HSize(0.), detjac(0.){
 	this->SetAllRequirements(false);
 	this->intPtIndex = -1;
     this->sol.Resize(1);

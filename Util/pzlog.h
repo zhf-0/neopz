@@ -26,7 +26,7 @@ using namespace log4cxx::helpers;
 
 inline void StopError()
 {
-    std::cout << "Ponto de parada\n";
+//    std::cout << "Ponto de parada\n";
 }
 
 /**

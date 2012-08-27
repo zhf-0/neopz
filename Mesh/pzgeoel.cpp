@@ -707,6 +707,15 @@ TPZTransform TPZGeoEl::ComputeParamTrans(TPZGeoEl *fat,int fatside, int sideson)
 	TPZManVector<int,3> order(dimss,2);
 	intrule->SetOrder(order);
 	//integra��o sobre o lado-filho contido no lado-pai
+#ifdef LOG4CXX
+	{
+		std::stringstream sout;
+		sout << "integration order " << order << std::endl;
+		intrule->Print(sout);
+		sout << "dimsf " << dimsf << " dimss " << dimss << std::endl;
+		LOGPZ_DEBUG(logger,sout.str())
+	}
+#endif
 	int ij,ik,indp;
 	REAL D2Edaikdaij,D2Edcidaij,D2Edci2;
 	D2Edcidaij = 0.;
@@ -739,6 +748,14 @@ TPZTransform TPZGeoEl::ComputeParamTrans(TPZGeoEl *fat,int fatside, int sideson)
 	TPZManVector<REAL,3> sidepoint(Dimension());//dimensao do dominio da transformacao X do filho
 	int j;//transf. para o lado do pai
 	TPZFNMatrix<9> A(dimsf,dimss,0.),sol(dimsf,1,0.);
+#ifdef LOG4CXX
+	{
+		std::stringstream sout;
+		intrule->Print(sout);
+		sout << "dimsf " << dimsf << " dimss " << dimss << std::endl;
+		LOGPZ_DEBUG(logger,sout.str())
+	}
+#endif
 	for(int ifat=0;ifat<dimsf;ifat++){//numero de variaveis do pai
 		REAL DEdci = 0.;
 		for(j=0;j<(dimss+1);j++){
@@ -760,6 +777,13 @@ TPZTransform TPZGeoEl::ComputeParamTrans(TPZGeoEl *fat,int fatside, int sideson)
 			if(!dimss) grad0(0,0) = DEdci;
 		}//final integral gradiente
 		//resolu��o do sistema para cada variavel ifat do pai
+#ifdef LOG4CXX
+		{
+			std::stringstream sout;
+			hess.Print("Hessiana",sout);
+			LOGPZ_DEBUG(logger,sout.str())
+		}
+#endif
 		if(dimss) hess.SolveDirect(grad0,ELU);
 		for(int k=0;k<dimss;k++) A(ifat,k) = grad0(k,0);
 		sol(ifat,0) = grad0(dimss,0);

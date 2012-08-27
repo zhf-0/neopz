@@ -65,7 +65,7 @@ protected:
 		}
 		fMaterial = material;
 		fType = type;
-		
+		   
 	}
 	
 	TPZBndCond(TPZBndCond &copy, TPZMaterial * ref) : TPZDiscontinuousGalerkin(copy), fType(copy.fType),

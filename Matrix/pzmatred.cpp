@@ -154,6 +154,27 @@ void TPZMatRed<TVar,TSideMatrix>::SetF(const TPZFMatrix<TVar> & F)
 }
 
 template<class TVar, class TSideMatrix>
+void TPZMatRed<TVar,TSideMatrix>::GetF( TPZFMatrix<TVar> & F)
+{
+	
+	int FCols=fF0.Cols(),c,r,r1;
+	
+	F.Redim(fDim0+fDim1,FCols);
+	
+	for(c=0; c<FCols; c++){
+		r1=0;
+		for(r=0; r<fDim0; r++){
+			F.PutVal( r,c,fF0.GetVal(r,c) ) ;
+		}
+		//aqui r=fDim0
+		for( ;r< fDim0+fDim1; r++){
+			F.PutVal( r,c,fF1.GetVal(r1++,c) );
+		}
+	}
+
+}
+
+template<class TVar, class TSideMatrix>
 const TPZFMatrix<TVar>& TPZMatRed<TVar, TSideMatrix>::F1Red()
 {
 	if (!fDim0 || fF1IsReduced)  return (fF1);

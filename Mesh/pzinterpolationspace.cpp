@@ -17,6 +17,7 @@
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZInterpolationSpace"));
+static LoggerPtr loggerElMatrix(Logger::getLogger("pz.mesh.tpzinterpolationspace2"));
 #endif
 
 TPZInterpolationSpace::TPZInterpolationSpace()
@@ -270,6 +271,7 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 	
 	TPZMaterialData data;
 	this->InitMaterialData(data);
+	//data.fNeedsSol = false;
 	data.p = this->MaxOrder();
 	
 	int dim = Dimension();
@@ -299,11 +301,37 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 	for(int int_ind = 0; int_ind < intrulepoints; ++int_ind){
 		intrule->Point(int_ind,intpoint,weight);
 		this->ComputeShape(intpoint, data.x, data.jacobian, data.axes, data.detjac, data.jacinv, data.phi, data.dphix);
+//		////
+//		std::cout << "ponto: "<< int_ind<< std::endl;
+//		for(int j=0;j<data.dphix.Cols();j++)
+//		{
+//			std::cout<< std::endl<<"grad phi_"<<j<<std::endl;
+//			for(int i=0;i<data.dphix.Rows();i++)
+//			{
+//				std::cout << data.dphix(i,j) << std::endl;
+//			}
+//			std::cout<< std::endl<<"phi_"<<j<<" =  "<< data.phi[j]<<std::endl;
+//		}
+//		////
 		weight *= fabs(data.detjac);
+//		std::cout << "peso: "<< weight<< std::endl;
 		data.intPtIndex = int_ind;
 		this->ComputeRequiredData(data, intpoint);
 		material->Contribute(data, weight, ek.fMat, ef.fMat);
 	}//loop over integratin points
+	
+#ifdef LOG4CXX
+    if (logger->isDebugEnabled())
+	{
+		std::stringstream sout;
+		sout<<"ek xxxxxxxxxxxxxxx"<< std::endl;
+		ek.fMat.Print("ek", sout);
+		sout<<"ef xxxxxxxxxxxxxxx"<<std::endl;
+		ef.fMat.Print("ef", sout);
+		sout<<"xxxxxxxxxxxxxxx"<<std::endl;		
+		LOGPZ_DEBUG(loggerElMatrix,sout.str());
+	}
+#endif
 	
 }//CalcStiff
 
@@ -1019,6 +1047,7 @@ void TPZInterpolationSpace::ComputeError(int errorid,
 	
 	TPZMaterialData data;
 	this->InitMaterialData(data);
+	data.fNeedsSol=true;
 	
 	REAL weight;
 	int dim = Dimension();
@@ -1026,11 +1055,11 @@ void TPZInterpolationSpace::ComputeError(int errorid,
 	
 	TPZAutoPointer<TPZIntPoints> intrule = this->GetIntegrationRule().Clone();
 	
-	TPZManVector<int,3> prevorder(dim), maxorder(dim, this->MaxOrder());
-	intrule->GetOrder(prevorder);
-	intrule->SetOrder(maxorder);
+	//TPZManVector<int,3> prevorder(dim), maxorder(dim, this->MaxOrder());
+	//intrule->GetOrder(prevorder);
+	//intrule->SetOrder(maxorder);
 	
-	data.p = this->MaxOrder();
+//	data.p = this->MaxOrder();
 	data.HSize = 2.*this->InnerRadius();
 	error.Fill(0.);
 	int npoints = intrule->NPoints(), ip;
@@ -1038,10 +1067,11 @@ void TPZInterpolationSpace::ComputeError(int errorid,
 		intrule->Point(ip,intpoint,weight);
 		this->ComputeShape(intpoint, data.x, data.jacobian, data.axes, data.detjac, data.jacinv, data.phi, data.dphix);
 		weight *= fabs(data.detjac);
-		this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
+		this->ComputeRequiredData(data, intpoint);
+//		this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
 		material->ContributeErrors(data,weight,error,errorid);
 	}
-	intrule->SetOrder(prevorder);
+//	intrule->SetOrder(prevorder);
 }
 
 void TPZInterpolationSpace::Integrate(int variable, TPZVec<REAL> & value){
