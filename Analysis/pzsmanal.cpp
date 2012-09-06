@@ -8,9 +8,11 @@
 #include "pzfmatrix.h"
 #include "pzstrmatrix.h"
 #include "pzsolve.h"
-
+#include "pzlog.h"
 using namespace std;
-
+#ifdef LOG4CXX
+static LoggerPtr logger(Logger::getLogger("pz.analysis.subcmeshanalysis"));
+#endif
 // Construction/Destruction
 
 TPZSubMeshAnalysis::TPZSubMeshAnalysis(TPZSubCompMesh *mesh) : TPZAnalysis(mesh), fReducableStiff(0){
@@ -74,9 +76,12 @@ void TPZSubMeshAnalysis::CondensedSolution(TPZFMatrix<STATE> &ek, TPZFMatrix<STA
         DebugStop();
     }
 	TPZMatRed<STATE, TPZFMatrix<STATE> > *matred = dynamic_cast<TPZMatRed<STATE, TPZFMatrix<STATE> > *> (fReducableStiff.operator->());
-	ek = matred->K11Red();
-	ef = matred->F1Red();
-	
+//	ek = matred->K11Red();
+//	ef = matred->F1Red();
+////caravagio
+	matred->F1Red(ef);
+    matred->K11Reduced(ek, ef);
+////
 	time_t tempodepois = time(NULL);
 	double elapsedtime = difftime(tempodepois, tempo);
 	
@@ -86,7 +91,13 @@ void TPZSubMeshAnalysis::CondensedSolution(TPZFMatrix<STATE> &ek, TPZFMatrix<STA
 
 void TPZSubMeshAnalysis::LoadSolution(const TPZFMatrix<STATE> &sol)
 {
-	
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        fReferenceSolution.Print("fReferenceSolution", sout);
+        LOGPZ_DEBUG(logger,sout.str())
+    }
+#endif
 	//	sol.Print("sol");
 	int numinter = fMesh->NumInternalEquations();
 	int numeq = fMesh->TPZCompMesh::NEquations();
@@ -102,5 +113,12 @@ void TPZSubMeshAnalysis::LoadSolution(const TPZFMatrix<STATE> &sol)
         matred->UGlobal(soltemp,uglobal);        
         fSolution = fReferenceSolution + uglobal;
     }
+#ifdef LOG4CXX
+    {
+        std::stringstream sout;
+        fSolution.Print("fSolution", sout);
+        LOGPZ_DEBUG(logger,sout.str())
+    }
+#endif
 	TPZAnalysis::LoadSolution();
 }

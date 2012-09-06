@@ -214,10 +214,20 @@ void TPZCondensedCompEl::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     }
 
     fCondensed.SetF(ef.fMat);
-    //const TPZFMatrix<REAL> &k11 = fCondensed.K11Red();
-	const TPZFMatrix<STATE> &k11 = fCondensed.K11Red();
+////caravagio era assim
+//    //const TPZFMatrix<REAL> &k11 = fCondensed.K11Red();
+//	const TPZFMatrix<STATE> &k11 = fCondensed.K11Red();
     //const TPZFMatrix<REAL> &f1 = fCondensed.F1Red();
-	const TPZFMatrix<STATE> &f1 = fCondensed.F1Red();
+//	const TPZFMatrix<STATE> &f1 = fCondensed.F1Red();
+
+    //mudei pra isso
+    TPZFMatrix<STATE> f1;
+    fCondensed.F1Red(f1);
+    TPZFMatrix<STATE> k11;
+    fCondensed.K11Reduced(k11, f1);
+    
+
+
     int dim0 = dim-k11.Rows();
     for (int i=dim0; i<dim; i++) {
         ef.fMat(i,0) = f1.GetVal(i-dim0,0);
@@ -238,7 +248,10 @@ void TPZCondensedCompEl::CalcResidual(TPZElementMatrix &ef)
     ef.PermuteGather(fIndexes);
     fCondensed.SetF(ef.fMat);
     //const TPZFMatrix<REAL> &f1 = fCondensed.F1Red();
-	const TPZFMatrix<STATE> &f1 = fCondensed.F1Red();
+//	const TPZFMatrix<STATE> &f1 = fCondensed.F1Red();
+	TPZFMatrix<STATE> f1; //caravagio
+    fCondensed.F1Red(f1);
+    
     int dim1 = f1.Rows();
     int dim = ef.fMat.Rows();
     int dim0 = dim-dim1;

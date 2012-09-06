@@ -320,18 +320,18 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 		material->Contribute(data, weight, ek.fMat, ef.fMat);
 	}//loop over integratin points
 	
-#ifdef LOG4CXX
-    if (logger->isDebugEnabled())
-	{
-		std::stringstream sout;
-		sout<<"ek xxxxxxxxxxxxxxx"<< std::endl;
-		ek.fMat.Print("ek", sout);
-		sout<<"ef xxxxxxxxxxxxxxx"<<std::endl;
-		ef.fMat.Print("ef", sout);
-		sout<<"xxxxxxxxxxxxxxx"<<std::endl;		
-		LOGPZ_DEBUG(loggerElMatrix,sout.str());
-	}
-#endif
+//#ifdef LOG4CXX
+//    if (logger->isDebugEnabled())
+//	{
+//		std::stringstream sout;
+//		sout<<"ek xxxxxxxxxxxxxxx"<< std::endl;
+//		ek.fMat.Print("ek", sout);
+//		sout<<"ef xxxxxxxxxxxxxxx"<<std::endl;
+//		ef.fMat.Print("ef", sout);
+//		sout<<"xxxxxxxxxxxxxxx"<<std::endl;		
+//		LOGPZ_DEBUG(loggerElMatrix,sout.str());
+//	}
+//#endif
 	
 }//CalcStiff
 

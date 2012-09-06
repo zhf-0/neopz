@@ -78,6 +78,19 @@ TPZGeoElSide::TPZGeoElSide(TPZGeoEl *gel, std::set<int> &sideCornerNodes)
 	}
 }
 
+TPZGeoElSide TPZGeoElSide::HigherFatherSide()
+{
+	TPZGeoEl * actGel = this->fGeoEl;
+    TPZGeoElSide side(*this);
+    while(actGel->Father())
+    {
+        side = actGel->Father2(side.Side());
+        actGel = actGel->Father();
+    }
+    
+    return side;
+}
+
 bool TPZGeoElSide::IsAncestor(TPZGeoElSide other){
 	if(*this == other) return true;
 	TPZGeoElSide father = this->Father2();

@@ -86,7 +86,7 @@ TPZStructMatrix *TPZStructMatrix::Clone() {
 }
 
 void TPZStructMatrix::Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
-//	if(this->fNumThreads){
+//	if(this->fNumThreads){//caravagio
 //		this->MultiThread_Assemble(stiffness,rhs,guiInterface);
 //	}
 //	else{
@@ -151,9 +151,25 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 			else
 			{
 				int matid = mat->Id();
-				if (this->ShouldCompute(matid) == false) continue;
+//                #ifdef LOG4CXX
+//                {
+//                    std::stringstream sout;
+//                    sout << "matid = "<< matid << endl;
+//                    LOGPZ_DEBUG(logger,sout.str())
+//                }
+//                #endif
+
+				if (this->ShouldCompute(matid) == false) continue;//caravagio
 			}
 		}//if
+//#ifdef LOG4CXX
+//        {
+//            std::stringstream sout;
+//            sout << " saiu!!! " << endl;
+//            LOGPZ_DEBUG(logger,sout.str())
+//        }
+//#endif
+
 		
 		count++;
 		if(!(count%20))
@@ -168,12 +184,6 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<S
 		calcstiff.start();
 		
 		el->CalcStiff(ek,ef);
-//		if(iel>499 && iel<619)
-//		{
-//		ek.fMat.Write(ElemMatrix,1);
-//		ef.fMat.Write(ElemRightSide,1);
-//		}
-//		std::cout<< "el="<< iel<<std::endl;
 		
 		if(guiInterface) if(guiInterface->AmIKilled()){
 			return;

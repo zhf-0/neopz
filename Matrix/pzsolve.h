@@ -29,7 +29,7 @@ public:
 	 */
 	virtual void Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &result,
 					   TPZFMatrix<TVar>  *residual = 0) = 0;
-//	virtual void Solve(const TPZVerySparseMatrix<TVar> &F, TPZVerySparseMatrix<TVar> &result,
+    //	virtual void Solve(const TPZVerySparseMatrix<TVar> &F, TPZVerySparseMatrix<TVar> &result,
 //					   TPZVerySparseMatrix<TVar>  *residual = 0) = 0;
     
     /** @brief Decompose the system of equations if a direct solver is used */

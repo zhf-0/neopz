@@ -120,7 +120,8 @@ public:
 	bool ShouldCompute(int matid)
 	{
 		const unsigned int size = fMaterialIds.size();
-		return size == 0 || fMaterialIds.find(matid) != fMaterialIds.end();
+        bool result = (size == 0 || fMaterialIds.find(matid) != fMaterialIds.end());
+		return result;
 	}
 	/** @brief Returns the material ids */
 	std::set<int> MaterialIds()

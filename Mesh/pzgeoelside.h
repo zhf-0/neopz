@@ -81,6 +81,8 @@ public:
 	
 	/** @brief Checks whether other is a relative (son or ancestor) of this */
 	bool IsRelative(TPZGeoElSide other);
+    
+    TPZGeoElSide HigherFatherSide();
 	
 	/** @brief Checks whether other is an ancestor of this */
 	bool IsAncestor(TPZGeoElSide other);

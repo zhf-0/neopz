@@ -92,6 +92,10 @@ void TPZRefPatternDataBase::ReadRefPatternDBase(std::ifstream &filename)
         fElTypeRefPatterns[eltype].push_back(refP);
         fIdRefPatterns[refP->Id()] = refP;
 	}
+    if(!filename)
+    {
+        DebugStop();
+    }
 }
 
 //.........................................................................................................................................
