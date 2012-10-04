@@ -120,6 +120,17 @@ public:
     {
         
     }
+    
+    TPZGeoElSide( const TPZGeoElSide &geoelside, int subside):fGeoEl(0), fSide(-1)
+    {
+        if (!geoelside.Element())
+        {
+            return;
+        }
+        fGeoEl = geoelside.Element();
+        fSide = geoelside.SubSide(subside);
+    }
+    
 	
 	TPZGeoEl *Element()const{return fGeoEl;}
 	
@@ -136,8 +147,14 @@ public:
 	void CenterPoint(TPZVec<REAL> &center);
     
     /** @brief Returns the number of sides in which the current side can be decomposed */
-    int NSides();
-	
+    int NSubSides() const;
+    
+    /** @brief return the index of the lower dimension sides associated with this subside*/
+    int SubSide(int subside) const;
+    
+	/** @brief return the dimension of the subside associated with the side*/
+    int SubSideDimension(int side) const;
+    
 	TPZGeoElSide Neighbour() const;//return neighbour of the side fSide
 	
 	/** @brief Returns the set of neighbours which can directly be accessed by the datastructure */
@@ -324,5 +341,7 @@ inline void TPZGeoElSideIndex::Write(TPZStream &buf){
     buf.Write(&side, 1);
     buf.Write(&index, 1);
 }
+
+
 
 #endif

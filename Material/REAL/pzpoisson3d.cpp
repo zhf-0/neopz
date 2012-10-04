@@ -39,6 +39,7 @@ TPZMatPoisson3d::TPZMatPoisson3d(int nummat, int dim) : TPZDiscontinuousGalerkin
 //	this->SetSymmetric();
 	this->SetRightK(fK);
 //	this->SetNoPenalty();
+    fKfunction= NULL;
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1), fSD(0.){
@@ -52,6 +53,7 @@ TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1),
 //  this->SetSymmetric();
 	this->SetRightK(fK);
 //	this->SetNoPenalty();
+    fKfunction= NULL;    
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d(const TPZMatPoisson3d &copy):TPZDiscontinuousGalerkin(copy){
@@ -70,8 +72,14 @@ TPZMatPoisson3d & TPZMatPoisson3d::operator=(const TPZMatPoisson3d &copy){
 	fSD = copy.fSD;
 	fPenaltyConstant = copy.fPenaltyConstant;
 	this->fPenaltyType = copy.fPenaltyType;
+    fKfunction = copy.fKfunction;
 	return *this;
 }
+
+void TPZMatPoisson3d::SetfKfunction(TPZAutoPointer<TPZFunction<STATE> > fKfunc){
+    fKfunction = fKfunc;
+}
+
 
 void TPZMatPoisson3d::SetParameters(REAL diff, REAL conv, TPZVec<REAL> &convdir) {
 	fK = diff;
@@ -98,6 +106,9 @@ int TPZMatPoisson3d::NStateVariables() {
 void TPZMatPoisson3d::Print(std::ostream &out) {
 	out << "name of material : " << Name() << "\n";
 	out << "Laplace operator multiplier fK "<< fK << endl;
+    if(fKfunction){
+	out << "Laplace operator function multiplier fKfunction exists " << endl;
+    }
 	out << "Laplace operator multiplier fK of right neighbour " << this->fRightK << endl;
 	out << "Convection coeficient fC " << fC << endl;
 	out << "Convection direction " << fConvDir[0] << ' ' << fConvDir[1] << ' ' <<  fConvDir[2] << endl;
@@ -123,12 +134,24 @@ void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<RE
 	TPZFMatrix<REAL> &axes = data.axes;
 	TPZFMatrix<REAL> &jacinv = data.jacinv;
 	int phr = phi.Rows();
+
+    REAL KVal=fK;
+    REAL CVal=fC;
+    REAL FVal=fXf;
 	
-	if(fForcingFunction) {            // phi(in, 0) = phi_in
+	if(fForcingFunction) {
 		TPZManVector<REAL> res(1);
-		fForcingFunction->Execute(x,res);       // dphi(i,j) = dphi_j/dxi
-		fXf = res[0];
+		fForcingFunction->Execute(x,res);
+		FVal = res[0];
 	}
+    if(fKfunction){
+    	TPZManVector<REAL> res(1);
+		fKfunction->Execute(x,res);
+		KVal = res[0];
+    }
+
+    
+    
 	REAL delx = 0.;
 	REAL ConvDirAx[3] = {0.};
 	if(fC != 0.0) {
@@ -173,15 +196,15 @@ void TPZMatPoisson3d::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<RE
 		int kd;
 		REAL dphiic = 0;
 		for(kd = 0; kd<fDim; kd++) dphiic += ConvDirAx[kd]*dphi(kd,in);
-		ef(in, 0) += - weight * ( fXf*phi(in,0) 
-								 +0.5*fSD*delx*fC*dphiic*fXf
+		ef(in, 0) += - weight * ( FVal*phi(in,0)
+								 +0.5*fSD*delx*CVal*dphiic*FVal
 								 );
 		for( int jn = 0; jn < phr; jn++ ) {
 			for(kd=0; kd<fDim; kd++) {
 				ek(in,jn) += weight * (
-									   +fK * ( dphi(kd,in) * dphi(kd,jn) ) 
-									   -fC * ( ConvDirAx[kd]* dphi(kd,in) * phi(jn) )
-									   +0.5 * fSD * delx * fC * dphiic * dphi(kd,jn)* ConvDirAx[kd]
+									   +KVal * ( dphi(kd,in) * dphi(kd,jn) )
+									   -CVal * ( ConvDirAx[kd]* dphi(kd,in) * phi(jn) )
+									   +0.5 * fSD * delx * CVal * dphiic * dphi(kd,jn)* ConvDirAx[kd]
 									   );
 			}
 		}
@@ -382,12 +405,28 @@ void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
 	
 	TPZFMatrix<REAL>  &phi = data.phi;
 	//   TPZFMatrix<REAL> &dphi = data.dphix;
-	//   TPZVec<REAL>  &x = data.x;
+	TPZVec<REAL>  &x = data.x;
 	TPZFMatrix<REAL> &axes = data.axes;
 	int phr = phi.Rows();
 	short in,jn;
 	REAL v2[1];
 	v2[0] = bc.Val2()(0,0);
+    
+    REAL Kval=fK;
+    REAL CVal=fC;
+    REAL FVal=fXf;
+	
+	if(fForcingFunction) {
+		TPZManVector<REAL> res(1);
+		fForcingFunction->Execute(x,res);
+		FVal = res[0];
+	}
+    if(fKfunction){
+    	TPZManVector<REAL> res(1);
+		fKfunction->Execute(x,res);
+		Kval = res[0];
+    }
+
 	
 	switch (bc.Type()) {
 		case 0 :			// Dirichlet condition
@@ -426,7 +465,7 @@ void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
 				normal[2] = axes(2,2);
 			}
 			REAL ConvNormal = 0.;    
-			for(id=0; id<fDim; id++) ConvNormal += fC*fConvDir[id]*normal[id];  
+			for(id=0; id<fDim; id++) ConvNormal += CVal*fConvDir[id]*normal[id];  
 			if(ConvNormal > 0.) {
 				for(il=0; il<phr; il++) {
 					for(jl=0; jl<phr; jl++) {
@@ -848,7 +887,7 @@ void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<REAL> &Sol
 void TPZMatPoisson3d::Solution(TPZVec<REAL> &Sol,TPZFMatrix<REAL> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<REAL> &Solout){
 	
 	Solout.Resize( this->NSolutionVariables( var ) );
-	
+    
 	if(var == 1){
 		Solout[0] = Sol[0];//function
 		return;
@@ -1102,6 +1141,7 @@ void TPZMatPoisson3d::ContributeInterface(TPZMaterialData &data, TPZMaterialData
 	TPZFMatrix<REAL> &phiL = dataleft.phi;
 	TPZFMatrix<REAL> &phiR = dataright.phi;
 	TPZManVector<REAL,3> &normal = data.normal;
+	TPZVec<REAL>  &x = data.x;
 	
 	
 	// if(IsIdentity( data.axesleft ) == false){
@@ -1125,10 +1165,26 @@ void TPZMatPoisson3d::ContributeInterface(TPZMaterialData &data, TPZMaterialData
 	int nrowl = phiL.Rows();
 	int nrowr = phiR.Rows();
 	int il,jl,ir,jr,id;
+    
+    REAL Kval=fK;
+    REAL CVal=fC;
+    REAL FVal=fXf;
+	
+	if(fForcingFunction) {
+		TPZManVector<REAL> res(1);
+		fForcingFunction->Execute(x,res);
+		FVal = res[0];
+	}
+    if(fKfunction){
+    	TPZManVector<REAL> res(1);
+		fKfunction->Execute(x,res);
+		Kval = res[0];
+    }
+
 	
 	//Convection term
 	REAL ConvNormal = 0.;
-	for(id=0; id<fDim; id++) ConvNormal += fC * fConvDir[id] * normal[id];
+	for(id=0; id<fDim; id++) ConvNormal += CVal * fConvDir[id] * normal[id];
 	if(ConvNormal > 0.) {
 		for(il=0; il<nrowl; il++) {
 			for(jl=0; jl<nrowl; jl++) {
@@ -1352,12 +1408,29 @@ void TPZMatPoisson3d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialDa
 	TPZManVector<REAL,3> &normal = data.normal;
 	int POrder= dataleft.p;
 	REAL faceSize=data.HSize;
+	TPZVec<REAL>  &x = data.x;
+    
+    REAL Kval=fK;
+    REAL CVal=fC;
+    REAL FVal=fXf;
+	
+	if(fForcingFunction) {
+		TPZManVector<REAL> res(1);
+		fForcingFunction->Execute(x,res);
+		FVal = res[0];
+	}
+    if(fKfunction){
+    	TPZManVector<REAL> res(1);
+		fKfunction->Execute(x,res);
+		Kval = res[0];
+    }
+
 	
 	//  cout << "Material Id " << bc.Id() << " normal " << normal << "\n";
 	int il,jl,nrowl,id;
 	nrowl = phiL.Rows();
 	REAL ConvNormal = 0.;
-	for(id=0; id<fDim; id++) ConvNormal += fC*fConvDir[id]*normal[id];
+	for(id=0; id<fDim; id++) ConvNormal += CVal*fConvDir[id]*normal[id];
 	switch(bc.Type()) {
 		case 0: // DIRICHLET
 			

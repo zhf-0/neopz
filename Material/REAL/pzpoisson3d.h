@@ -37,6 +37,9 @@ class TPZMatPoisson3d : public TPZDiscontinuousGalerkin {
 	
 	/** @brief Coeficient which multiplies the Laplacian operator. */
 	REAL fK;
+
+	/** @brief Function which multiplies the Laplacian operator. */    
+    TPZAutoPointer< TPZFunction<STATE> > fKfunction;
 	
 	/** @brief Coeficient which multiplies the Laplacian operator associated to right neighbour element of the interface */
 	/** 
@@ -128,6 +131,8 @@ public:
 	
 	int NStateVariables();
 	
+	void SetfKfunction(TPZAutoPointer<TPZFunction<STATE> > fKfunc);
+    
 	void SetParameters(REAL diff, REAL conv, TPZVec<REAL> &convdir);
 	
 	void GetParameters(REAL &diff, REAL &conv, TPZVec<REAL> &convdir);

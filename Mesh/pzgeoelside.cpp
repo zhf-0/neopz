@@ -184,13 +184,32 @@ void TPZGeoElSide::Jacobian(TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFM
 	}
 }
 
-/// Returns the number of sides in which the current side can be decomposed
-int TPZGeoElSide::NSides()
+///  Returns the number of sides in which the current side can be decomposed
+int TPZGeoElSide::NSubSides() const
 {
     TPZStack<int> lower;
     fGeoEl->LowerDimensionSides(fSide,lower);
     return lower.NElements()+1;
 }
+
+/** @brief return the index of the lower dimension sides associated with this subside*/
+int TPZGeoElSide::SubSide(int subside) const
+{
+    TPZStack<int> lower;
+    fGeoEl->LowerDimensionSides(fSide,lower);
+    lower.Push(fSide);
+    return lower[subside];
+}
+
+/** @brief return the dimension of the subside associated with the side*/
+int TPZGeoElSide::SubSideDimension(int side) const
+{
+    TPZStack<int> lower;
+    fGeoEl->LowerDimensionSides(fSide,lower);
+    lower.Push(fSide);
+    return fGeoEl->SideDimension(lower[side]);
+}
+
 
 
 /// Area associated with the side
