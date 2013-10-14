@@ -301,7 +301,7 @@ void TPZCreateApproximationSpace::SetAllCreateFunctionsMultiphysicElem(){
     fp[EPiramide] = CreateMultiphysicsPyramEl;
     fp[EPrisma] = CreateMultiphysicsPrismEl;
     fp[ECube] = CreateMultiphysicsCubeEl;
-    
+
     /*
 	pzgeom::TPZGeoPoint::fp =  CreateMultiphysicsPointEl;
 	pzgeom::TPZGeoLinear::fp =  CreateMultiphysicsLinearEl;
@@ -312,6 +312,32 @@ void TPZCreateApproximationSpace::SetAllCreateFunctionsMultiphysicElem(){
 	pzgeom::TPZGeoTetrahedra::fp = CreateMultiphysicsTetraEl;
 	pzgeom::TPZGeoPyramid::fp = CreateMultiphysicsPyramEl;
      */
+}
+
+#include "TPZMultiphysicsCompElMHM.h"
+void TPZCreateApproximationSpace::SetAllCreateFunctionsMultiphysicElemMHM()
+{
+    fp[EPoint] = CreateMultiphysicsMHMPointEl;
+    fp[EOned] = CreateMultiphysicsMHMLinearEl;
+    fp[ETriangle] = CreateMultiphysicsMHMTriangleEl;
+    fp[EQuadrilateral] = CreateMultiphysicsMHMQuadEl;
+    fp[ETetraedro] = CreateMultiphysicsMHMTetraEl;
+    fp[EPiramide] = CreateMultiphysicsMHMPyramEl;
+    fp[EPrisma] = CreateMultiphysicsMHMPrismEl;
+    fp[ECube] = CreateMultiphysicsMHMCubeEl;
+}
+
+#include "TPZCompElMHM.h"
+void TPZCreateApproximationSpace::SetAllCreateFunctionsMHM()
+{
+    fp[EPoint] = CreateMHMPointEl;
+    fp[EOned] = CreateMHMLinearEl;
+    fp[ETriangle] = CreateMHMTriangleEl;
+    fp[EQuadrilateral] = CreateMHMQuadEl;
+    fp[ETetraedro] = CreateMHMTetraEl;
+    fp[EPiramide] = CreateMHMPyramEl;
+    fp[EPrisma] = CreateMHMPrismEl;
+    fp[ECube] = CreateMHMCubeEl;
 }
 
 /*

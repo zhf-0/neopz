@@ -18,7 +18,8 @@ TPZMatPoisson3dReferred::~TPZMatPoisson3dReferred(){ }
 void TPZMatPoisson3dReferred::SetConvectionTerm(TPZFMatrix &dsol, TPZFMatrix &axes){
 	const int dim = this->Dimension();
 	TPZManVector<REAL,3> V(dim);
-	const int pos = 1; // first column stores current solution. second column stores previous solution which is requested here. Then pos = 1.
+//	const int pos = 1; // first column stores current solution. second column stores previous solution which is requested here. Then pos = 1.
+	const int pos = 0; // joao	
 	for(int i = 0; i < dim; i++){
 		V[i] = -1. * dsol(i,pos);
 	}//for
@@ -50,7 +51,8 @@ void TPZMatPoisson3dReferred::SetConvectionTerm(TPZFMatrix &dsol, TPZFMatrix &ax
 
 void TPZMatPoisson3dReferred::SetConvectionTermInterface(TPZFMatrix &dsolL, TPZFMatrix &dsolR){
 	const int dim = this->Dimension();
-	const int pos = 1; // first column stores current solution. second column stores previous solution which is requested here. Then pos = 1.
+//	const int pos = 1; // first column stores current solution. second column stores previous solution which is requested here. Then pos = 1.
+	const int pos = 0; // joao		
 	for(int i = 0; i < dim; i++){
 		this->fConvDir[i] = -1. * ( 0.5 * ( dsolL(i,pos) + dsolR(i,pos) ) );
 	}//for

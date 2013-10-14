@@ -388,7 +388,7 @@ void TPZCompElHDivBound2<TSHAPE>::InitMaterialData(TPZMaterialData &data)
 			normalsides[ivec]=neigh.Side();
 
 		
-std::cout<< "neigh aqui ------"<<neigh.Side()<<std::endl;
+// std::cout<< "neigh aqui ------"<<neigh.Side()<<std::endl;
 		
 #ifdef LOG4CXX
 		{

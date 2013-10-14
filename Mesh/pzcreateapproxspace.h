@@ -68,11 +68,22 @@ public:
      * @brief Create an approximation space based on multiphysics elements
      */
 	void SetAllCreateFunctionsMultiphysicElem();
+
+    /*
+     * @brief Create an approximation space based on multiphysics elements
+     */
+	void SetAllCreateFunctionsMultiphysicElemMHM();
+    
     /*
      * @brief Create an approximation space with continous elements with memory
      */
     void SetAllCreateFunctionsContinuousWithMem();
-    
+
+    /*
+     * @brief Create an approximation space based on the Multiscale Hybrid Mixed method.
+     */
+    void SetAllCreateFunctionsMHM();
+
     /**
      * @brief Set custom function pointers
      */

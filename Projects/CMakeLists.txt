@@ -38,6 +38,9 @@ endif(BUILD_TUTORIAL)
 
 if(BUILD_PROJECTS)
 	
+	add_subdirectory(LNCC1)
+	add_subdirectory(LNCC2)
+	add_subdirectory(LNCC4)
 	#Inserting project to hp adaptive development
 	add_subdirectory(Adapt_HP_Jorge)
 
@@ -79,6 +82,8 @@ if(BUILD_PROJECTS)
 	#projeto Diogo 08-FEB-2012
 	add_subdirectory(Plasticity)
 #	add_subdirectory(prodindex)
-	
-	
+
+	# projeto base do MHM (LNCC)
+	add_subdirectory(MultiscaleHybridMixed)
+
 endif(BUILD_PROJECTS)

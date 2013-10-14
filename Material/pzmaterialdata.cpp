@@ -77,6 +77,7 @@ TPZMaterialData & TPZMaterialData::operator= (const TPZMaterialData &cp ){
 	this->fVecShapeIndex = cp.fVecShapeIndex;
 	this->fNormalVec = cp.fNormalVec;
 	this->numberdualfunctions = cp.numberdualfunctions;
+    this->x_int = cp.x_int;
 	
 	
 	

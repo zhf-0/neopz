@@ -292,7 +292,6 @@ public:
 
 
 inline void
-
 TPZAnalysis::SetExact(void (*f)(TPZVec<REAL> &loc, TPZVec<REAL> &result, TPZFMatrix &deriv))
 {
 	fExact=f;

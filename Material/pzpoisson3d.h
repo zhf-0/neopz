@@ -165,6 +165,9 @@ public:
 	{
 		TPZDiscontinuousGalerkin::Contribute(data,weight,ef);
 	}
+    
+    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix &ek, TPZFMatrix &ef);
+
 #ifdef _AUTODIFF
 	/** @brief Computes contribution to the energy at an integration point */
 	void ContributeEnergy(TPZVec<REAL> &x,

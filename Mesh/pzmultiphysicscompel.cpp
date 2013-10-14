@@ -80,7 +80,13 @@ void TPZMultiphysicsCompEl<TGeometry>::AffineTransform(TPZManVector<TPZTransform
 	side = gelmf->NSides()-1;
 	TPZGeoEl  *geoel;
 	for (int i = 0; i<nel; i++) {
-		geoel = fElementVec[i]->Reference();
+        TPZCompEl* compel = fElementVec[i];
+        if( !compel )
+            continue;
+        compel->LoadElementReference();
+		geoel = compel->Reference();
+        if( !geoel )
+            continue;
 		dim =  geoel->Dimension();
 		TPZTransform tr(dim);
 		trVec[i] = gelmf->BuildTransform2(side, geoel, tr);  
@@ -173,7 +179,11 @@ void TPZMultiphysicsCompEl<TGeometry>::Print(std::ostream & out) const {
 	AffineTransform(tr);
 	for(int ii=0;ii<tr.size();ii++)
 	{
-		out << "\n"<<std::endl; 
+        TPZCompEl* compel = fElementVec[ii];
+        if( !compel)
+            continue;
+        
+		out << "\n"<<std::endl;
 		out << "Transformacao para o elemento de index "<< fElementVec[ii]->Index() <<"  pertencente a malha computacional " << ii+1 << std::endl;
 		out << tr[ii] << std::endl;
 	}
@@ -259,7 +269,7 @@ void TPZMultiphysicsCompEl<TGeometry>::Solution(TPZVec<REAL> &qsi, int var,TPZVe
 		
 		trvec[iref].Apply(qsi, myqsi);
 		msp->ComputeSolution(myqsi, datavec[iref].sol, datavec[iref].dsol, datavec[iref].axes);
-		
+
 		datavec[iref].x.Resize(3);
 		msp->Reference()->X(myqsi, datavec[iref].x);
 	}	
@@ -304,21 +314,20 @@ void TPZMultiphysicsCompEl<TGeometry>::InitializeElementMatrix(TPZElementMatrix 
 	const int ncon = this->NConnects();
 	int numeq = 0;
 	int ic;
-		
+
 	for(ic=0; ic<ncon; ic++)
 	{
 		numeq += Connect(ic).NDof(*Mesh());
 	}
-	
+
 	int nref = this->fElementVec.size();
 	int nstate;
-	//nstate=1;
 	for (int iref=0; iref<nref; iref++) {
 		
 		TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[iref]);
-		nstate += msp->Material()->NStateVariables();
+        nstate += msp->Material()->NStateVariables();
 	}
-		
+
 	const int numstate = nstate;
 	ek.fMat.Redim(numeq,numeq);
 	ef.fMat.Redim(numeq,1);
@@ -339,13 +348,13 @@ void TPZMultiphysicsCompEl<TGeometry>::InitializeElementMatrix(TPZElementMatrix 
 		ek.fBlock.Set(i,ndof);
 		ef.fBlock.Set(i,ndof);
 	}
+
 	ek.fConnect.Resize(ncon);
 	ef.fConnect.Resize(ncon);
 	for(i=0; i<ncon; i++){
 		(ek.fConnect)[i] = ConnectIndex(i);
 		(ef.fConnect)[i] = ConnectIndex(i);
 	}
-	
 }//void
 
 template <class TGeometry>
@@ -366,16 +375,17 @@ void TPZMultiphysicsCompEl<TGeometry>::InitMaterialData(TPZVec<TPZMaterialData >
 	for (int iref = 0; iref<nref; iref++) 
 	{
 		TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[iref]);
-		const int nstate = msp->Material()->NStateVariables();
-		nshape[iref] =  msp->NShapeF();
+
+        const int nstate = msp->Material()->NStateVariables();
+            nshape[iref] =  msp->NShapeF();
+
 		dataVec[iref].phi.Redim(nshape[iref],1);
 		dataVec[iref].dphix.Redim(dim,nshape[iref]);
 		dataVec[iref].axes.Redim(dim,3);
 		dataVec[iref].jacobian.Redim(dim,dim);
 		dataVec[iref].jacinv.Redim(dim,dim);
 		dataVec[iref].x.Resize(3);
-	
-	
+
 		if (dataVec[iref].fNeedsSol)
 		{
             dataVec[iref].sol.resize(1);
@@ -392,6 +402,7 @@ template <class TGeometry>
 void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef)
 {
 	TPZAutoPointer<TPZMaterial> material = Material();
+    //std::cout << "MatId: " << material->Id() << std::endl;
 	if(!material){
 		PZError << "Error at " << __PRETTY_FUNCTION__ << " this->Material() == NULL\n";
 		ek.Reset();
@@ -400,62 +411,81 @@ void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElemen
 	}
 	
 	InitializeElementMatrix(ek,ef);
-	
-	if (this->NConnects() == 0) return;//boundary discontinuous elements have this characteristic
+
+	if (this->NConnects() == 0) return; // boundary discontinuous elements have this characteristic
 	
 	TPZVec<TPZMaterialData> datavec;
 	const int nref = fElementVec.size(); 
 	datavec.resize(nref);
 	InitMaterialData(datavec);
-	
+
 	TPZManVector<TPZTransform> trvec;
 	AffineTransform(trvec);
 	
 	int dim = Dimension();
 	TPZAutoPointer<TPZIntPoints> intrule;
-			
-	TPZManVector<REAL,3> intpoint(dim,0.), intpointtemp(dim,0.);
+
+	TPZManVector<REAL,3> intpoint(dim, 0.), intpointtemp(dim, 0.);
 	REAL weight = 0.;
 	
 	TPZVec<int> ordervec;
 	ordervec.resize(nref);
-	for (int iref=0;  iref<nref; iref++) 
+	for (int iref = 0; iref < nref; iref++) 
 	{
 		TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[iref]);
-		datavec[iref].p = msp->MaxOrder();
-		ordervec[iref] = datavec[iref].p; 
+
+        datavec[iref].p = msp->MaxOrder();
+        ordervec[iref] = datavec[iref].p;
 	}
 	int order = material->IntegrationRuleOrder(ordervec);
-		
+
 	TPZGeoEl *ref = this->Reference();
 	intrule = ref->CreateSideIntegrationRule(ref->NSides()-1, order);
-					
+
 	TPZManVector<int,3> intorder(dim,order);
 	intrule->SetOrder(intorder);	
 	int intrulepoints = intrule->NPoints();
-		
+
 	TPZFMatrix jac, axe, jacInv;
 	REAL detJac; 
 	for(int int_ind = 0; int_ind < intrulepoints; ++int_ind)
-	{		
-		intrule->Point(int_ind,intpointtemp,weight);
+	{
+        //std::cout << "Current integration point index: " << int_ind << std::endl;
+		intrule->Point(int_ind, intpointtemp, weight);
 		ref->Jacobian(intpointtemp, jac, axe, detJac , jacInv);
 		weight *= fabs(detJac);
-		for (int iref=0; iref<fElementVec.size(); iref++)
-		{			
+
+		for (int iref = 0; iref < fElementVec.size(); iref++)
+		{	
+            //std::cout << "current comp_el: " << iref << std::endl;
 			TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[iref]);
 			trvec[iref].Apply(intpointtemp, intpoint);
-			
-			msp->ComputeShape(intpoint, datavec[iref].x, datavec[iref].jacobian, datavec[iref].axes, 
+
+            datavec[iref].x_int = intpoint;
+            msp->ComputeShape(intpoint, datavec[iref].x, datavec[iref].jacobian, datavec[iref].axes, 
 							  datavec[iref].detjac, datavec[iref].jacinv, datavec[iref].phi, datavec[iref].dphix);
+
+//            std::cout << "datavec[" << iref << "].phi: ";
+//            datavec[iref].phi.Print();
+//            std::cout << "datavec[" << iref << "].dphix: ";
+//            datavec[iref].dphix.Print();
+
 			datavec[iref].intPtIndex = int_ind;
-			msp->ComputeRequiredData(datavec[iref], intpoint);
+
+            msp->ComputeRequiredData(datavec[iref], intpoint);
+            
 		}
-		material->Contribute(datavec,weight,ek.fMat,ef.fMat);
-	}//loop over integratin points
-	
-	
-}//CalcStiff
+
+		material->Contribute(datavec, weight, ek.fMat, ef.fMat);
+	}//loop over integration points
+
+//    std::cout << "ek: ";
+//    ek.fMat.Print();
+//    std::cout << "ef: ";
+//    ef.fMat.Print();
+//    std::cout << "========================" << std::endl;
+
+} // CalcStiff
 
 
 //#include "tpzpoint.h"
@@ -536,6 +566,117 @@ void TPZMultiphysicsCompEl<TGeometry>::CreateGraphicalElement(TPZGraphMesh &grme
 	}//1d
 }
 
+template<class TGeometry>
+void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(void (*fp)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix &deriv), TPZVec<REAL> & errors,TPZBlock * flux)
+{
+	int NErrors = this->Material()->NEvalErrors();
+	errors.Resize(NErrors);
+	errors.Fill(0.);
+
+	TPZAutoPointer<TPZMaterial> material = Material();
+	if(!material)
+    {
+		PZError << "TPZMultiphysicsCompEl::EvaluateError : no material for this element\n";
+		Print(PZError);
+		return;
+	}
+
+    TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[0]);
+
+	int problemdimension = Mesh()->Dimension();
+	if( msp->Reference()->Dimension() < problemdimension )
+            return;
+
+	// Adjust the order of the integration rule
+	//Cesar 2007-06-27 ==>> Begin
+	//this->MaxOrder is usefull to evaluate polynomial function of the aproximation space.
+	//fp can be any function and max order of the integration rule could produce best results
+	int dim = Dimension();
+    const int nref = fElementVec.size();
+
+    TPZVec<TPZMaterialData> datavec;
+	datavec.resize(nref);
+	InitMaterialData(datavec);
+
+	TPZAutoPointer<TPZIntPoints> intrule;
+    int maxIntOrder = intrule->GetMaxOrder();
+
+	TPZManVector<REAL,3> intpoint(dim,0.), intpointtemp(dim,0.);
+	REAL weight = 0.;
+
+	TPZVec<int> ordervec;
+	ordervec.resize(nref);
+	for (int iref=0;  iref<nref; iref++) 
+	{
+		TPZInterpolationSpace *msp_temp  = dynamic_cast <TPZInterpolationSpace *>(fElementVec[iref]);
+
+        datavec[iref].p = msp_temp->MaxOrder();
+        ordervec[iref] = datavec[iref].p;
+	}
+	int order = material->IntegrationRuleOrder(ordervec);
+    
+	TPZGeoEl *ref = this->Reference();
+	intrule = ref->CreateSideIntegrationRule(ref->NSides()-1, order);
+
+	TPZManVector<int,3> intorder(dim,order);
+	intrule->SetOrder(intorder);	
+	int intrulepoints = intrule->NPoints();
+
+	int ndof = material->NStateVariables();
+	int nflux = material->NFluxes();
+	TPZManVector<REAL,10> u_exact(ndof);
+	TPZFNMatrix<90> du_exact(dim,ndof);
+	TPZManVector<REAL,10> values(NErrors);
+	values.Fill(0.0);
+	TPZManVector<REAL,9> flux_el(nflux,0.);
+
+    TPZManVector<TPZTransform> trvec;
+	AffineTransform(trvec);
+
+	for(int nint = 0; nint < intrulepoints; nint++)
+    {
+        //std::cout << "IntPoint: " << nint << "\n";
+
+		intrule->Point(nint, intpoint, weight);
+        trvec[0].Apply(intpointtemp, intpoint);
+
+        msp->ComputeShape(intpoint, datavec[0].x, datavec[0].jacobian, datavec[0].axes, datavec[0].detjac, datavec[0].jacinv, datavec[0].phi, datavec[0].dphix);
+
+		weight *= fabs(datavec[0].detjac);
+
+		//contribuicoes dos erros
+		if(fp)
+        {
+			fp(datavec[0].x,u_exact,du_exact);
+			//std::cout << " funcao exata calculada no pto X " << datavec[0].x << " valor " << u_exact << " dudx " << du_exact << std::endl;
+
+			//tentando implementar um erro meu
+			if(datavec[0].fVecShapeIndex.NElements())
+			{
+                ComputeSolution(intpoint, datavec[0].phi, datavec[0].dphix, datavec[0].axes, datavec[0].sol, datavec[0].dsol);
+				material->ErrorsHdiv(datavec[0], u_exact, du_exact, values);
+			}
+			else
+            {
+				ComputeSolution(intpoint, datavec[0].phi, datavec[0].dphix, datavec[0].axes, datavec[0].sol, datavec[0].dsol);
+				material->Errors(datavec[0].x, datavec[0].sol[0], datavec[0].dsol[0], datavec[0].axes, flux_el, u_exact, du_exact, values);
+			}
+
+			//	std::cout<<"erro depois de Hdiv 2 "<<values<<std::endl;
+			for(int ier = 0; ier < NErrors; ier++)
+				errors[ier] += values[ier] * weight;
+		}
+        else
+            std::cout << "fp is not defined... \n";
+	}
+
+	//Norma sobre o elemento
+	for(int ier = 0; ier < NErrors; ier++)
+		errors[ier] = sqrt(errors[ier]);
+
+//    std::cout << "error: ";
+//    errors.Print();
+}
 
 
 //---------------------------------------------------------------	

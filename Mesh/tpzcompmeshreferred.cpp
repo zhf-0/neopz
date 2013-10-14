@@ -26,6 +26,12 @@ TPZCompMeshReferred::TPZCompMeshReferred(TPZGeoMesh *gmesh)
 {
 }
 
+// inserido por Frederico (LNCC) em 02/04.
+TPZCompMeshReferred::TPZCompMeshReferred(const TPZCompMesh &cmesh)
+: TPZCompMesh(cmesh), fReferredIndices(0), fReferred(0)
+{
+}
+
 TPZCompMeshReferred::TPZCompMeshReferred(const TPZCompMeshReferred &copy)
 : TPZCompMesh(copy), fReferredIndices(copy.fReferredIndices), fReferred(copy.fReferred)
 {

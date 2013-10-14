@@ -401,7 +401,10 @@ void TPZFrontStructMatrix<front>::Assemble(TPZMatrix & stiffness, TPZFMatrix & r
 		numel++;
 		
 	}//fim for iel
-	
+
+//    ofstream fileout("rigidez.nb");
+//    stiffness.Print("Rigidez = ", fileout, EMathematicaInput);
+
 }
 
 //Verificar declaracao dos parametros !!!!!
@@ -422,6 +425,15 @@ void TPZFrontStructMatrix<front>::AssembleElement(TPZCompEl * el, TPZElementMatr
             LOGPZ_DEBUG(logger,sout.str())
 		}
 #endif
+
+//        std::cout << "fSourceIndex[Dep]: ";
+//        for(int i = 0; i < ek.fSourceIndex.size(); i++)
+//            std::cout << ek.fSourceIndex[i] << " ";
+//        std::cout << "\nfDestinationIndex[Dep]: ";
+//        for(int i = 0; i < ek.fDestinationIndex.size(); i++)
+//            std::cout << ek.fDestinationIndex[i] << " ";
+//        std::cout << std::endl;
+
 		//ek.Print(*fMesh,cout);
 		stiffness.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
 		rhs.AddFel(ef.fMat,ek.fSourceIndex, ek.fDestinationIndex);                 //  ??????????? Erro
@@ -439,6 +451,15 @@ void TPZFrontStructMatrix<front>::AssembleElement(TPZCompEl * el, TPZElementMatr
 			LOGPZ_DEBUG(logger,sout.str())
         }
 #endif
+
+//        std::cout << "fSourceIndex[Dep]: ";
+//        for(int i = 0; i < ek.fSourceIndex.size(); i++)
+//            std::cout << ek.fSourceIndex[i] << " ";
+//        std::cout << "fDestinationIndex[Dep]: ";
+//        for(int i = 0; i < ek.fDestinationIndex.size(); i++)
+//            std::cout << ek.fDestinationIndex[i] << " ";
+//        std::cout << std::endl;
+
         stiffness.AddKel(ek.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
         rhs.AddFel(ef.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
 	}

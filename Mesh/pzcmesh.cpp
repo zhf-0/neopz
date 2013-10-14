@@ -67,7 +67,6 @@ fSolution(0,1) {
 	fSolutionBlock.SetMatrix(&fSolution);
 }
 
-
 TPZCompMesh::TPZCompMesh(TPZAutoPointer<TPZGeoMesh> &gmesh) : fGMesh(gmesh),fElementVec(0),
 fConnectVec(0),fMaterialVec(),
 fSolution(0,1)
@@ -144,7 +143,7 @@ void TPZCompMesh::SetName (const string &nm) {
 	fName = nm;
 }
 
-void TPZCompMesh::Print (std::ostream & out) const {
+void TPZCompMesh::Print(std::ostream & out) const {
 	
 	//ComputeNodElCon();
 	out << "\n\t\tCOMPUTABLE GRID INFORMATIONS:\n\n";
@@ -563,7 +562,8 @@ int TPZCompMesh::NEquations() {
 	int i, ncon = NConnects();
 	for(i=0; i<ncon; i++) {
 		TPZConnect &df = fConnectVec[i];
-		if(df.HasDependency() || df.IsCondensed() || !df.NElConnected() || df.SequenceNumber() == -1) continue;
+		if(df.HasDependency() || df.IsCondensed() || !df.NElConnected() || df.SequenceNumber() == -1) 
+            continue;
         int dofsize = df.NShape()*df.NState();
 #ifdef DEBUG
         // check the consistency between the block size and the data structure of the connect

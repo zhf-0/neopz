@@ -533,7 +533,12 @@ public:
     {
         fCreate.SetAllCreateFunctionsContinuous();
     }
-    
+
+    void SetAllCreateFunctionsMHM()
+    {
+        fCreate.SetAllCreateFunctionsMHM();
+    }
+
     void SetAllCreateFunctionsDiscontinuousReferred()
     {
         fCreate.SetAllCreateFunctionsDiscontinuousReferred();
@@ -557,6 +562,11 @@ public:
     void SetAllCreateFunctionsMultiphysicElem()
     {
         fCreate.SetAllCreateFunctionsMultiphysicElem();
+    }
+
+    void SetAllCreateFunctionsMultiphysicElemMHM()
+    {
+        fCreate.SetAllCreateFunctionsMultiphysicElemMHM();
     }
 
     void SetAllCreateFunctionsContinuousWithMem()

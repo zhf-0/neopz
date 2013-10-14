@@ -22,7 +22,7 @@ class TPZIntelGen : public TPZInterpolatedElement {
 protected:
 	
 	int fConnectIndexes[TSHAPE::NSides];
-	
+
 	typename TSHAPE::IntruleType fIntRule;
 	
 public:

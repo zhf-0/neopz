@@ -1,14 +1,8 @@
+file(GLOB headers *.h)
+file(GLOB sources *.cpp)
 
-include_directories(${KDE4_INCLUDES} ${KDE4_INCLUDE_DIR} ${QT_INCLUDES} )
+set(main_SRCS ${sources} ${headers})
 
+add_executable(NonLinBiharmonic ${main_SRCS} ${headers})
 
-########### next target ###############
-
-set(main_SRCS main.cpp)
-
-add_executable(NonLinBiharmonic ${main_SRCS})
-
-target_link_libraries(NonLinBiharmonic ${KDE4_KDECORE_LIBS})
-
-install(TARGETS NonLinBiharmonic ${INSTALL_TARGETS_DEFAULT_ARGS})
-
+target_link_libraries(NonLinBiharmonic pz pthread)

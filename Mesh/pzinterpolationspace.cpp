@@ -74,12 +74,12 @@ void TPZInterpolationSpace::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X
 	}//if
 	TPZFNMatrix<660> dphi(dphix.Rows(), dphix.Cols(), 0.);
 	int dim = this->Dimension();
-	
+
 	//jacobian.Zero();
 	//jacinv.Zero();
 	ref->Jacobian( intpoint, jacobian, axes, detjac , jacinv);
 	this->Shape(intpoint,phi,dphi);
-    
+
     int nshape = phi.Rows();
 	int ieq;
 	switch(dim){
@@ -90,16 +90,86 @@ void TPZInterpolationSpace::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X
 			dphix *= (1./detjac);
 			break;
 		case 2:
-			for(ieq = 0; ieq < nshape; ieq++) {
-				dphix(0,ieq) = jacinv(0,0)*dphi(0,ieq) + jacinv(1,0)*dphi(1,ieq);
-				dphix(1,ieq) = jacinv(0,1)*dphi(0,ieq) + jacinv(1,1)*dphi(1,ieq);
+			for(ieq = 0; ieq < nshape; ieq++)
+            {
+				dphix(0,ieq) = jacinv(0,0)*dphi(0,ieq) + jacinv(1,0)*dphi(1,ieq); // Dx
+				dphix(1,ieq) = jacinv(0,1)*dphi(0,ieq) + jacinv(1,1)*dphi(1,ieq); // Dy
+
+                if(dphi.Rows() != dim)
+                {
+                    TPZFNMatrix<600> temp_dphi(dphix.Rows(), dphix.Cols(), 0.);
+                    
+                    temp_dphi(2, ieq) = jacinv(0,0)*( dphi(2,ieq)*jacinv(0,0) + dphi(3,ieq)*jacinv(0,1) ) 
+                                    + jacinv(0,1)*( dphi(4,ieq)*jacinv(0,0) + dphi(5,ieq)*jacinv(0,1) ); // DxDx - ok.
+
+                    temp_dphi(3, ieq) = jacinv(0,0)*( dphi(2,ieq)*jacinv(1,0) + dphi(3,ieq)*jacinv(1,1) ) 
+                                    + jacinv(0,1)*( dphi(4,ieq)*jacinv(1,0) + dphi(5,ieq)*jacinv(1,1) ); // DyDx
+
+                    temp_dphi(4, ieq) = jacinv(1,0)*( dphi(2,ieq)*jacinv(0,0) + dphi(3,ieq)*jacinv(0,1) ) 
+                                    + jacinv(1,1)*( dphi(4,ieq)*jacinv(0,0) + dphi(5,ieq)*jacinv(0,1) ); // DxDy
+
+                    temp_dphi(5, ieq) = jacinv(1,0)*( dphi(2,ieq)*jacinv(1,0) + dphi(3,ieq)*jacinv(1,1) ) 
+                                    + jacinv(1,1)*( dphi(4,ieq)*jacinv(1,0) + dphi(5,ieq)*jacinv(1,1) ); // DyDy
+
+                    dphix(2,ieq) = axes(0,0) * ( temp_dphi(2,ieq)*axes(0,0) + temp_dphi(3,ieq) * axes(0,1) ) 
+                                + axes(0,1) * ( temp_dphi(4,ieq)*axes(0,0) + temp_dphi(5,ieq) * axes(0,1) );   // dxdx
+
+                    dphix(3,ieq) = axes(0,0) * ( temp_dphi(2,ieq)*axes(1,0) + temp_dphi(3,ieq) * axes(1,1) ) 
+                                + axes(0,1) * ( temp_dphi(4,ieq)*axes(1,0) + temp_dphi(5,ieq) * axes(1,1) );   // dydx
+
+                    dphix(4,ieq) = axes(1,0) * ( temp_dphi(2,ieq)*axes(0,0) + temp_dphi(3,ieq) * axes(0,1) ) 
+                                + axes(1,1) * ( temp_dphi(4,ieq)*axes(0,0) + temp_dphi(5,ieq) * axes(0,1) );   // dxdy
+
+                    dphix(5,ieq) = axes(1,0) * ( temp_dphi(2,ieq)*axes(1,0) + temp_dphi(3,ieq) * axes(1,1) ) 
+                                + axes(1,1) * ( temp_dphi(4,ieq)*axes(1,0) + temp_dphi(5,ieq) * axes(1,1) );   // dydy
+                }
 			}
 			break;
 		case 3:
-			for(ieq = 0; ieq < nshape; ieq++) {
+			for(ieq = 0; ieq < nshape; ieq++)
+            {   // ADEQUAR AO PADRÃO.
 				dphix(0,ieq) = jacinv(0,0)*dphi(0,ieq) + jacinv(1,0)*dphi(1,ieq) + jacinv(2,0)*dphi(2,ieq);
 				dphix(1,ieq) = jacinv(0,1)*dphi(0,ieq) + jacinv(1,1)*dphi(1,ieq) + jacinv(2,1)*dphi(2,ieq);
 				dphix(2,ieq) = jacinv(0,2)*dphi(0,ieq) + jacinv(1,2)*dphi(1,ieq) + jacinv(2,2)*dphi(2,ieq);
+
+                if(dphix.Rows() != dim)
+                {
+                    dphix(3, ieq) = jacinv(0,0)*( dphi(3,ieq)*jacinv(0,0) + dphi(4,ieq)*jacinv(0,1) + dphi(5,ieq)*jacinv(0,2) )
+                                + jacinv(0,1)*( dphi(6,ieq)*jacinv(0,0) + dphi(7,ieq)*jacinv(0,1) + dphi(8,ieq)*jacinv(0,2) )
+                                + jacinv(0,2)*( dphi(9,ieq)*jacinv(0,0) + dphi(10,ieq)*jacinv(0,1) + dphi(11,ieq)*jacinv(0,2) ); // DxDx
+
+                    dphix(4, ieq) = jacinv(0,0)*( dphi(3,ieq)*jacinv(1,0) + dphi(4,ieq)*jacinv(1,1) + dphi(5,ieq)*jacinv(1,2) )
+                                + jacinv(0,1)*( dphi(6,ieq)*jacinv(1,0) + dphi(7,ieq)*jacinv(1,1) + dphi(8,ieq)*jacinv(1,2) )
+                                + jacinv(0,2)*( dphi(9,ieq)*jacinv(1,0) + dphi(10,ieq)*jacinv(1,1) + dphi(11,ieq)*jacinv(1,2) ); // DyDx
+
+                    dphix(5, ieq) = jacinv(0,0)*( dphi(3,ieq)*jacinv(2,0) + dphi(4,ieq)*jacinv(2,1) + dphi(5,ieq)*jacinv(2,2) )
+                                + jacinv(0,1)*( dphi(6,ieq)*jacinv(2,0) + dphi(7,ieq)*jacinv(2,1) + dphi(8,ieq)*jacinv(2,2) )
+                                + jacinv(0,2)*( dphi(9,ieq)*jacinv(2,0) + dphi(10,ieq)*jacinv(2,1) + dphi(11,ieq)*jacinv(2,2) ); // DzDx
+
+                    dphix(6, ieq) = jacinv(1,0)*( dphi(3,ieq)*jacinv(0,0) + dphi(4,ieq)*jacinv(0,1) + dphi(5,ieq)*jacinv(0,2) )
+                                + jacinv(1,1)*( dphi(6,ieq)*jacinv(0,0) + dphi(7,ieq)*jacinv(0,1) + dphi(8,ieq)*jacinv(0,2) )
+                                + jacinv(1,2)*( dphi(9,ieq)*jacinv(0,0) + dphi(10,ieq)*jacinv(0,1) + dphi(11,ieq)*jacinv(0,2) ); // DxDy
+
+                    dphix(7, ieq) = jacinv(1,0)*( dphi(3,ieq)*jacinv(1,0) + dphi(4,ieq)*jacinv(1,1) + dphi(5,ieq)*jacinv(1,2) )
+                                + jacinv(1,1)*( dphi(6,ieq)*jacinv(1,0) + dphi(7,ieq)*jacinv(1,1) + dphi(8,ieq)*jacinv(1,2) )
+                                + jacinv(1,2)*( dphi(9,ieq)*jacinv(1,0) + dphi(10,ieq)*jacinv(1,1) + dphi(11,ieq)*jacinv(1,2) ); // DyDy
+
+                    dphix(8, ieq) = jacinv(1,0)*( dphi(3,ieq)*jacinv(2,0) + dphi(4,ieq)*jacinv(2,1) + dphi(5,ieq)*jacinv(2,2) )
+                                + jacinv(1,1)*( dphi(6,ieq)*jacinv(2,0) + dphi(7,ieq)*jacinv(2,1) + dphi(8,ieq)*jacinv(2,2) )
+                                + jacinv(1,2)*( dphi(9,ieq)*jacinv(2,0) + dphi(10,ieq)*jacinv(2,1) + dphi(11,ieq)*jacinv(2,2) ); // DzDy
+
+                    dphix(9, ieq) = jacinv(2,0)*( dphi(3,ieq)*jacinv(0,0) + dphi(4,ieq)*jacinv(0,1) + dphi(5,ieq)*jacinv(0,2) )
+                                + jacinv(2,1)*( dphi(6,ieq)*jacinv(0,0) + dphi(7,ieq)*jacinv(0,1) + dphi(8,ieq)*jacinv(0,2) )
+                                + jacinv(2,2)*( dphi(9,ieq)*jacinv(0,0) + dphi(10,ieq)*jacinv(0,1) + dphi(11,ieq)*jacinv(0,2) ); // DxDz
+
+                    dphix(10, ieq) = jacinv(2,0)*( dphi(3,ieq)*jacinv(1,0) + dphi(4,ieq)*jacinv(1,1) + dphi(5,ieq)*jacinv(1,2) )
+                                + jacinv(2,1)*( dphi(6,ieq)*jacinv(1,0) + dphi(7,ieq)*jacinv(1,1) + dphi(8,ieq)*jacinv(1,2) )
+                                + jacinv(2,2)*( dphi(9,ieq)*jacinv(1,0) + dphi(10,ieq)*jacinv(1,1) + dphi(11,ieq)*jacinv(1,2) ); // DyDz
+
+                    dphix(11, ieq) = jacinv(2,0)*( dphi(3,ieq)*jacinv(2,0) + dphi(4,ieq)*jacinv(2,1) + dphi(5,ieq)*jacinv(2,2) )
+                                + jacinv(2,1)*( dphi(6,ieq)*jacinv(2,0) + dphi(7,ieq)*jacinv(2,1) + dphi(8,ieq)*jacinv(2,2) )
+                                + jacinv(2,2)*( dphi(9,ieq)*jacinv(2,0) + dphi(10,ieq)*jacinv(2,1) + dphi(11,ieq)*jacinv(2,2) ); // DzDz
+                }
 			}
 			break;
 		default:
@@ -116,13 +186,14 @@ REAL TPZInterpolationSpace::InnerRadius(){
 	return this->Reference()->ElementRadius();
 }
 
-void TPZInterpolationSpace::InitMaterialData(TPZMaterialData &data){
+void TPZInterpolationSpace::InitMaterialData(TPZMaterialData &data)
+{
 	this->Material()->FillDataRequirements(data);
 	const int dim = this->Dimension();
 	const int nshape = this->NShapeF();
 	const int nstate = this->Material()->NStateVariables();
 	data.phi.Redim(nshape,1);
-	data.dphix.Redim(dim,nshape);
+	data.dphix.Redim(dim*dim+dim,nshape); // "dim" entries for the first order derivative and "dim*dim" entries for the second order derivative.
 	data.axes.Redim(dim,3);
 	data.jacobian.Redim(dim,dim);
 	data.jacinv.Redim(dim,dim);
@@ -182,7 +253,7 @@ void TPZInterpolationSpace::ComputeNormal(TPZMaterialData & data)
 		return; // place a breakpoint here if this is an issue
 	}
 	
-	thisGeoEl->     CenterPoint(thisFace,      thisCenter);
+	thisGeoEl->CenterPoint(thisFace,      thisCenter);
 	neighbourGeoEl->CenterPoint(neighbourFace, neighbourCenter);
 	
 	thisGeoEl->     X(thisCenter,     thisXVol);
@@ -265,6 +336,7 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 	
 	if (this->NConnects() == 0) return;//boundary discontinuous elements have this characteristic
 	
+	material->SetLinearContext(false);//joao
 	
 	TPZMaterialData data;
 	this->InitMaterialData(data);
@@ -275,11 +347,16 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 	REAL weight = 0.;
 	
 	TPZAutoPointer<TPZIntPoints> intrule = GetIntegrationRule().Clone();
+    // SPiNMe 1.0: the function below returns the value inserted by the user, independently of "data.p"
     int order = material->IntegrationRuleOrder(data.p);
+    /* IGNORED IN SPiNMe: the user MUST set the order of integration rule.
     if(material->HasForcingFunction())
     {
+        //std::cout << "Material Id in Forcing function: " << material->Id() << std::endl;
         order = intrule->GetMaxOrder();
     }
+     */
+    //std::cout << "Integration order: " << order << std::endl;
     TPZManVector<int,3> intorder(dim,order);
     intrule->SetOrder(intorder);
 	//    material->SetIntegrationRule(intrule, data.p, dim);
@@ -300,6 +377,18 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
 		data.intPtIndex = int_ind;
 		this->ComputeRequiredData(data, intpoint);
 		material->Contribute(data,weight,ek.fMat,ef.fMat);
+
+        // inserted by Frederico, March 30th, 2012.
+//		std::cout << "ponto:"<< int_ind<< std::endl;
+//		for(int i=0;i<data.dphix.Rows();i++)
+//		{
+//            std::cout << "( ";
+//
+//			for(int j=0;j<data.dphix.Cols();j++)
+//				std::cout << data.dphix(i,j) << ", ";
+//
+//            std::cout << " )" << std::endl;
+//		}
 	}//loop over integratin points
 	
 }//CalcStiff
@@ -957,14 +1046,18 @@ void TPZInterpolationSpace::EvaluateError(  void (*fp)(TPZVec<REAL> &loc,TPZVec<
 		//contribuicoes dos erros
 		if(fp) {
 			fp(data.x,u_exact,du_exact);
-			//		std::cout<<" funcao exata calculada no pto X " << data.x<< " valor "<< u_exact<<" dudx "<<du_exact <<std::endl;
-			
+			//std::cout << " funcao exata calculada no pto X " << data.x << " valor " << u_exact << " dudx " << du_exact << std::endl;
+
 			//tentando implementar um erro meu
 			if(data.fVecShapeIndex.NElements())
 			{
-				this->ComputeSolution(intpoint, data);
+                /*
+                 CHANGED BY FREDERICO IN 30/OUT/2012..
+                 */
+                this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
+				// this->ComputeSolution(intpoint, data);
 				//		std::cout<<"erro ANTES de Hdiv 1 "<<values<<std::endl;
-				material->ErrorsHdiv(data,u_exact,du_exact,values);
+				material->ErrorsHdiv(data, u_exact, du_exact, values);
 				//		std::cout<<"erro depois de Hdiv 1 "<<values<<std::endl;
 				
 			}

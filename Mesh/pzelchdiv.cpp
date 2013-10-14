@@ -847,12 +847,23 @@ void TPZCompElHDiv<TSHAPE>::ComputeSolutionHDiv(TPZVec<REAL> &qsi, TPZMaterialDa
     
 }
 
+/*
+ CHANGED BY FREDERICO IN 30/OCT/2012, 16:15..
+ */
 template<class TSHAPE>
 void TPZCompElHDiv<TSHAPE>::ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix &phi, TPZFMatrix &dphix,
-                                            const TPZFMatrix &axes, TPZSolVec &sol, TPZGradSolVec &dsol){
+                                            const TPZFMatrix &axes, TPZSolVec &sol, TPZGradSolVec &dsol)
+{
     TPZMaterialData data;
     InitMaterialData(data);
+    data.phi = phi;
+    data.dphix = dphix;
+    data.axes = axes;
+    
     this->ComputeSolutionHDiv(data);
+    
+    sol = data.sol;
+    dsol = data.dsol;
 	
     
 }

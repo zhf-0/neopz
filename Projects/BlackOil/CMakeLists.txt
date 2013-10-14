@@ -1,14 +1,10 @@
 
-set(main_SRCS
-    main.cpp
-    malha.cpp
-    postprocess.cpp
-    tpzarc3d.cpp
-    tpzgeoblend.cpp)
+file(GLOB headers *.h)
+file(GLOB sources *.cpp)
 
-add_executable(BlackOil ${main_SRCS})
+set(main_SRCS ${sources} ${headers})
+
+add_executable(BlackOil ${main_SRCS} ${headers})
 
 target_link_libraries(BlackOil pz pthread)
-
-install(TARGETS BlackOil ${INSTALL_TARGETS_DEFAULT_ARGS})
 

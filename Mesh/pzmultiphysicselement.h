@@ -40,7 +40,8 @@ public:
 	virtual void AffineTransform(TPZManVector<TPZTransform> &trVec) const = 0;
 	
 	virtual void CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef) = 0;
-	
+
+    virtual void EvaluateError(void (* /*fp*/)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix &deriv), TPZVec<REAL> &/*errors*/,TPZBlock * /*flux*/) = 0;
 	
 	virtual void CreateGraphicalElement(TPZGraphMesh &grmesh, int dimension)=0;
 	

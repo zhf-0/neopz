@@ -52,6 +52,32 @@ namespace pzshape {
 		dphi(1,2) = x[1]*dy[1];
 		dphi(0,3) = dx[0]*y[1];
 		dphi(1,3) = x[0]*dy[1];
+        if(dphi.Rows() > 2)
+        {
+            // phi(0,0)
+            dphi(2,0) = 0.0;   // dxdx
+            dphi(3,0) = dx[0]*dy[0];   // dydx
+            dphi(4,0) = dx[0]*dy[0];   // dxdy
+            dphi(5,0) = 0.0;   // dydy
+
+            // phi(1,0)
+            dphi(2,1) = 0.0;   // dxdx
+            dphi(3,1) = dx[1]*dy[0];   // dydx
+            dphi(4,1) = dx[1]*dy[0];   // dxdy
+            dphi(5,1) = 0.0;   // dydy
+
+            // phi(2,0)
+            dphi(2,2) = 0.0;   // dxdx
+            dphi(3,2) = dx[1]*dy[1];   // dydx
+            dphi(4,2) = dx[1]*dy[1];   // dxdy
+            dphi(5,2) = 0.0;   // dydy
+
+            // phi(3,0)
+            dphi(2,3) = 0.0;   // dxdx
+            dphi(3,3) = dx[0]*dy[1];   // dydx
+            dphi(4,3) = dx[0]*dy[1];   // dxdy
+            dphi(5,3) = 0.0;   // dydy
+        }
 	}
 	
 	/*
@@ -62,17 +88,41 @@ namespace pzshape {
 	 */
 	void TPZShapeQuad::ShapeGenerating(TPZVec<REAL> &pt, TPZFMatrix &phi, TPZFMatrix &dphi)
 	{
+        // REIMPLEMENTED BY FREDERICO AT 02 OCT 2012.
+        // NOW IT FOLLOWS THE IMPLEMENTATION FROM DENISE'S THESIS..
 		int is;
 		for(is=4; is<8; is++)
 		{
-			phi(is,0) = phi(is%4,0)*phi((is+1)%4,0);
-			dphi(0,is) = dphi(0,is%4)*phi((is+1)%4,0)+phi(is%4,0)*dphi(0,(is+1)%4);
-			dphi(1,is) = dphi(1,is%4)*phi((is+1)%4,0)+phi(is%4,0)*dphi(1,(is+1)%4);
+            int is0 = is%4;
+            int is1 = (is+1)%4;
+            int is2 = (is+2)%4;
+
+			phi(is,0) = phi(is0,0)*( phi(is1,0) + phi(is2,0) );
+			dphi(0,is) = dphi(0,is0)*( phi(is1,0) + phi(is2,0) ) + phi(is0,0) * ( dphi(0,is0) + dphi(0,is2) );
+			dphi(1,is) = dphi(1,is0)*( phi(is1,0) + phi(is2,0) ) + phi(is0,0) * ( dphi(1,is1) + dphi(1,is2) );
+
+            if(dphi.Rows() > 2)
+            {
+                dphi(2,is) = 2.*dphi(0,is0)*( dphi(0,is1) + dphi(0,is2) );
+                dphi(3,is) = dphi(3, is0)*( phi(is1,0) + phi(is2,0) ) + dphi(0,is0)*( dphi(1,is1) + dphi(1,is2) ) + dphi(1,is0)*( dphi(0,is1) + dphi(0,is2) ) + phi(is0,0)*( dphi(3,is1) + dphi(3,is2) );
+                dphi(4,is) = dphi(4, is0)*( phi(is1,0) + phi(is2,0) ) + dphi(1,is0)*( dphi(0,is1) + dphi(0,is2) ) + dphi(0,is0)*( dphi(1,is1) + dphi(1,is2) ) + phi(is0,0)*( dphi(4,is1) + dphi(4,is2) );
+                dphi(5,is) = 2.*dphi(1,is0)*( dphi(1,is1) + dphi(1,is2) );
+            }
 		}
+
 		phi(8,0) = phi(0,0)*phi(2,0);
 		dphi(0,8) = dphi(0,0)*phi(2,0)+phi(0,0)*dphi(0,2);
 		dphi(1,8) = dphi(1,0)*phi(2,0)+phi(0,0)*dphi(1,2);
 
+        if(dphi.Rows() > 2)
+        {
+            dphi(2,8) = 2.*dphi(0,0)*dphi(0,2); // dxdx
+            dphi(3,8) = dphi(3,0)*phi(2,0) + dphi(0,0)*dphi(1,2) + dphi(1,0)*dphi(0,2) + phi(0,0)*dphi(3,2);    //dydx
+            dphi(4,8) = dphi(4,0)*phi(2,0) + dphi(1,0)*dphi(0,2) + dphi(0,0)*dphi(1,2) + phi(0,0)*dphi(4,2);    // dxdy
+            dphi(5,8) = 2.*dphi(1,0)*dphi(1,2); // dydy
+        }
+        
+        /*
 		// Make the generating shape functions linear and unitary
 		for(is=4; is<8; is++)
 		{
@@ -86,58 +136,123 @@ namespace pzshape {
 		phi(8,0) *= 16.;
 		dphi(0,8) *= 16.;
 		dphi(1,8) *= 16.;
+         */
 	}
 	
 	void TPZShapeQuad::Shape(TPZVec<REAL> &pt, TPZVec<int> &id, TPZVec<int> &order,
 							 TPZFMatrix &phi,TPZFMatrix &dphi) {
 		ShapeCorner(pt,phi,dphi);
 		int is,d;
-		TPZFNMatrix<100> phiblend(NSides,1),dphiblend(Dimension,NSides);
+        int size = 0;
+        if( dphi.Rows() > 2)
+            size = Dimension+Dimension*Dimension;
+        else
+            size = Dimension;
+
+        TPZFNMatrix<100> phiblend(NSides,1),dphiblend(size, NSides);
+            
 		for(is=0; is<NCornerNodes; is++)
 		{
 			phiblend(is,0) = phi(is,0);
-			for(d=0; d<Dimension; d++)
+			for(d = 0; d < dphiblend.Rows(); d++)
 			{
 				dphiblend(d,is) = dphi(d,is);
 			}
 		}
+
 		ShapeGenerating(pt,phiblend,dphiblend);
 		REAL out;
 		int shape = 4;
-		for (int rib = 0; rib < 4; rib++) {
-			
+		for (int rib = 0; rib < 4; rib++)
+        {
 			ProjectPoint2dQuadToRib(rib,pt,out);
 			TPZVec<int> ids(2);
 			TPZManVector<REAL,1> outvec(1,out);
 			ids[0] = id[rib%4];
 			ids[1] = id[(rib+1)%4];
 			REAL store1[20],store2[40];
-			int ord2 = order[rib]-1;//two orders : order in x and order in y
-			TPZFMatrix phin(ord2,1,store1,20),dphin(2,ord2,store2,40);
-			TPZShapeLinear::ShapeInternal(outvec,order[rib],phin,dphin,TPZShapeLinear::GetTransformId1d(ids));
-			TransformDerivativeFromRibToQuad(rib,ord2,dphin);
-			for (int i = 0; i < ord2; i++) {
+			int ord2 = order[rib]-1;    //two orders : order in x and order in y
+			TPZFMatrix phin(ord2, 1, store1, 20),dphin(2, ord2, store2, 40);
+            // this operation below is performed inside "TPZShapeLinear::ShapeInternal"
+            int transf = TPZShapeLinear::GetTransformId1d(ids);
+            REAL y;
+            TPZShapeLinear::TransformPoint1d( transf, outvec[0], y);
+            outvec[0] = y;
+            TPZShapeLinear::ShapeInternal( outvec, order[rib], phin, dphin, transf);
+            TPZShapeLinear::TransformDerivative1d( transf, order[rib]-1, dphin);
+			// TPZShapeLinear::ShapeInternal(outvec, order[rib], phin, dphin, TPZShapeLinear::GetTransformId1d(ids));
+			// TransformDerivativeFromRibToQuad(rib, ord2, dphin);
+			for (int i = 0; i < ord2; i++)
+            {
 				phi(shape,0) = phiblend(rib+4,0)*phin(i,0);
-				for(int xj=0;xj<2;xj++) {
-					dphi(xj,shape) = dphiblend(xj,rib+4)*phin(i,0)+
-					phiblend(rib+4,0)*dphin(xj,i);
-				}
-				shape++;
+
+				for(int xj=0;xj<2;xj++)
+					dphi(xj,shape) = dphiblend(xj,rib+4)*phin(i,0) + phiblend(rib+4,0)*dphin(0,i)*gRibTrans2dQ1d[rib][xj];
+
+                if( dphi.Rows() > 2)
+                {
+                    dphi(2,shape) = dphiblend(2,0)*phin(i,0) + dphiblend(0,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][0]
+                                + dphiblend(0,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][0] + phiblend(rib+4,0)*dphin(1,i)*gRibTrans2dQ1d[rib][0]*gRibTrans2dQ1d[rib][0];   // dxdx
+
+                    dphi(3,shape) = dphiblend(3,0)*phin(i,0) + dphiblend(0,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][1]
+                                + dphiblend(1,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][0] + phiblend(rib+4,0)*dphin(1,i)*gRibTrans2dQ1d[rib][0]*gRibTrans2dQ1d[rib][1];   // dydx
+
+                    dphi(4,shape) = dphiblend(4,0)*phin(i,0) + dphiblend(1,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][0]
+                                + dphiblend(0,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][1] + phiblend(rib+4,0)*dphin(1,i)*gRibTrans2dQ1d[rib][0]*gRibTrans2dQ1d[rib][1];   // dxdy
+
+                    dphi(5,shape) = dphiblend(5,0)*phin(i,0) + dphiblend(1,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][1]
+                                + dphiblend(1,rib+4)*dphin(0,i)*gRibTrans2dQ1d[rib][1] + phiblend(rib+4,0)*dphin(1,i)*gRibTrans2dQ1d[rib][1]*gRibTrans2dQ1d[rib][1];   // dydy
+                }
+
+                shape++;
 			}
 		}
-		REAL store1[20],store2[40];
-		int ord = (order[4]-1)*(order[4]-1);
-		TPZFMatrix phin(ord,1,store1,20),dphin(2,ord,store2,40);
-		ShapeInternal(pt,order[4]-2,phin,dphin,GetTransformId2dQ(id));
-		for(int i=0;i<ord;i++)	{//funcoes de interior s�o em numero ordem-1
-			phi(shape,0) = phiblend(8,0)*phin(i,0);
-			for(int xj=0;xj<2;xj++) {//x e y
-				dphi(xj,shape) = dphiblend(xj,8)*phin(i,0) +
-				phiblend(8,0)*dphin(xj,i);
-			}
-			shape++;
+
+		// ShapeInternal(pt,order[4]-2,phin,dphin,GetTransformId2dQ(id));
+        REAL store1[20],
+        store2[20],
+            store3[20],
+            store4[20];
+        TPZFMatrix phi0(order[4]-1,1,store1,20),
+            phi1(order[4]-1,1,store2,20),
+            dphi0(2,order[4]-1,store3,20),
+            dphi1(2,order[4]-1,store4,20);
+
+		TPZShapeLinear::fOrthogonal(pt[0], order[4]-1, phi0, dphi0);
+		TPZShapeLinear::fOrthogonal(pt[1], order[4]-1, phi1, dphi1);
+		for(int i = 0; i < (order[4]-1); i++)  //funcoes de interior s�o em numero ordem-1
+        {
+            for(int j = 0; j < (order[4]-1); j++)
+            {
+                phi(shape,0) = phiblend(8,0) * phi0(i,0) * phi1(j,0);
+
+                dphi(0,shape) = dphiblend(0,8)*phi0(i,0)*phi1(j,0) + phiblend(8,0)*dphi0(0,i)*phi1(j,0);    // dx
+
+                dphi(1,shape) = dphiblend(1,8)*phi0(i,0)*phi1(j,0) + phiblend(8,0)*phi0(i,0)*dphi1(0,j);    // dy
+
+                if(dphi.Rows() > 2)
+                {
+                    dphi(2,shape) = dphiblend(2,8)*phi0(i,0)*phi1(j,0) + 2.*dphiblend(0,8)*dphi0(0,i)*phi1(j,0) + phiblend(8,0)*dphi(1,i)*phi1(j,0);   // dxdx
+
+                    dphi(3,shape) = dphiblend(3,8)*phi0(i,0)*phi1(j,0) + dphiblend(0,8)*phi0(i,0)*dphi1(0,j) 
+                                    + dphiblend(1,8)*dphi0(0,i)*phi1(j,0) + phiblend(8,0)*dphi(0,i)*dphi1(0,j);   // dydx
+
+                    dphi(4,shape) = dphiblend(4,8)*phi0(i,0)*phi1(j,0) + dphiblend(1,8)*dphi0(0,i)*phi1(j,0) 
+                                    + dphiblend(0,8)*phi0(i,0)*dphi1(0,j) + phiblend(8,0)*dphi(0,i)*dphi1(0,j);   // dxdy
+
+                    dphi(5,shape) = dphiblend(5,8)*phi0(i,0)*phi1(j,0) + 2.*dphiblend(1,8)*dphi0(0,i)*phi1(j,0) + phiblend(8,0)*phi0(i,0)*dphi1(1,j);   // dydy
+                }
+
+                shape++;
+            }
 		}
-	}
+
+        /*
+        std::cout << " phi and dphi at integration node: " << pt[0] << ", " << pt[1] << "\n";
+        phi.Print();
+        dphi.Print();
+         */
+    }
 	
 	void TPZShapeQuad::SideShape(int side,TPZVec<REAL> &pt, TPZVec<int> &id, TPZVec<int> &order,
 								 TPZFMatrix &phi,TPZFMatrix &dphi) {

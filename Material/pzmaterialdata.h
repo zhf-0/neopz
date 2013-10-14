@@ -46,6 +46,7 @@ public:
 	TPZFNMatrix<9> jacinv;//, leftjacinv, rightjacinv;
 	TPZManVector<REAL,3> normal;
 	TPZManVector<REAL,3> x;
+    TPZManVector<REAL,3> x_int;    // current integration point.
 	int p;//, leftp, rightp;
 	TPZManVector<TPZFemSol, 10> sol;//, soll, solr;
 	TPZManVector<TPZFemGradSol, 10> dsol;//, dsoll, dsolr;

@@ -16,7 +16,7 @@ TPZReadTetGen::TPZReadTetGen(){
 }//method
 
 TPZReadTetGen::~TPZReadTetGen(){
-	
+	 
 }//method
 
 TPZGeoMesh * TPZReadTetGen::Process(std::string NodeFileName, std::string FaceFileName, std::string TetraFileName){
@@ -139,7 +139,7 @@ bool TPZReadTetGen::ProcessTetra(std::string TetraFileName, TPZGeoMesh &gmesh, i
 	for(int i = 0; i < nvols; i++){
 		TetraFile >> ID >> NO1 >> NO2 >> NO3 >> NO4;
 		if (nattr) TetraFile >> mat;
-		else mat = 9;
+		else mat = 1;
 		nodind[0] = this->fNodeIndices[ NO1 ];
 		nodind[1] = this->fNodeIndices[ NO2 ];
 		nodind[2] = this->fNodeIndices[ NO3 ];

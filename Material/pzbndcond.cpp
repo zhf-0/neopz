@@ -174,7 +174,6 @@ void TPZBndCond::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix &ek, 
 		}
 		fType = 2;
 	}
-	
 	this->fMaterial->ContributeBC(data,weight,ek,ef,*this);
 	fType = typetmp;
 }
@@ -286,14 +285,15 @@ void TPZBndCond::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &d
 
 
 void TPZBndCond::UpdataBCValues(TPZMaterialData &data){
-	if(fForcingFunction){
-		TPZManVector<REAL> result(fBCVal2.Rows(),0.);
-		fForcingFunction->Execute(data.x,result);
-		int i;
-		for(i=0; i<fBCVal2.Rows(); i++) {
-			fBCVal2(i,0) = result[i];
-		}
-	}
+//  COMMENTED BY FREDERICO (LNCC) JUNE 6-6H, 2012.
+//	if(fForcingFunction){
+//		TPZManVector<REAL> result(fBCVal2.Rows(),0.);
+//		fForcingFunction->Execute(data.x,result);
+//		int i;
+//		for(i=0; i<fBCVal2.Rows(); i++) {
+//			fBCVal2(i,0) = result[i];
+//		}
+//	}
 	
 	if( this->fValFunction ){
 		TPZManVector<REAL> result(this->fBCVal2.Rows(),0.);

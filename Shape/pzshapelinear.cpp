@@ -13,22 +13,32 @@ namespace pzshape {
 	
 	// REAL TPZShapeLinear::fJacobiAlfa = 1.;
 	// REAL TPZShapeLinear::fJacobiBeta = 1.;
-	
-	void TPZShapeLinear::Chebyshev(REAL x,int num,TPZFMatrix &phi,TPZFMatrix &dphi){
+
+	void TPZShapeLinear::Chebyshev(REAL x,int num,TPZFMatrix &phi,TPZFMatrix &dphi)
+    {
 		// Quadratic or higher shape functions
 		if(num <= 0) return;
-		phi.Put(0,0,1.0);
-		dphi.Put(0,0, 0.0);
+		phi.Put(0, 0, 1.0);     // f_0(x)
+		dphi.Put(0, 0, 0.0);    // f'_0(x)
+        if (dphi.Rows() > 1)
+            dphi.Put(1, 0, 0.0);    // f''_0(x)
 		if(num == 1) return;
-		phi.Put(1,0, x);
-		dphi.Put(0,1, 1.0);
+
+		phi.Put(1, 0, x);       // f_1(x)
+		dphi.Put(0, 1, 1.0);    // f'_1(x)
+        if (dphi.Rows() > 1)
+            dphi.Put(1, 1, 0.0);    // f''_1(x)
+
 		int ord;
-		for(ord = 2;ord<num;ord++) {
-			phi.Put(ord,0, 2.0*x*phi(ord-1,0) - phi(ord-2,0));
-			dphi.Put(0,ord, 2.0*x*dphi(0,ord-1) + 2.0*phi(ord-1,0) - dphi(0,ord-2));
+		for(ord = 2;ord<num;ord++)
+        {
+			phi.Put(ord, 0, 2.0*x*phi(ord-1,0) - phi(ord-2,0));                         // f_n(x)
+			dphi.Put(0, ord, 2.0*phi(ord-1,0) + 2.0*x*dphi(0,ord-1) - dphi(0,ord-2));   // f'_n(x)
+            if (dphi.Rows() > 1)
+                dphi.Put(1, ord, 4*dphi(0,ord-1) + 2*x*dphi(1,ord-1) - dphi(1,ord-2));      // f''_n(x)
 		}
 	}
-	
+
 	void TPZShapeLinear::Legendre(REAL x,int num,TPZFMatrix &phi,TPZFMatrix &dphi){
 		
 		// Quadratic or higher shape functions
@@ -204,66 +214,140 @@ namespace pzshape {
 		
 		phi(2,0) = phi(0,0)*phi(1,0);
 		dphi(0,2) = dphi(0,0)*phi(1,0)+phi(0,0)*dphi(0,1);
+        if( dphi.Rows() > 1 )
+            dphi(1, 2) = dphi(1,0)*phi(1,0) + dphi(0,0)*dphi(0,1) + dphi(0,0)*dphi(0,1) + phi(0,0)*dphi(1,1);
 
 		phi(2,0) *= 4.;
 		dphi(0,2) *= 4.;
+        if( dphi.Rows() > 1)
+            dphi(1, 2) *= 4.;
 
 	}
 	
 	void TPZShapeLinear::Shape(TPZVec<REAL> &x,TPZVec<int> &id, TPZVec<int> &order,TPZFMatrix &phi,TPZFMatrix &dphi) {
 		//	num = number of functions to compute
+        if( dphi.Rows() > 1)
+        {
 #ifndef NODEBUG
-		if ( order[0] < 0 ) {
-			PZError << "Compelbas::shape --> Invalid dimension for arguments: order = " << order[0]
-			<< " phi.Rows = " << (int) phi.Rows() << " dphi.Cols = " << (int) dphi.Cols() << "\n";
-			return;
-		}
-		if(phi.Rows() < order[0]+1) {
-			PZError << "TPZShapeLinear::shape --> Invalid dimension for argument phi " << endl;
-			phi.Resize(order[0], phi.Cols());
-		}
-		if(dphi.Cols() < order[0]+1) {
-			PZError << "TPZShapeLinear::shape --> Invalid dimension for argument dphi " << endl;
-			dphi.Resize(dphi.Rows(),order[0]);
-		}
+            if ( order[0] < 0 )
+            {
+                PZError << "Compelbas::shape --> Invalid dimension for arguments: order = " << order[0]
+                << " phi.Rows = " << (int) phi.Rows() << " dphi.Cols = " << (int) dphi.Cols() << "\n";
+                return;
+            }
+            if(phi.Rows() < order[0]+1)
+            {
+                PZError << "TPZShapeLinear::shape --> Invalid dimension for argument phi " << endl;
+                phi.Resize(order[0], phi.Cols());
+            }
+            if(dphi.Cols() < order[0]+1)
+            {
+                PZError << "TPZShapeLinear::shape --> Invalid dimension for argument dphi " << endl;
+                dphi.Resize(dphi.Rows(),order[0]);
+            }
 #endif
-		
-		if ( order[0] == 0) 
-		{
-			phi(0,0) = 1.;
-			dphi(0,0) = 0.;
-		} else 
-		{		// Linear shape functions
-			phi(0,0) = (1-x[0])/2.;
-			phi(1,0) = (1+x[0])/2.;
-			dphi(0,0) = -0.5;
-			dphi(0,1)= 0.5;
-		}
-		
-		int is,d;
-		TPZFNMatrix<100> phiblend(NSides,1),dphiblend(Dimension,NSides);
-		for(is=0; is<NCornerNodes; is++)
-		{
-			phiblend(is,0) = phi(is,0);
-			for(d=0; d<Dimension; d++)
-			{
-				dphiblend(d,is) = dphi(d,is);
-			}
-		}
-		ShapeGenerating(x,phiblend,dphiblend);
-		// Quadratic or higher shape functions
-		int num2 = order[0]-1;
-		int transformationindex = GetTransformId1d(id);
-		TPZFNMatrix<10> phiint(num2,1),dphiint(1,num2);
-		if(num2 > 0)
-		{
-			ShapeInternal(x,order[0],phiint,dphiint,transformationindex);
-		}
-		int ord;
-		for (ord = 2; ord < order[0]+1; ord++) {    // even functions
-			dphi(0,ord) = dphiint(0,ord-2)*phiblend(2,0)+dphiblend(0,2)*phiint(ord-2,0);
-			phi(ord,0) = phiint(ord-2,0)*phiblend(2,0);
-		}
+            
+            if ( order[0] == 0) 
+            {
+                phi(0,0) = 1.;
+                dphi(0,0) = 0.;
+                dphi(1,0) = 0.;
+            } else 
+            {		// Linear shape functions
+                phi(0,0) = (1-x[0])/2.;
+                phi(1,0) = (1+x[0])/2.;
+                dphi(0,0) = -0.5;   // phi1'
+                dphi(0,1)= 0.5;     // phi2'
+                dphi(1,0) = 0.;     // phi1''
+                dphi(1,1) = 0.;     // phi2''
+            }
+            
+            int is,d;
+            TPZFNMatrix<100> phiblend(NSides,1),dphiblend(2*Dimension,NSides);
+            for(is=0; is<NCornerNodes; is++)
+            {
+                phiblend(is,0) = phi(is,0);
+                for(d=0; d<(2*Dimension); d++)
+                {
+                    dphiblend(d,is) = dphi(d,is);
+                }
+            }
+            ShapeGenerating(x,phiblend,dphiblend);
+            // Quadratic or higher shape functions
+            int num2 = order[0]-1;
+            int transformationindex = GetTransformId1d(id);
+            TPZFNMatrix<10> phiint(num2,1),dphiint(2,num2);
+            if(num2 > 0)
+            {
+                ShapeInternal(x,order[0],phiint,dphiint,transformationindex);
+            }
+            int ord;
+            for (ord = 2; ord < order[0]+1; ord++)
+            {    // even functions
+                dphi(0,ord) = dphiint(0,ord-2)*phiblend(2,0)+dphiblend(0,2)*phiint(ord-2,0);
+                phi(ord,0) = phiint(ord-2,0)*phiblend(2,0);
+                dphi(1,ord) = dphiint(1,ord-2)*phiblend(2,0) + 2.* dphiint(0,ord-2)*dphiblend(0,2) + phiint(ord-2,0) * dphiblend(1,2);
+            }
+        }
+        else
+        {
+#ifndef NODEBUG
+            if ( order[0] < 0 )
+            {
+                PZError << "Compelbas::shape --> Invalid dimension for arguments: order = " << order[0]
+                << " phi.Rows = " << (int) phi.Rows() << " dphi.Cols = " << (int) dphi.Cols() << "\n";
+                return;
+            }
+            if(phi.Rows() < order[0]+1)
+            {
+                PZError << "TPZShapeLinear::shape --> Invalid dimension for argument phi " << endl;
+                phi.Resize(order[0], phi.Cols());
+            }
+            if(dphi.Cols() < order[0]+1)
+            {
+                PZError << "TPZShapeLinear::shape --> Invalid dimension for argument dphi " << endl;
+                dphi.Resize(dphi.Rows(),order[0]);
+            }
+#endif
+
+            if ( order[0] == 0) 
+            {
+                phi(0,0) = 1.;
+                dphi(0,0) = 0.;
+            } else 
+            {		// Linear shape functions
+                phi(0,0) = (1-x[0])/2.;
+                phi(1,0) = (1+x[0])/2.;
+                dphi(0,0) = -0.5;
+                dphi(0,1)= 0.5;
+            }
+
+            int is,d;
+            TPZFNMatrix<100> phiblend(NSides,1),dphiblend(Dimension,NSides);
+            for(is=0; is<NCornerNodes; is++)
+            {
+                phiblend(is,0) = phi(is,0);
+                for(d=0; d<Dimension; d++)
+                {
+                    dphiblend(d,is) = dphi(d,is);
+                }
+            }
+            ShapeGenerating(x,phiblend,dphiblend);
+            // Quadratic or higher shape functions
+            int num2 = order[0]-1;
+            int transformationindex = GetTransformId1d(id);
+            TPZFNMatrix<10> phiint(num2,1),dphiint(1,num2);
+            if(num2 > 0)
+            {
+                ShapeInternal(x,order[0],phiint,dphiint,transformationindex);
+            }
+            int ord;
+            for (ord = 2; ord < order[0]+1; ord++)
+            {    // even functions
+                dphi(0,ord) = dphiint(0,ord-2)*phiblend(2,0)+dphiblend(0,2)*phiint(ord-2,0);
+                phi(ord,0) = phiint(ord-2,0)*phiblend(2,0);
+            }
+        }
 	}
 	
 	void TPZShapeLinear::SideShape(int side, TPZVec<REAL> &pt, TPZVec<int> &id, TPZVec<int> &order,TPZFMatrix &phi,TPZFMatrix &dphi) {

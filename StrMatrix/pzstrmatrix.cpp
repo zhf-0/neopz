@@ -289,7 +289,17 @@ void TPZStructMatrix::Serial_Assemble(TPZMatrix & stiffness, TPZFMatrix & rhs, T
 	}
 	
 #endif
-	
+
+//  std::cout << "Serial_Assemble FINISHED" << std::endl;
+//
+//	std::ofstream eig("MatrixAssemble.txt");
+//	stiffness.Print("MatrixAssemble= ",eig,EMathematicaInput);
+//	std::ofstream ladodireito("RhsAssemble.txt");
+//	rhs.Print("RhsAssemble= ",ladodireito,EMathematicaInput);
+
+//    stiffness.Print("Matriz de Rigidez: ", std::cout);
+//    cout.flush();
+
 }
 
 

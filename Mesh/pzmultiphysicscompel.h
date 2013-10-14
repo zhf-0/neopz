@@ -216,6 +216,8 @@ public:
 	
 	virtual void CreateGraphicalElement(TPZGraphMesh &grmesh, int dimension);
 
+    virtual void EvaluateError(void (* /*fp*/)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix &deriv), TPZVec<REAL> &/*errors*/,TPZBlock * /*flux*/);
+
 };
 
 //template <class TGeometry>

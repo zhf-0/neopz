@@ -30,10 +30,10 @@ TPZMatPoisson3d::TPZMatPoisson3d(int nummat, int dim) : TPZDiscontinuousGalerkin
 	fConvDir[0] = 0.;
 	fConvDir[1] = 0.;
 	fConvDir[2] = 0.;
-	fPenaltyConstant = 0.;
+	fPenaltyConstant = 10.;
 	this->SetNonSymmetric();
 	this->SetRightK(fK);
-	this->SetNoPenalty();
+//	this->SetNoPenalty();
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1), fSD(0.){
@@ -42,10 +42,10 @@ TPZMatPoisson3d::TPZMatPoisson3d():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1),
 	fConvDir[0] = 0.;
 	fConvDir[1] = 0.;
 	fConvDir[2] = 0.;
-	fPenaltyConstant = 0.;
+	fPenaltyConstant = 10.;
 	this->SetNonSymmetric();
 	this->SetRightK(fK);
-	this->SetNoPenalty();
+//	this->SetNoPenalty();
 }
 
 TPZMatPoisson3d::TPZMatPoisson3d(const TPZMatPoisson3d &copy):TPZDiscontinuousGalerkin(copy){
@@ -439,6 +439,27 @@ void TPZMatPoisson3d::ContributeBC(TPZMaterialData &data,REAL weight,
 	}
 }
 
+void TPZMatPoisson3d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix &ek, TPZFMatrix &ef)
+{
+    int currentVar = 0;
+    TPZMaterialData& data = datavec[currentVar];
+    std::cout << "MultiPhysics Diffusion - " << "currentVar: " << currentVar << ", x: (" << data.x[0] << ", " << data.x[1] << ", " << data.x[2] << ")" << std::endl;
+    
+    int sizephi = data.phi.Rows();
+    std::cout << "MultiPhysics Diffusion - sizephi: " << sizephi << std::endl;
+    TPZFMatrix cur_ek(sizephi, sizephi, 0.0);
+    TPZFMatrix cur_ef(sizephi, 1, 0.0);
+
+    Contribute(data, weight, cur_ek, cur_ef);
+
+    for(int i = 0; i < sizephi; i++)
+    {
+        ef(i+currentVar,0) += cur_ef(i,0);
+        for(int j = 0; j < sizephi; j++)
+            ek(i+currentVar,j+currentVar) += cur_ek(i,j);
+    }
+}
+
 /** Returns the variable index associated with the name */
 int TPZMatPoisson3d::VariableIndex(const std::string &name){
 	if(!strcmp("Solution",name.c_str()))        return  1;
@@ -453,7 +474,8 @@ int TPZMatPoisson3d::VariableIndex(const std::string &name){
 	if(!strcmp("Flux",name.c_str()))            return  10;
 	if(!strcmp("Pressure",name.c_str()))        return  11;
 	
-	if(!strcmp("ExactPressure",name.c_str()))        return  12;
+	if(!strcmp("ExactSolution",name.c_str()))        return  12;
+	if(!strcmp("ExactPressure",name.c_str()))        return  12;	
 	if(!strcmp("ExactFlux",name.c_str()))        return  13;
 	if(!strcmp("Divergence",name.c_str()))        return  14;
 	if(!strcmp("ExactDiv",name.c_str()))        return  15;
@@ -500,6 +522,9 @@ void TPZMatPoisson3d::Solution(TPZMaterialData &data, int var, TPZVec<REAL> &Sol
 
 	
 	switch (var) {
+		case 1:
+			this->Solution(data.sol[0], data.dsol[0], data.axes, var, Solout);
+			break;
 		case 8:
 			Solout[0] = data.p;
 			break;

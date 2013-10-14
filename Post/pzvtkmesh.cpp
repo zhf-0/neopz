@@ -75,7 +75,7 @@ void TPZVTKGraphMesh::DrawSolution(int step, REAL time){
 		scalind.Fill(-1,0,numscal);
 		scalind.Resize(numscal);
 		for(n=0; n<numscal; n++) {
-			scalind[n] = matp->VariableIndex( fScalarNames[n]);
+			scalind[n] = matp->VariableIndex( fScalarNames[n] );
 		}
 		for(n=0; n<numscal; n++)
 		{

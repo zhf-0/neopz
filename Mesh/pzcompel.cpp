@@ -208,7 +208,13 @@ MElementType TPZCompEl::Type() {
 
 void TPZCompEl::LoadSolution() {
 	// an element without mesh is a free element
-	if(!Mesh() || !HasDependency()) return;
+
+    bool hasMesh = !Mesh();
+    bool hasDependency = !HasDependency();
+
+	if( hasMesh || hasDependency ) 
+        return;
+
 	TPZStack<int> connectlist;
 	int totalconnects;
 	BuildConnectList(connectlist);
@@ -417,6 +423,7 @@ inline void TPZCompEl::Divide(int index, TPZVec<int> &subindex, int interpolate)
 void TPZCompEl::EvaluateError(void (* /*fp*/)(TPZVec<REAL> &loc,TPZVec<REAL> &val,TPZFMatrix &deriv),
                               TPZVec<REAL> &/*errors*/,TPZBlock * /*flux*/) {
 	LOGPZ_WARN(logger, "EvaluateError is called.");
+    //std::cout << "TPZCompEl::EvaluateError is called." << std::endl;
 }
 
 void TPZCompEl::Solution(TPZVec<REAL> &/*qsi*/,int var,TPZVec<REAL> &sol){
@@ -469,9 +476,12 @@ void TPZCompEl::BuildConnectList(std::set<int> &connectlist) {
 int TPZCompEl::HasDependency() {
 	int nconnects = NConnects();
 	int in;
-	for(in=0; in<nconnects; in++) if(Connect(in).HasDependency()){
-		return 1;
-	}
+	for(in=0; in<nconnects; in++) 
+    {
+        if( Connect(in).HasDependency() )
+            return 1;        
+    }
+
 	return 0;
 }
 

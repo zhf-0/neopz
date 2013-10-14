@@ -194,7 +194,7 @@ void SolExata(TPZVec<REAL> &pt, TPZVec<REAL> &p, TPZFMatrix &flux ) {
     p[0]= sin(Pi*x)*sin(Pi*y);//-sin(Pi*x)*cos(Pi*y);//(1-x*x)*(1-y*y)*exp(x);//(1-x*x)*(1-y*y);//Solucao
 	flux(0,0)= Pi*cos(Pi*x)*sin(Pi*y);//Pi*cos(Pi*x)*cos(Pi*y);//2.*exp(x)*x*(1. - pow(y,2.)) - exp(x)*(1. - pow(x,2.))*(1. - pow(y,2.));//2*x*(1-y*y);//
 	flux(1,0)=  Pi*cos(Pi*y)*sin(Pi*x);//Pi*sin(Pi*y)*sin(Pi*x);//2.*exp(x)*(1. - pow(x,2.))*y;//2*(1-x*x)*y; dy
-	flux(2,0)=2*pow(Pi,2)*sin(Pi*x)*sin(Pi*y);//-2.*pow(Pi,2.)*sin(Pi*x)*cos(Pi*y);//coloco o divergetne aq para testar
+	//flux(2,0)=2*pow(Pi,2)*sin(Pi*x)*sin(Pi*y);//-2.*pow(Pi,2.)*sin(Pi*x)*cos(Pi*y);//coloco o divergetne aq para testar
 	
 	
 }
@@ -234,7 +234,6 @@ using namespace std;
 
 int main()
 {
-	
 #ifdef LOG4CXX
 	{
 		InitializePZLOG();
@@ -247,11 +246,11 @@ int main()
 	//std::ofstream GraficoSol("SolGraf.txt");
 	//	std::ofstream CalcSolExata("CalSolExata.txt");
 	TPZVec<REAL> calcErro;
-	for (int porder=2; porder<4; porder++) {
-		
+	for (int porder=2; porder<4; porder++)
+    {
 		erro<<"ordem "<<porder <<std::endl;
 		//	erro<< " Flux exato " << "\t "<<" Flux aprox "<<std::endl;//"P exata " << " \t " <<"P aprox " << "\t " << " Flux exato " << "\t "<<" Flux aprox "<<std::endl;
-		for(int h=5;h<6;h++){
+		for(int h=3;h<4;h++){
 			erro<<std::endl;
 			erro<< "\n NRefinamento "<<h<<std::endl;
 			//1. Criacao da malha geom. e computacional
@@ -291,7 +290,7 @@ int main()
 			analysis.Solution().Print("Solucao",SolPoissonHdiv);
 			std::ofstream SolP("teste.txt");
 			analysis.Print( "SolTeste" ,  SolP);
-			/*----
+			/* ----
 			 TPZVec< REAL > p(1),pto(3);
 			 TPZVec<REAL> fluxo(3);
 			 TPZManVector<REAL,100> fluxoAprox(3);
@@ -356,7 +355,7 @@ int main()
 			TPZVec<REAL> calcErro;
 			analysis.SetExact(*SolExata);
 			analysis.PostProcess(calcErro,erro);
-			/*
+			
 			//4. visualizacao grafica usando vtk
 			 TPZVec<std::string> scalnames(2), vecnames(2);
 			 
@@ -379,7 +378,6 @@ int main()
 			 int div = 3;
 			 analysis.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
 			 analysis.PostProcess(div);
-			 */
 			
 		}}
 	
@@ -421,8 +419,8 @@ TPZCompMeshReferred *CreateCompMesh2d(TPZGeoMesh &gmesh,int porder){
 	comp->InsertMaterialObject(bnd3);
 	comp->InsertMaterialObject(bnd4);	
 	//espaco de aproximacao
-	//comp->SetAllCreateFunctionsHDiv();
-	comp->SetAllCreateFunctionsContinuous();
+	comp->SetAllCreateFunctionsHDiv();
+	//comp->SetAllCreateFunctionsContinuous();
 	
 	// Ajuste da estrutura de dados computacional
 	comp->AutoBuild();
