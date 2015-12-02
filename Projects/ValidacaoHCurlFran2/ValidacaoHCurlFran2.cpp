@@ -111,10 +111,10 @@ int main(int argc, char *argv[])
   
   int pOrder = 1; //ordem polinomial de aproximacao
   int dim = 2;
-  int xDiv = 1;
-  int zDiv = 1;
+  int xDiv = 1000;
+  int zDiv = 50;
   
-  const int meshType = createTriangular;
+  const int meshType = createRectangular;
   timer.start();
   int indexRBC;
   const REAL x0 = wDomain/2;
@@ -124,21 +124,25 @@ int main(int argc, char *argv[])
   CreateGMesh(gmesh, meshType, hDomain, wDomain, x0, z0, xDiv, zDiv, indexRBC);
   
   TPZCompMesh *cmesh = CMesh(gmesh, pOrder, urSubs , erSubs , freq, theta, e0, lambda, scale); //funcao para criar a malha computacional
-  bool optimizeBandwidth = false;
+  bool optimizeBandwidth = true;
   TPZAnalysis an(cmesh,optimizeBandwidth);
+
   //configuracoes do objeto de analise
-  TPZSkylineNSymStructMatrix skylstr(cmesh); //CUIDADO
+   //CUIDADO
+  TPZVec<long> skyVec;
+  cmesh->Skyline(skyVec);
+  TPZSkylineNSymStructMatrix skylstr(cmesh);
   skylstr.SetNumThreads(4);
   an.SetStructuralMatrix(skylstr);
   TPZStepSolver<STATE> step;
-  step.SetDirect(ELDLt); //caso simetrico
+  step.SetDirect(ELU); //caso simetrico
   an.SetSolver(step);
   
   TPZStack<std::string> scalnames, vecnames;
-  vecnames.Push("realE");//setando para imprimir campoeletrico
+  vecnames.Push("absE");//setando para imprimir campoeletrico
   std::string plotfile= "../ValidacaoHCurlFran2EField.vtk";//arquivo de saida que estara na pasta debug
   an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
-  int postProcessResolution = 3 ;//define resolucao do pos processamento
+  int postProcessResolution = 2 ;//define resolucao do pos processamento
   //fim das configuracoes do objeto de analise
   
   int nIteracoes = 1;
@@ -153,26 +157,30 @@ int main(int argc, char *argv[])
   }
   
   // Resolvendo o Sistema
+  std::cout<<"entrando no assemble"<<std::endl;
   an.Assemble();
+  std::cout<<"saindo do assemble"<<std::endl;
   TPZStructMatrix stiff = an.StructMatrix();
+  std::cout<<"entrando no solver"<<std::endl;
   an.Solve();
+  std::cout<<"saindo do solver"<<std::endl;
   const TPZFMatrix<STATE> solucao=cmesh->Solution();//Pegando o vetor de solucao, alphaj
   std::string name("../../sol");
   name.append( std::to_string(meshType) );
   name.append(".csv");
   ExportCSV(solucao,name.c_str());
-  TPZFMatrix<STATE> sds(solucao);
-  solucao.Print(std::cout);
+//  TPZFMatrix<STATE> sds(solucao);
+//  solucao.Print(std::cout);
   
   an.PostProcess(postProcessResolution);//realiza pos processamento*)
   
-  for (int i = 0; i < solucao.Rows(); i++) {
-    
-    sds.Zero();
-    sds(i,0) = solucao.GetVal(i,0);
-    cmesh->Solution() = sds;
-    an.PostProcess(postProcessResolution);//realiza pos processamento*)
-  }
+//  for (int i = 0; i < solucao.Rows(); i++) {
+//    
+//    sds.Zero();
+//    sds(i,0) = solucao.GetVal(i,0);
+//    cmesh->Solution() = sds;
+//    an.PostProcess(postProcessResolution);//realiza pos processamento*)
+//  }
   
   timer.stop();
   

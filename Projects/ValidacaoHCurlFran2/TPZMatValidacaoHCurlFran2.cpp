@@ -271,7 +271,7 @@ void TPZMatValidacaoHCurlFran2::Solution(TPZMaterialData &data, int var, TPZVec<
   Solout.Resize(3);
   Cross(normal, data.sol[0], Solout);
   switch (var) {
-    case 2://E
+    case 2://absE
 #ifdef STATE_COMPLEX
       Solout[0] = std::abs(Solout[0]);
       Solout[1] = std::abs(Solout[1]);
