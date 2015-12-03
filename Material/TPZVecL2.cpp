@@ -14,6 +14,11 @@
 #include "tpzintpoints.h"
 
 #include "pzlog.h"
+//HCURL
+
+#include "pzaxestools.h"
+#include "pzvec_extras.h"
+
 
 #ifdef LOG4CXX
 #ifdef PZDEBUG
@@ -179,10 +184,20 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
         fForcingFunction->Execute(data.x,force);
     }
     
-    
     // Setting the phis
     TPZFMatrix<REAL> &phiQ = data.phi;
-    
+    //HCURL
+	TPZFMatrix<REAL> &dphiQdaxes = data.dphix;//ELEMENTO DEFORMADO
+	TPZFNMatrix<3,REAL> dphiQ;
+	TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
+	
+	TPZManVector<REAL,3> ax1(3),ax2(3), normal(3);
+	for (int i=0; i<3; i++) {
+		ax1[i] = data.axes(0,i);//ELEMENTO DEFORMADO
+		ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
+	}
+	Cross(ax1, ax2, normal);
+	
     int phrq;
     phrq = data.fVecShapeIndex.NElements();
     
@@ -192,13 +207,16 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
         //ef(iq, 0) += 0.;
         int ivecind = data.fVecShapeIndex[iq].first;
         int ishapeind = data.fVecShapeIndex[iq].second;
-        TPZFNMatrix<3,REAL> ivec(3,1,0.);
+        TPZManVector<REAL> ivecHDiv(3), ivecHCurl(3);
         for(int id=0; id<3; id++){
-            ivec(id,0) = data.fNormalVec(id,ivecind);
+            ivecHDiv[id] = data.fNormalVec(id,ivecind);
         }
+			
+			//ROTATE FOR HCURL
+			Cross(normal, ivecHDiv, ivecHCurl);
         STATE ff = 0.;
         for (int i=0; i<3; i++) {
-            ff += ivec(i,0)*force[i];
+            ff += ivecHCurl[i]*force[i];
         }
         
         ef(iq,0) += weight*ff*phiQ(ishapeind,0);
@@ -214,7 +232,7 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
             }
             
             //jvecZ.Print("mat1 = ");
-            REAL prod1 = ivec(0,0)*jvec(0,0) + ivec(1,0)*jvec(1,0) + ivec(2,0)*jvec(2,0);
+            REAL prod1 = ivecHCurl[0]*jvec(0,0) + ivecHCurl[1]*jvec(1,0) + ivecHCurl[2]*jvec(2,0);
             ek(iq,jq) += weight*phiQ(ishapeind,0)*phiQ(jshapeind,0)*prod1;
            
         }

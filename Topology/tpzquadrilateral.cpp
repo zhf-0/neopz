@@ -142,7 +142,8 @@ namespace pztopology {
     
     static int vectorsideorder [18] = {0,1,4,1,2,5,2,3,6,3,0,7,4,5,6,7,8,8};
     
-    static int bilinearounao [18] =   {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
+    //static int bilinearounao [18] =   {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
+	static int bilinearounao [18] =   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     static int direcaoksioueta [18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
     
     static int permutationsQ [8][9] =

@@ -6,7 +6,7 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
-TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2(int id, REAL freq, STATE (ur)( TPZVec<REAL>&),STATE (er)( TPZVec<REAL>&), REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fFreq(freq), fScale(scale)
+TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2(int id, REAL freq, STATE (ur)( const TPZVec<REAL>&),STATE (er)( const TPZVec<REAL>&), REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fFreq(freq), fScale(scale)
 {
   fW=2.*M_PI*fFreq;
   fTheta = t;
@@ -232,6 +232,10 @@ int TPZMatValidacaoHCurlFran2::VariableIndex(const std::string &name)
   {
     return 3;
   }
+	else if ( name == "solAnal")
+	{
+		return 4;
+	}
   return TPZMaterial::VariableIndex(name);
 }
 
@@ -249,6 +253,9 @@ int TPZMatValidacaoHCurlFran2::NSolutionVariables(int var)
     case 3://realE
       nVar = 3;
       break;
+		case 4://realE
+			nVar = 3;
+			break;
     default:
       nVar = TPZMaterial::NSolutionVariables(var);
       break;
@@ -285,18 +292,28 @@ void TPZMatValidacaoHCurlFran2::Solution(TPZMaterialData &data, int var, TPZVec<
       Solout[2] = std::real(Solout[2]);
 #endif
       break;
+		case 4://solAnal
+#ifdef STATE_COMPLEX
+			if ( HasfForcingFunctionExact() ) {
+				fForcingFunctionExact->Execute(data.x,Solout);
+				Solout[0] = std::abs(Solout[0]);
+				Solout[1] = std::abs(Solout[1]);
+				Solout[2] = std::abs(Solout[2]);
+			}
+#endif
+			break;
     default:
       break;
   }
 }
 
 
-STATE urDefault( TPZVec<REAL> &x )
+STATE urDefault( const TPZVec<REAL> &x )
 {
   return 1.0;
 }
 
-STATE erDefault( TPZVec<REAL> &x )
+STATE erDefault( const TPZVec<REAL> &x )
 {
   return 1.0;
 }
