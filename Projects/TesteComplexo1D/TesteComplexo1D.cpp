@@ -130,7 +130,6 @@ int main(int argc, char *argv[])
     int var = 0;
     cel->Solution(qsi, var, sol);
     STATE eZApprox = sol[0]+imaginary*sol[1];
-    
     //solucao.Print(std::cout);
     REAL R=abs((eZApprox-e0*exp(imaginary*kZero*L*cos(theta)))/(e0*exp(-1.*imaginary*kZero*L*cos(theta))));
     results(i,0)=theta*180/M_PI;

@@ -10,7 +10,8 @@
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
 
-const REAL M_C  (299792458); //velocidade da luz no vacuo
+
+const REAL M_C  (3*1e8); //velocidade da luz no vacuo
 const REAL M_UZERO  (4*M_PI*1e-7);//permeabilidade do meio livre
 const REAL M_EZERO  (8.854*1e-12);//permissividade do meio livre
 #ifdef STATE_COMPLEX
@@ -28,14 +29,16 @@ protected:
   //COM CERTEZA
   STATE (*fUr)( const TPZVec<REAL>&);
   STATE (*fEr)( const TPZVec<REAL>&);
-  REAL fFreq;//frequencia da onda
+  REAL fLambda;
+	REAL fE0;
   REAL fW;
   REAL fTheta;
-    REAL fScale;
+	REAL fScale;
    
 	
 public:
-    TPZMatValidacaoHCurlFran2(int id, REAL freq, STATE (ur)( const TPZVec<REAL> &),STATE (er)( const TPZVec<REAL> &), REAL t, REAL scale);
+	
+    TPZMatValidacaoHCurlFran2(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
     TPZMatValidacaoHCurlFran2(int id);
   
