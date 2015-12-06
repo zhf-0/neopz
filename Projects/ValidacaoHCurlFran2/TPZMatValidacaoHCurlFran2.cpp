@@ -168,7 +168,7 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
 			stiff += (1./muR) * ( curlJX * curlIXStar + (curlJ[0] * curlI[0] + curlJ[1] * curlI[1] + curlJ[2] * curlI[2]) );
 			//stiff += (1./muR) * ( (curlJ[0] * curlI[0] + curlJ[1] * curlI[1] + curlJ[2] * curlI[2]) );
 			stiff += -1. * k0 * k0 /(fScale * fScale) * epsilonR * phiIdotphiJ;
-			
+      stiff = phiIdotphiJ;//AQUIFRAN
 			ek(iq,jq) += weight * stiff;
 		}
 	}
@@ -187,46 +187,47 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZVec<TPZMaterialData> &datavec, REA
 void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
 	// Setting the phis
-	TPZFMatrix<REAL> &phiQ = data.phi;
-	
-	int nshape=phiQ.Rows();
-	REAL BIG = TPZMaterial::gBigNumber;
-	BIG=BIG*BIG;
-	const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
-	const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
-	
-	switch ( bc.Type() )
-	{
-		case 0:
-			for(int i = 0 ; i<nshape ; i++)
-			{
-				const STATE rhs = phiQ(i,0) * BIG * (1. + imaginary ) * v2;
-				ef(i,0) += rhs*weight;
-				for(int j=0;j<nshape;j++)
-				{
-					const STATE stiff = phiQ(i,0) * phiQ(j,0) * BIG * (1. + imaginary );
-					ek(i,j) += stiff*weight;
-				}
-			}
-			break;
-		case 1:
-			DebugStop();
-			break;
-		case 2:
-			for(int i = 0 ; i<nshape ; i++)
-			{
-				STATE rhs = phiQ(i,0);
-				rhs *= v2/fScale;
-				ef(i,0) += rhs*weight;
-				for(int j=0;j<nshape;j++)
-				{
-					STATE stiff = phiQ(i,0) *  phiQ(j,0);
-					stiff *= v1/fScale;
-					ek(i,j) += stiff*weight;
-				}
-			}
-			break;
-	}
+//	TPZFMatrix<REAL> &phiQ = data.phi;
+//	
+//	int nshape=phiQ.Rows();
+//	REAL BIG = TPZMaterial::gBigNumber;
+//	BIG=BIG*BIG;
+//	const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
+//	const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
+//	
+//	switch ( bc.Type() )
+//	{
+//		case 0:
+//			for(int i = 0 ; i<nshape ; i++)
+//			{
+//				const STATE rhs = phiQ(i,0) * BIG * (1. + imaginary ) * v2;
+//				ef(i,0) += rhs*weight;
+//				for(int j=0;j<nshape;j++)
+//				{
+//					const STATE stiff = phiQ(i,0) * phiQ(j,0) * BIG * (1. + imaginary );
+//					ek(i,j) += stiff*weight;
+//				}
+//			}
+//			break;
+//		case 1:
+//			DebugStop();
+//			break;
+//		case 2:
+//			for(int i = 0 ; i<nshape ; i++)
+//			{
+//				STATE rhs = phiQ(i,0);
+//				rhs *= v2/fScale;
+//				ef(i,0) += rhs*weight;
+//				for(int j=0;j<nshape;j++)
+//				{
+//					STATE stiff = phiQ(i,0) *  phiQ(j,0);
+//					stiff *= v1/fScale;
+//					ek(i,j) += stiff*weight;
+//				}
+//			}
+//			break;
+//	}
+  //AQUIFRAN
 }
 
 void TPZMatValidacaoHCurlFran2::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)

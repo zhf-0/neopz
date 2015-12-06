@@ -84,14 +84,14 @@ int main(int argc, char *argv[])
   REAL kZero=w*sqrt(M_UZERO*M_EZERO);
   
 	REAL L = 5*lambda; //comprimento do dominio unidimensional com inicio na origem zero
-  int nel = 200; //numero de elementos a serem utilizados
+  int nel = 1; //numero de elementos a serem utilizados
   int pOrder = 1; //ordem polinomial de aproximacao
   
   
 	REAL elsize = L/nel; //tamanho de cada elemento
   long indexRBC = 0;
   
-  int nIteracoes=100;
+  int nIteracoes=1;
   std::cout<<"Numero de iteracoes = "<<nIteracoes<<std::endl;
   std::cout<<"Numero de elementos = "<<nel<<std::endl;
   std::cout<<"Ordem polinomial de aproximacao = "<<pOrder<<std::endl;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
     // Resolvendo o Sistema
     an.Run();//assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equacoes
-    
+    an.Solution().Print("solucao");
     
 //    TPZFMatrix<STATE> solucao=cmesh->Solution();//Pegando o vetor de solucao, alphaj
 //    STATE eZApprox = solucao(solucao.Rows()-1,0);

@@ -116,8 +116,8 @@ int main(int argc, char *argv[])
   
   int pOrder = 1; //ordem polinomial de aproximacao
   int dim = 2;
-  int xDiv = 200;
-  int zDiv = 5;
+  int xDiv = 1;
+  int zDiv = 1;
   
   const int meshType = createRectangular;
   timer.start();
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 	CreateGMesh(gmesh, meshType, hDomain, wDomain,  xDiv, zDiv);
 
   TPZCompMesh *cmesh = CMesh(gmesh, pOrder, urSubs , erSubs , L , theta , lambda , e0 , scale); //funcao para criar a malha computacional
-	bool optimizeBandwidth = true;
+	bool optimizeBandwidth = false;
   TPZAnalysis an(cmesh,optimizeBandwidth);
 
   //configuracoes do objeto de analise
@@ -160,7 +160,6 @@ int main(int argc, char *argv[])
   std::cout<<"entrando no assemble"<<std::endl;
   an.Assemble();
   std::cout<<"saindo do assemble"<<std::endl;
-  TPZStructMatrix stiff = an.StructMatrix();
   std::cout<<"entrando no solver"<<std::endl;
   an.Solve();
   std::cout<<"saindo do solver"<<std::endl;
@@ -169,6 +168,10 @@ int main(int argc, char *argv[])
   name.append( std::to_string(meshType) );
   name.append(".csv");
   ExportCSV(solucao,name.c_str());
+  TPZFMatrix< std::complex<double> > stiff;
+  stiff = *an.Solver().Matrix().operator->();
+  stiff.Print("K = " , std::cout , EMathematicaInput);
+  solucao.Print("solucao");
 //  TPZFMatrix<STATE> sds(solucao);
 //  solucao.Print(std::cout);
 	

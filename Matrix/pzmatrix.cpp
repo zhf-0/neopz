@@ -288,7 +288,10 @@ void TPZMatrix<TVar>::Print(const char *name, std::ostream& out,const MatrixOutp
 			for ( long col = 0; col < Cols(); col++ ) {
 				TVar val = Get (row, col);
 				#ifdef STATE_COMPLEX
-				  sprintf(number, "%16.16Lf",(long double) fabs(val));
+        sprintf(number, "%16.16Lf",(long double) std::real(val));
+        out << number;
+        out << "Sqrt[-1] * ";
+        sprintf(number, "%16.16Lf",(long double) std::imag(val));
 				#else
                 sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(val) );
 				#endif
