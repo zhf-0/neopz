@@ -69,14 +69,14 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
 	}
 	Cross(ax1, ax2, normal);
 	
-	REAL norm = 0.;
-	for (int i = 0 ; i < normal.size(); i++) {
-		norm += normal[i] * normal[i];
-	}
-	norm = sqrt(norm);
-	for (int i = 0 ; i < normal.size(); i++) {
-		normal[i] /= norm;
-	}
+//	REAL norm = 0.;
+//	for (int i = 0 ; i < normal.size(); i++) {
+//		norm += normal[i] * normal[i];
+//	}
+//	norm = sqrt(norm);
+//	for (int i = 0 ; i < normal.size(); i++) {
+//		normal[i] /= norm;
+//	}
 	int phrq;
 	phrq = data.fVecShapeIndex.NElements();
 #ifdef LOG4CXX
@@ -96,15 +96,15 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
 		int ishapeind = data.fVecShapeIndex[iq].second;
 		
 		TPZManVector<REAL,3> ivecHDiv(3), ivecHCurl(3);
-		norm = 0.;
+//		norm = 0.;
 		for(int id=0; id<3; id++){
 			ivecHDiv[id] = data.fNormalVec(id,ivecind);//JA EM XYZ
-			norm += ivecHDiv[id] * ivecHDiv[id];
+//			norm += ivecHDiv[id] * ivecHDiv[id];
 		}
-		norm = sqrt(norm);
-		for(int id=0; id<3; id++){
-			ivecHDiv[id] /= norm;
-		}
+//		norm = sqrt(norm);
+//		for(int id=0; id<3; id++){
+//			ivecHDiv[id] /= norm;
+//		}
 		//ROTATE FOR HCURL
 		Cross(normal, ivecHDiv, ivecHCurl);
 		
@@ -137,15 +137,15 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
 			int jvecind = data.fVecShapeIndex[jq].first;
 			int jshapeind = data.fVecShapeIndex[jq].second;
 			
-			norm = 0.;
+			//norm = 0.;
 			for(int id=0; id<3; id++){
 				jvecHDiv[id] = data.fNormalVec(id,jvecind);
-				norm += jvecHDiv[id] * jvecHDiv[id];
+				//norm += jvecHDiv[id] * jvecHDiv[id];
 			}
-			norm = sqrt(norm);
-			for(int id=0; id<3; id++){
-				jvecHDiv[id] /= norm;
-			}
+			//norm = sqrt(norm);
+//			for(int id=0; id<3; id++){
+//				jvecHDiv[id] /= norm;
+//			}
 			//ROTATE FOR HCURL
 			Cross(normal, jvecHDiv,jvecHCurl);
 			TPZManVector<REAL,3> curlJ(3),  gradPhiJ(3);
@@ -302,14 +302,14 @@ void TPZMatValidacaoHCurlFran2::Solution(TPZMaterialData &data, int var, TPZVec<
 	}
 	//ROTATE FOR HCURL
 	Cross(ax1, ax2, normal);
-	STATE norm = 0.;
-	for (int i = 0 ; i < normal.size(); i++) {
-		norm += normal[i] * normal[i];
-	}
-	norm = sqrt(norm);
-	for (int i = 0 ; i < normal.size(); i++) {
-		normal[i] /= norm;
-	}
+//	STATE norm = 0.;
+//	for (int i = 0 ; i < normal.size(); i++) {
+//		norm += normal[i] * normal[i];
+//	}
+//	norm = sqrt(norm);
+//	for (int i = 0 ; i < normal.size(); i++) {
+//		normal[i] /= norm;
+//	}
 	
 	Solout.Resize(3);
 	Cross(normal, data.sol[0], Solout);
