@@ -687,9 +687,9 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
         if (!intel) {
             continue;
         }
-        intel->SetPreferredOrder(1);
+        intel->SetPreferredOrder(1);//setting polynomial order to 1 for every computational element
     }
-    cmesh.ExpandSolution();
+    cmesh.ExpandSolution();//adjust size and indices of local functions on global system
     for (el = 0; el<numcell ; el++) {
         TPZCompEl *cel = cmesh.ElementVec()[el];
         TPZInterpolatedElement *intel = dynamic_cast<TPZInterpolatedElement *>(cel);
@@ -701,7 +701,7 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
         int is;
         int nsides = gel->NSides();
         for (is=0; is<nsides; is++) {
-            if (gel->SideDimension(is) != geldim-1) {
+            if (gel->SideDimension(is) != geldim-1) {//take the topological **SIDES**
                 continue;
             }
             int nsconnects = intel->NSideConnects(is);
@@ -710,8 +710,9 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
                 continue;
             }
             long cindex = intel->SideConnectIndex(0, is);
-            TPZConnect &c = intel->Connect(intel->SideConnectLocId(0,is));
-            if (c.HasDependency()) {
+//            TPZConnect &c = intel->Connect(intel->SideConnectLocId(0,is));
+            TPZConnect &c = intel->Connect( cindex );
+          if (c.HasDependency()) {
                 continue;
             }
             int nshape = 1;

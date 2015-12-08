@@ -96,7 +96,7 @@ void solAnal(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
 
 int main(int argc, char *argv[])
 {
-  HDivPiola = 0;
+  HDivPiola = 1;
   TPZTimer timer;
 #ifdef LOG4CXX
   InitializePZLOG();
@@ -107,10 +107,14 @@ int main(int argc, char *argv[])
   REAL theta = 0.;
   REAL e0 = 1.;
   //PARAMETROS DA GEOMETRIA
-	REAL L = 5*lambda;
-	REAL hDomain = L;
-	REAL wDomain = L;
-  REAL scale = 1.;///(5.*lambda);
+  REAL L = 2;
+  REAL hDomain = L;
+  REAL wDomain = L;
+  REAL scale = (5.*lambda);
+//	REAL L = 5*lambda;
+//	REAL hDomain = L;
+//	REAL wDomain = L;
+//  REAL scale = 1.;
 	REAL w=2.*M_PI*M_C/lambda;
 	REAL kZero=w*sqrt(M_UZERO*M_EZERO);
   
@@ -134,7 +138,7 @@ int main(int argc, char *argv[])
   TPZVec<long> skyVec;
   cmesh->Skyline(skyVec);
   TPZSkylineNSymStructMatrix skylstr(cmesh);
-  skylstr.SetNumThreads(4);
+  skylstr.SetNumThreads(0);
   an.SetStructuralMatrix(skylstr);
   TPZStepSolver<STATE> step;
   step.SetDirect(ELU); //caso simetrico
@@ -266,10 +270,10 @@ TPZGeoMesh *CreateRectangularGMesh(const REAL hDomain, const REAL wDomain, const
   
   gengrid.Read(gmesh , matId);
   
-  gengrid.SetBC(gmesh, ulCoord, llCoord, bc0);
-  gengrid.SetBC(gmesh, urCoord, ulCoord, bc0);
-  gengrid.SetBC(gmesh, lrCoord, urCoord, bc1);
-  gengrid.SetBC(gmesh, llCoord, lrCoord, bc0);
+//  gengrid.SetBC(gmesh, ulCoord, llCoord, bc0);
+//  gengrid.SetBC(gmesh, urCoord, ulCoord, bc0);
+//  gengrid.SetBC(gmesh, lrCoord, urCoord, bc1);
+//  gengrid.SetBC(gmesh, llCoord, lrCoord, bc0);
   //gmesh->ResetConnectivities();
   //converte malha xy para xz
   for (int i = 0; i < gmesh->NNodes() ; i ++)
