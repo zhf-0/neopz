@@ -77,7 +77,8 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
     STATE dotProduct = 0;
     for (int iDot = 0; iDot < 3 ; iDot ++) {
       dotProduct+=ivecHDiv[iDot] * phiQ(ishapeind , 0) * ivecHDiv[iDot] * phiQ(ishapeind , 0) + ivecHDivPair[iDot] * phiQ(ishapeindPair , 0) * ivecHDiv[iDot] * phiQ(ishapeind , 0);
-    }
+//      dotProduct+=ivecHDiv[iDot] * phiQ(ishapeind , 0) * ivecHDiv[iDot] * phiQ(ishapeind , 0);
+		}
     ek(iq,iq) += dotProduct * weight;
   }
   
