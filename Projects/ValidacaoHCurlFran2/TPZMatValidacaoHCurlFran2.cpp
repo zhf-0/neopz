@@ -60,18 +60,25 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
   for (int iq = 0 ; iq < phrq ; iq++) {
     int ivecind = data.fVecShapeIndex[iq].first;
     int ishapeind = data.fVecShapeIndex[iq].second;
+    int ivecindPair = data.fVecShapeIndex[iq + 1*((iq%2+1)%2) - 1*(iq%2)].first;
+    int ishapeindPair = data.fVecShapeIndex[iq + 1*((iq%2+1)%2) - 1*(iq%2)].second;
     
-    TPZManVector<REAL,3> ivecHDiv(3), ivecHCurl(3);
+    TPZManVector<REAL,3> ivecHDiv(3), ivecHDivPair(3);
     //		norm = 0.;
     for(int id=0; id<3; id++){
       ivecHDiv[id] = data.fNormalVec(id,ivecind);//JA EM XYZ
+      ivecHDivPair[id] = data.fNormalVec(id,ivecindPair);//JA EM XYZ
       //			norm += ivecHDiv[id] * ivecHDiv[id];
     }
 //    std::cout<<"index = "<<iq<<std::endl;
 //    std::cout<<"vecIndex = "<<ivecind<<std::endl;
 //    std::cout<<"shapeIndex = "<<ishapeind<<std::endl;
 //    std::cout<<ivecHDiv<<std::endl;
-    ek(iq,iq) += ivecHDiv[2] * phiQ(ishapeind , 0) * weight;
+    STATE dotProduct = 0;
+    for (int iDot = 0; iDot < 3 ; iDot ++) {
+      dotProduct+=ivecHDiv[iDot] * phiQ(ishapeind , 0) * ivecHDiv[iDot] * phiQ(ishapeind , 0) + ivecHDivPair[iDot] * phiQ(ishapeindPair , 0) * ivecHDiv[iDot] * phiQ(ishapeind , 0);
+    }
+    ek(iq,iq) += dotProduct * weight;
   }
   
 
