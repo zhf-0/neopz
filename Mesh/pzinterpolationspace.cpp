@@ -344,7 +344,6 @@ void TPZInterpolationSpace::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef
     
     material->Contribute(data, weight, ek.fMat, ef.fMat);
   }//loop over integratin points
-  
 }//CalcStiff
 
 void TPZInterpolationSpace::CalcResidual(TPZElementMatrix &ef){

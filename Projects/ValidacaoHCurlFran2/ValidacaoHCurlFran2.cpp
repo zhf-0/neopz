@@ -79,6 +79,8 @@ static inline STATE urSubs(const TPZVec<REAL> &x);
  */
 static inline STATE erSubs(const TPZVec<REAL> &x);
 
+void FilterOthersFunctions(TPZManVector<long> &active, TPZCompMesh * fcmesh);
+
 void ExportCSV(const TPZFMatrix<STATE> matriz, const char* name);
 
 void solAnal(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
@@ -160,9 +162,18 @@ int main(int argc, char *argv[])
     cmesh->CleanUpUnconnectedNodes();
     cmesh->Print(file);
   }
+  // Applying the filter
+  TPZManVector<long> ActiveEquations;
+  FilterOthersFunctions(ActiveEquations,cmesh);
+  an.StructMatrix()->EquationFilter().Reset();
+  an.StructMatrix()->EquationFilter().SetActiveEquations(ActiveEquations);
+  
   // Resolvendo o Sistema
   std::cout<<"entrando no assemble"<<std::endl;
   an.Assemble();
+  TPZFMatrix< std::complex<double> > stiff;
+  stiff = *an.Solver().Matrix().operator->();
+  stiff.Print("KPZNed = " , std::cout , EMathematicaInput);
   std::cout<<"saindo do assemble"<<std::endl;
   std::cout<<"entrando no solver"<<std::endl;
   an.Solve();
@@ -172,9 +183,8 @@ int main(int argc, char *argv[])
   name.append( std::to_string(meshType) );
   name.append(".csv");
   ExportCSV(solucao,name.c_str());
-  TPZFMatrix< std::complex<double> > stiff;
-  stiff = *an.Solver().Matrix().operator->();
-  stiff.Print("K = " , std::cout , EMathematicaInput);
+  
+  
   solucao.Print("solucao");
 //  TPZFMatrix<STATE> sds(solucao);
 //  solucao.Print(std::cout);
@@ -201,6 +211,27 @@ int main(int argc, char *argv[])
 	std::cout << "FINISHED!" << std::endl;
   
   return 0;
+}
+
+void FilterOthersFunctions(TPZManVector<long> &active, TPZCompMesh * fcmesh){
+  active.Resize(0, 0);
+  int ncon = fcmesh->NConnects();
+  
+  // DOF related with the Q system
+  for(int i = 0; i < ncon; i++)
+  {
+    TPZConnect &con = fcmesh->ConnectVec()[i];
+    int seqnum = con.SequenceNumber();
+    int pos = fcmesh->Block().Position(seqnum);
+    int blocksize = fcmesh->Block().Size(seqnum);// Just for quads
+    
+    int vs = active.size();
+    active.Resize(vs+blocksize);
+    for(int ieq = 0; ieq<blocksize; ieq++)
+    {
+      active[vs+ieq] = pos+ieq;
+    }
+  }
 }
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv)
@@ -467,11 +498,11 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
   cmesh->AutoBuild();
   
-  if (pOrder == 1) {
-    //cmesh->CleanUpUnconnectedNodes();
-    TPZCreateApproximationSpace::MakeRaviartThomas(*cmesh);
-    cmesh->CleanUpUnconnectedNodes();
-  }
+//  if (pOrder == 1) {
+//    //cmesh->CleanUpUnconnectedNodes();
+//    TPZCreateApproximationSpace::MakeRaviartThomas(*cmesh);
+//    cmesh->CleanUpUnconnectedNodes();
+//  }
   //cmesh->AutoBuild();
   return cmesh;
 }
