@@ -70,7 +70,9 @@ public:
    * @param ef [out] is the load vector
    * @since April 16, 2007
    */
-  virtual void ContributeOmarVampirinho(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+  virtual void ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+  
+  virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
    * @param data [in] stores all input data
@@ -80,7 +82,7 @@ public:
    * @since April 16, 2007
    */
   virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
-  
+  void ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi );
   void RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl );
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
@@ -110,7 +112,7 @@ public:
    * @param bc [in] is the boundary condition material
    * @since October 07, 2011
    */
-  virtual void ContributeOmarVampirinhoBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+  virtual void ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
    * @param data [in] stores all input data

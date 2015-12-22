@@ -98,7 +98,6 @@ void solAnal(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
 
 int main(int argc, char *argv[])
 {
-  HDivPiola = 1;
   TPZTimer timer;
 #ifdef LOG4CXX
   InitializePZLOG();
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
   REAL theta = 0.;
   REAL e0 = 1.;
   //PARAMETROS DA GEOMETRIA
-  REAL L = 2;
+  REAL L = 1.;
   REAL hDomain = L;
   REAL wDomain = L;
   REAL scale = (5.*lambda);
@@ -148,7 +147,7 @@ int main(int argc, char *argv[])
   
   TPZStack<std::string> scalnames, vecnames;
   vecnames.Push("absE");//setando para imprimir campoeletrico
-	vecnames.Push("solAnal");//setando para imprimir campoeletrico
+	//vecnames.Push("solAnal");//setando para imprimir campoeletrico
   std::string plotfile= "../ValidacaoHCurlFran2EField.vtk";//arquivo de saida que estara na pasta debug
   an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
   int postProcessResolution = 2 ;//define resolucao do pos processamento
@@ -158,15 +157,13 @@ int main(int argc, char *argv[])
   //  const REAL L = wDomain ;
   {
     std::ofstream file("../cmesh.txt");
-    cmesh->ExpandSolution();
-    cmesh->CleanUpUnconnectedNodes();
     cmesh->Print(file);
   }
   // Applying the filter
-  TPZManVector<long> ActiveEquations;
-  FilterOthersFunctions(ActiveEquations,cmesh);
-  an.StructMatrix()->EquationFilter().Reset();
-  an.StructMatrix()->EquationFilter().SetActiveEquations(ActiveEquations);
+//  TPZManVector<long> ActiveEquations;
+//  FilterOthersFunctions(ActiveEquations,cmesh);
+//  an.StructMatrix()->EquationFilter().Reset();
+//  an.StructMatrix()->EquationFilter().SetActiveEquations(ActiveEquations);
   
   // Resolvendo o Sistema
   std::cout<<"entrando no assemble"<<std::endl;
@@ -457,7 +454,8 @@ TPZGeoMesh *CreateZigZagGMesh(const REAL hDomain, const REAL wDomain, const int 
 }
 
 TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL L, REAL theta, REAL lambda, REAL e0, REAL scale)
-	{
+{
+  
   const int dim = 2; //dimensao do problema
   const int matId = 1; //define id para um material(formulacao fraca)
   const int bc0 = -1; //define id para um material(cond contorno dirichlet)
@@ -465,23 +463,31 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   enum{ dirichlet = 0, neumann, mixed}; //tipo da condicao de contorno do problema
   // Criando material
   TPZMatValidacaoHCurlFran2 *material = new TPZMatValidacaoHCurlFran2(matId , lambda , ur , er , e0 , theta, scale);//criando material que implementa a
-	//formulacao fraca do problema de validacao
-
-	TPZDummyFunction<STATE> *Ltracer = new TPZDummyFunction<STATE>(solAnal);
-	TPZAutoPointer<TPZFunction<STATE> > fLTracer = Ltracer;
-	material->SetForcingFunctionExact(fLTracer);
+  //formulacao fraca do problema de validacao
+  
+  ///set forcing function for L2 projection of desired solution
+//  TPZDummyFunction<STATE> *Ltracer = new TPZDummyFunction<STATE>(solAnal);
+//  TPZAutoPointer<TPZFunction<STATE> > fLTracer = Ltracer;
+//  material->SetForcingFunctionExact(fLTracer);
+  
+  
+  
+  
   ///criar malha computacional
+  HDivPiola = 1;//use piola mapping
   TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
   cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
   cmesh->SetDimModel(dim);//seta dimensao do modelo
   // Inserindo material na malha
   cmesh->InsertMaterialObject(material);
 		
-  ///Inserir condicao de contorno condutores
+  ///electrical conductor boundary conditions
   TPZFNMatrix<1,STATE> val1(1,1,0.), val2(1,1,0.);
   
   TPZMaterial * BCond0 = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
   
+  
+  ///mixed boundary conditions for open wall
 	REAL w=2.*M_PI*M_C/lambda;
 	REAL k0=w*sqrt(M_UZERO*M_EZERO);
 	
@@ -498,11 +504,14 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
   cmesh->AutoBuild();
   
-//  if (pOrder == 1) {
-//    //cmesh->CleanUpUnconnectedNodes();
-//    TPZCreateApproximationSpace::MakeRaviartThomas(*cmesh);
-//    cmesh->CleanUpUnconnectedNodes();
-//  }
+  if (pOrder == 1) {
+    //cmesh->CleanUpUnconnectedNodes();
+    TPZCreateApproximationSpace::MakeRaviartThomas(*cmesh);
+    cmesh->CleanUpUnconnectedNodes();
+  }
+  else{//for now only lowest order elements are avaliable
+    DebugStop();
+  }
   //cmesh->AutoBuild();
   return cmesh;
 }
