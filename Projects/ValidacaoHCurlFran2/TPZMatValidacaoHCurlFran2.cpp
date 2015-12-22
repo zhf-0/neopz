@@ -108,7 +108,6 @@ void TPZMatValidacaoHCurlFran2::ContributeForcingRT(TPZMaterialData &data, REAL 
   for (int iq = 0; iq < nHCurlFunctions; iq++ ) {
     for (int jq = 0 ; jq < nHCurlFunctions; jq++) {
       
-      
       STATE phiIdotPhiJ = 0.;
       phiIdotPhiJ += phiVecHCurlNed(iq , 0) * phiVecHCurlNed(jq , 0);
       phiIdotPhiJ += phiVecHCurlNed(iq , 1) * phiVecHCurlNed(jq , 1);
@@ -166,6 +165,7 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
     iVecHDiv[0] = data.fNormalVec(0,ivecind);
     iVecHDiv[1] = data.fNormalVec(1,ivecind);
     iVecHDiv[2] = data.fNormalVec(2,ivecind);
+
     Cross(elNormal, iVecHDiv, ivecForCurl);
     for (int i = 0; i<dphiQ.Rows(); i++) {
       gradScalarPhi(iPhi,i) = dphiQ(i,ishapeind);
@@ -193,7 +193,8 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
       phiIdotPhiJ += phiVecHCurl(iq , 1) * phiVecHCurl(jq , 1);
       phiIdotPhiJ += phiVecHCurl(iq , 2) * phiVecHCurl(jq , 2);
       
-      ek(iq,jq)+= curlIdotCurlJ * weight;
+      ek(iq,jq)+= phiIdotPhiJ * weight;
+//      ek(iq,jq)+= curlIdotCurlJ * weight;
     }
   }
 }
@@ -206,9 +207,9 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
   return;
   TPZFNMatrix<12,REAL> phiQ = data.phi;
   TPZManVector<REAL,3> x = data.x;
-//  for (int i=0; i<3; i++) {
-//    x[i] /= fScale;
-//  }
+  for (int i=0; i<3; i++) {
+    x[i] /= fScale;
+  }
   int phrq = data.fVecShapeIndex.NElements();
   
   

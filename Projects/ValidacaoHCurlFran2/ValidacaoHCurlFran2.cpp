@@ -98,6 +98,7 @@ void solAnal(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
 
 int main(int argc, char *argv[])
 {
+  HDivPiola = 1;//use piola mapping
   TPZTimer timer;
 #ifdef LOG4CXX
   InitializePZLOG();
@@ -474,7 +475,7 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   
   
   ///criar malha computacional
-  HDivPiola = 1;//use piola mapping
+  
   TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
   cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
   cmesh->SetDimModel(dim);//seta dimensao do modelo
