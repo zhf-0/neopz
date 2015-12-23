@@ -45,7 +45,6 @@ void TPZMatStripline::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<
   
   // Setting the phis
   TPZFMatrix<REAL> &phiQ = data.phi;
-  //TPZFMatrix<REAL> &dphiQ = data.dphix; //AQUIFRAN
   TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
   TPZFNMatrix<3,REAL> dphiQ;
   TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
@@ -123,7 +122,7 @@ void TPZMatStripline::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatri
   // Setting the phis
   TPZFMatrix<REAL> &phiQ = data.phi;
   //  std::cout<<"bc0: "<<data.XCenter[0]<<" "<<data.XCenter[1]<<std::endl;
-  //  TPZFMatrix<REAL> &dphiQ = data.dphix; //AQUIFRAN
+  //  TPZFMatrix<REAL> &dphiQ = data.dphix;
   TPZFMatrix<REAL> &dphiQdaxes = data.dphi;
   TPZFNMatrix<3,REAL> dphiQ;
   TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
@@ -225,7 +224,7 @@ void TPZMatStripline::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
   //  auxMatrix(1,0) = 1.;
   //  auxMatrix(2,2) = 1.;
   //
-  //  const TPZFNMatrix<9,STATE> rotationMatrix = auxMatrix;//AQUIFRAN
+  //  const TPZFNMatrix<9,STATE> rotationMatrix = auxMatrix;
   //  TPZFNMatrix<3,STATE> originalSol(3,1,0.);
   //  TPZManVector<STATE,3> auxVec = data.sol[0];
   //  originalSol(0,0) = auxVec[0];
@@ -241,7 +240,7 @@ void TPZMatStripline::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
   auxMatrix(1,0) = 1.;
   auxMatrix(2,2) = 1.;
   
-  const TPZFNMatrix<9,STATE> rotationMatrix = auxMatrix;//AQUIFRAN
+  const TPZFNMatrix<9,STATE> rotationMatrix = auxMatrix;
   TPZFNMatrix<3,STATE> originalSol(3,1,0.);
   TPZManVector<STATE,3> auxVec = data.sol[0];
   originalSol(0,0) = auxVec[0];

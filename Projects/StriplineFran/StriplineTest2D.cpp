@@ -235,11 +235,10 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( TPZVec<REAL>),ST
   cmesh->InsertMaterialObject(material);
 		
   ///Inserir condicao de contorno condutores
-  TPZFMatrix<STATE> val1(3,3,0.), val2(3,3,0.);//AQUIFRAN
+  TPZFMatrix<STATE> val1(3,3,0.), val2(3,3,0.);
   TPZMaterial * BCond0 = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno das placas condutoras
   
   // Condicao de contorno da stripline
-  //AQUIFRAN IMPLEMENTAR CONDICAO MISTA
   TPZMaterial * BCond1 = material->CreateBC(material, bc1, mixed, val1, val2);//cria material que implementa a condicao de contorno de absorcao para as "bordas" verticais
   
   // Condicao de contorno da stripline

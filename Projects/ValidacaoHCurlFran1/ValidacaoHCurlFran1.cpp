@@ -140,14 +140,6 @@ int main(int argc, char *argv[])
   TPZFMatrix<STATE> solucao=cmesh->Solution();//Pegando o vetor de solucao, alphaj
   solucao.Print("Sol",std::cout,EMathematicaInput);//imprime na formatacao do Mathematica
 #endif
-  //AQUIFRAN APAGAR
-//  TPZFNMatrix<200,STATE> sds(solucao);
-//  for (int i = 0; i < sds.Rows(); i++) {
-//    sds.Zero();
-//    sds(i,0) = 1.;
-//    cmesh->Solution() = sds;
-//    an.PostProcess(postProcessResolution);//realiza pos processamento*)
-//  }
   an.PostProcess(postProcessResolution);//realiza pos processamento*)
 
 
@@ -426,8 +418,8 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)(const  TPZVec<REA
   // Criando material
   TPZMatValidacaoHCurlFran1 *material = new TPZMatValidacaoHCurlFran1(matId,freq, ur,er);//criando material que implementa a formulacao fraca do problema de validacao
   
-  //AQUIFRAN
-  material->SetForcingFunction(forcedRHS,pOrder);
+
+  material->SetForcingFunction(forcedRHS);
   ///criar malha computacional
   TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
   cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
@@ -435,7 +427,7 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)(const  TPZVec<REA
   // Inserindo material na malha
   cmesh->InsertMaterialObject(material);
 		
-  ///Inserir condicao de contorno condutores //AQUIFRAN
+  ///Inserir condicao de contorno condutores
 //  TPZFMatrix<STATE> val1(1,1,0.), val2(1,1,0.);
 //  TPZMaterial * BCond0 = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
   

@@ -213,8 +213,8 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
       phiIdotPhiJ += phiVecHCurl(iq , 1) * phiVecHCurl(jq , 1);
       phiIdotPhiJ += phiVecHCurl(iq , 2) * phiVecHCurl(jq , 2);
       
-      ek(iq,jq)+= phiIdotPhiJ * weight;
-//      ek(iq,jq)+= curlIdotCurlJ * weight;
+      ek(iq,jq)+= phiIdotPhiJ * data.detjac * weight;
+//      ek(iq,jq)+= curlIdotCurlJ * data.detjac * weight;
     }
   }
 }

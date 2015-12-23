@@ -241,7 +241,6 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, REAL L, STATE (& ur)( TPZVec<R
 	TPZMaterial * BCond0 = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno da esquerda
 	
 	// Condicao de contorno da direita
-  //AQUIFRAN IMPLEMENTAR VAL1 E VAL2 PARA CONDICAO MISTA
 
   REAL w=2.*M_PI*M_C/lambda;
   REAL kZero=w*sqrt(M_UZERO*M_EZERO);

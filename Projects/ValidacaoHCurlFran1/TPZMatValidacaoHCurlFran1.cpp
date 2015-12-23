@@ -234,7 +234,6 @@ void TPZMatValidacaoHCurlFran1::Solution(TPZMaterialData &data, int var, TPZVec<
   
   Solout.Resize(3);
   Cross(normal, data.sol[0], Solout);
-  //AQUIFRANAPAGAR
   //Solout=data.sol[0];
   switch (var) {
     case 2://E
@@ -252,7 +251,6 @@ void TPZMatValidacaoHCurlFran1::Solution(TPZMaterialData &data, int var, TPZVec<
       Solout[0] = std::real(Solout[0]);
       Solout[1] = std::real(Solout[1]);
       Solout[2] = std::real(Solout[2]);
-//      //AQUIFRANAPAGAR
 //      TPZManVector<REAL,3> xAtPoint = data.x;
 //      if(xAtPoint[0]+xAtPoint[1]>0)
 //      {
