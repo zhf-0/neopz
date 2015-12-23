@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   REAL theta = 0.;
   REAL e0 = 1.;
   //PARAMETROS DA GEOMETRIA
-  REAL L = 1.;
+  REAL L = 4.;
   REAL hDomain = L;
   REAL wDomain = L;
   REAL scale = (5.*lambda);

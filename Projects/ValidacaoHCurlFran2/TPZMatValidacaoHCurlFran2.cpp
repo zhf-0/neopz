@@ -147,10 +147,30 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
     ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
   }
   Cross(ax1, ax2, elNormal);
-  
+  std::cout<<"normal :"<<sqrt(elNormal[0] * elNormal[0] + elNormal[1] * elNormal[1] + elNormal[2] * elNormal[2])<<std::endl;
   TPZFNMatrix< 12 , REAL > phiVecHCurl(phrq , 3 , 0.);
   RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
+  std::cout<<"integration point:"<<std::endl;
+  std::cout<<data.x<<std::endl;
+  std::cout<<"phiNed(0):"
+  <<std::setw(10)<<phiVecHCurl(0,0)+phiVecHCurl(1,0)<<" "
+  <<std::setw(10)<<phiVecHCurl(0,1)+phiVecHCurl(1,1)<<" "
+  <<std::setw(10)<<phiVecHCurl(0,2)+phiVecHCurl(1,2)<<std::endl;
   
+  std::cout<<"phiNed(1):"
+  <<std::setw(10)<<phiVecHCurl(2,0)+phiVecHCurl(3,0)<<" "
+  <<std::setw(10)<<phiVecHCurl(2,1)+phiVecHCurl(3,1)<<" "
+  <<std::setw(10)<<phiVecHCurl(2,2)+phiVecHCurl(3,2)<<std::endl;
+  
+  std::cout<<"phiNed(2):"
+  <<std::setw(10)<<phiVecHCurl(4,0)+phiVecHCurl(5,0)<<" "
+  <<std::setw(10)<<phiVecHCurl(4,1)+phiVecHCurl(5,1)<<" "
+  <<std::setw(10)<<phiVecHCurl(4,2)+phiVecHCurl(4,2)<<std::endl;
+  
+  std::cout<<"phiNed(3):"
+  <<std::setw(10)<<phiVecHCurl(6,0)+phiVecHCurl(7,0)<<" "
+  <<std::setw(10)<<phiVecHCurl(6,1)+phiVecHCurl(7,1)<<" "
+  <<std::setw(10)<<phiVecHCurl(6,2)+phiVecHCurl(5,2)<<std::endl;
   /*********************COMPUTE CURL****************************/
   TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
   TPZFNMatrix<3,REAL> dphiQ;
