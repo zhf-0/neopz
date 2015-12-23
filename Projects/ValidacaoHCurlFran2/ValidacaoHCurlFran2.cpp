@@ -109,16 +109,18 @@ int main(int argc, char *argv[])
   REAL theta = 0.;
   REAL e0 = 1.;
   //PARAMETROS DA GEOMETRIA
-  REAL L = 4.;
+  REAL L = 1.;
   REAL hDomain = L;
   REAL wDomain = L;
-  REAL scale = (5.*lambda);
+  REAL scale = (5.*lambda)/L;
+  
 //	REAL L = 5*lambda;
 //	REAL hDomain = L;
 //	REAL wDomain = L;
 //  REAL scale = 1.;
-	REAL w=2.*M_PI*M_C/lambda;
-	REAL kZero=w*sqrt(M_UZERO*M_EZERO);
+  
+//	REAL w=2.*M_PI*M_C/lambda;
+//	REAL kZero=w*sqrt(M_UZERO*M_EZERO);
   
   int pOrder = 1; //ordem polinomial de aproximacao
   int dim = 2;
@@ -171,7 +173,7 @@ int main(int argc, char *argv[])
   an.Assemble();
   TPZFMatrix< std::complex<double> > stiff;
   stiff = *an.Solver().Matrix().operator->();
-  stiff.Print("KPZNed = " , std::cout , EMathematicaInput);
+  stiff.Print("KPZglobalNed = " , std::cout , EMathematicaInput);
   std::cout<<"saindo do assemble"<<std::endl;
   std::cout<<"entrando no solver"<<std::endl;
   an.Solve();
@@ -303,6 +305,7 @@ TPZGeoMesh *CreateRectangularGMesh(const REAL hDomain, const REAL wDomain, const
 //  gengrid.SetBC(gmesh, urCoord, ulCoord, bc0);
 //  gengrid.SetBC(gmesh, lrCoord, urCoord, bc1);
 //  gengrid.SetBC(gmesh, llCoord, lrCoord, bc0);
+
   //gmesh->ResetConnectivities();
   //converte malha xy para xz
   for (int i = 0; i < gmesh->NNodes() ; i ++)

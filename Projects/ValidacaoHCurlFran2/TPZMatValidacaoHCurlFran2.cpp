@@ -213,8 +213,8 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
       phiIdotPhiJ += phiVecHCurl(iq , 1) * phiVecHCurl(jq , 1);
       phiIdotPhiJ += phiVecHCurl(iq , 2) * phiVecHCurl(jq , 2);
       
-      ek(iq,jq)+= phiIdotPhiJ * data.detjac * weight;
-//      ek(iq,jq)+= curlIdotCurlJ * data.detjac * weight;
+//      ek(iq,jq)+= phiIdotPhiJ * weight;
+      ek(iq,jq)+= curlIdotCurlJ * weight;
     }
   }
 }
@@ -227,14 +227,14 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
   return;
   TPZFNMatrix<12,REAL> phiQ = data.phi;
   TPZManVector<REAL,3> x = data.x;
-  for (int i=0; i<3; i++) {
-    x[i] /= fScale;
-  }
+    for (int i=0; i<3; i++) {
+      x[i] /= fScale;
+    }
   int phrq = data.fVecShapeIndex.NElements();
   
   
   /*********************CREATE HDIV FUNCTIONS****************************/
-
+  
   TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.);
   for (int iq = 0 ; iq < phrq ; iq++) {
     int ivecind = data.fVecShapeIndex[iq].first;
@@ -252,10 +252,8 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
     ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
   }
   Cross(ax1, ax2, elNormal);
-  
   TPZFNMatrix< 12 , REAL > phiVecHCurl(phrq , 3 , 0.);
   RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
-  
   /*********************COMPUTE CURL****************************/
   TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
   TPZFNMatrix<3,REAL> dphiQ;
@@ -270,6 +268,7 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
     iVecHDiv[0] = data.fNormalVec(0,ivecind);
     iVecHDiv[1] = data.fNormalVec(1,ivecind);
     iVecHDiv[2] = data.fNormalVec(2,ivecind);
+    
     Cross(elNormal, iVecHDiv, ivecForCurl);
     for (int i = 0; i<dphiQ.Rows(); i++) {
       gradScalarPhi(iPhi,i) = dphiQ(i,ishapeind);
@@ -279,20 +278,22 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
   TPZFNMatrix<40,REAL> curlPhi;
   ComputeCurl(gradScalarPhi, ivecHCurl, curlPhi);
   
-  /*****************ACTUAL COMPUTATION OF CONTRIBUTION*****************/
   const STATE muR =  fUr(x);
   const STATE epsilonR = fEr(x);
   REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
+  
+  /*****************ACTUAL COMPUTATION OF CONTRIBUTION*****************/
   
   int nHCurlFunctions  = phiVecHCurl.Rows();
   for (int iq = 0; iq < nHCurlFunctions; iq++ ) {
     for (int jq = 0 ; jq < nHCurlFunctions; jq++) {
       
-
+      
       STATE curlIdotCurlJ = 0.;
       curlIdotCurlJ += curlPhi(iq , 0) * curlPhi(jq , 0);
       curlIdotCurlJ += curlPhi(iq , 1) * curlPhi(jq , 1);
       curlIdotCurlJ += curlPhi(iq , 2) * curlPhi(jq , 2);
+      
       STATE curlIXStar = 0., curlJX = 0.;
       //it is needed to set curlE dot x = j*k0*sin(theta)*Ez
       curlIXStar =  -1. * imaginary * k0 * sin(fTheta) * phiVecHCurl(iq , 2);
@@ -331,7 +332,7 @@ void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight,
 	
 	int nshape=phiQ.Rows();
 	REAL BIG = TPZMaterial::gBigNumber;
-	BIG=BIG*BIG;
+
 	const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
 	const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
 	
@@ -340,11 +341,11 @@ void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight,
 		case 0:
 			for(int i = 0 ; i<nshape ; i++)
 			{
-				const STATE rhs = phiQ(i,0) * BIG * (1. + imaginary ) * v2;
+				const STATE rhs = phiQ(i,0) * BIG  * v2;
 				ef(i,0) += rhs*weight;
 				for(int j=0;j<nshape;j++)
 				{
-					const STATE stiff = phiQ(i,0) * phiQ(j,0) * BIG * (1. + imaginary );
+          const STATE stiff = phiQ(i,0) * phiQ(j,0) * BIG ;
 					ek(i,j) += stiff*weight;
 				}
 			}
@@ -441,14 +442,6 @@ void TPZMatValidacaoHCurlFran2::Solution(TPZMaterialData &data, int var, TPZVec<
 	}
 	//ROTATE FOR HCURL
 	Cross(ax1, ax2, normal);
-//	STATE norm = 0.;
-//	for (int i = 0 ; i < normal.size(); i++) {
-//		norm += normal[i] * normal[i];
-//	}
-//	norm = sqrt(norm);
-//	for (int i = 0 ; i < normal.size(); i++) {
-//		normal[i] /= norm;
-//	}
 	
 	Solout.Resize(3);
 	Cross(normal, data.sol[0], Solout);
