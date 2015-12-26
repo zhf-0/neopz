@@ -709,8 +709,8 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
             if (nsconnects != 1) {
                 continue;
             }
-            long cindex = intel->SideConnectIndex(0, is);
-//            TPZConnect &c = intel->Connect(intel->SideConnectLocId(0,is));
+//            long cindex = intel->SideConnectIndex(0, is);
+					long cindex = intel->SideConnectLocId(0,is);//the LOCAL connect ID must be taken
             TPZConnect &c = intel->Connect( cindex );
           if (c.HasDependency()) {
                 continue;
