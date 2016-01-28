@@ -39,22 +39,6 @@
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
-/**
- * @brief Creates gmesh corresponding to the simple domain
- * @param hDomain height of the simulation domain
- * @param wDomain width of the simulation domain
- */
-TPZGeoMesh *CreateRectangularGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv);
-
-TPZGeoMesh *CreateTriangularGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv);
-
-
-/**
- * @brief Creates gmesh corresponding to the simple domain
- * @param hDomain height of the simulation domain
- * @param wDomain width of the simulation domain
- */
-TPZGeoMesh *CreateZigZagGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv);
 
 /**
  * @brief Creates cmesh
@@ -109,16 +93,16 @@ int main(int argc, char *argv[])
   REAL theta = 0.;
   REAL e0 = 1.;
   //PARAMETROS DA GEOMETRIA
-  REAL L = 4.;
-  REAL hDomain = L;
-  REAL wDomain = L;
-  REAL scale = (5.*lambda)/L;
-  
-//	REAL L = 5*lambda;
-//	REAL hDomain = L;
-//	REAL wDomain = L;
-//  REAL scale = 1.;
-  
+//  REAL L = 4.;
+//  REAL hDomain = L;
+//  REAL wDomain = L;
+//  REAL scale = (5.*lambda)/L;
+	
+	REAL L = 5*lambda;
+	REAL hDomain = L;
+	REAL wDomain = L;
+  REAL scale = 1.;
+	
 //	REAL w=2.*M_PI*M_C/lambda;
 //	REAL kZero=w*sqrt(M_UZERO*M_EZERO);
   
@@ -127,7 +111,7 @@ int main(int argc, char *argv[])
   int xDiv = 2;
   int zDiv = 1;
   
-  const int meshType = createRectangular;
+  const int meshType = createTriangular;
   timer.start();
   
   TPZGeoMesh *gmesh = new TPZGeoMesh();
@@ -236,10 +220,31 @@ void FilterOthersFunctions(TPZManVector<long> &active, TPZCompMesh * fcmesh){
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv)
 {
+	
+	TPZManVector<int,3> nx(3,0);
+	TPZManVector<REAL,3> llCoord(3,0.) , ulCoord(3,0.) , urCoord(3,0.) , lrCoord(3,0.);
+	llCoord[0] = 0.;
+	llCoord[1] = 0.;
+	
+	ulCoord[0] = 0.;
+	ulCoord[1] = hDomain;
+	
+	urCoord[0] = wDomain;
+	urCoord[1] = hDomain;
+	
+	lrCoord[0] = wDomain;
+	lrCoord[1] = 0.;
+	
+	nx[0]=xDiv;
+	nx[1]=zDiv;
+	int numl = 1;
+	TPZGenGrid *gengrid;
   switch (meshType) {
     case createRectangular:
     {
-			gmesh = CreateRectangularGMesh(hDomain, wDomain, xDiv, zDiv);//funcao para criar a malha geometrica
+			REAL rot = 0.0;
+			gengrid = new TPZGenGrid(nx, llCoord, urCoord,  numl, rot);
+			gengrid->SetElementType(EQuadrilateral);
       std::ofstream outTxt("../gmeshRectangular.txt"); //define arquivo de saida para impressao da malha no
       gmesh->Print(outTxt);
       std::ofstream out0("../gmeshRectangular.vtk"); //define arquivo de saida para impressao da malha no paraview
@@ -248,7 +253,9 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
       break;
     case createTriangular:
     {
-			gmesh = CreateTriangularGMesh(hDomain, wDomain, xDiv, zDiv); //funcao para criar a malha geometrica
+			REAL rot = 0.0;
+			gengrid = new TPZGenGrid(nx, llCoord, urCoord,  numl, rot);
+			gengrid->SetElementType(ETriangle);
       std::ofstream outTxt("../gmeshTriangular.txt"); //define arquivo de saida para impressao da malha no
       gmesh->Print(outTxt);
       std::ofstream out0("../gmeshTriangular.vtk"); //define arquivo de saida para impressao da malha no paraview
@@ -258,7 +265,10 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
       break;
     case createZigZag:
     {
-			gmesh = CreateZigZagGMesh(hDomain, wDomain, xDiv, zDiv);
+			REAL rot = 0.0;
+			gengrid = new TPZGenGrid(nx, llCoord, urCoord,  numl, rot);
+			gengrid->SetElementType(EQuadrilateral);
+			gengrid->SetZigZagPattern();
       std::ofstream outTxt("../gmeshZigZag.txt"); //define arquivo de saida para impressao da malha no
       gmesh->Print(outTxt);
       std::ofstream out0("../gmeshZigZag.vtk"); //define arquivo de saida para impressao da malha no paraview
@@ -269,192 +279,61 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
       DebugStop();
       break;
   }
-}
-
-TPZGeoMesh *CreateRectangularGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv)
-{
-  TPZManVector<int,3> nx(3,0);
-  TPZManVector<REAL,3> llCoord(3,0.) , ulCoord(3,0.) , urCoord(3,0.) , lrCoord(3,0.);
-  llCoord[0] = 0.;
-  llCoord[1] = 0.;
-  
-  ulCoord[0] = 0.;
-  ulCoord[1] = hDomain;
-  
-  urCoord[0] = wDomain;
-  urCoord[1] = hDomain;
-  
-  lrCoord[0] = wDomain;
-  lrCoord[1] = 0.;
-  
-  nx[0]=xDiv;
-  nx[1]=zDiv;
-  int numl = 1;
-  REAL rot = 0.5;
-  TPZGenGrid gengrid = TPZGenGrid(nx, llCoord, urCoord,  numl, rot);
-  gengrid.SetElementType(EQuadrilateral);
-  
-  TPZGeoMesh *gmesh = new TPZGeoMesh();
-  const int matId = 1; //define id para um material(formulacao fraca)
-  const int bc0 = -1; //define id para um material(cond contorno dirichlet)
-  const int bc1 = -2; //define id para um material(cond contorno mista)
-  
-  gengrid.Read(gmesh , matId);
-  
-//  gengrid.SetBC(gmesh, ulCoord, llCoord, bc0);
-//  gengrid.SetBC(gmesh, urCoord, ulCoord, bc0);
-//  gengrid.SetBC(gmesh, lrCoord, urCoord, bc1);
-//  gengrid.SetBC(gmesh, llCoord, lrCoord, bc0);
-
-  //gmesh->ResetConnectivities();
-  //converte malha xy para xz
-  for (int i = 0; i < gmesh->NNodes() ; i ++)
-  {
-    TPZGeoNode node = gmesh->NodeVec()[i];
-    node.SetCoord( 2, node.Coord(1) );
-    node.SetCoord( 1, 0. );
-    gmesh->NodeVec()[i] = node;
-  }
-  
-  gmesh->BuildConnectivity();
-  return gmesh;
-}
-
-TPZGeoMesh *CreateTriangularGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv)
-{
-  TPZGeoMesh * gmesh = new TPZGeoMesh;//Inicializa objeto da classe TPZGeoMesh
-  
-  int matId = 1; //define id para um material(formulacao fraca)
-  int bc0 = -1; //define id para um material(cond contorno dirichlet)
-  int bc1 = -2; //define id para um material(cond contorno mista)
-  TPZManVector<REAL> xCoord(xDiv+1,0.0);
-  TPZManVector<REAL> zCoord(zDiv+1,0.0);
-  
-  int nNodes = (xDiv + 1) * (zDiv + 1);
-  
-  //coordenadas dos nos da malha sem refinamento
-  for (int i = 0; i<= xDiv; i++) {
-    xCoord[i] = 0*(1-(REAL)i/xDiv)+wDomain*((REAL)i/xDiv);
-  }
-  for (int i = 0; i<= zDiv; i++) {
-    zCoord[i] = 0*(1-(REAL)i/zDiv)+hDomain*((REAL)i/zDiv);
-  }
-  
-  gmesh->NodeVec().Resize(nNodes); //Redimensiona o tamanho do vetor de nos da malha geometrica
-  TPZVec<REAL> coord(3,0.0);
-  for (long i = 0 ; i < nNodes; i++){
-    coord[0] = xCoord[i%(xDiv+1)];
-    coord[2] = zCoord[i/(xDiv+1)];
-    
-    gmesh->NodeVec()[i].SetCoord(coord); //seta coordenada de um no no vetor de nos da malha
-    gmesh->NodeVec()[i].SetNodeId(i);
-  }
-  for (int i = 0; i< nNodes; i++) {
-    gmesh->NodeVec()[i].Print();
-  }
-  // Criando Elementos
-  TPZVec <long> topolTri(4); //vetor que sera inicializado com o indice dos nos de um elemento quadrado bidimensional
-  TPZVec <long> topolLine(2); //vetor que sera inicializado com o indice dos nos de um elemento unidimensional
-  long index; //id do elemento que sera preenchido pelo metodo CreateGeoElement
-  int nel = xDiv * zDiv * 2;
-  for (long iel = 0; iel < nel; iel++) {
-    long ino1,ino2,ino3;
-		
-    if ( ( iel  + 1 ) % 2 ) {
-      ino1 = (iel/2) % (xDiv) + ((iel/2) / xDiv) * (xDiv + 1);
-      ino2 = (iel/2) % (xDiv) + ((iel/2) / xDiv + 1) * (xDiv + 1) + 1;
-      ino3 = (iel/2) % (xDiv) + ((iel/2) / xDiv + 1) * (xDiv + 1);
-    }
-    else{
-      ino1 = ((iel/2)-1) % (xDiv) + (((iel/2)-1) / xDiv) * (xDiv + 1);
-      ino2 = ((iel/2)-1) % (xDiv) + (((iel/2)-1) / xDiv) * (xDiv + 1) + 1;
-      ino3 = ((iel/2)-1) % (xDiv) + (((iel/2)-1) / xDiv + 1) * (xDiv + 1) + 1;
-      
-    }
-    topolTri[0] = ino1;
-    topolTri[1] = ino2;
-    topolTri[2] = ino3;
-    gmesh->CreateGeoElement(ETriangle, topolTri, matId, index);//cria elemento triangular
-  }
-  
-  //CONDICOES DE CONTORNO
-  for (int i = 0; i < 2 * xDiv; i++)
-  {
-    topolLine[0] = i % xDiv + (i / xDiv) * zDiv * (xDiv + 1);
-    topolLine[1] = i % xDiv + (i / xDiv) * zDiv * (xDiv + 1) + 1;
-    //std::cout <<topolLine[0]<<" "<<topolLine[1]<<std::endl;
-    gmesh->CreateGeoElement(EOned, topolLine, bc0, index);//cria elemento unidimensional
-    //gmesh->ElementVec()[index];
-  }
-  
-  for (int i = 0; i < 2 * zDiv; i++)
-  {
-    topolLine[0] = (i % zDiv) * (xDiv + 1) + (i / zDiv ) * xDiv;
-    topolLine[1] = (i % zDiv + 1) * (xDiv + 1) + (i / zDiv ) * xDiv;
-    //std::cout <<topolLine[0]<<" "<<topolLine[1]<<std::endl;
-    if( !(i / zDiv) )
-      gmesh->CreateGeoElement(EOned, topolLine, bc0, index);//cria elemento unidimensional
-    else
-    {
-      gmesh->CreateGeoElement(EOned, topolLine, bc1, index);//cria elemento unidimensional
-//      if( i == zDiv )
-//        indexRBC = index;
-    }
-  }
-  
-  
-  gmesh->BuildConnectivity(); //constroi a conectividade de vizinhanca da malha
-  
-  return gmesh;
-  
-}
-
-TPZGeoMesh *CreateZigZagGMesh(const REAL hDomain, const REAL wDomain, const int xDiv, const int zDiv)
-{
-  TPZManVector<int,3> nx(3,0);
-  TPZManVector<REAL,3> llCoord(3,0.) , ulCoord(3,0.) , urCoord(3,0.) , lrCoord(3,0.);
-  llCoord[0] = 0.;
-  llCoord[1] = 0.;
-  
-  ulCoord[0] = 0.;
-  ulCoord[1] = hDomain;
-  
-  urCoord[0] = wDomain;
-  urCoord[1] = hDomain;
-  
-  lrCoord[0] = wDomain;
-  lrCoord[1] = 0.;
-  
-  nx[0]=xDiv;
-  nx[1]=zDiv;
-  int numl = 1;
-  REAL rot = 0.5;
-  TPZGenGrid gengrid = TPZGenGrid(nx, llCoord, urCoord,  numl, rot);
-  gengrid.SetZigZagPattern();
-  gengrid.SetElementType(EQuadrilateral);
-  
-  TPZGeoMesh *gmesh = new TPZGeoMesh();
-  const int matId = 1; //define id para um material(formulacao fraca)
-  const int bc0 = -1; //define id para um material(cond contorno dirichlet)
-  const int bc1 = -2; //define id para um material(cond contorno mista)
-  
-  gengrid.Read(gmesh , matId);
-  
-  gengrid.SetBC(gmesh, ulCoord, llCoord, bc0);
-  gengrid.SetBC(gmesh, urCoord, ulCoord, bc0);
-  gengrid.SetBC(gmesh, lrCoord, urCoord, bc1);
-  gengrid.SetBC(gmesh, llCoord, lrCoord, bc0);
-  
-  //converte malha xy para xz
-  for (int i = 0; i < gmesh->NNodes() ; i ++)
-  {
-    TPZGeoNode node = gmesh->NodeVec()[i];
-    node.SetCoord( 2, node.Coord(1) );
-    node.SetCoord( 1, 0. );
-    gmesh->NodeVec()[i] = node;
-  }
+	gmesh = new TPZGeoMesh();
+	const int matId = 1; //define id para um material(formulacao fraca)
+	const int bc0 = -1; //define id para um material(cond contorno dirichlet)
+	const int bc1 = -2; //define id para um material(cond contorno mista)
+	gengrid->Read(gmesh , matId);
 	
-  return gmesh;
+	
+	gengrid->SetBC(gmesh, ulCoord, llCoord, bc0);
+	gengrid->SetBC(gmesh, urCoord, ulCoord, bc0);
+	gengrid->SetBC(gmesh, lrCoord, urCoord, bc1);
+	gengrid->SetBC(gmesh, llCoord, lrCoord, bc0);
+	
+	//gmesh->ResetConnectivities();
+	//converte malha xy para xz
+	for (int i = 0; i < gmesh->NNodes() ; i ++)
+	{
+		TPZGeoNode node = gmesh->NodeVec()[i];
+		node.SetCoord( 2, node.Coord(1) );
+		node.SetCoord( 1, 0. );
+		gmesh->NodeVec()[i] = node;
+	}
+	
+	gmesh->BuildConnectivity();
+	
+	std::ofstream outTxt , outVtk;
+	switch (meshType) {
+		case createRectangular:
+		{
+			outTxt.open("../gmeshRectangular.txt"); //define arquivo de saida para impressao da malha no
+			outVtk.open("../gmeshRectangular.vtk"); //define arquivo de saida para impressao da malha no paraview
+			
+		}
+			break;
+		case createTriangular:
+		{
+			outTxt.open("../gmeshTriangular.txt"); //define arquivo de saida para impressao da malha no
+			outVtk.open("../gmeshTriangular.vtk"); //define arquivo de saida para impressao da malha no paraview
+			
+		}
+			break;
+		case createZigZag:
+		{
+			outTxt.open("../gmeshZigZag.txt"); //define arquivo de saida para impressao da malha no
+			outVtk.open("../gmeshZigZag.vtk"); //define arquivo de saida para impressao da malha no paraview
+		}
+			break;
+		default:
+			DebugStop();
+			break;
+	}
+	gmesh->Print(outTxt);
+	outTxt.close();
+	TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVtk, true); //imprime a malha no formato vtk
+	outVtk.close();
+	delete gengrid;
 }
 
 TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL L, REAL theta, REAL lambda, REAL e0, REAL scale)
