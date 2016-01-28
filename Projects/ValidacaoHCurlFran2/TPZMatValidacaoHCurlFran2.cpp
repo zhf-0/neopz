@@ -126,6 +126,7 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
   //    x[i] /= fScale;
   //  }
   int phrq = data.fVecShapeIndex.NElements();
+  phiQ.Print("scalar functions");
   
   
   /*********************CREATE HDIV FUNCTIONS****************************/
@@ -138,6 +139,11 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
     phiVecHDiv(iq , 0) = phiQ(ishapeind , 0) * data.fNormalVec(0 , ivecind);
     phiVecHDiv(iq , 1) = phiQ(ishapeind , 0) * data.fNormalVec(1 , ivecind);
     phiVecHDiv(iq , 2) = phiQ(ishapeind , 0) * data.fNormalVec(2 , ivecind);
+    std::cout<<"shape n: "<<ishapeind<<std::endl;
+    std::cout<<"vector"<<std::endl
+    <<std::setw(10)<<data.fNormalVec(0 , ivecind)<<" "
+    <<std::setw(10)<<data.fNormalVec(1 , ivecind)<<" "
+    <<std::setw(10)<<data.fNormalVec(2 , ivecind)<<std::endl;
   }
   
   /*********************ROTATE FOR HCURL****************************/
@@ -147,10 +153,13 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
     ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
   }
   Cross(ax1, ax2, elNormal);
+  std::cout<<"determinante da jacobiana"<<std::endl;
+  std::cout<<data.detjac<<std::endl;
   std::cout<<"normal :"<<sqrt(elNormal[0] * elNormal[0] + elNormal[1] * elNormal[1] + elNormal[2] * elNormal[2])<<std::endl;
   TPZFNMatrix< 12 , REAL > phiVecHCurl(phrq , 3 , 0.);
   RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
   std::cout<<"integration point:"<<std::endl;
+  std::cout<<data.xParametric<<std::endl;
   std::cout<<data.x<<std::endl;
   std::cout<<"phiNed(0):"
   <<std::setw(10)<<phiVecHCurl(0,0)+phiVecHCurl(1,0)<<" "
@@ -165,12 +174,12 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
   std::cout<<"phiNed(2):"
   <<std::setw(10)<<phiVecHCurl(4,0)+phiVecHCurl(5,0)<<" "
   <<std::setw(10)<<phiVecHCurl(4,1)+phiVecHCurl(5,1)<<" "
-  <<std::setw(10)<<phiVecHCurl(4,2)+phiVecHCurl(4,2)<<std::endl;
+  <<std::setw(10)<<phiVecHCurl(4,2)+phiVecHCurl(5,2)<<std::endl;
   
   std::cout<<"phiNed(3):"
   <<std::setw(10)<<phiVecHCurl(6,0)+phiVecHCurl(7,0)<<" "
   <<std::setw(10)<<phiVecHCurl(6,1)+phiVecHCurl(7,1)<<" "
-  <<std::setw(10)<<phiVecHCurl(6,2)+phiVecHCurl(5,2)<<std::endl;
+  <<std::setw(10)<<phiVecHCurl(6,2)+phiVecHCurl(7,2)<<std::endl;
   /*********************COMPUTE CURL****************************/
   TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
   TPZFNMatrix<3,REAL> dphiQ;
