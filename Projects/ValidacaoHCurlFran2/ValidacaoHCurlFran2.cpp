@@ -28,6 +28,9 @@
 #include "TPZSkylineNSymStructMatrix.h"
 
 
+#include "pzelchdiv.h"
+#include "pzshapequad.h"
+#include "pzshapetriang.h"
 #include "pzgengrid.h"
 #include "tpzhierarquicalgrid.h"
 #include "pzgeoquad.h"
@@ -111,7 +114,7 @@ int main(int argc, char *argv[])
   int xDiv = 2;
   int zDiv = 1;
   
-  const int meshType = createTriangular;
+  const int meshType = createRectangular;
   timer.start();
   
   TPZGeoMesh *gmesh = new TPZGeoMesh();
@@ -238,7 +241,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
 	nx[0]=xDiv;
 	nx[1]=zDiv;
 	int numl = 1;
-	TPZGenGrid *gengrid;
+	TPZGenGrid *gengrid = NULL;
   switch (meshType) {
     case createRectangular:
     {
@@ -386,6 +389,29 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   
   //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
   cmesh->AutoBuild();
+  TPZAdmChunkVector< TPZCompEl* > elVec = cmesh->ElementVec();
+  
+  for (int i = 0; i < cmesh->NElements(); i++) {
+    TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
+    if ( el == NULL) {
+      continue;
+    }
+    el->SetSideOrient(4,  1);
+    el->SetSideOrient(5,  1);
+    el->SetSideOrient(6, -1);
+    el->SetSideOrient(7, -1);
+  }
+  
+  for (int i = 0; i < cmesh->NElements(); i++) {
+    TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
+    if ( el == NULL) {
+      continue;
+    }
+    el->SetSideOrient(3,  1);
+    el->SetSideOrient(4, -1);
+    el->SetSideOrient(5,  1);
+  }
+  
   
   if (pOrder == 1) {
     //cmesh->CleanUpUnconnectedNodes();
@@ -395,6 +421,7 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   else{//for now only lowest order elements are avaliable
     DebugStop();
   }
+  
   //cmesh->AutoBuild();
   return cmesh;
 }
