@@ -101,7 +101,7 @@ ENABLE_TESTING()
 			add_subdirectory(StriplineFran)
 			add_subdirectory(ValidacaoHCurlFran1)
 			add_subdirectory(ValidacaoHCurlFran2)
-
+			add_subdirectory(MFHCurlFran)
 			#add_subdirectory(HDiv_demo)
 
 			#Examples used as tutorial for FEEC group (Prof Hugo)
