@@ -61,16 +61,6 @@ public:
     virtual int NStateVariables() { return 1;}
     
 public:
-    
-  /**
-   * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
-   * @param data [in] stores all input data
-   * @param weight [in] is the weight of the integration rule
-   * @param ek [out] is the stiffness matrix
-   * @param ef [out] is the load vector
-   * @since April 16, 2007
-   */
-  virtual void ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   
   virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
