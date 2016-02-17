@@ -11,9 +11,10 @@
 #include "pzvec_extras.h"
 
 
-const REAL M_C  (3*1e8); //velocidade da luz no vacuo
+
 const REAL M_UZERO  (4*M_PI*1e-7);//permeabilidade do meio livre
 const REAL M_EZERO  (8.854*1e-12);//permissividade do meio livre
+const REAL M_C  (1./sqrt(M_UZERO * M_EZERO)); //velocidade da luz no vacuo
 #ifdef STATE_COMPLEX
 const STATE imaginary(0.,1.);//unidade imaginaria
 #endif
@@ -30,6 +31,7 @@ protected:
   STATE (*fUr)( const TPZVec<REAL>&);
   STATE (*fEr)( const TPZVec<REAL>&);
   REAL fLambda;
+  REAL fKz;
 	REAL fE0;
   REAL fW;
   REAL fTheta;
@@ -38,7 +40,7 @@ protected:
 	
 public:
 	
-    TPZMatMFHCurlFran(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatMFHCurlFran(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
     TPZMatMFHCurlFran(int id);
   

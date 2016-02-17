@@ -6,7 +6,7 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
-TPZMatMFHCurlFran::TPZMatMFHCurlFran(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t) , fScale(scale)
+TPZMatMFHCurlFran::TPZMatMFHCurlFran(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fKz (kz) , fE0 (e0) , fTheta(t) , fScale(scale)
 {
 	fW=2.*M_PI*M_C/fLambda;
 }
@@ -70,8 +70,14 @@ void TPZMatMFHCurlFran::Contribute(TPZMaterialData &data, REAL weight, TPZFMatri
 void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
   TPZFNMatrix<12,REAL> phiSca = datavec[0].phi;
-  TPZFNMatrix<36,REAL> dphiSca = datavec[0].dphix;
-  
+  TPZFNMatrix<36,REAL> dphiScadaxes = datavec[0].dphix;
+  TPZFNMatrix<3,REAL> dphiScaQ;
+  TPZAxesTools<REAL>::Axes2XYZ(dphiScadaxes, dphiScaQ, datavec[1].axes);
+  TPZFNMatrix<3,REAL> gradPhiSca(phiSca.Rows() , 3 , 0.);
+  for ( int iFunc = 0 ; iFunc < phiSca.Rows(); iFunc++ ) {
+    gradPhiSca ( iFunc , 0 ) = dphiScaQ ( 0 , iFunc );
+    gradPhiSca ( iFunc , 1 ) = dphiScaQ ( 1 , iFunc );
+  }
   TPZFNMatrix<12,REAL> phiQ = datavec[1].phi;
   TPZManVector<REAL,3> x = datavec[0].x;
 
@@ -93,17 +99,17 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //    <<std::setw(10)<<datavec[1].fNormalVec(0 , ivecind)<<" "
 //    <<std::setw(10)<<datavec[1].fNormalVec(1 , ivecind)<<" "
 //    <<std::setw(10)<<datavec[1].fNormalVec(2 , ivecind)<<std::endl;
-    std::cout<<"function: "<<ishapeind<<std::endl
-    <<std::setw(10)<<phiVecHCurl( iq , 0 )<<" "
-    <<std::setw(10)<<phiVecHCurl( iq , 1 )<<" "
-    <<std::setw(10)<<phiVecHCurl( iq , 2 )<<std::endl;
+//    std::cout<<"function: "<<ishapeind<<std::endl
+//    <<std::setw(10)<<phiVecHCurl( iq , 0 )<<" "
+//    <<std::setw(10)<<phiVecHCurl( iq , 1 )<<" "
+//    <<std::setw(10)<<phiVecHCurl( iq , 2 )<<std::endl;
   }
   
   /*********************COMPUTE CURL****************************/
   TPZFMatrix<REAL> &dphiQdaxes = datavec[1].dphix;
   TPZFNMatrix<3,REAL> dphiQ;
   TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, datavec[1].axes);
-  TPZFNMatrix<3,REAL> gradScalarPhi(phrq , 3 , 0.);
+  TPZFNMatrix<3,REAL> gradPhiForHCurl(phrq , 3 , 0.);
   TPZFNMatrix<3,REAL> ivecHCurl(phrq , 3 , 0.);
   
   TPZManVector<REAL,3> iVecCurl(3,0.);
@@ -115,42 +121,90 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     iVecCurl[2] = datavec[1].fNormalVec(2,ivecind);
     
     for (int i = 0; i<dphiQ.Rows(); i++) {
-      gradScalarPhi(iPhi,i) = dphiQ(i,ishapeind);
+      gradPhiForHCurl(iPhi,i) = dphiQ(i,ishapeind);
       ivecHCurl(iPhi,i) = iVecCurl[i];
     }
   }
   TPZFNMatrix<40,REAL> curlPhi;
-  ComputeCurl(gradScalarPhi, ivecHCurl, curlPhi);
+  ComputeCurl(gradPhiForHCurl, ivecHCurl, curlPhi);
   
   const STATE muR =  fUr(x);
   const STATE epsilonR = fEr(x);
   REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
-  /*****************ACTUAL COMPUTATION OF CONTRIBUTION*****************/
+  //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
   
-  int nHCurlFunctions  = phrq;
-  for (int iq = 0; iq < nHCurlFunctions; iq++ ) {
-    ef(iq,0) = 0.;
-    for (int jq = 0 ; jq < nHCurlFunctions; jq++) {
-      
-      
+  const int nHCurlFunctions  = phrq;
+  const int nH1Functions  = phiSca.Rows();
+  STATE stiff = 0.;
+  STATE kz = fKz;
+  for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
+//    if (iVec == nHCurlFunctions - 1){
+//      for (int iPrint = 0; iPrint < nHCurlFunctions; iPrint++) {
+//        std::cout<<"function: "<<iPrint<<std::endl
+//        <<std::setw(10)<<phiVecHCurl( iPrint , 0 )<<" "
+//        <<std::setw(10)<<phiVecHCurl( iPrint , 1 )<<" "
+//        <<std::setw(10)<<phiVecHCurl( iPrint , 2 )<<std::endl;
+//        std::cout<<"curl: "<<iVec<<std::endl
+//        <<std::setw(10)<<curlPhi( iPrint , 0 )<<" "
+//        <<std::setw(10)<<curlPhi( iPrint , 1 )<<" "
+//        <<std::setw(10)<<curlPhi( iPrint , 2 )<<std::endl;
+//      }
+//      
+//    }
+    for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
       STATE curlIdotCurlJ = 0.;
-      curlIdotCurlJ += curlPhi(iq , 0) * curlPhi(jq , 0);
-      curlIdotCurlJ += curlPhi(iq , 1) * curlPhi(jq , 1);
-      curlIdotCurlJ += curlPhi(iq , 2) * curlPhi(jq , 2);
-      
-      STATE curlIXStar = 0., curlJX = 0.;
-      //it is needed to set curlE dot x = j*k0*sin(theta)*Ez
-      curlIXStar =  -1. * imaginary * k0 * sin(fTheta) * phiVecHCurl(iq , 2);
-      curlJX = 1. * imaginary * k0 * sin(fTheta) * phiVecHCurl(jq , 2);
-      curlIdotCurlJ += curlIXStar * curlJX;
-      
+      curlIdotCurlJ += std::conj( curlPhi(iVec , 0) ) * curlPhi(jVec , 0);
+      curlIdotCurlJ += std::conj( curlPhi(iVec , 1) )* curlPhi(jVec , 1);
+      curlIdotCurlJ += std::conj( curlPhi(iVec , 2) ) * curlPhi(jVec , 2);
       STATE phiIdotPhiJ = 0.;
-      phiIdotPhiJ += phiVecHCurl(iq , 0) * phiVecHCurl(jq , 0);
-      phiIdotPhiJ += phiVecHCurl(iq , 1) * phiVecHCurl(jq , 1);
-      phiIdotPhiJ += phiVecHCurl(iq , 2) * phiVecHCurl(jq , 2);
+      phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 0) ) * phiVecHCurl(jVec , 0);
+      phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 1) ) * phiVecHCurl(jVec , 1);
+      phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 2) ) * phiVecHCurl(jVec , 2);
       
-      ek(iq,jq)+= 1./muR * curlIdotCurlJ * weight;
-      ek(iq,jq)+= -1. * k0 * k0 /(fScale * fScale) * epsilonR * phiIdotPhiJ * weight;
+      stiff = 1./muR * curlIdotCurlJ;
+      stiff -= k0 * k0 * epsilonR * phiIdotPhiJ;
+      stiff += kz * kz * 1./muR * phiIdotPhiJ;
+      
+      ek( iVec , jVec ) += stiff * datavec[0].detjac * weight ;
+      
+    }
+    for (int jSca = 0; jSca < nH1Functions; jSca++) {
+//      std::cout<<"function: "<<jSca<<std::endl
+//      <<std::setw(10)<<phiSca( jSca , 0 )<<std::endl;
+//      std::cout<<"grad: "<<std::endl
+//      <<std::setw(10)<<gradPhiSca( jSca , 0 )<<" "
+//      <<std::setw(10)<<gradPhiSca( jSca , 1 )<<" "
+//      <<std::setw(10)<<gradPhiSca( jSca , 2 )<<std::endl;
+      STATE phiVecDotGradPhiSca = 0.;
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 0) ) * gradPhiSca(jSca , 0);
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 1) ) * gradPhiSca(jSca , 1);
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiSca(jSca , 2);
+      
+      stiff = kz * kz * 1./muR * phiVecDotGradPhiSca;
+      
+      ek( iVec , nHCurlFunctions + jSca ) += stiff * datavec[0].detjac * weight ;
+    }
+  }
+  for (int iSca = 0; iSca < nH1Functions; iSca++) {
+    for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
+      STATE phiVecDotGradPhiSca = 0.;
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 0) * std::conj( gradPhiSca(iSca , 0) );
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 1) * std::conj( gradPhiSca(iSca , 1) );
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 2) * std::conj( gradPhiSca(iSca , 2) );
+      
+      stiff = kz * kz * 1./muR * phiVecDotGradPhiSca;
+
+      ek( nHCurlFunctions + iSca , jVec ) += stiff * datavec[0].detjac * weight ;
+    }
+    for (int jSca = 0; jSca < nH1Functions; jSca++) {
+      STATE gradPhiScaDotGradPhiSca = 0.;
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 0) ) * gradPhiSca(jSca , 0);
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 1) ) * gradPhiSca(jSca , 1);
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 2) ) * gradPhiSca(jSca , 2);
+    
+      stiff = kz * kz * 1./muR * gradPhiScaDotGradPhiSca;
+      stiff -= kz * kz * k0 * k0 * epsilonR * std::conj( phiSca( iSca , 0 ) ) * phiSca( jSca , 0 );
+      ek( nHCurlFunctions + iSca , nHCurlFunctions + jSca ) += stiff * datavec[0].detjac * weight ;
     }
   }
 }
