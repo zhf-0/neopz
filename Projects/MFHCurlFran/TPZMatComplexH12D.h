@@ -1,20 +1,21 @@
 /**
- * @file TPZMatMFHCurlFran.h
- * @brief Header file for class TPZMatMFHCurlFran.\n
+ * @file TPZMatComplexH12D.h
+ * @brief Header file for class TPZMatComplexH12D.\n
  */
 
-#ifndef TPZMatMFHCurlFran_H
-#define TPZMatMFHCurlFran_H
+#ifndef TPZMatComplexH12D_H
+#define TPZMatComplexH12D_H
 
-#include "TPZVecL2.h"
+
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "../HCurl2D/TPZMatHCurl2D.h"
+#include "TPZMatHCurl2D.h"
+
 /**
  * @ingroup material
  * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
  */
-class  TPZMatMFHCurlFran : public TPZVecL2
+class  TPZMatComplexH12D : public TPZMaterial
 {
     
 protected:
@@ -32,21 +33,21 @@ protected:
 	
 public:
 	
-    TPZMatMFHCurlFran(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatComplexH12D(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
-    TPZMatMFHCurlFran(int id);
+    TPZMatComplexH12D(int id);
   
     /** @brief Default constructor */
-    TPZMatMFHCurlFran();
+    TPZMatComplexH12D();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
 	/** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatMFHCurlFran(const TPZMatMFHCurlFran &mat);
+    TPZMatComplexH12D(const TPZMatComplexH12D &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatMFHCurlFran();
+    virtual ~TPZMatComplexH12D();
 	
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatMFHCurlFran"; }
+    virtual std::string Name() { return "TPZMatComplexH12D"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
@@ -56,7 +57,6 @@ public:
     
 public:
   
-  virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
    * @param data [in] stores all input data
@@ -170,21 +170,7 @@ public:
       datavec[iref].fNeedsNormal = true;
     }
   }
-  
-    /** @brief Gets the order of the integration rule necessary to integrate an element with polinomial order p */
-  virtual int IntegrationRuleOrder(int elPMaxOrder) const;
 
-  
-  /** @brief This method defines which parameters need to be initialized in order to compute the contribution of the boundary condition */
-  virtual void FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
-  {
-    // default is no specific data requirements
-    int nref = datavec.size();
-    for(int iref = 0; iref<nref; iref++){
-      datavec[iref].SetAllRequirements(false);
-      datavec[iref].fNeedsNormal = true;
-    }
-  }
   
   virtual int VariableIndex(const std::string &name);
   
@@ -198,5 +184,9 @@ public:
   virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
 };
 
+
+
+STATE urDefault( const TPZVec<REAL> &x );//default material has ur=1
+STATE erDefault( const TPZVec<REAL> &x );//default material has er=1
 #endif
 

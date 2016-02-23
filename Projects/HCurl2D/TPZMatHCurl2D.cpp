@@ -6,6 +6,9 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
+
+
+
 TPZMatHCurl2D::TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t) , fScale(scale)
 {
 	fW=2.*M_PI*M_C/fLambda;
@@ -492,16 +495,6 @@ void TPZMatHCurl2D::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solo
 	}
 }
 
-
-STATE urDefault( const TPZVec<REAL> &x )
-{
-	return 1.0;
-}
-
-STATE erDefault( const TPZVec<REAL> &x )
-{
-	return 1.0;
-}
 
 
 

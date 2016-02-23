@@ -10,6 +10,8 @@
 #include <fstream>
 #include <string>
 #include "TPZMatMFHCurlFran.h"
+#include "TPZMatHCurl2D.h"
+#include "TPZMatComplexH12D.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
 #include "TPZVTKGeoMesh.h"
@@ -281,7 +283,6 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   const int dim = 2; //dimensao do problema
   const int matId = 1; //define id para um material(formulacao fraca)
   const int bc0 = -1; //define id para um material(cond contorno dirichlet)
-  const int bc1 = -2; //define id para um material(cond contorno mista)
   enum{ dirichlet = 0, neumann, mixed}; //tipo da condicao de contorno do problema
   // Criando material
 
@@ -292,76 +293,82 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   cmeshH1->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
   cmeshH1->SetDimModel(dim);//seta dimensao do modelo
   // Inserindo material na malha
-  cmeshH1->InsertMaterialObject(material);
+  REAL kZ = 1.;
+  TPZMatComplexH12D *matH1 = new TPZMatComplexH12D( matId, lambda, kZ , ur, er , e0, theta , scale);
+  cmeshH1->InsertMaterialObject(matH1);
 		
   ///electrical conductor boundary conditions
   TPZFNMatrix<1,STATE> val1(1,1,0.), val2(1,1,0.);
   
-  TPZMaterial * BCondH1Dir = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+  TPZMaterial * BCondH1Dir = matH1->CreateBC(matH1, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
   
   cmeshH1->InsertMaterialObject(BCondH1Dir);//insere material na malha
- 
+  //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
+  cmeshH1->AutoBuild();
   ///criar malha computacional HCurl
   
   TPZCompMesh * cmeshHCurl = new TPZCompMesh(gmesh);
   cmeshHCurl->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
   cmeshHCurl->SetDimModel(dim);//seta dimensao do modelo
   // Inserindo material na malha
-  cmeshHCurl->InsertMaterialObject(material);
+  TPZMatHCurl2D *matHCurl = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);
+  cmeshHCurl->InsertMaterialObject(matHCurl);
   
   val1( 0, 0 ) = 0.;
   val2( 0, 0 ) = 0.;
-  TPZMaterial * BCondHCurlDir = material->CreateBC(material, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+  TPZMaterial * BCondHCurlDir = matH1->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
   
   cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
   
   cmeshHCurl->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
   
-  //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
-  cmeshH1->AutoBuild();
+  
+  TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
+
+  for (int i = 0; i < cmeshHCurl->NElements(); i++) {
+    TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
+    if ( el == NULL) {
+      continue;
+    }
+    el->SetSideOrient(4,  1);
+    el->SetSideOrient(5,  1);
+    el->SetSideOrient(6, -1);
+    el->SetSideOrient(7, -1);
+  }
+
+  for (int i = 0; i < cmeshHCurl->NElements(); i++) {
+    TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
+    if ( el == NULL) {
+      continue;
+    }
+    el->SetSideOrient(3,  1);
+    el->SetSideOrient(4, -1);
+    el->SetSideOrient(5,  1);
+  }
+
+
+  if (pOrder == 1) {
+    //cmesh->CleanUpUnconnectedNodes();
+    TPZCreateApproximationSpace::MakeRaviartThomas(*cmeshHCurl);
+    cmeshHCurl->CleanUpUnconnectedNodes();
+  }
+  else{//for now only lowest order elements are avaliable
+    DebugStop();
+  }
   cmeshHCurl->AutoBuild();
+
   
-  //TPZMatMFHCurlFran *material = new TPZMatMFHCurlFran(matId , lambda , kz , ur , er , e0 , theta, scale);//criando material que implementa a
+  TPZVec<TPZCompMesh *> meshVec(2);
+  meshVec[ 0 ] = cmeshH1;
+  meshVec[ 1 ] = cmeshHCurl;
+  TPZCompMesh *meshOut = new TPZCompMesh();
+  TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, meshOut);
+  
+  TPZMatMFHCurlFran *matMultiPhysics = new TPZMatMFHCurlFran(matId , lambda , kz , ur , er , e0 , theta, scale)  ;//criando material que implementa a
   //formulacao fraca do problema de validacao
-  
-//  TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
-//  
-//  for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-//    TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
-//    if ( el == NULL) {
-//      continue;
-//    }
-//    el->SetSideOrient(4,  1);
-//    el->SetSideOrient(5,  1);
-//    el->SetSideOrient(6, -1);
-//    el->SetSideOrient(7, -1);
-//  }
-//  
-//  for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-//    TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
-//    if ( el == NULL) {
-//      continue;
-//    }
-//    el->SetSideOrient(3,  1);
-//    el->SetSideOrient(4, -1);
-//    el->SetSideOrient(5,  1);
-//  }
-//  
-//  
-//  if (pOrder == 1) {
-//    //cmesh->CleanUpUnconnectedNodes();
-//    TPZCreateApproximationSpace::MakeRaviartThomas(*cmeshHCurl);
-//    cmeshHCurl->CleanUpUnconnectedNodes();
-//  }
-//  else{//for now only lowest order elements are avaliable
-//    DebugStop();
-//  }
-//  TPZVec<TPZCompMesh *> meshVec(2);
-//  meshVec[ 0 ] = cmeshH1;
-//  meshVec[ 1 ] = cmeshHCurl;
-//  TPZCompMesh *meshOut = new TPZCompMesh();
-//  TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, meshOut);
-//  return meshOut;
+  meshOut->InsertMaterialObject(matMultiPhysics);
+  return meshOut;
+
 }
 
 

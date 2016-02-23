@@ -17,6 +17,16 @@ const REAL M_EZERO  (8.854*1e-12);//permissividade do meio livre
 #ifdef STATE_COMPLEX
 const STATE imaginary(0.,1.);//unidade imaginaria
 #endif
+
+inline STATE urDefault( const TPZVec<REAL> &x )
+{
+  return 1.0;
+}
+
+inline STATE erDefault( const TPZVec<REAL> &x )
+{
+  return 4.6;
+}
 /**
  * @ingroup material
  * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
@@ -216,9 +226,5 @@ public:
   void SetTheta(REAL t) {fTheta=t;}
 };
 
-
-
-STATE urDefault( const TPZVec<REAL> &x );//default material has ur=1
-STATE erDefault( const TPZVec<REAL> &x );//default material has er=1
 #endif
 

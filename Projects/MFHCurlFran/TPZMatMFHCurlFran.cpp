@@ -1,10 +1,14 @@
 #include "TPZMatMFHCurlFran.h"
+
 #include "pzbndcond.h"
 #include "pzlog.h"
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
+
+
+
 
 TPZMatMFHCurlFran::TPZMatMFHCurlFran(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fKz (kz) , fE0 (e0) , fTheta(t) , fScale(scale)
 {
@@ -337,15 +341,6 @@ void TPZMatMFHCurlFran::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &
 }
 
 
-STATE urDefault( const TPZVec<REAL> &x )
-{
-	return 1.0;
-}
-
-STATE erDefault( const TPZVec<REAL> &x )
-{
-	return 4.6;
-}
 
 
 

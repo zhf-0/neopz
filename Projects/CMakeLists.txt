@@ -168,8 +168,6 @@ ENABLE_TESTING()
 			add_subdirectory(HydraulicFracturePropagation)
 			add_subdirectory(StabilizedHybridElasticity)
 			add_subdirectory(GlobalPostPro)
-			# validacaoFranHCurl
-			add_subdirectory(ValidacaoHCurlFran1)
 
 			#Projetos de Thiago Dias dos Santos
 			#add_subdirectory(SantosProjects)
