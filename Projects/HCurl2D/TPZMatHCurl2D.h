@@ -1,15 +1,15 @@
 /**
- * @file TPZMatValidacaoHCurlFran1.h
- * @brief Header file for class TPZMatValidacaoHCurlFran1.\n
- * It implements the weak statement of the model problem from Oden's book, Chapter 1 within the PZ environment.
+ * @file TPZMatHCurl2D.h
+ * @brief Header file for class TPZMatHCurl2D.\n
  */
 
-#ifndef TPZMatValidacaoHCurlFran1_H
-#define TPZMatValidacaoHCurlFran1_H
+#ifndef TPZMatHCurl2D_H
+#define TPZMatHCurl2D_H
 
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
+
 
 const REAL M_C  (3*1e8); //velocidade da luz no vacuo
 const REAL M_UZERO  (4*M_PI*1e-7);//permeabilidade do meio livre
@@ -21,34 +21,38 @@ const STATE imaginary(0.,1.);//unidade imaginaria
  * @ingroup material
  * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
  */
-class  TPZMatValidacaoHCurlFran1 : public TPZVecL2
+class  TPZMatHCurl2D : public TPZVecL2
 {
     
 protected:
   
   //COM CERTEZA
-  STATE (& fUr)(const TPZVec<REAL>&);
-  STATE (& fEr)(const TPZVec<REAL>&);
-  REAL fFreq;//frequencia da onda
-  STATE fW;
+  STATE (*fUr)( const TPZVec<REAL>&);
+  STATE (*fEr)( const TPZVec<REAL>&);
+  REAL fLambda;
+	REAL fE0;
+  REAL fW;
+  REAL fTheta;
+	REAL fScale;
    
 	
 public:
-    TPZMatValidacaoHCurlFran1(int id, REAL freq, STATE (& ur)(const TPZVec<REAL>&),STATE (& er)(const TPZVec<REAL>&));
+	
+    TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
-    TPZMatValidacaoHCurlFran1(int id);
+    TPZMatHCurl2D(int id);
   
     /** @brief Default constructor */
-    TPZMatValidacaoHCurlFran1();
+    TPZMatHCurl2D();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
 	/** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatValidacaoHCurlFran1(const TPZMatValidacaoHCurlFran1 &mat);
+    TPZMatHCurl2D(const TPZMatHCurl2D &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatValidacaoHCurlFran1();
+    virtual ~TPZMatHCurl2D();
 	
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatValidacaoHCurlFran1"; }
+    virtual std::string Name() { return "TPZMatHCurl2D"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
@@ -58,7 +62,17 @@ public:
     
 public:
     
+  /**
+   * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
+   * @param data [in] stores all input data
+   * @param weight [in] is the weight of the integration rule
+   * @param ek [out] is the stiffness matrix
+   * @param ef [out] is the load vector
+   * @since April 16, 2007
+   */
+  virtual void ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   
+  virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
    * @param data [in] stores all input data
@@ -68,8 +82,8 @@ public:
    * @since April 16, 2007
    */
   virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
-  
-  
+  void ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi );
+  void RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl );
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
    * @param datavec [in] stores all input data
@@ -88,6 +102,17 @@ public:
    */
   virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef);
   
+  
+  /**
+   * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
+   * @param data [in] stores all input data
+   * @param weight [in] is the weight of the integration rule
+   * @param ek [out] is the stiffness matrix
+   * @param ef [out] is the load vector
+   * @param bc [in] is the boundary condition material
+   * @since October 07, 2011
+   */
+  virtual void ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
    * @param data [in] stores all input data
@@ -162,7 +187,9 @@ public:
     }
   }
   
-  
+    /** @brief Gets the order of the integration rule necessary to integrate an element with polinomial order p */
+    virtual int IntegrationRuleOrder(int elPMaxOrder) const;
+
   
   /** @brief This method defines which parameters need to be initialized in order to compute the contribution of the boundary condition */
   virtual void FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
@@ -186,11 +213,12 @@ public:
   /** @brief Returns the solution associated with the var index based on the finite element approximation */
   virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
   
+  void SetTheta(REAL t) {fTheta=t;}
 };
 
 
 
-STATE urDefault(const TPZVec<REAL>&x );//default material has ur=1
-STATE erDefault(const TPZVec<REAL>&x );//default material has er=1
+STATE urDefault( const TPZVec<REAL> &x );//default material has ur=1
+STATE erDefault( const TPZVec<REAL> &x );//default material has er=1
 #endif
 

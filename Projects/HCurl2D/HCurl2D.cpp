@@ -16,7 +16,7 @@
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
 #include "pzbndcond.h"
-#include "TPZMatValidacaoHCurlFran2.h"
+#include "TPZMatHCurl2D.h"
 #include "pzlog.h"
 #include "TPZTimer.h"
 
@@ -37,8 +37,6 @@
 #include "pzgeopoint.h"
 #include "tpzgeoelrefpattern.h"
 
-
-//------Second Validation of a HCurl Formulation-----------------
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
@@ -138,7 +136,7 @@ int main(int argc, char *argv[])
   TPZStack<std::string> scalnames, vecnames;
   vecnames.Push("absE");//setando para imprimir campoeletrico
 	//vecnames.Push("solAnal");//setando para imprimir campoeletrico
-  std::string plotfile= "../ValidacaoHCurlFran2EField.vtk";//arquivo de saida que estara na pasta debug
+  std::string plotfile= "../HCurl2DEField.vtk";//arquivo de saida que estara na pasta debug
   an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
   int postProcessResolution = 2 ;//define resolucao do pos processamento
   //fim das configuracoes do objeto de analise
@@ -305,7 +303,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
 	}
 	
 	gmesh->BuildConnectivity();
-	
+#ifdef DEBUG
 	std::ofstream outTxt , outVtk;
 	switch (meshType) {
 		case createRectangular:
@@ -336,6 +334,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
 	outTxt.close();
 	TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVtk, true); //imprime a malha no formato vtk
 	outVtk.close();
+#endif
 	delete gengrid;
 }
 
@@ -348,7 +347,7 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   const int bc1 = -2; //define id para um material(cond contorno mista)
   enum{ dirichlet = 0, neumann, mixed}; //tipo da condicao de contorno do problema
   // Criando material
-  TPZMatValidacaoHCurlFran2 *material = new TPZMatValidacaoHCurlFran2(matId , lambda , ur , er , e0 , theta, scale);//criando material que implementa a
+  TPZMatHCurl2D *material = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);//criando material que implementa a
   //formulacao fraca do problema de validacao
   
   ///set forcing function for L2 projection of desired solution

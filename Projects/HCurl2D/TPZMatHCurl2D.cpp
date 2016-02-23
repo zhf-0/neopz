@@ -1,4 +1,4 @@
-#include "TPZMatValidacaoHCurlFran2.h"
+#include "TPZMatHCurl2D.h"
 #include "pzbndcond.h"
 #include "pzlog.h"
 
@@ -6,12 +6,12 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
-TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t) , fScale(scale)
+TPZMatHCurl2D::TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t) , fScale(scale)
 {
 	fW=2.*M_PI*M_C/fLambda;
 }
 
-TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2(int id) : TPZVecL2(id), fUr(urDefault),
+TPZMatHCurl2D::TPZMatHCurl2D(int id) : TPZVecL2(id), fUr(urDefault),
 fEr(erDefault), fLambda(1.55e-9)
 {
 	fW=2.*M_PI*M_C/fLambda;
@@ -19,7 +19,7 @@ fEr(erDefault), fLambda(1.55e-9)
 }
 
 /** @brief Default constructor */
-TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2() : TPZVecL2(), fUr(urDefault),
+TPZMatHCurl2D::TPZMatHCurl2D() : TPZVecL2(), fUr(urDefault),
 fEr(erDefault), fLambda(1.55e-9)
 {
 	fW=2.*M_PI*M_C/fLambda;
@@ -27,7 +27,7 @@ fEr(erDefault), fLambda(1.55e-9)
 }
 
 
-TPZMatValidacaoHCurlFran2::TPZMatValidacaoHCurlFran2(const TPZMatValidacaoHCurlFran2 &mat) : TPZVecL2(mat), fUr(mat.fUr),
+TPZMatHCurl2D::TPZMatHCurl2D(const TPZMatHCurl2D &mat) : TPZVecL2(mat), fUr(mat.fUr),
 fEr(mat.fEr)
 {
 	fLambda = mat.fLambda;
@@ -37,12 +37,12 @@ fEr(mat.fEr)
 	fW=2.*M_PI*M_C/fLambda;
 }
 
-TPZMatValidacaoHCurlFran2::~TPZMatValidacaoHCurlFran2()
+TPZMatHCurl2D::~TPZMatHCurl2D()
 {
 	
 }
 
-void TPZMatValidacaoHCurlFran2::ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi ){
+void TPZMatHCurl2D::ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi ){
   int nFunctions = gradScalarPhi.Rows();
   curlPhi.Resize( nFunctions , 3);
   curlPhi.Zero();
@@ -55,7 +55,7 @@ void TPZMatValidacaoHCurlFran2::ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZ
   }
 }
 
-void TPZMatValidacaoHCurlFran2::RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl ){
+void TPZMatHCurl2D::RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl ){
   int nFunctions = vHdiv.Rows();
   vHcurl.Resize( vHdiv.Rows(), vHdiv.Cols());
   vHcurl.Zero();
@@ -67,7 +67,7 @@ void TPZMatValidacaoHCurlFran2::RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<
     vHcurl(i,2) = normal[0]*vHdiv(i,1) - vHdiv(i,0)*normal[1];
   }
 }
-void TPZMatValidacaoHCurlFran2::ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
   TPZFNMatrix<12,REAL> phiQ = data.phi;
   TPZManVector<REAL,3> x = data.x;
@@ -118,7 +118,7 @@ void TPZMatValidacaoHCurlFran2::ContributeForcingRT(TPZMaterialData &data, REAL 
   
 }
 
-void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
   TPZFNMatrix<12,REAL> phiQ = data.phi;
   TPZManVector<REAL,3> x = data.x;
@@ -217,7 +217,7 @@ void TPZMatValidacaoHCurlFran2::ContributeValidateFunctions(TPZMaterialData &dat
 
 
 
-void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 //  ContributeForcingRT(data, weight, ek, ef);
 //  return
@@ -328,21 +328,21 @@ void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, T
 	}
 }
 
-void TPZMatValidacaoHCurlFran2::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 	DebugStop();
 }
 
-void TPZMatValidacaoHCurlFran2::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
 {
 	DebugStop();
 }
 
-void TPZMatValidacaoHCurlFran2::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+void TPZMatHCurl2D::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
   return;
 }
 
-void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatHCurl2D::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
 	// Setting the phis
 	TPZFMatrix<REAL> &phiQ = data.phi;
@@ -387,28 +387,28 @@ void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight,
 	}
 }
 
-void TPZMatValidacaoHCurlFran2::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatHCurl2D::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
 	DebugStop();
 }
 
-void TPZMatValidacaoHCurlFran2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
+void TPZMatHCurl2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
 {
 	DebugStop();
 }
 
-void TPZMatValidacaoHCurlFran2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatHCurl2D::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
 	DebugStop();
 }
 
-int TPZMatValidacaoHCurlFran2::IntegrationRuleOrder(int elPMaxOrder) const
+int TPZMatHCurl2D::IntegrationRuleOrder(int elPMaxOrder) const
 {
 	return 2+elPMaxOrder*2;
 }
 
 
-int TPZMatValidacaoHCurlFran2::VariableIndex(const std::string &name)
+int TPZMatHCurl2D::VariableIndex(const std::string &name)
 {
 	if(name == "absE") {
 		return 2;
@@ -428,7 +428,7 @@ int TPZMatValidacaoHCurlFran2::VariableIndex(const std::string &name)
  * @brief Returns the number of variables associated with the variable indexed by var.
  * @param var Index variable into the solution, is obtained by calling VariableIndex
  */
-int TPZMatValidacaoHCurlFran2::NSolutionVariables(int var)
+int TPZMatHCurl2D::NSolutionVariables(int var)
 {
 	int nVar = 0;
 	switch (var) {
@@ -449,7 +449,7 @@ int TPZMatValidacaoHCurlFran2::NSolutionVariables(int var)
 }
 
 /** @brief Returns the solution associated with the var index based on the finite element approximation */
-void TPZMatValidacaoHCurlFran2::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
+void TPZMatHCurl2D::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
 {
 	
 	TPZManVector<STATE,3> ax1(3),ax2(3), normal(3);

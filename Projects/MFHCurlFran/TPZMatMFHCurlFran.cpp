@@ -16,6 +16,9 @@ fEr(erDefault), fLambda(1.55e-9)
 {
 	fW=2.*M_PI*M_C/fLambda;
 	fTheta = 0.;
+  fKz = -999;
+  fE0 = 1;
+  fScale = 1;
 }
 
 /** @brief Default constructor */
@@ -24,6 +27,9 @@ fEr(erDefault), fLambda(1.55e-9)
 {
 	fW=2.*M_PI*M_C/fLambda;
 	fTheta = 0.;
+  fKz = -999;
+  fE0 = 1;
+  fScale = 1;
 }
 
 
@@ -34,7 +40,8 @@ fEr(mat.fEr)
 	fTheta = mat.fTheta;
 	fE0 = mat.fE0;
 	fScale = mat.fScale;
-	fW=2.*M_PI*M_C/fLambda;
+  fKz = mat.fKz;
+  fW=2.*M_PI*M_C/fLambda;
 }
 
 TPZMatMFHCurlFran::~TPZMatMFHCurlFran()
@@ -61,7 +68,6 @@ void TPZMatMFHCurlFran::ContributeValidateFunctions(TPZMaterialData &data, REAL 
 }
 
 
-
 void TPZMatMFHCurlFran::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
   DebugStop();
@@ -69,31 +75,33 @@ void TPZMatMFHCurlFran::Contribute(TPZMaterialData &data, REAL weight, TPZFMatri
 
 void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-  TPZFNMatrix<12,REAL> phiSca = datavec[0].phi;
-  TPZFNMatrix<36,REAL> dphiScadaxes = datavec[0].dphix;
-  TPZFNMatrix<3,REAL> dphiScaQ;
-  TPZAxesTools<REAL>::Axes2XYZ(dphiScadaxes, dphiScaQ, datavec[1].axes);
-  TPZFNMatrix<3,REAL> gradPhiSca(phiSca.Rows() , 3 , 0.);
-  for ( int iFunc = 0 ; iFunc < phiSca.Rows(); iFunc++ ) {
-    gradPhiSca ( iFunc , 0 ) = dphiScaQ ( 0 , iFunc );
-    gradPhiSca ( iFunc , 1 ) = dphiScaQ ( 1 , iFunc );
+  /*********************CREATE H1 FUNCTIONS****************************/
+  TPZFNMatrix<12,REAL> phiH1 = datavec[0].phi;
+  TPZFNMatrix<36,REAL> dphiH1daxes = datavec[0].dphix;
+  TPZFNMatrix<3,REAL> dphiH1;
+  TPZAxesTools<REAL>::Axes2XYZ(dphiH1daxes, dphiH1, datavec[1].axes);
+  TPZFNMatrix<3,REAL> gradPhiH1(phiH1.Rows() , 3 , 0.);
+  for ( int iFunc = 0 ; iFunc < phiH1.Rows(); iFunc++ ) {
+    gradPhiH1 ( iFunc , 0 ) = dphiH1 ( 0 , iFunc );
+    gradPhiH1 ( iFunc , 1 ) = dphiH1 ( 1 , iFunc );
   }
-  TPZFNMatrix<12,REAL> phiQ = datavec[1].phi;
-  TPZManVector<REAL,3> x = datavec[0].x;
 
-  int phrq = datavec[1].fVecShapeIndex.NElements();
-  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
   
   /*********************CREATE HCURL FUNCTIONS****************************/
+  TPZFNMatrix<12,REAL> phiScaHCurl = datavec[1].phi;
+  TPZManVector<REAL,3> x = datavec[0].x;
+  
+  int phrq = datavec[1].fVecShapeIndex.NElements();
+  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
   
   TPZFNMatrix< 36 , REAL > phiVecHCurl(phrq , 3 , 0.);
   for (int iq = 0 ; iq < phrq ; iq++) {
     int ivecind = datavec[1].fVecShapeIndex[iq].first;
     int ishapeind = datavec[1].fVecShapeIndex[iq].second;
     
-    phiVecHCurl(iq , 0) = phiQ(ishapeind , 0) * datavec[1].fNormalVec(0 , ivecind);
-    phiVecHCurl(iq , 1) = phiQ(ishapeind , 0) * datavec[1].fNormalVec(1 , ivecind);
-    phiVecHCurl(iq , 2) = phiQ(ishapeind , 0) * datavec[1].fNormalVec(2 , ivecind);
+    phiVecHCurl(iq , 0) = phiScaHCurl(ishapeind , 0) * datavec[1].fNormalVec(0 , ivecind);
+    phiVecHCurl(iq , 1) = phiScaHCurl(ishapeind , 0) * datavec[1].fNormalVec(1 , ivecind);
+    phiVecHCurl(iq , 2) = phiScaHCurl(ishapeind , 0) * datavec[1].fNormalVec(2 , ivecind);
 //    std::cout<<"shape n: "<<ishapeind<<std::endl;
 //    std::cout<<"vector"<<std::endl
 //    <<std::setw(10)<<datavec[1].fNormalVec(0 , ivecind)<<" "
@@ -134,7 +142,7 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
   //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
   
   const int nHCurlFunctions  = phrq;
-  const int nH1Functions  = phiSca.Rows();
+  const int nH1Functions  = phiH1.Rows();
   STATE stiff = 0.;
   STATE kz = fKz;
   for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
@@ -176,9 +184,9 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //      <<std::setw(10)<<gradPhiSca( jSca , 1 )<<" "
 //      <<std::setw(10)<<gradPhiSca( jSca , 2 )<<std::endl;
       STATE phiVecDotGradPhiSca = 0.;
-      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 0) ) * gradPhiSca(jSca , 0);
-      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 1) ) * gradPhiSca(jSca , 1);
-      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiSca(jSca , 2);
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 0) ) * gradPhiH1(jSca , 0);
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 1) ) * gradPhiH1(jSca , 1);
+      phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiH1(jSca , 2);
       
       stiff = kz * kz * 1./muR * phiVecDotGradPhiSca;
       
@@ -188,9 +196,9 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
   for (int iSca = 0; iSca < nH1Functions; iSca++) {
     for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
       STATE phiVecDotGradPhiSca = 0.;
-      phiVecDotGradPhiSca += phiVecHCurl(jVec , 0) * std::conj( gradPhiSca(iSca , 0) );
-      phiVecDotGradPhiSca += phiVecHCurl(jVec , 1) * std::conj( gradPhiSca(iSca , 1) );
-      phiVecDotGradPhiSca += phiVecHCurl(jVec , 2) * std::conj( gradPhiSca(iSca , 2) );
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 0) * std::conj( gradPhiH1(iSca , 0) );
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 1) * std::conj( gradPhiH1(iSca , 1) );
+      phiVecDotGradPhiSca += phiVecHCurl(jVec , 2) * std::conj( gradPhiH1(iSca , 2) );
       
       stiff = kz * kz * 1./muR * phiVecDotGradPhiSca;
 
@@ -198,12 +206,12 @@ void TPZMatMFHCurlFran::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     }
     for (int jSca = 0; jSca < nH1Functions; jSca++) {
       STATE gradPhiScaDotGradPhiSca = 0.;
-      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 0) ) * gradPhiSca(jSca , 0);
-      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 1) ) * gradPhiSca(jSca , 1);
-      gradPhiScaDotGradPhiSca += std::conj( gradPhiSca(iSca , 2) ) * gradPhiSca(jSca , 2);
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiH1(iSca , 0) ) * gradPhiH1(jSca , 0);
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiH1(iSca , 1) ) * gradPhiH1(jSca , 1);
+      gradPhiScaDotGradPhiSca += std::conj( gradPhiH1(iSca , 2) ) * gradPhiH1(jSca , 2);
     
       stiff = kz * kz * 1./muR * gradPhiScaDotGradPhiSca;
-      stiff -= kz * kz * k0 * k0 * epsilonR * std::conj( phiSca( iSca , 0 ) ) * phiSca( jSca , 0 );
+      stiff -= kz * kz * k0 * k0 * epsilonR * std::conj( phiH1( iSca , 0 ) ) * phiH1( jSca , 0 );
       ek( nHCurlFunctions + iSca , nHCurlFunctions + jSca ) += stiff * datavec[0].detjac * weight ;
     }
   }
@@ -220,47 +228,7 @@ void TPZMatMFHCurlFran::ContributeForcingRTBC(TPZMaterialData &data, REAL weight
 
 void TPZMatMFHCurlFran::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
-	// Setting the phis
-	TPZFMatrix<REAL> &phiQ = data.phi;
-	
-	int nshape=phiQ.Rows();
-	REAL BIG = TPZMaterial::gBigNumber;
-
-	const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
-	const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
-	
-	switch ( bc.Type() )
-	{
-		case 0:
-			for(int i = 0 ; i<nshape ; i++)
-			{
-				const STATE rhs = phiQ(i,0) * BIG  * v2;
-				ef(i,0) += rhs*weight;
-				for(int j=0;j<nshape;j++)
-				{
-          const STATE stiff = phiQ(i,0) * phiQ(j,0) * BIG ;
-					ek(i,j) += stiff*weight;
-				}
-			}
-			break;
-		case 1:
-			DebugStop();
-			break;
-		case 2:
-			for(int i = 0 ; i<nshape ; i++)
-			{
-				STATE rhs = phiQ(i,0);
-				rhs *= v2/fScale;
-				ef(i,0) += rhs*weight;
-				for(int j=0;j<nshape;j++)
-				{
-					STATE stiff = phiQ(i,0) *  phiQ(j,0);
-					stiff *= v1/fScale;
-					ek(i,j) += stiff*weight;
-				}
-			}
-			break;
-	}
+  DebugStop();
 }
 
 void TPZMatMFHCurlFran::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
@@ -376,7 +344,7 @@ STATE urDefault( const TPZVec<REAL> &x )
 
 STATE erDefault( const TPZVec<REAL> &x )
 {
-	return 1.0;
+	return 4.6;
 }
 
 
