@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   
   int pOrder = 1; //ordem polinomial de aproximacao
   int dim = 2;
-  int xDiv = 2;
+  int xDiv = 1;
   int zDiv = 1;
   
   const int meshType = createRectangular;
@@ -230,13 +230,12 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
   gmesh = new TPZGeoMesh();
   const int matId = 1; //define id para um material(formulacao fraca)
   const int bc0 = -1; //define id para um material(cond contorno dirichlet)
-  const int bc1 = -2; //define id para um material(cond contorno mista)
   gengrid->Read(gmesh , matId);
   
   
   gengrid->SetBC(gmesh, ulCoord, llCoord, bc0);
   gengrid->SetBC(gmesh, urCoord, ulCoord, bc0);
-  gengrid->SetBC(gmesh, lrCoord, urCoord, bc1);
+  gengrid->SetBC(gmesh, lrCoord, urCoord, bc0);
   gengrid->SetBC(gmesh, llCoord, lrCoord, bc0);
   
   //gmesh->ResetConnectivities();
@@ -321,7 +320,7 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
   
   cmeshHCurl->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
-  
+  cmeshHCurl->AutoBuild();
   
   TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
 
@@ -355,19 +354,36 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
   else{//for now only lowest order elements are avaliable
     DebugStop();
   }
-  cmeshHCurl->AutoBuild();
 
   
   TPZVec<TPZCompMesh *> meshVec(2);
   meshVec[ 0 ] = cmeshH1;
   meshVec[ 1 ] = cmeshHCurl;
-  TPZCompMesh *meshOut = new TPZCompMesh();
-  TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, meshOut);
+  gmesh->ResetReference();
+
+  TPZCompMesh *cmeshMF = new TPZCompMesh( gmesh );
+  cmeshMF->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
+  cmeshMF->SetDimModel(dim);
+  cmeshMF->SetAllCreateFunctionsMultiphysicElem();
   
   TPZMatMFHCurlFran *matMultiPhysics = new TPZMatMFHCurlFran(matId , lambda , kz , ur , er , e0 , theta, scale)  ;//criando material que implementa a
   //formulacao fraca do problema de validacao
-  meshOut->InsertMaterialObject(matMultiPhysics);
-  return meshOut;
+  
+  val1( 0, 0 ) = 0.;
+  val2( 0, 0 ) = 0.;
+  TPZMaterial * BCondMFDir = matMultiPhysics->CreateBC(matMultiPhysics, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+  
+  
+  cmeshMF->InsertMaterialObject(matMultiPhysics);
+  cmeshMF->InsertMaterialObject(BCondMFDir);//insere material na malha
+  
+  //cmeshMF->AutoBuild();
+  //Creating multiphysic elements containing skeletal elements.
+  TPZBuildMultiphysicsMesh::AddElements(meshVec, cmeshMF);
+  TPZBuildMultiphysicsMesh::AddConnects(meshVec, cmeshMF);
+  TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, cmeshMF);
+
+  return cmeshMF;
 
 }
 
