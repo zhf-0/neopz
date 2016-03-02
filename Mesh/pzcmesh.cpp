@@ -361,9 +361,7 @@ void TPZCompMesh::InitializeBlock() {
 }
 
 void TPZCompMesh::ExpandSolution() {
-  if(!fBlock.Resequence()){
-    DebugStop();
-  }
+  fBlock.Resequence();
 	long ibl,nblocks = fBlock.NBlocks();
 	
 	//TPZFMatrix<REAL> OldSolution(fSolution);
