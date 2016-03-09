@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
   int xDiv = 1;
   int zDiv = 1;
   
-  const int meshType = createRectangular;
+  const int meshType = createTriangular;
   timer.start();
   
   TPZGeoMesh *gmesh = new TPZGeoMesh();
