@@ -9,7 +9,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 
-TPZMatHCurl2D::TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t)
+TPZMatHCurl2D::TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale) : TPZVecL2(id), fUr(ur), fEr(er), fLambda(lambda), fE0 (e0) , fTheta(t) , fScale(scale)
 {
 	fW=2.*M_PI*M_C/fLambda;
 }
@@ -36,6 +36,7 @@ fEr(mat.fEr)
 	fLambda = mat.fLambda;
 	fTheta = mat.fTheta;
 	fE0 = mat.fE0;
+	fScale = mat.fScale;
 	fW=2.*M_PI*M_C/fLambda;
 }
 
@@ -68,6 +69,56 @@ void TPZMatHCurl2D::RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv 
     vHcurl(i,1) = normal[2]*vHdiv(i,0) - vHdiv(i,2)*normal[0];
     vHcurl(i,2) = normal[0]*vHdiv(i,1) - vHdiv(i,0)*normal[1];
   }
+}
+void TPZMatHCurl2D::ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+{
+  TPZFNMatrix<12,REAL> phiQ = data.phi;
+  TPZManVector<REAL,3> x = data.x;
+  
+  int phrq = data.fVecShapeIndex.NElements();
+  
+  
+  /*********************CREATE HDIV FUNCTIONS****************************/
+  TPZFNMatrix< 36 , REAL > phiVecHDiv(12 , 3 , 0.);
+  for (int iq = 0 ; iq < phrq ; iq++) {
+    int ivecind = data.fVecShapeIndex[iq].first;
+    int ishapeind = data.fVecShapeIndex[iq].second;
+    
+    phiVecHDiv(iq , 0) = phiQ(ishapeind , 0) * data.fNormalVec(0 , ivecind);
+    phiVecHDiv(iq , 1) = phiQ(ishapeind , 0) * data.fNormalVec(1 , ivecind);
+    phiVecHDiv(iq , 2) = phiQ(ishapeind , 0) * data.fNormalVec(2 , ivecind);
+  }
+  /*********************CREATE RT FUNCTIONS****************************/
+  TPZFNMatrix< 12 , REAL > phiVecHDivRT(4 , 3 , 0.);
+  for (int iq = 0;  iq < 4; iq++) {
+    phiVecHDivRT(iq, 0) = phiVecHDiv(2*iq,0) + phiVecHDiv(2*iq + 1,0);
+    phiVecHDivRT(iq, 1) = phiVecHDiv(2*iq,1) + phiVecHDiv(2*iq + 1,1);
+    phiVecHDivRT(iq, 2) = phiVecHDiv(2*iq,2) + phiVecHDiv(2*iq + 1,2);
+  }
+  
+  /*********************ROTATE FOR HCURL****************************/
+  TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
+  for (int i=0; i<3; i++) {
+    ax1[i] = data.axes(0,i);//ELEMENTO DEFORMADO
+    ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
+  }
+  Cross(ax1, ax2, elNormal);
+  
+  TPZFNMatrix< 12 , REAL > phiVecHCurlNed(4 , 3 , 0.);
+  RotateForHCurl(elNormal , phiVecHDivRT , phiVecHCurlNed);
+
+  int nHCurlFunctions  = phiVecHCurlNed.Rows();
+  for (int iq = 0; iq < nHCurlFunctions; iq++ ) {
+    for (int jq = 0 ; jq < nHCurlFunctions; jq++) {
+      
+      STATE phiIdotPhiJ = 0.;
+      phiIdotPhiJ += phiVecHCurlNed(iq , 0) * phiVecHCurlNed(jq , 0);
+      phiIdotPhiJ += phiVecHCurlNed(iq , 1) * phiVecHCurlNed(jq , 1);
+      phiIdotPhiJ += phiVecHCurlNed(iq , 2) * phiVecHCurlNed(jq , 2);
+      ek(iq,jq)+= phiIdotPhiJ * weight;
+    }
+  }
+  
 }
 
 void TPZMatHCurl2D::ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
@@ -171,80 +222,82 @@ void TPZMatHCurl2D::ContributeValidateFunctions(TPZMaterialData &data, REAL weig
 
 void TPZMatHCurl2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
+//  ContributeForcingRT(data, weight, ek, ef);
+//  return
+
   ContributeValidateFunctions(data, weight, ek, ef);
   return;
+	TPZFNMatrix<12,REAL> phiQ = data.phi;
+	TPZManVector<REAL,3> x = data.x;
+	//  for (int i=0; i<3; i++) {
+	//    x[i] /= fScale;
+	//  }
+	int phrq = data.fVecShapeIndex.NElements();
+	phiQ.Print("scalar functions");
 	
-  TPZFNMatrix<12,REAL> phiQ = data.phi;
-  TPZManVector<REAL,3> x = data.x;
-  //  for (int i=0; i<3; i++) {
-  //    x[i] /= fScale;
-  //  }
-  int phrq = data.fVecShapeIndex.NElements();
-  phiQ.Print("scalar functions");
-  
-  
-  /*********************CREATE HDIV FUNCTIONS****************************/
-  
-  TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.);
-  for (int iq = 0 ; iq < phrq ; iq++) {
-    int ivecind = data.fVecShapeIndex[iq].first;
-    int ishapeind = data.fVecShapeIndex[iq].second;
-    
-    phiVecHDiv(iq , 0) = phiQ(ishapeind , 0) * data.fNormalVec(0 , ivecind);
-    phiVecHDiv(iq , 1) = phiQ(ishapeind , 0) * data.fNormalVec(1 , ivecind);
-    phiVecHDiv(iq , 2) = phiQ(ishapeind , 0) * data.fNormalVec(2 , ivecind);
-    std::cout<<"shape n: "<<ishapeind<<std::endl;
-    std::cout<<"vector"<<std::endl
-    <<std::setw(10)<<data.fNormalVec(0 , ivecind)<<" "
-    <<std::setw(10)<<data.fNormalVec(1 , ivecind)<<" "
-    <<std::setw(10)<<data.fNormalVec(2 , ivecind)<<std::endl;
-  }
-  
-  /*********************ROTATE FOR HCURL****************************/
-  TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
-  for (int i=0; i<3; i++) {
-    ax1[i] = data.axes(0,i);//ELEMENTO DEFORMADO
-    ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
-  }
-  Cross(ax1, ax2, elNormal);
-  std::cout<<"determinante da jacobiana"<<std::endl;
-  std::cout<<data.detjac<<std::endl;
-  std::cout<<"normal :"<<sqrt(elNormal[0] * elNormal[0] + elNormal[1] * elNormal[1] + elNormal[2] * elNormal[2])<<std::endl;
-  TPZFNMatrix< 12 , REAL > phiVecHCurl(phrq , 3 , 0.);
-  RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
-  std::cout<<"integration point:"<<std::endl;
-  std::cout<<data.xParametric<<std::endl;
-  std::cout<<data.x<<std::endl;
-  for (int i = 0 ; i < phrq/2 ; i++) {
-    std::cout<<"phiNed("<<i<<"):"
-    <<std::setw(10)<<phiVecHCurl(2 * i , 0)+phiVecHCurl(2 * i + 1 , 0)<<" "
-    <<std::setw(10)<<phiVecHCurl(2 * i , 1)+phiVecHCurl(2 * i + 1 , 1)<<" "
-    <<std::setw(10)<<phiVecHCurl(2 * i , 2)+phiVecHCurl(2 * i + 1 , 2)<<std::endl;
-  }
-  /*********************COMPUTE CURL****************************/
-  TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
-  TPZFNMatrix<3,REAL> dphiQ;
-  TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
-  TPZFNMatrix<3,REAL> gradScalarPhi(phrq , 3 , 0.);
-  TPZFNMatrix<3,REAL> ivecHCurl(phrq , 3 , 0.);
-  
-  TPZManVector<REAL,3> iVecHDiv(3,0.), ivecForCurl(3,0.);
-  for (int iPhi = 0; iPhi < phrq; iPhi++) {
-    int ivecind = data.fVecShapeIndex[iPhi].first;
-    int ishapeind = data.fVecShapeIndex[iPhi].second;
-    iVecHDiv[0] = data.fNormalVec(0,ivecind);
-    iVecHDiv[1] = data.fNormalVec(1,ivecind);
-    iVecHDiv[2] = data.fNormalVec(2,ivecind);
-    
-    Cross(elNormal, iVecHDiv, ivecForCurl);
-    for (int i = 0; i<dphiQ.Rows(); i++) {
-      gradScalarPhi(iPhi,i) = dphiQ(i,ishapeind);
-      ivecHCurl(iPhi,i) = ivecForCurl[i];
-    }
-  }
-  TPZFNMatrix<40,REAL> curlPhi;
-  ComputeCurl(gradScalarPhi, ivecHCurl, curlPhi);
-  
+	
+	/*********************CREATE HDIV FUNCTIONS****************************/
+	
+	TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.);
+	for (int iq = 0 ; iq < phrq ; iq++) {
+		int ivecind = data.fVecShapeIndex[iq].first;
+		int ishapeind = data.fVecShapeIndex[iq].second;
+		
+		phiVecHDiv(iq , 0) = phiQ(ishapeind , 0) * data.fNormalVec(0 , ivecind);
+		phiVecHDiv(iq , 1) = phiQ(ishapeind , 0) * data.fNormalVec(1 , ivecind);
+		phiVecHDiv(iq , 2) = phiQ(ishapeind , 0) * data.fNormalVec(2 , ivecind);
+		std::cout<<"shape n: "<<ishapeind<<std::endl;
+		std::cout<<"vector"<<std::endl
+		<<std::setw(10)<<data.fNormalVec(0 , ivecind)<<" "
+		<<std::setw(10)<<data.fNormalVec(1 , ivecind)<<" "
+		<<std::setw(10)<<data.fNormalVec(2 , ivecind)<<std::endl;
+	}
+	
+	/*********************ROTATE FOR HCURL****************************/
+	TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
+	for (int i=0; i<3; i++) {
+		ax1[i] = data.axes(0,i);//ELEMENTO DEFORMADO
+		ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
+	}
+	Cross(ax1, ax2, elNormal);
+	std::cout<<"determinante da jacobiana"<<std::endl;
+	std::cout<<data.detjac<<std::endl;
+	std::cout<<"normal :"<<sqrt(elNormal[0] * elNormal[0] + elNormal[1] * elNormal[1] + elNormal[2] * elNormal[2])<<std::endl;
+	TPZFNMatrix< 12 , REAL > phiVecHCurl(phrq , 3 , 0.);
+	RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
+	std::cout<<"integration point:"<<std::endl;
+	std::cout<<data.xParametric<<std::endl;
+	std::cout<<data.x<<std::endl;
+	for (int i = 0 ; i < phrq/2 ; i++) {
+		std::cout<<"phiNed("<<i<<"):"
+		<<std::setw(10)<<phiVecHCurl(2 * i , 0)+phiVecHCurl(2 * i + 1 , 0)<<" "
+		<<std::setw(10)<<phiVecHCurl(2 * i , 1)+phiVecHCurl(2 * i + 1 , 1)<<" "
+		<<std::setw(10)<<phiVecHCurl(2 * i , 2)+phiVecHCurl(2 * i + 1 , 2)<<std::endl;
+	}
+	/*********************COMPUTE CURL****************************/
+	TPZFMatrix<REAL> &dphiQdaxes = data.dphix;
+	TPZFNMatrix<3,REAL> dphiQ;
+	TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
+	TPZFNMatrix<3,REAL> gradScalarPhi(phrq , 3 , 0.);
+	TPZFNMatrix<3,REAL> ivecHCurl(phrq , 3 , 0.);
+	
+	TPZManVector<REAL,3> iVecHDiv(3,0.), ivecForCurl(3,0.);
+	for (int iPhi = 0; iPhi < phrq; iPhi++) {
+		int ivecind = data.fVecShapeIndex[iPhi].first;
+		int ishapeind = data.fVecShapeIndex[iPhi].second;
+		iVecHDiv[0] = data.fNormalVec(0,ivecind);
+		iVecHDiv[1] = data.fNormalVec(1,ivecind);
+		iVecHDiv[2] = data.fNormalVec(2,ivecind);
+		
+		Cross(elNormal, iVecHDiv, ivecForCurl);
+		for (int i = 0; i<dphiQ.Rows(); i++) {
+			gradScalarPhi(iPhi,i) = dphiQ(i,ishapeind);
+			ivecHCurl(iPhi,i) = ivecForCurl[i];
+		}
+	}
+	TPZFNMatrix<40,REAL> curlPhi;
+	ComputeCurl(gradScalarPhi, ivecHCurl, curlPhi);
+	
 	const STATE muR =  fUr(x);
 	const STATE epsilonR = fEr(x);
 	REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
@@ -273,7 +326,7 @@ void TPZMatHCurl2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<ST
 			phiIdotPhiJ += phiVecHCurl(iq , 2) * phiVecHCurl(jq , 2);
 			
 			ek(iq,jq)+= 1./muR * curlIdotCurlJ * weight;
-			ek(iq,jq)+= -1. * k0 * k0 * epsilonR * phiIdotPhiJ * weight;
+			ek(iq,jq)+= -1. * k0 * k0 /(fScale * fScale) * epsilonR * phiIdotPhiJ * weight;
 		}
 	}
 }
@@ -286,6 +339,10 @@ void TPZMatHCurl2D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TP
 void TPZMatHCurl2D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
 {
 	DebugStop();
+}
+
+void TPZMatHCurl2D::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+  return;
 }
 
 void TPZMatHCurl2D::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
@@ -320,12 +377,12 @@ void TPZMatHCurl2D::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<
 			for(int i = 0 ; i<nshape ; i++)
 			{
 				STATE rhs = phiQ(i,0);
-        rhs *= v2;
+				rhs *= v2/fScale;
 				ef(i,0) += rhs*weight;
 				for(int j=0;j<nshape;j++)
 				{
 					STATE stiff = phiQ(i,0) *  phiQ(j,0);
-          stiff *= v1;
+					stiff *= v1/fScale;
 					ek(i,j) += stiff*weight;
 				}
 			}
@@ -347,6 +404,12 @@ void TPZMatHCurl2D::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<
 {
 	DebugStop();
 }
+
+int TPZMatHCurl2D::IntegrationRuleOrder(int elPMaxOrder) const
+{
+	return 2+elPMaxOrder*2;
+}
+
 
 int TPZMatHCurl2D::VariableIndex(const std::string &name)
 {

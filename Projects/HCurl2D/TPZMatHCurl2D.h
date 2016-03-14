@@ -43,10 +43,12 @@ protected:
 	REAL fE0;
   REAL fW;
   REAL fTheta;
+	REAL fScale;
+   
 	
 public:
 	
-    TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t);
+    TPZMatHCurl2D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
     TPZMatHCurl2D(int id);
   
@@ -69,6 +71,16 @@ public:
     virtual int NStateVariables() { return 1;}
     
 public:
+    
+  /**
+   * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
+   * @param data [in] stores all input data
+   * @param weight [in] is the weight of the integration rule
+   * @param ek [out] is the stiffness matrix
+   * @param ef [out] is the load vector
+   * @since April 16, 2007
+   */
+  virtual void ContributeForcingRT(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   
   virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
@@ -80,9 +92,7 @@ public:
    * @since April 16, 2007
    */
   virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
-  
   void ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi );
-  
   void RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl );
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
@@ -101,7 +111,18 @@ public:
    * @param ef [out] is the load vector
    */
   virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef);
-
+  
+  
+  /**
+   * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
+   * @param data [in] stores all input data
+   * @param weight [in] is the weight of the integration rule
+   * @param ek [out] is the stiffness matrix
+   * @param ef [out] is the load vector
+   * @param bc [in] is the boundary condition material
+   * @since October 07, 2011
+   */
+  virtual void ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
   /**
    * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
    * @param data [in] stores all input data
@@ -175,6 +196,10 @@ public:
       datavec[iref].fNeedsNormal = true;
     }
   }
+  
+    /** @brief Gets the order of the integration rule necessary to integrate an element with polinomial order p */
+    virtual int IntegrationRuleOrder(int elPMaxOrder) const;
+
   
   /** @brief This method defines which parameters need to be initialized in order to compute the contribution of the boundary condition */
   virtual void FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
