@@ -340,9 +340,11 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REA
     if ( el == NULL) {
       continue;
     }
-    el->SetSideOrient(3,  1);
-    el->SetSideOrient(4, -1);
-    el->SetSideOrient(5,  1);
+    if ( i % 2 == 1) {
+      el->SetSideOrient(3, -1);
+      el->SetSideOrient(4, -1);
+      el->SetSideOrient(5, -1);
+    } 
   }
 
 
