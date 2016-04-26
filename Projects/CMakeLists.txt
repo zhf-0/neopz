@@ -100,7 +100,8 @@ ENABLE_TESTING()
 			add_subdirectory(TesteComplexo1D)
 			add_subdirectory(StriplineFran)
 			add_subdirectory(HCurl2D)
-			add_subdirectory(MFHCurlFran)
+			add_subdirectory(MFHCurlH1)
+			
 			#add_subdirectory(HDiv_demo)
 
 			#Examples used as tutorial for FEEC group (Prof Hugo)

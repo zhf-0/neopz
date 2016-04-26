@@ -1,20 +1,22 @@
 /**
- * @file TPZMatMFHCurlFran.h
- * @brief Header file for class TPZMatMFHCurlFran.\n
+ * @file TPZMatMFHCurlH1.h
+ * @brief Header file for class TPZMatMFHCurlH1.\n
  */
 
-#ifndef TPZMatMFHCurlFran_H
-#define TPZMatMFHCurlFran_H
+#ifndef TPZMATMFHCURLH1_H
+#define TPZMATMFHCURLH1_H
 
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
 #include "../HCurl2D/TPZMatHCurl2D.h"
+
+enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
 /**
  * @ingroup material
  * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
  */
-class  TPZMatMFHCurlFran : public TPZVecL2
+class  TPZMatMFHCurlH1 : public TPZVecL2
 {
     
 protected:
@@ -28,25 +30,26 @@ protected:
   REAL fW;
   REAL fTheta;
 	REAL fScale;
-   
+  whichMatrix assembling;
+  
 	
 public:
 	
-    TPZMatMFHCurlFran(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatMFHCurlH1(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
   
-    TPZMatMFHCurlFran(int id);
+    TPZMatMFHCurlH1(int id);
   
     /** @brief Default constructor */
-    TPZMatMFHCurlFran();
+    TPZMatMFHCurlH1();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
 	/** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatMFHCurlFran(const TPZMatMFHCurlFran &mat);
+    TPZMatMFHCurlH1(const TPZMatMFHCurlH1 &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatMFHCurlFran();
+    virtual ~TPZMatMFHCurlH1();
 	
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatMFHCurlFran"; }
+    virtual std::string Name() { return "TPZMatMFHCurlH1"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
@@ -55,6 +58,20 @@ public:
     virtual int NStateVariables() { return 1;}
     
 public:
+  /**
+   * @brief Sets Matrix A for assembling
+   * @details This material is designed for solving the
+   * generalised eigenvalue problem stated as Ax = lBx
+   * Matrices A and B are assembled separatedly.
+   */
+  virtual void SetMatrixA(){ assembling = A;};
+  /**
+   * @brief Sets Matrix B for assembling
+   * @details This material is designed for solving the
+   * generalised eigenvalue problem stated as Ax = lBx
+   * Matrices A and B are assembled separatedly.
+   */
+  virtual void SetMatrixB(){ assembling = B;};
   
   virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
   /**
