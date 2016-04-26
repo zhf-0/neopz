@@ -1,6 +1,10 @@
 /**
  * @file
  * @brief Afirst attempt at a multi physics hcurl/h1 formulation
+ * @details Adequadte for problems with longitudinal axis symmetry
+ * such as some setions of waveguides (closed waveguides).
+ * it uses hcurl for tranverse componentes and h1 for longitudinal components
+ *
  * @author Francisco Orlandini
  * @since 2015
  */
@@ -27,7 +31,7 @@
 #include "pzstepsolver.h"
 #include "TPZParFrontStructMatrix.h"
 #include "TPZFrontSym.h"
-#include "TPZSkylineNSymStructMatrix.h"
+#include "TPZSBMatrixLapack.h"
 #include "pzbuildmultiphysicsmesh.h"
 
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
@@ -85,9 +89,9 @@ int main(int argc, char *argv[])
   TPZAnalysis an(cmesh,optimizeBandwidth);
   
   //configuracoes do objeto de analise
-  //CUIDADO
-  TPZVec<long> skyVec;
-  cmesh->Skyline(skyVec);
+  
+  
+  TPZSBMatrixLapack<STATE> sbndmtrx( cmesh->NEquations() , cmesh->BandWidth());
   TPZSkylineNSymStructMatrix skylstr(cmesh);
   skylstr.SetNumThreads(0);
   an.SetStructuralMatrix(skylstr);
