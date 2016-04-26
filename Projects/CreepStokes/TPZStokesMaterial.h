@@ -23,8 +23,7 @@
 class TPZStokesMaterial : public TPZDiscontinuousGalerkin {
     
 private:
-    
-    
+
 
     
 public:
@@ -89,11 +88,11 @@ public:
      * the finite element approximation */
     void Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<REAL> &Solout);
     
-    /** index of pressure */
-    int PIndex(){ return 0; }
-    
     /** index of velocity */
-    int VIndex(){ return 1; }
+    int VIndex(){ return 0; }
+    
+    /** index of pressure */
+    int PIndex(){ return 1; }
     
     /** inner product of two tensors. See Gurtin (2003), p. 5. */
     STATE Inner(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
@@ -131,7 +130,9 @@ public:
      * @param ef[out] is the load vector
      * @since April 16, 2007
      */
-    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef);
+    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef){
+        DebugStop();
+    }
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one BC integration point.
@@ -142,7 +143,9 @@ public:
      * @param bc[in] is the boundary condition material
      * @since April 16, 2007
      */
-    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+        DebugStop();
+    }
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one BC interface integration point.
@@ -153,7 +156,9 @@ public:
      * @param bc[in] is the boundary condition material
      * @since April 16, 2007
      */
-    virtual void ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+    virtual void ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+        DebugStop();
+    }
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one BC interface integration point.
@@ -164,7 +169,9 @@ public:
      * @param bc[in] is the boundary condition material
      * @since April 16, 2007
      */
-    virtual void ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+    virtual void ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+        DebugStop();
+    }
     
     
     /**
@@ -186,7 +193,9 @@ public:
      * @param bc[in] is the boundary condition material
      * @since April 16, 2007
      */
-    virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight,TPZFMatrix<STATE> &ef);
+    virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight,TPZFMatrix<STATE> &ef){
+        DebugStop();
+    }
 
     /**
      * Save the element data to a stream
