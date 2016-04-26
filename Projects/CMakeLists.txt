@@ -4,6 +4,8 @@ ENABLE_TESTING()
 
 	if(BUILD_TUTORIAL)
 
+	# Testing LAPACK integration with symmetric band matrix
+		add_subdirectory(pzsbndmat_validation)
 		if(BUILD_COMPLEX_PROJECTS)
 			#add_subdirectory(PDElinear1D)
 			#add_subdirectory(PDElinear2D)
@@ -47,7 +49,9 @@ ENABLE_TESTING()
 
 			#Testes Douglas
 			add_subdirectory(dactests)
- 
+
+ 			#Projeto Pablo Carvalho
+			add_subdirectory(CreepStokes)
 	
 			#Example to reading and using geometric mesh
 			add_subdirectory(testgeom)
