@@ -268,97 +268,146 @@ void TPZStokesMaterial::FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<S
     
 }
 
-////////////////////////////////////////////////////////////////////
+// Contricucao dos elementos internos
+
 void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
 
-#ifdef DEBUG
-    //2 = 1 Vel space + 1 Press space
+
+    // Verificao do numero de variaveis envolvidas
+    
     int nref =  datavec.size();
     if (nref != 2 ) {
         std::cout << " Erro. The size of the datavec is different from 2 \n";
         DebugStop();
     }
-#endif
+
+    // Definicao dos blocos das variaveis : Velocidade (vetorial) e Pressao (escalar)
     
-    const int pindex = this->PIndex();
     const int vindex = this->VIndex();
+    const int pindex = this->PIndex();
     
-    // Setting forcing function
-    /*STATE force = 0.;
-    if(this->fForcingFunction) {
-        TPZManVector<STATE> res(1);
-        fForcingFunction->Execute(datavec[pindex].x,res);
-        force = res[0];
-    }*/
+    // Deficao das funcoes de forma e respectivas derivadas para as variaveis envolvidas : Velocidade e Pressao
     
-    //Gravity
-    STATE rhoi = 900.; //itapopo
-    STATE g = 9.81; //itapopo
-    STATE force = rhoi*g;
-    
-    // Setting the phis
-    // V
+    // Veloidade (phi e dphi)
     TPZFMatrix<STATE> &phiV = datavec[vindex].phi;
     TPZFMatrix<STATE> &dphiV = datavec[vindex].dphix;
-    // P
+    TPZFMatrix<REAL>	&axes	=	datavec[vindex].axes;
+    
+    // Pressao (phi e dphi)
     TPZFMatrix<STATE> &phiP = datavec[pindex].phi;
     TPZFMatrix<STATE> &dphiP = datavec[pindex].dphix;
+    TPZFMatrix<REAL>	&axesP	=	datavec[pindex].axes;
     
-    int nshapeV, nshapeP;
-    nshapeP = phiP.Rows();
-    nshapeV = phiV.Rows(); //datavec[0].fVecShapeIndex.NElements();
     
-    TPZVec<TPZFMatrix<STATE> > GradU;
-    this->FillGradPhi(datavec[vindex], GradU);
-    
-    const STATE Visc = 1.; //itapopo
-    
-    // Integral value - Matrix A and B
-    for(int i = 0; i < nshapeV; i++){
+    // Calculo dos Gradiento da Funcao de forma
         
-        // matrix A - gradV
-        for(int j = 0; j < nshapeV; j++){
-          
-            //itapopo verificar termo simétrico
-            ek(i,j) += 2. * weight * Visc * Inner( GradU[j], GradU[i] ) ; ///Visc*(GradU+GradU^T):GradPhi
-            
-        }//j
+    TPZVec <double> StateVariable(3,0.0);
         
-        // matrix B - pressure and velocity
-        for (int j = 0; j < nshapeP; j++) {
-            
-            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradU[i] ); ///p*div(U)
-            
-            // Matrix B
-            ek(i, nshapeV+j) += fact;
-            
-            // Matrix B^T
-            ek(nshapeV+j,i) += fact;
-        }//j
-        
-        // force vector
-        ef(i,0) += (-1.)*weight*force*phiV(i,0);//itapopo conferir termo e sinal
+    //	Elastic equation
+    //	Linear strain operator
+    //	Ke Matrix
+    TPZManVector<STATE,2> GradPhiI(2),GradPhiJ(2);
+    
+    int phd = datavec[vindex].fVecShapeIndex.NElements();
 
-    }//i
+
+    for(int in = 0; in < phd; in++ )
+    {
+        
+        int ivectorindex    = datavec[vindex].fVecShapeIndex[in].first;
+        int ishapeindex     = datavec[vindex].fVecShapeIndex[in].second;
+        
+        //	Derivative calculations for Ux
+        GradPhiI[0] = dphiV(0,ivectorindex)*axes(0,0)+dphiV(1,ivectorindex)*axes(1,0);
+        //	Derivative calculations for Uy
+        GradPhiI[1] = dphiV(0,ivectorindex)*axes(0,1)+dphiV(1,ivectorindex)*axes(1,1);
+        
+        GradPhiI.Print();
+        
+        
+    }
+    
+    
+//    
+//    
+//    //Gravity
+//    STATE rhoi = 900.; //itapopo
+//    STATE g = 9.81; //itapopo
+//    STATE force = rhoi*g;
+//    
+//    // Setting the phis
+//
+//    int nshapeV, nshapeP;
+//    nshapeP = phiP.Rows();
+//    nshapeV = phiV.Rows(); //datavec[0].fVecShapeIndex.NElements();
+//    
+//    TPZVec<TPZFMatrix<STATE> > GradU;
+//    this->FillGradPhi(datavec[vindex], GradU);
+//    
+//    const STATE Visc = 1.; //itapopo
+//    
+//    // Integral value - Matrix A and B
+//    for(int i = 0; i < nshapeV; i++){
+//        
+//        // matrix A - gradV
+//        for(int j = 0; j < nshapeV; j++){
+//          
+//            //itapopo verificar termo simétrico
+//            ek(i,j) += 2. * weight * Visc * Inner( GradU[j], GradU[i] ) ; ///Visc*(GradU+GradU^T):GradPhi
+//            
+//        }//j
+//        
+//        // matrix B - pressure and velocity
+//        for (int j = 0; j < nshapeP; j++) {
+//            
+//            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradU[i] ); ///p*div(U)
+//            
+//            // Matrix B
+//            ek(i, nshapeV+j) += fact;
+//            
+//            // Matrix B^T
+//            ek(nshapeV+j,i) += fact;
+//        }//j
+//        
+//        // force vector
+//        ef(i,0) += (-1.)*weight*force*phiV(i,0);//itapopo conferir termo e sinal
+//
+//    }//i
     
     
 }
 
+
+void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+    
+    
+    
+    
+    DebugStop();
+    
+    
+    
+    
+}
+
+
+
+
 ////////////////////////////////////////////////////////////////////
 
 void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
-    
-    
-    const int pindex = this->PIndex();
-    const int vindex = this->VIndex();
-    
-    
+//    
+//    
+//    const int pindex = this->PIndex();
+//    const int vindex = this->VIndex();
+//    
+//    
 //    TPZFMatrix<REAL> &dphiLdAxes = datavecleft[fb].dphix;
 //    TPZFMatrix<REAL> &dphiRdAxes = datavecright[fb].dphix;
 //    TPZFMatrix<REAL> &phiL = datavecleft[fb].phi;
 //    TPZFMatrix<REAL> &phiR = datavecright[fb].phi;
 //    TPZManVector<REAL,3> &normal = data.normal;
-//    
+//
 //    TPZFNMatrix<660> dphiL, dphiR;
 //    TPZAxesTools<REAL>::Axes2XYZ(dphiLdAxes, dphiL, dataleft.axes);
 //    TPZAxesTools<REAL>::Axes2XYZ(dphiRdAxes, dphiR, dataright.axes);
@@ -580,7 +629,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
 //        }
 //        
 //    }
-    
+//    
+//    
+
+    DebugStop();
     
 }
 

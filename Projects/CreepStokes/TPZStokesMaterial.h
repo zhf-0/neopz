@@ -12,7 +12,7 @@
 #include "pzbndcond.h"
 #include "pzlog.h"
 #include "tpzautopointer.h"
-
+#include "pzmaterial.h"
 
 
 #ifndef TPZSTOKESMATERIAL
@@ -143,9 +143,7 @@ public:
      * @param bc[in] is the boundary condition material
      * @since April 16, 2007
      */
-    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-        DebugStop();
-    }
+    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one BC interface integration point.

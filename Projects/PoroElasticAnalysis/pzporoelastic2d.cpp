@@ -142,9 +142,9 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 		for(int in = 0; in < phru; in++ )
 		{
 			//	Derivative calculations for Ux
-			du(0,0) = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
+			DphiDx = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
 			//	Derivative calculations for Uy			
-			du(1,0) = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
+			DphiDy = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
 			
 			//	Fu Vector Force right hand term
 			ef(2*in, 0)		+= weight*ff[0]*phiu(in, 0) + weight*StateVariable[StateVarUx]; 
@@ -153,31 +153,31 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 			for(int jn = 0; jn < phru; jn++)
 			{
 				//	Derivative calculations for Vx				
-				du(0,1) = dphiu(0,jn)*axes(0,0)+dphiu(1,jn)*axes(1,0);
+				DphjDx = dphiu(0,jn)*axes(0,0)+dphiu(1,jn)*axes(1,0);
 				//	Derivative calculations for Vy				
-				du(1,1) = dphiu(0,jn)*axes(0,1)+dphiu(1,jn)*axes(1,1);
+				DphjDy = dphiu(0,jn)*axes(0,1)+dphiu(1,jn)*axes(1,1);
 				
 				if (fPlaneStress == 1)
 				{
 					/* Plain stress state */ 
-					ek(2*in,2*jn)		+= weight*((4*(fmu)*(flambda+fmu)/(flambda+2*fmu))*du(0,0)*du(0,1)		+ (2*fmu)*du(1,0)*du(1,1));
+					ek(2*in,2*jn)		+= weight*((4*(fmu)*(flambda+fmu)/(flambda+2*fmu))*DphiDx*DphjDx		+ (2*fmu)*DphiDy*DphjDy);
 					
-					ek(2*in,2*jn+1)		+= weight*((2*(fmu)*(flambda)/(flambda+2*fmu))*du(0,0)*du(1,1)			+ (2*fmu)*du(1,0)*du(0,1));
+					ek(2*in,2*jn+1)		+= weight*((2*(fmu)*(flambda)/(flambda+2*fmu))*DphiDx*DphjDy			+ (2*fmu)*DphiDy*DphjDx);
 					
-					ek(2*in+1,2*jn)		+= weight*((2*(fmu)*(flambda)/(flambda+2*fmu))*du(1,0)*du(0,1)			+ (2*fmu)*du(0,0)*du(1,1));
+					ek(2*in+1,2*jn)		+= weight*((2*(fmu)*(flambda)/(flambda+2*fmu))*DphiDy*DphjDx			+ (2*fmu)*DphiDx*DphjDy);
 					
-					ek(2*in+1,2*jn+1)	+= weight*((4*(fmu)*(flambda+fmu)/(flambda+2*fmu))*du(1,0)*du(1,1)		+ (2*fmu)*du(0,0)*du(0,1));					
+					ek(2*in+1,2*jn+1)	+= weight*((4*(fmu)*(flambda+fmu)/(flambda+2*fmu))*DphiDy*DphjDy		+ (2*fmu)*DphiDx*DphjDx);					
 				}
 				else
 				{
 					/* Plain Strain State */  
-					ek(2*in,2*jn)		+= weight*	((flambda + 2*fmu)*du(0,0)*du(0,1)	+ (fmu)*du(1,0)*du(1,1));
+					ek(2*in,2*jn)		+= weight*	((flambda + 2*fmu)*DphiDx*DphjDx	+ (fmu)*DphiDy*DphjDy);
 					
-					ek(2*in,2*jn+1)		+= weight*	(flambda*du(0,0)*du(1,1)			+ (fmu)*du(1,0)*du(0,1));
+					ek(2*in,2*jn+1)		+= weight*	(flambda*DphiDx*DphjDy			+ (fmu)*DphiDy*DphjDx);
 					
-					ek(2*in+1,2*jn)		+= weight*	(flambda*du(1,0)*du(0,1)			+ (fmu)*du(0,0)*du(1,1));
+					ek(2*in+1,2*jn)		+= weight*	(flambda*DphiDy*DphjDx			+ (fmu)*DphiDx*DphjDy);
 					
-					ek(2*in+1,2*jn+1)	+= weight*	((flambda + 2*fmu)*du(1,0)*du(1,1)	+ (fmu)*du(0,0)*du(0,1));					
+					ek(2*in+1,2*jn+1)	+= weight*	((flambda + 2*fmu)*DphiDy*DphjDy	+ (fmu)*DphiDx*DphjDx);					
 					
 				}
 			}
@@ -187,13 +187,13 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 		//	Coupling matrix 
 		for(int in = 0; in < phru; in++ )
 		{
-			du(0,0) = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
-			du(1,0) = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
+			DphiDx = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
+			DphiDy = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
 			
 			for(int jn = 0; jn < phrp; jn++)
 			{
-				ek(2*in,2*phru+jn) += (-1.)*falpha*weight*(phip(jn,0)*du(0,0));		
-				ek(2*in+1,2*phru+jn) += (-1.)*falpha*weight*(phip(jn,0)*du(1,0));							
+				ek(2*in,2*phru+jn) += (-1.)*falpha*weight*(phip(jn,0)*DphiDx);		
+				ek(2*in+1,2*phru+jn) += (-1.)*falpha*weight*(phip(jn,0)*DphiDy);							
 			}
 		}
 		
@@ -201,13 +201,13 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 		//	Coupling matrix transpose
 		for(int in = 0; in < phru; in++ )
 		{
-			du(0,0) = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
-			du(1,0) = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
+			DphiDx = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
+			DphiDy = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
 			
 			for(int jn = 0; jn < phrp; jn++)
 			{
-				ek(2*phru+jn,2*in) += (-1.)*falpha*weight*(phip(jn,0)*du(0,0));		
-				ek(2*phru+jn,2*in+1) += (-1.)*falpha*weight*(phip(jn,0)*du(1,0));
+				ek(2*phru+jn,2*in) += (-1.)*falpha*weight*(phip(jn,0)*DphiDx);		
+				ek(2*phru+jn,2*in+1) += (-1.)*falpha*weight*(phip(jn,0)*DphiDy);
 				
 			}
 		}
@@ -245,13 +245,13 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 		//	Coupling matrix transpose
 		for(int in = 0; in < phru; in++ )
 		{
-			du(0,0) = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
-			du(1,0) = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
+			DphiDx = dphiu(0,in)*axes(0,0)+dphiu(1,in)*axes(1,0);
+			DphiDy = dphiu(0,in)*axes(0,1)+dphiu(1,in)*axes(1,1);
 			
 			for(int jn = 0; jn < phrp; jn++)
 			{
-				ek(2*phru+jn,2*in) += (-1.)*falpha*weight*(phip(jn,0)*du(0,0));		
-				ek(2*phru+jn,2*in+1) += (-1.)*falpha*weight*(phip(jn,0)*du(1,0));
+				ek(2*phru+jn,2*in) += (-1.)*falpha*weight*(phip(jn,0)*DphiDx);		
+				ek(2*phru+jn,2*in+1) += (-1.)*falpha*weight*(phip(jn,0)*DphiDy);
 				
 			}
 		}
