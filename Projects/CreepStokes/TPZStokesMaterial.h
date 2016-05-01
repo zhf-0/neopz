@@ -24,8 +24,14 @@ class TPZStokesMaterial : public TPZDiscontinuousGalerkin {
     
 private:
 
-
+    /// viscosidade
+    STATE fViscosity;
     
+    /// termo contrario a beta na sua formulacao (para ser conforme a literatura)
+    STATE fTheta;
+
+    /// dimension of the material
+    int fDimension;
 public:
     
     
@@ -37,7 +43,7 @@ public:
     /** Creates a material object and inserts it in the vector of
      *  material pointers of the mesh.
      */
-    TPZStokesMaterial(int matid);
+    TPZStokesMaterial(int matid, int dimension, STATE viscosity);
     
     
     /** Creates a material object based on the referred object and
@@ -66,7 +72,7 @@ public:
     }
     
     /** returns the integrable dimension of the material */
-    int Dimension() const {return 3;}
+    int Dimension() const {return 2;}
     
     /** returns the number of state variables associated with the material */
     int NStateVariables() {return 4;} // for hdiv are 3, plus pressure, so 3 + 1 = 4 itapopo
@@ -102,6 +108,9 @@ public:
     
     /** Fill the vector of gradient for each phi */
     void FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<STATE> > &GradPhi);
+    
+    /// transform a H1 data structure to a vector data structure
+    void FillVecShapeIndex(TPZMaterialData &data);
     
     /** @brief Not used contribute methods */
     virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){DebugStop();}
