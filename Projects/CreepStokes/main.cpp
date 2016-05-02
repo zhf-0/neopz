@@ -273,6 +273,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     const int dim = 2; //dimensao do problema
     const int matId = 1, bc0 = -1, bc1 = -2, bc2=-3, bc3=-4; //MESMOS ids da malha geometrica
     const int dirichlet = 0, neumann = 1, mixed = 2; //tipo da condicao de contorno do problema ->default dirichlet na esquerda e na direita
+    REAL visco=1.;
     
     
     ///criar malha computacional
@@ -282,7 +283,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
     
     // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId);//criando material que implementa a formulacao fraca do problema modelo
+    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
     // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
     
@@ -323,6 +324,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     const int dim = 2; //dimensao do problema
     const int matId = 1, bc0 = -1, bc1 = -2, bc2=-3, bc3=-4; //MESMOS ids da malha geometrica
     const int dirichlet = 0, neumann = 1, mixed = 2; //tipo da condicao de contorno do problema ->default dirichlet na esquerda e na direita
+    REAL visco=1.;
     
     
     ///criar malha computacional
@@ -332,7 +334,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
     
     // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId);//criando material que implementa a formulacao fraca do problema modelo
+    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
     
         // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
@@ -372,7 +374,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     const int dim = 2; //dimensao do problema
     const int matId = 1, bc0 = -1, bc1 = -2, bc2=-3, bc3=-4; //MESMOS ids da malha geometrica
     const int dirichlet = 0, neumann = 1, mixed = 2; //tipo da condicao de contorno do problema ->default dirichlet na esquerda e na direita
-    
+    REAL visco=1.;
     
     ///criar malha computacional
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
@@ -381,7 +383,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetAllCreateFunctionsMultiphysicElem();
     
     // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId);//criando material que implementa a formulacao fraca do problema modelo
+    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
     // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
     

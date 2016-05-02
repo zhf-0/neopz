@@ -11,6 +11,7 @@
 #include "pzbndcond.h"
 #include "pzaxestools.h"
 #include "pzmatwithmem.h"
+#include "pzfmatrix.h"
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -22,8 +23,7 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) : TPZDiscontinuousGalerkin(matid),
-        fViscosity(viscosity), fDimension(dimension)
+TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid),fViscosity(viscosity), fDimension(dimension)
 {
     // symmetric version
     fTheta = -1;
@@ -36,8 +36,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) :
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZDiscontinuousGalerkin(mat), fViscosity(mat.fViscosity),
-        fDimension(mat.fDimension), fTheta(mat.fTheta)
+TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity),fDimension(mat.fDimension), fTheta(mat.fTheta)
 {
 
     
@@ -330,16 +329,9 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     nshapeP = phiP.Rows();
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
-    int shV = datavec[vindex].fVecShapeIndex.NElements();
-    int shP = phiP.Rows();
+
     
-//    for(int wr=0; wr<phiV.Rows();wr++){
-//        for(int wc=0; wc<phiV.Cols();wc++){
-//            std::cout<<phiV(wr,wc)<<std::endl;
-//        }
-//    }
-    
-    for(int ip = 0; ip < nshapeV; ip++ )
+    for(int i = 0; i < nshapeV; i++ )
     {
         int iphi = datavec[vindex].fVecShapeIndex[i].second;
         int ivec = datavec[vindex].fVecShapeIndex[i].first;
@@ -362,7 +354,13 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
             }
             // colocar os termos vectoriais vezes vectoriais
             //itapopo verificar termo simétrico
-            ek(i,j) += 2. * weight * Visc * Inner( GradU[j], GradU[i] ) ; ///Visc*(GradU+GradU^T):GradPhi
+            
+            GradVi.Transpose();
+            GradVi=Inner(GradVi, GradVj);
+            Tr(GradVi);
+            
+            ek(i,j) += weight * fViscosity * Tr(GradVi) ; ///Visc*(GradU+GradU^T):GradPhi
+            
             
         }//j
         
@@ -374,7 +372,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
                 GradPj[e] = dphiPx(e,j);
             }
             
-            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradU[i] ); ///p*div(U)
+            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradVi ); ///p*div(U)
             
             // colocar vectoriais vezes pressao
             // Matrix B
@@ -387,68 +385,6 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
         
     }
     
-    for(int in = 0; in < shV; in++ )
-    {
-        
-        int ivectorindex = datavec[vindex].fVecShapeIndex[in].first;
-        int ishapeindex = datavec[vindex].fVecShapeIndex[in].second;
-        
-        //	Derivative calculations for Ux
-        GradPhiVi[0] = dphiV(0,ivectorindex)*axes(0,0)+dphiV(1,ivectorindex)*axes(1,0);
-        //	Derivative calculations for Uy
-        GradPhiVi[1] = dphiV(0,ivectorindex)*axes(0,1)+dphiV(1,ivectorindex)*axes(1,1);
-        
-        GradPhiVi.Print();
-        
-        
-    }
-    
-    
-//    
-//    
-//    //Gravity
-//    STATE rhoi = 900.; //itapopo
-//    STATE g = 9.81; //itapopo
-//    STATE force = rhoi*g;
-//    
-//    // Setting the phis
-//
-//    int nshapeV, nshapeP;
-//    nshapeP = phiP.Rows();
-//    nshapeV = phiV.Rows(); //datavec[0].fVecShapeIndex.NElements();
-//    
-//    TPZVec<TPZFMatrix<STATE> > GradU;
-//    this->FillGradPhi(datavec[vindex], GradU);
-//    
-//    const STATE Visc = 1.; //itapopo
-//    
-//    // Integral value - Matrix A and B
-//    for(int i = 0; i < nshapeV; i++){
-//        
-//        // matrix A - gradV
-//        for(int j = 0; j < nshapeV; j++){
-//          
-//            //itapopo verificar termo simétrico
-//            ek(i,j) += 2. * weight * Visc * Inner( GradU[j], GradU[i] ) ; ///Visc*(GradU+GradU^T):GradPhi
-//            
-//        }//j
-//        
-//        // matrix B - pressure and velocity
-//        for (int j = 0; j < nshapeP; j++) {
-//            
-//            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradU[i] ); ///p*div(U)
-//            
-//            // Matrix B
-//            ek(i, nshapeV+j) += fact;
-//            
-//            // Matrix B^T
-//            ek(nshapeV+j,i) += fact;
-//        }//j
-//        
-//        // force vector
-//        ef(i,0) += (-1.)*weight*force*phiV(i,0);//itapopo conferir termo e sinal
-//
-//    }//i
     
     for (int ipressure = 0; ipressure < nshapeP; ipressure++) {
         TPZManVector<REAL,3> GradPi(fDimension);
@@ -463,12 +399,13 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
                 GradPj[e] = dphiPx(e,jpressure);
             }
             // colocar os termos pressao pressao
+             ek(nshapeV+ipressure, nshapeV+jpressure) += 0;
             // talvez aqui nao tem nada???
 
         }
     }
     
-    
+
 }
 
 
@@ -478,23 +415,23 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     
     DebugStop();
     
-#ifdef PZDEBUG
-    //2 = 1 Vel space + 1 Press space
-    int nrefl =  datavecleft.size();
-    int nrefr =  datavecright.size();
-    if (nrefl != 2 || nrefr != 2) {
-        std::cout << " Erro. The size of the datavec is different from 2 \n";
-        DebugStop();
-    }
-#endif
-    
-    
-    if (datavecleft[vindex].fVecShapeIndex.size() == 0) {
-        FillVecShapeIndex(datavecleft[vindex]);
-    }
-    if (datavecright[vindex].fVecShapeIndex.size() == 0) {
-        FillVecShapeIndex(datavecright[vindex]);
-    }
+//#ifdef PZDEBUG
+//    //2 = 1 Vel space + 1 Press space
+//    int nrefl =  datavecleft.size();
+//    int nrefr =  datavecright.size();
+//    if (nrefl != 2 || nrefr != 2) {
+//        std::cout << " Erro. The size of the datavec is different from 2 \n";
+//        DebugStop();
+//    }
+//#endif
+//    
+//    
+//    if (datavecleft[vindex].fVecShapeIndex.size() == 0) {
+//        FillVecShapeIndex(datavecleft[vindex]);
+//    }
+//    if (datavecright[vindex].fVecShapeIndex.size() == 0) {
+//        FillVecShapeIndex(datavecright[vindex]);
+//    }
     
 
     
@@ -789,6 +726,7 @@ STATE TPZStokesMaterial::Tr( TPZFMatrix<REAL> &GradU ){
     
     return Val;
 }
+
 
 /// transform a H1 data structure to a vector data structure
 void TPZStokesMaterial::FillVecShapeIndex(TPZMaterialData &data)

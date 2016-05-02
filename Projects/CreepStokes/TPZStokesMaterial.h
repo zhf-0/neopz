@@ -106,6 +106,9 @@ public:
     /** trace of the tensor GradU = Div(U)*/
     STATE Tr(TPZFMatrix<REAL> &GradU );
     
+    /** transpose of the tensor GradU = Div(U)*/
+    STATE Transpose(TPZFMatrix<REAL> &GradU );
+    
     /** Fill the vector of gradient for each phi */
     void FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<STATE> > &GradPhi);
     
