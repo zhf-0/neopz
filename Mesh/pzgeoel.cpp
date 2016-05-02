@@ -409,19 +409,18 @@ int TPZGeoEl::WhichSubel() const{
 	int nsub = father->NSubElements();
 	for(son=0;son<nsub;son++) if(father->SubElement(son) == this) break;
 	if(son > (nsub-1)){
-		PZError << "TPZGeoEl::WhichSubel son does not exist\n";
-#ifdef LOG4CXX
-		{
-			std::stringstream sout;
-			sout << "Father element\n";
-			father->Print(sout);
-			sout << "Son element\n";
-            TPZGeoEl *foefel = (TPZGeoEl *) this;
-			foefel->Print(sout);
-            Mesh()->Print(sout);
-			LOGPZ_ERROR(logger,sout.str())
-		}
-#endif
+		PZError << "TPZGeoEl::WhichSubel son not exist\n";
+//#ifdef LOG4CXX
+//		{
+//			std::stringstream sout;
+//			sout << "Father element\n";
+//			father->Print(sout);
+//			sout << "Son element\n";
+//			Print(sout);
+//            Mesh()->Print(sout);
+//			LOGPZ_ERROR(logger,sout.str())
+//		}
+//#endif
 		DebugStop();
 		return -1;
 	}
@@ -720,17 +719,18 @@ bool TPZGeoEl::ComputeXInverse(TPZVec<REAL> &XD, TPZVec<REAL> &qsi, REAL Tol) {
 			}
             else
             {
-				axest.Multiply(J,JX,0);
+				axest.Multiply(J,JX,0,1);
 			}
 			
 			JX.Transpose(&JXt);
-			JXt.Multiply(JX,JXtJX,0);//JXtJX = JXt*JX;
+			JXt.Multiply(JX,JXtJX,0,1);//JXtJX = JXt*JX;
 			JXt.Multiply(DelX,residual);//cout << "\nComputeXInverse: : \n";
 			JXtJX.SolveDirect(residual,ELU);//cout << "Atual/dimensao : " << Id() << " / " << Dimension();
 			for(i=0; i<dim; i++)
             {
                 qsi[i] += residual(i,0);
             }
+            
 		}
 		X(qsi,X0);
 		for(i=0; i<3; i++)
@@ -749,10 +749,15 @@ bool TPZGeoEl::ComputeXInverse(TPZVec<REAL> &XD, TPZVec<REAL> &qsi, REAL Tol) {
 		std::stringstream sout;
 		sout << "Error at " << __PRETTY_FUNCTION__ << " - nMaxIter was reached before tolerance is achieved - ElementId" << this->Id() << std::endl;
 		PZError << "\n" << sout.str() << "\n";
-		
-#ifdef LOG4CXX
+        Print(std::cout);
+        int nnodes = NNodes();
+        for (int i=0; i<NNodes(); i++) {
+            NodePtr(i)->Print();
+        }
+        
+        #ifdef LOG4CXX
 		LOGPZ_ERROR(logger,sout.str().c_str());
-#endif
+        #endif
 	}
 #endif
 	
@@ -1550,7 +1555,6 @@ void TPZGeoEl::JacobianXYZ(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,
 /** Defines the refinement pattern. It's used only in TPZGeoElRefPattern objects. */
 void TPZGeoEl::SetRefPattern(TPZAutoPointer<TPZRefPattern> ){
 	PZError << "TPZGeoEl::SetRefPattern ERROR : Should not be called in TPZGeoEl" << endl;
-    DebugStop();
 }
 
 void TPZGeoEl::Read(TPZStream &buf, void *context) {
@@ -1633,7 +1637,7 @@ bool TPZGeoEl::VerifyNodeCoordinates(REAL tol){
 			error += (NodeX[dim]-MappedX[dim])*(NodeX[dim]-MappedX[dim]);
 		}//dim
 		error = sqrt(error);
-		if(error > tol){
+		if(error > tol || !(error==error)){
 			std::stringstream mess;
 			mess << "FATAL ERROR AT " << __PRETTY_FUNCTION__ << " - Node coordinate differs from mapped node.\n";
 			this->Print(mess);
@@ -2302,17 +2306,25 @@ int TPZGeoEl::NormalOrientation(int side)
 	{
 		return 1;
 	}
-    fatherside = neighbour.Father2();
+    
     // look for a neighbour of equal dimension
-    while ((neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) || (fatherside && fatherside.Dimension() == dimside)) {
+    while (neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) {
         neighbour = neighbour.Neighbour();
-        fatherside = neighbour.Father2();
     }
     if (neighbour == thisside) {
         return 1;
     }
 	
-#ifdef PZDEBUG
+//	fatherside = thisside.Neighbour();
+    neighbour = thisside.Neighbour();
+    // Considerando elementos hibridos, o elemento pode ter um vizinho de dimensao menor
+    while (neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) {
+        neighbour = neighbour.Neighbour();
+    }
+//	while (fatherside.Exists()&& fatherside.Dimension() == dimside) {//eu inclui agora a segunda condicao
+//		neighbour = fatherside;
+//		fatherside = fatherside.Father2();
+//	}
 	if(!thisside.NeighbourExists(neighbour))//inclui agora esta verificacao
 	{
 		std::stringstream sout;
@@ -2322,14 +2334,11 @@ int TPZGeoEl::NormalOrientation(int side)
 		DebugStop();
 		
 	}
-#endif
 #ifdef LOG4CXX
     if (loggerorient->isDebugEnabled())
     {
         std::stringstream sout;
-        sout << "Element index " << Index() << std::endl;
-        sout << "neighbour index " << neighbour.Element()->Index() << " id = " << neighbour.Element()->Id() << " side " << neighbour.Side() <<  std::endl;
-        sout << "thisside index " << thisside.Element()->Index() << " id = " << thisside.Element()->Id() << " side " << thisside.Side() << std::endl;
+        sout << "neighbour index " << neighbour.Element()->Index() << " id = " << neighbour.Element()->Index() << std::endl;
         if(thisside.Element()->Id() < neighbour.Element()->Id())
         {
             sout << "returning 1\n";
