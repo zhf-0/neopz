@@ -10,23 +10,29 @@
 #include "TPZStokesMaterial.h"
 #include "pzbndcond.h"
 #include "pzaxestools.h"
+#include "pzmatwithmem.h"
 
 
-TPZStokesMaterial::TPZStokesMaterial() : TPZDiscontinuousGalerkin(){
-    
-    
-}
-
-////////////////////////////////////////////////////////////////////
-
-TPZStokesMaterial::TPZStokesMaterial(int matid) : TPZDiscontinuousGalerkin(matid){
-    
+TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
+    //fDim = 1;
+    TPZFNMatrix<3,STATE> Vl(1,1,0.);
+    this->SetDefaultMem(Vl);
     
 }
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZDiscontinuousGalerkin(mat){
+TPZStokesMaterial::TPZStokesMaterial(int matid) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid){
+    
+    //fDim = 1;
+    TPZFNMatrix<3,STATE> Vl(1,1,0.);
+    this->SetDefaultMem(Vl);
+
+}
+
+////////////////////////////////////////////////////////////////////
+
+TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
 
     
 }
@@ -275,11 +281,11 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 
     // Verificao do numero de variaveis envolvidas
     
-    int nref =  datavec.size();
-    if (nref != 2 ) {
-        std::cout << " Erro. The size of the datavec is different from 2 \n";
-        DebugStop();
-    }
+    //int nref =  datavec.size();
+//    if (nref != 2 ) {
+//        std::cout << " Erro. The size of the datavec is different from 2 \n";
+//        DebugStop();
+//    }
 
     // Definicao dos blocos das variaveis : Velocidade (vetorial) e Pressao (escalar)
     
@@ -306,23 +312,44 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     //	Elastic equation
     //	Linear strain operator
     //	Ke Matrix
-    TPZManVector<STATE,2> GradPhiI(2),GradPhiJ(2);
+    TPZManVector<STATE,2> GradPhiVi(2),GradPhiVj(2),GradPhiPi(1),GradPhiPj(1);
     
-    int phd = datavec[vindex].fVecShapeIndex.NElements();
-
-
-    for(int in = 0; in < phd; in++ )
+   // Numero de funcoes testes para cada variavel
+   //int shV = datavec[vindex].phi.Rows();
+    
+    int shV = datavec[vindex].fVecShapeIndex.NElements();
+    int shP = phiP.Rows();
+    
+//    for(int wr=0; wr<phiV.Rows();wr++){
+//        for(int wc=0; wc<phiV.Cols();wc++){
+//            std::cout<<phiV(wr,wc)<<std::endl;
+//        }
+//    }
+    
+    for(int ip = 0; ip < shP; ip++ )
     {
         
-        int ivectorindex    = datavec[vindex].fVecShapeIndex[in].first;
-        int ishapeindex     = datavec[vindex].fVecShapeIndex[in].second;
+        //	Derivative calculations for P
+        GradPhiPi[0] = dphiP(0,ip)*datavec[pindex].axes(0,0);
+        //+dphiP(1,ip)*axesP(1,0);
+        
+        //GradPhiPi[1] = dphiP(0,ip)*axesP(0,1)+dphiP(1,ip)*axesP(1,1);
+        std::cout<<GradPhiPi[0]<<std::endl;
+        
+    }
+    
+    for(int in = 0; in < shV; in++ )
+    {
+        
+        int ivectorindex = datavec[vindex].fVecShapeIndex[in].first;
+        int ishapeindex = datavec[vindex].fVecShapeIndex[in].second;
         
         //	Derivative calculations for Ux
-        GradPhiI[0] = dphiV(0,ivectorindex)*axes(0,0)+dphiV(1,ivectorindex)*axes(1,0);
+        GradPhiVi[0] = dphiV(0,ivectorindex)*axes(0,0)+dphiV(1,ivectorindex)*axes(1,0);
         //	Derivative calculations for Uy
-        GradPhiI[1] = dphiV(0,ivectorindex)*axes(0,1)+dphiV(1,ivectorindex)*axes(1,1);
+        GradPhiVi[1] = dphiV(0,ivectorindex)*axes(0,1)+dphiV(1,ivectorindex)*axes(1,1);
         
-        GradPhiI.Print();
+        GradPhiVi.Print();
         
         
     }
@@ -379,7 +406,6 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 
 
 void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-    
     
     
     

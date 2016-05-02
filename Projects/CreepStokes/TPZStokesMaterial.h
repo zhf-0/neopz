@@ -6,7 +6,7 @@
  *  Copyright 2015 __MyCompanyName__. All rights reserved.
  *
  */
-
+#include "pzmatwithmem.h"
 #include "pzdiscgal.h"
 #include "pzfmatrix.h"
 #include "pzbndcond.h"
@@ -20,7 +20,7 @@
 
 
 
-class TPZStokesMaterial : public TPZDiscontinuousGalerkin {
+class TPZStokesMaterial : public TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >  {
     
 private:
 
@@ -104,8 +104,13 @@ public:
     void FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<STATE> > &GradPhi);
     
     /** @brief Not used contribute methods */
-    virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){DebugStop();}
-    virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){DebugStop();}
+    virtual void Contribute(TPZMaterialData &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){DebugStop();}
+    
+    // Contribute Methods being used - Multiphysics
+    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+    
+    
+    virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){}
     virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){DebugStop();}
     virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){DebugStop();}
     virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){DebugStop();}
@@ -121,7 +126,7 @@ public:
      * @param ef[out] is the load vector
      * @since April 16, 2007
      */
-    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+   
     
     /**
      * It computes a contribution to the load vector at one integration point.
