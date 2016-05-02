@@ -22,7 +22,11 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(int matid) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid){
+TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) : TPZDiscontinuousGalerkin(matid),
+        fViscosity(viscosity), fDimension(dimension)
+{
+    // symmetric version
+    fTheta = -1;
     
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
@@ -32,7 +36,9 @@ TPZStokesMaterial::TPZStokesMaterial(int matid) : TPZMatWithMem<TPZFMatrix<REAL>
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
+TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZDiscontinuousGalerkin(mat), fViscosity(mat.fViscosity),
+        fDimension(mat.fDimension), fTheta(mat.fTheta)
+{
 
     
 }
@@ -278,44 +284,51 @@ void TPZStokesMaterial::FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<S
 
 void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
 
-
-    // Verificao do numero de variaveis envolvidas
-    
-    //int nref =  datavec.size();
-//    if (nref != 2 ) {
-//        std::cout << " Erro. The size of the datavec is different from 2 \n";
-//        DebugStop();
-//    }
-
-    // Definicao dos blocos das variaveis : Velocidade (vetorial) e Pressao (escalar)
+#ifdef PZDEBUG
+    //2 = 1 Vel space + 1 Press space
+    int nref =  datavec.size();
+    if (nref != 2 ) {
+        std::cout << " Erro. The size of the datavec is different from 2 \n";
+        DebugStop();
+    }
+#endif
     
     const int vindex = this->VIndex();
     const int pindex = this->PIndex();
     
-    // Deficao das funcoes de forma e respectivas derivadas para as variaveis envolvidas : Velocidade e Pressao
+    if (datavec[vindex].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavec[vindex]);
+    }
+    // Setting forcing function
+    /*STATE force = 0.;
+    if(this->fForcingFunction) {
+        TPZManVector<STATE> res(1);
+        fForcingFunction->Execute(datavec[pindex].x,res);
+        force = res[0];
+    }*/
     
-    // Veloidade (phi e dphi)
-    TPZFMatrix<STATE> &phiV = datavec[vindex].phi;
-    TPZFMatrix<STATE> &dphiV = datavec[vindex].dphix;
-    TPZFMatrix<REAL>	&axes	=	datavec[vindex].axes;
+    //Gravity
+    STATE rhoi = 900.; //itapopo
+    STATE g = 9.81; //itapopo
+    STATE force = rhoi*g;
     
-    // Pressao (phi e dphi)
-    TPZFMatrix<STATE> &phiP = datavec[pindex].phi;
-    TPZFMatrix<STATE> &dphiP = datavec[pindex].dphix;
-    TPZFMatrix<REAL>	&axesP	=	datavec[pindex].axes;
+    // Setting the phis
+    // V
+    TPZFMatrix<REAL> &phiV = datavec[vindex].phi;
+    TPZFMatrix<REAL> &dphiV = datavec[vindex].dphix;
+    // P
+    TPZFMatrix<REAL> &phiP = datavec[pindex].phi;
+    TPZFMatrix<REAL> &dphiP = datavec[pindex].dphix;
     
+    TPZFNMatrix<220,REAL> dphiVx(fDimension,dphiV.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiV, dphiVx, datavec[vindex].axes);
     
-    // Calculo dos Gradiento da Funcao de forma
-        
-    TPZVec <double> StateVariable(3,0.0);
-        
-    //	Elastic equation
-    //	Linear strain operator
-    //	Ke Matrix
-    TPZManVector<STATE,2> GradPhiVi(2),GradPhiVj(2),GradPhiPi(1),GradPhiPj(1);
+    TPZFNMatrix<220,REAL> dphiPx(fDimension,phiP.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiP, dphiPx, datavec[pindex].axes);
     
-   // Numero de funcoes testes para cada variavel
-   //int shV = datavec[vindex].phi.Rows();
+    int nshapeV, nshapeP;
+    nshapeP = phiP.Rows();
+    nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
     int shV = datavec[vindex].fVecShapeIndex.NElements();
     int shP = phiP.Rows();
@@ -326,15 +339,51 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //        }
 //    }
     
-    for(int ip = 0; ip < shP; ip++ )
+    for(int ip = 0; ip < nshapeV; ip++ )
     {
+        int iphi = datavec[vindex].fVecShapeIndex[i].second;
+        int ivec = datavec[vindex].fVecShapeIndex[i].first;
+        TPZFNMatrix<9> GradVi(fDimension,fDimension);
+        for (int e=0; e<fDimension; e++) {
+            for (int f=0; f<fDimension; f++) {
+                GradVi(e,f) = datavec[vindex].fNormalVec(e,ivec)*dphiVx(f,iphi);
+            }
+        }
         
-        //	Derivative calculations for P
-        GradPhiPi[0] = dphiP(0,ip)*datavec[pindex].axes(0,0);
-        //+dphiP(1,ip)*axesP(1,0);
+        // matrix A - gradV
+        for(int j = 0; j < nshapeV; j++){
+            int jphi = datavec[vindex].fVecShapeIndex[j].second;
+            int jvec = datavec[vindex].fVecShapeIndex[j].first;
+            TPZFNMatrix<9> GradVj(fDimension,fDimension);
+            for (int e=0; e<fDimension; e++) {
+                for (int f=0; f<fDimension; f++) {
+                    GradVj(e,f) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi);
+                }
+            }
+            // colocar os termos vectoriais vezes vectoriais
+            //itapopo verificar termo simétrico
+            ek(i,j) += 2. * weight * Visc * Inner( GradU[j], GradU[i] ) ; ///Visc*(GradU+GradU^T):GradPhi
+            
+        }//j
         
-        //GradPhiPi[1] = dphiP(0,ip)*axesP(0,1)+dphiP(1,ip)*axesP(1,1);
-        std::cout<<GradPhiPi[0]<<std::endl;
+        // matrix B - pressure and velocity
+        for (int j = 0; j < nshapeP; j++) {
+            
+            TPZManVector<REAL,3> GradPj(fDimension);
+            for (int e=0; e<fDimension; e++) {
+                GradPj[e] = dphiPx(e,j);
+            }
+            
+            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradU[i] ); ///p*div(U)
+            
+            // colocar vectoriais vezes pressao
+            // Matrix B
+            ek(i, nshapeV+j) += fact;
+            
+            // colocar pressao vezes vectoriais
+            // Matrix B^T
+            ek(nshapeV+j,i) += fact;
+        }//j
         
     }
     
@@ -401,6 +450,24 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //
 //    }//i
     
+    for (int ipressure = 0; ipressure < nshapeP; ipressure++) {
+        TPZManVector<REAL,3> GradPi(fDimension);
+        for (int e=0; e<fDimension; e++) {
+            GradPi[e] = dphiPx(e,ipressure);
+        }
+
+        for (int jpressure = 0; jpressure < nshapeP; jpressure++) {
+            // colocar as contribuicoes pressao - pressao aqui
+            TPZManVector<REAL,3> GradPj(fDimension);
+            for (int e=0; e<fDimension; e++) {
+                GradPj[e] = dphiPx(e,jpressure);
+            }
+            // colocar os termos pressao pressao
+            // talvez aqui nao tem nada???
+
+        }
+    }
+    
     
 }
 
@@ -411,7 +478,25 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     
     DebugStop();
     
+#ifdef PZDEBUG
+    //2 = 1 Vel space + 1 Press space
+    int nrefl =  datavecleft.size();
+    int nrefr =  datavecright.size();
+    if (nrefl != 2 || nrefr != 2) {
+        std::cout << " Erro. The size of the datavec is different from 2 \n";
+        DebugStop();
+    }
+#endif
     
+    
+    if (datavecleft[vindex].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavecleft[vindex]);
+    }
+    if (datavecright[vindex].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavecright[vindex]);
+    }
+    
+
     
     
 }
@@ -704,3 +789,18 @@ STATE TPZStokesMaterial::Tr( TPZFMatrix<REAL> &GradU ){
     
     return Val;
 }
+
+/// transform a H1 data structure to a vector data structure
+void TPZStokesMaterial::FillVecShapeIndex(TPZMaterialData &data)
+{
+    data.fNormalVec.Resize(fDimension,fDimension);
+    data.fNormalVec.Identity();
+    data.fVecShapeIndex.Resize(fDimension*data.phi.Rows());
+    for (int d=0; d<fDimension; d++) {
+        for (int i=0; i<data.phi.Rows(); i++) {
+            data.fVecShapeIndex[i*fDimension+d].first = d;
+            data.fVecShapeIndex[i*fDimension+d].second = i;
+        }
+    }
+}
+
