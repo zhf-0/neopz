@@ -339,6 +339,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
         for (int e=0; e<fDimension; e++) {
             for (int f=0; f<fDimension; f++) {
                 GradVi(e,f) = datavec[vindex].fNormalVec(e,ivec)*dphiVx(f,iphi);
+
             }
         }
         
@@ -355,14 +356,18 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
             // colocar os termos vectoriais vezes vectoriais
             //itapopo verificar termo simétrico
             
-            GradVi.Transpose();
-            GradVi=Inner(GradVi, GradVj);
-            Tr(GradVi);
+//            GradVi.Transpose();
+//            REAL awe=Inner(GradVi, GradVj);
+//            
+//            std::cout<<awe<<std::endl;
             
-            ek(i,j) += weight * fViscosity * Tr(GradVi) ; ///Visc*(GradU+GradU^T):GradPhi
+            ek(i,j) += weight * fViscosity * Inner(GradVi, GradVj)*0 ; ///Visc*(GradU+GradU^T):GradPhi
             
+            //std::cout<<ek(i,j)<<std::endl;
             
         }//j
+        
+        
         
         // matrix B - pressure and velocity
         for (int j = 0; j < nshapeP; j++) {
@@ -399,11 +404,14 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
                 GradPj[e] = dphiPx(e,jpressure);
             }
             // colocar os termos pressao pressao
-             ek(nshapeV+ipressure, nshapeV+jpressure) += 0;
+             ek(nshapeV+ipressure, nshapeV+jpressure) += 0.;
             // talvez aqui nao tem nada???
 
         }
     }
+    
+    std::cout<<ek<<std::endl;
+
     
 
 }
