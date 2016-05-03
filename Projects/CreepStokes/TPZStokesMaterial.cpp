@@ -361,7 +361,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //            
 //            std::cout<<awe<<std::endl;
             
-            ek(i,j) += weight * fViscosity * Inner(GradVi, GradVj)*0 ; ///Visc*(GradU+GradU^T):GradPhi
+            ek(i,j) += weight * fViscosity * Inner(GradVi, GradVj) ; ///Visc*(GradU+GradU^T):GradPhi
             
             //std::cout<<ek(i,j)<<std::endl;
             
@@ -377,7 +377,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
                 GradPj[e] = dphiPx(e,j);
             }
             
-            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradVi ); ///p*div(U)
+            STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradVi )*0; ///p*div(U)
             
             // colocar vectoriais vezes pressao
             // Matrix B
