@@ -121,6 +121,7 @@ public:
     // Contribute Methods being used - Multiphysics
     virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     
+
     
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){}
     virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){DebugStop();}
@@ -176,6 +177,18 @@ public:
     }
     
     /**
+     * It computes a contribution to the stiffness matrix and load vector at one internal interface integration point.
+     * @param data[in] stores all input data
+     * @param weight[in] is the weight of the integration rule
+     * @param ek[out] is the stiffness matrix
+     * @param ef[out] is the load vector
+     * @param bc[in] is the boundary condition material
+     * @since April 16, 2007
+     */
+    virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
+    
+    
+    /**
      * It computes a contribution to the stiffness matrix and load vector at one BC interface integration point.
      * @param data[in] stores all input data
      * @param weight[in] is the weight of the integration rule
@@ -189,16 +202,7 @@ public:
     }
     
     
-    /**
-     * It computes a contribution to the stiffness matrix and load vector at one internal interface integration point.
-     * @param data[in] stores all input data
-     * @param weight[in] is the weight of the integration rule
-     * @param ek[out] is the stiffness matrix
-     * @param ef[out] is the load vector
-     * @param bc[in] is the boundary condition material
-     * @since April 16, 2007
-     */
-    virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
+
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one internal interface integration point.

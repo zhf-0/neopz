@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 //    int dim = 2; //dimensao do problema
     double hx=2.,hy=2.; //dimensoes em x e y do dominio
     
-    int nelx=1, nely=1; //nuemero de elementos em x e y
+    int nelx=2, nely=1; //nuemero de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //numero de nos em x  y
     //double elsizex=hx/nelx, elsizey=hy/nely; //tamanho dos elementos
     //int nel = elsizex*elsizey; //numero de elementos a serem utilizados
@@ -280,7 +280,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
-    cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
+    cmesh->SetAllCreateFunctionsDiscontinuous(); // Setting up h1 approximation space
     
     // Criando material
     TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
@@ -331,7 +331,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
-    cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
+    cmesh->SetAllCreateFunctionsDiscontinuous(); // Setting up h1 approximation space
     
     // Criando material
     TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
