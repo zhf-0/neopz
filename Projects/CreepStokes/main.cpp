@@ -16,6 +16,10 @@
 #include <TPZGeoElement.h>
 #include "TPZVTKGeoMesh.h"
 #include "pzbuildmultiphysicsmesh.h"
+#include "TPZInterfaceEl.h"
+
+#include "TPZGeoLinear.h"
+#include "tpzgeoelrefpattern.h"
 
 //------------------STOKES Creep Of Concrete------------------------
 
@@ -56,8 +60,21 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder);
  */
 TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder);
 
+TPZCompEl *CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,int &index);
+const int quadmat1=  1; // Parte inferior do quadrado
+const int quadmat2 =  2; // Parte superior do quadrado
+
+const int matInterface = 4;
+const int quadmat3=3;// Material de interface
+
+
+
+
 ///Adiciona namespace std
 using namespace std;
+
+
+
 
 ///Funcao principal do programa
 int main(int argc, char *argv[])
@@ -226,6 +243,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
                 ncoordzrightVec[sizeOfrightVec-1] = TopolPlate[i];
             }
             
+
             
         }
         if (sizeOfbottVec == 2) {
@@ -250,6 +268,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
             TPZGeoElBC(platesideright,dirrightID);
         }
         
+        
         ncoordzbottVec.Resize(0);
         sizeOfbottVec = 0;
         ncoordztopVec.Resize(0);
@@ -260,6 +279,23 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
         sizeOfrightVec = 0;
         
     }
+    
+    
+    TPZVec<long> nodind3(2);
+    
+    nodind3[0]=1;
+    nodind3[1]=4;
+    
+    
+    new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (id,nodind3,matInterface,*gmesh);
+    id++;
+    
+    gmesh->AddInterfaceMaterial(quadmat1, quadmat2, quadmat3);
+    gmesh->AddInterfaceMaterial(quadmat2, quadmat1, quadmat3);
+    
+    
+    
+    
     ofstream bf("before.vtk");
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, bf);
     return gmesh;
@@ -267,6 +303,23 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     
 }
+
+TPZCompEl *CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
+    if(!gel->Reference() && gel->NumInterfaces() == 0)
+        return new TPZInterfaceElement(mesh,gel,index);
+    
+#ifdef LOG4CXX
+    if (logger->isDebugEnabled())
+    {
+        std::stringstream sout;
+        sout<<"elemento de interface "<<std::endl;
+        LOGPZ_DEBUG(logger, sout.str().c_str());
+    }
+#endif
+    
+    return NULL;
+}
+
 
 TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
 {
@@ -311,9 +364,31 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
 //    cmesh->InsertMaterialObject(BCond3);//insere material na malha
     
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
+    
+    
+    int ncel = cmesh->NElements();
+    for(int i =0; i<ncel; i++){
+        TPZCompEl * compEl = cmesh->ElementVec()[i];
+        if(!compEl) continue;
+        TPZInterfaceElement * facel = dynamic_cast<TPZInterfaceElement *>(compEl);
+        if(facel)DebugStop();
+        
+    }
+
+    
+    
     cmesh->AutoBuild();
     cmesh->AdjustBoundaryElements();
     cmesh->CleanUpUnconnectedNodes();
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     return cmesh;
     
@@ -363,6 +438,21 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
 //    cmesh->InsertMaterialObject(BCond3);//insere material na malha
     
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
+    
+
+    int ncel = cmesh->NElements();
+    for(int i =0; i<ncel; i++){
+        TPZCompEl * compEl = cmesh->ElementVec()[i];
+        if(!compEl) continue;
+        TPZInterfaceElement * facel = dynamic_cast<TPZInterfaceElement *>(compEl);
+        if(facel)DebugStop();
+        
+    }
+
+    
+    
+    
+    
     cmesh->AutoBuild();
     
     return cmesh;
@@ -409,6 +499,19 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
 //    TPZMaterial * BCond3 = material->CreateBC(material, bc3, dirichlet, val1, val2);//cria material que implementa a condicao de contorno da placa superior
 ////    
 //    cmesh->InsertMaterialObject(BCond3);//insere material na malha
+    
+#ifdef PZDEBUG
+    int ncel = cmesh->NElements();
+    for(int i =0; i<ncel; i++){
+        TPZCompEl * compEl = cmesh->ElementVec()[i];
+        if(!compEl) continue;
+        TPZInterfaceElement * facel = dynamic_cast<TPZInterfaceElement *>(compEl);
+        if(facel)DebugStop();
+        
+    }
+#endif
+    
+    
     
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
     cmesh->AutoBuild();

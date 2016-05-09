@@ -419,8 +419,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 
 void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     
-    
-    
+
     DebugStop();
     
 //#ifdef PZDEBUG
@@ -937,6 +936,103 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
    
     
 }
+
+
+void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+    
+#ifdef PZDEBUG
+    //2 = 1 Vel space + 1 Press space
+    int nref =  datavec.size();
+    if (nref != 2 ) {
+        std::cout << " Erro. The size of the datavec is different from 2 \n";
+        DebugStop();
+    }
+#endif
+    
+    const int vindex = this->VIndex();
+    const int pindex = this->PIndex();
+    
+    if (datavec[vindex].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavec[vindex]);
+    }
+    // Setting forcing function
+    /*STATE force = 0.;
+     if(this->fForcingFunction) {
+     TPZManVector<STATE> res(1);
+     fForcingFunction->Execute(datavec[pindex].x,res);
+     force = res[0];
+     }*/
+    
+    //Gravity
+    STATE rhoi = 900.; //itapopo
+    STATE g = 9.81; //itapopo
+    STATE force = rhoi*g;
+    
+    // Setting the phis
+    // V
+    TPZFMatrix<REAL> &phiV = datavec[vindex].phi;
+    TPZFMatrix<REAL> &dphiV = datavec[vindex].dphix;
+    // P
+    TPZFMatrix<REAL> &phiP = datavec[pindex].phi;
+    TPZFMatrix<REAL> &dphiP = datavec[pindex].dphix;
+    //Normal
+    TPZManVector<REAL,3> &normal = data.normal;
+    
+    TPZFNMatrix<220,REAL> dphiVx(fDimension,dphiV.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiV, dphiVx, datavec[vindex].axes);
+    
+    TPZFNMatrix<220,REAL> phiVx(fDimension,phiV.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(phiV, phiVx, datavec[vindex].axes);
+    
+    TPZFNMatrix<220,REAL> dphiPx(fDimension,phiP.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiP, dphiPx, datavec[pindex].axes);
+    
+    int nshapeV, nshapeP;
+    nshapeP = phiP.Rows();
+    nshapeV = datavec[vindex].fVecShapeIndex.NElements();
+    
+    
+    
+    
+    
+    for(int i = 0; i < nshapeV; i++ )
+    {
+        int iphi = datavec[vindex].fVecShapeIndex[i].second;
+        int ivec = datavec[vindex].fVecShapeIndex[i].first;
+        TPZFNMatrix<9> GradVnj(fDimension,fDimension),phiVi(fDimension,fDimension);
+        for (int e=0; e<fDimension; e++) {
+            for (int f=0; f<fDimension; f++) {
+                phiVi(e,f)=datavec[vindex].fNormalVec(e,ivec)*phiVx(f,iphi);
+            }
+        }
+        
+        for(int j = 0; j < nshapeV; j++){
+            int jphi = datavec[vindex].fVecShapeIndex[j].second;
+            int jvec = datavec[vindex].fVecShapeIndex[j].first;
+            TPZFNMatrix<9> GradVnj(fDimension,fDimension);
+            for (int e=0; e<fDimension; e++) {
+                for (int f=0; f<fDimension; f++) {
+                    GradVnj(e,f) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi)*normal[f];
+                    
+                }
+            }
+            
+            ek(i,j) += (-1.) * weight * fViscosity * Inner(phiVi, GradVnj) ;
+            //ek(i,j) += ftheta*Transpose(ek);
+        }
+        
+    }
+    
+    
+    
+
+    
+    //std::cout<<ek<<std::endl;
+
+    
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 
