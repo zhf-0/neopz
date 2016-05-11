@@ -100,11 +100,12 @@ int main(int argc, char *argv[])
     TPZCompMesh *cmesh_v = CMesh_v(gmesh, pOrder); //funcao para criar a malha computacional da velocidade
     TPZCompMesh *cmesh_p = CMesh_p(gmesh, pOrder); //funcao para criar a malha computacional da pressão
     
-    std::ofstream filecv("MalhaC_v.txt");
-    std::ofstream filecp("MalhaC_p.txt");
-    cmesh_v->Print(filecv);
-    cmesh_p->Print(filecp);
-    
+    {
+        std::ofstream filecv("MalhaC_v.txt");
+        std::ofstream filecp("MalhaC_p.txt");
+        cmesh_v->Print(filecv);
+        cmesh_p->Print(filecp);
+    }
     
     
     TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder); //funcao para criar a malha computacional da pressão
@@ -194,6 +195,10 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     //Generate neighborhod information
     gmesh->BuildConnectivity();
     
+    {
+        TPZCheckGeom check(gmesh);
+        check.CheckUniqueId();
+    }
     long el, numelements = gmesh->NElements();
     int  dirbottID = -1, dirtopID = -2, dirleftID = -3,dirrightID = -4;
     TPZManVector <long> TopolPlate(4);
@@ -285,15 +290,15 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     nodind3[0]=1;
     nodind3[1]=4;
-    
-    
-    new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (id,nodind3,matInterface,*gmesh);
+//    gmesh->CreateGeoElement(EOned, nodind3, matInterface, index);
+    new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (nodind3,matInterface,*gmesh);
     id++;
     
     gmesh->AddInterfaceMaterial(quadmat1, quadmat2, quadmat3);
     gmesh->AddInterfaceMaterial(quadmat2, quadmat1, quadmat3);
     
-    
+    TPZCheckGeom check(gmesh);
+    check.CheckUniqueId();
     
     
     ofstream bf("before.vtk");
@@ -307,15 +312,6 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
 TPZCompEl *CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
     if(!gel->Reference() && gel->NumInterfaces() == 0)
         return new TPZInterfaceElement(mesh,gel,index);
-    
-#ifdef LOG4CXX
-    if (logger->isDebugEnabled())
-    {
-        std::stringstream sout;
-        sout<<"elemento de interface "<<std::endl;
-        LOGPZ_DEBUG(logger, sout.str().c_str());
-    }
-#endif
     
     return NULL;
 }
@@ -333,7 +329,12 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
-    cmesh->SetAllCreateFunctionsDiscontinuous(); // Setting up h1 approximation space
+                            // criar funcoes HDIV
+    cmesh->SetAllCreateFunctionsHDiv(); // Setting up h1 approximation space
+                                        // criar funcoes H1
+//    cmesh->SetAllCreateFunctionsContinuous();
+// para criar elementos com graus de liberdade differentes para cada elemento (descontinuo)
+//    cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
     // Criando material
     TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
@@ -406,7 +407,8 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
-    cmesh->SetAllCreateFunctionsDiscontinuous(); // Setting up h1 approximation space
+    cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
+    cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
     // Criando material
     TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
