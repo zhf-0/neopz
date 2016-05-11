@@ -163,11 +163,11 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     TPZVec <REAL> coord (3,0.);
     
     //Nodes initialization
-    for(i = 0; i < nx; i++){
-        for(j = 0; j < ny; j++){
-            id = i*ny + j;
-            coord[0] = (i)*hx/(nx - 1);
-            coord[1] = (j)*hy/(ny - 1);
+    for(i = 0; i < ny; i++){
+        for(j = 0; j < nx; j++){
+            id = i*nx + j;
+            coord[0] = (j)*hx/(nx - 1);
+            coord[1] = (i)*hy/(ny - 1);
             //using the same coordinate x for z
             coord[2] = 0.;
             //cout << coord << endl;
@@ -182,16 +182,31 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     TPZVec <long> connect(4,0);
     
     //Element connectivities
-    for(i = 0; i < (nx - 1); i++){
-        for(j = 0; j < (ny - 1); j++){
-            index = (i)*(ny - 1)+ (j);
+    for(i = 0; i < (ny - 1); i++){
+        for(j = 0; j < (nx - 1); j++){
+            index = (i)*(nx - 1)+ (j);
             connect[0] = (i)*ny + (j);
-            connect[1] = connect[0]+(ny);
-            connect[2] = connect[1]+1;
-            connect[3] = connect[0]+1;
+            connect[1] = connect[0]+1;
+            connect[2] = connect[1]+(nx);
+            connect[3] = connect[0]+(nx);
             gmesh->CreateGeoElement(EQuadrilateral,connect,1,id);
         }
     }
+    
+    //Element connectivities
+//    for(i = 0; i < (nx - 1); i++){
+//        for(j = 0; j < (ny - 1); j++){
+//            index = (i)*(ny - 1)+ (j);
+//            connect[0] = (i)*ny + (j);
+//            connect[1] = connect[0]+(ny);
+//            connect[2] = connect[1]+1;
+//            connect[3] = connect[0]+1;
+//            gmesh->CreateGeoElement(EQuadrilateral,connect,1,id);
+//        }
+//    }
+//    
+//
+    
     //Generate neighborhod information
     gmesh->BuildConnectivity();
     
@@ -300,6 +315,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     TPZCheckGeom check(gmesh);
     check.CheckUniqueId();
     
+    gmesh->BuildConnectivity();
     
     ofstream bf("before.vtk");
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, bf);
@@ -330,9 +346,9 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
                             // criar funcoes HDIV
-    cmesh->SetAllCreateFunctionsHDiv(); // Setting up h1 approximation space
+//    cmesh->SetAllCreateFunctionsHDiv(); // Setting up h1 approximation space
                                         // criar funcoes H1
-//    cmesh->SetAllCreateFunctionsContinuous();
+    cmesh->SetAllCreateFunctionsContinuous();
 // para criar elementos com graus de liberdade differentes para cada elemento (descontinuo)
 //    cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
