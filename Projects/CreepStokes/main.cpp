@@ -17,6 +17,7 @@
 #include "TPZVTKGeoMesh.h"
 #include "pzbuildmultiphysicsmesh.h"
 #include "TPZInterfaceEl.h"
+#include "TPZMultiPhysicsInterfaceEl.h"
 
 #include "TPZGeoLinear.h"
 #include "tpzgeoelrefpattern.h"
@@ -67,7 +68,7 @@ const int quadmat2 =  2; // Parte superior do quadrado
 const int matInterface = 4;
 const int quadmat3=3;// Material de interface
 
-
+void AddMultiphysicsInterfaces(TPZCompMesh &cmesh);
 
 
 ///Adiciona namespace std
@@ -115,6 +116,13 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::AddElements(meshvector, cmesh_m);
     TPZBuildMultiphysicsMesh::AddConnects(meshvector, cmesh_m);
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
+    cmesh_m->LoadReferences();
+    AddMultiphysicsInterfaces(*cmesh_m);
+
+    {
+        std::ofstream filecm("MalhaG.txt");
+        gmesh->Print(filecm);
+    }
     
     std::ofstream filecm("MalhaC_m.txt");
     cmesh_m->Print(filecm);
@@ -538,4 +546,26 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     
     return cmesh;
     
+}
+
+void AddMultiphysicsInterfaces(TPZCompMesh &cmesh)
+{
+    TPZGeoMesh *gmesh = cmesh.Reference();
+    long nel = gmesh->NElements();
+    for (long el = 0; el<nel; el++) {
+        TPZGeoEl *gel = gmesh->Element(el);
+        if (gel->MaterialId() != matInterface) {
+            continue;
+        }
+        int nsides = gel->NSides();
+        TPZGeoElSide gelside(gel,nsides-1);
+        TPZStack<TPZCompElSide> celstack;
+        gelside.EqualLevelCompElementList(celstack, 0, 0);
+        if (celstack.size() != 2) {
+            DebugStop();
+        }
+        gel->SetMaterialId(1);
+        long index;
+        new TPZMultiphysicsInterfaceElement(cmesh,gel,index,celstack[0],celstack[1]);
+    }
 }
