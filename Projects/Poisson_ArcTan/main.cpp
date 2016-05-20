@@ -2131,6 +2131,8 @@ int main_LDomain() {
 		x1[0] = 1.; x1[1] = 1.;
 		nx[0] = 4; //nx[1] *= 2;
 		TPZGenGrid gen(nx,x0,x1);
+        
+        gen.ComputeGeometricProgression(<#TPZVec<REAL> &minsizes#>, <#TPZVec<REAL> &progression#>)
 		gen.SetElementType(EQuadrilateral);
 		gen.ReadAndMergeGeoMesh(gmesh,gmesh1,materialId);
 		// Inserting boundary elements with associated material

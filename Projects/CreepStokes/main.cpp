@@ -18,6 +18,8 @@
 #include "pzbuildmultiphysicsmesh.h"
 #include "TPZInterfaceEl.h"
 #include "TPZMultiPhysicsInterfaceEl.h"
+#include "pzmat2dlin.h"
+
 
 #include "TPZGeoLinear.h"
 #include "tpzgeoelrefpattern.h"
@@ -358,12 +360,20 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
                                         // criar funcoes H1
     cmesh->SetAllCreateFunctionsContinuous();
 // para criar elementos com graus de liberdade differentes para cada elemento (descontinuo)
-//    cmesh->ApproxSpace().CreateDisconnectedElements(true);
+    cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
     // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
+    
+    // Criando material cujo nSTATE = 2 ou seja linear
+    
+    TPZMat2dLin *material = new TPZMat2dLin(matId);//criando material que implementa a formulacao fraca do problema modelo
+    
     // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
+    
+    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+    material->SetMaterial(xkin, xcin, xfin);
+
     
 //    ///Inserir condicao de contorno esquerda
 //    TPZFMatrix<REAL> val1(1,1,0.), val2(1,1,0.);
@@ -434,11 +444,18 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetAllCreateFunctionsContinuous(); // Setting up h1 approximation space
     cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
-    // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
+    // Criando material cujo nSTATE = 2 ou seja linear
     
-        // Inserindo material na malha
+    TPZMat2dLin *material = new TPZMat2dLin(matId);//criando material que implementa a formulacao fraca do problema modelo
+    
+    // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
+    
+    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
+    material->SetMaterial(xkin, xcin, xfin);
+    
+    
+    
 //    
 //    ///Inserir condicao de contorno esquerda
 //    TPZFMatrix<REAL> val1(1,1,0.), val2(1,1,0.);
