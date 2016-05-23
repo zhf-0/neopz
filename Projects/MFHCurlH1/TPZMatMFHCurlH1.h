@@ -31,6 +31,8 @@ protected:
     REAL fTheta;
     REAL fScale;
     whichMatrix assembling;
+    const int h1meshindex = 1;
+    const int hcurlmeshindex = 0;
     
     
 public:
