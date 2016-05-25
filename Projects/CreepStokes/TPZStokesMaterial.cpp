@@ -23,10 +23,10 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid),fViscosity(viscosity), fDimension(dimension)
+TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, REAL theta) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid),fViscosity(viscosity),fTheta(theta),fDimension(dimension)
 {
     // symmetric version
-    fTheta = -1;
+    //fTheta = -1;
     
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
@@ -36,7 +36,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity) :
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity),fDimension(mat.fDimension), fTheta(mat.fTheta)
+TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
 {
 
     
@@ -404,13 +404,13 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     }
     
     //teste: Zerar contribuições dos elementos
-//    
-//    for(int i=0;i<nshapeV+nshapeP;i++){
-//        for(int j=0;j<nshapeV+nshapeP;j++){
-//            ek(i,j)*=0.0;
-//        }
-//    
-//    }
+    
+    for(int i=0;i<nshapeV+nshapeP;i++){
+        for(int j=0;j<nshapeV+nshapeP;j++){
+            ek(i,j)*=0.0;
+        }
+    
+    }
     
     
     
@@ -585,8 +585,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
                 }
             }
             
-            ek(i1,j1) += (-1./2.) * weight * fViscosity * InnerVec(phiV1i, GradV1nj)*Detjac*0 ;
+            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV1i, GradV1nj);
             
+            ek(i1,j1) +=fact;
+            ek(j1,i1) +=fact*fTheta;
         
             
         }
@@ -601,7 +603,7 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             STATE fact = (1./2.) * weight * fViscosity * Inner(phiV1ni,phiP1j);
             
             ek(i1,j1+nshapeV1) += fact;
-            ek(j1+nshapeV1,i1) += fact;
+            ek(j1+nshapeV1,i1) += fact*fTheta;
          
         }
      
@@ -621,7 +623,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
                 }
             }
 
-            ek(i1,j2+nshapeV1+nshapeP1) += (-1./2.) * weight * fViscosity * InnerVec(phiV1i,GradV2nj)*Detjac*0;
+            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV1i,GradV2nj);
+            
+            ek(i1,j2+nshapeV1+nshapeP1) += fact;
+            ek(j2+nshapeV1+nshapeP1,i1) += fact*fTheta;
             
         }
 
@@ -631,10 +636,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             TPZFNMatrix<9> phiP2j(1,1,0.);
             phiP2j(0,0)=phiP2(j2,0);
             
-            STATE fact = (1./2.) * weight * fViscosity * InnerVec(phiV1ni,phiP2j)*Detjac*0.;
+            STATE fact = (1./2.) * weight * fViscosity * InnerVec(phiV1ni,phiP2j);
             
             ek(i1,j2+2*nshapeV1+nshapeP1) += fact;
-            ek(j2+2*nshapeV1+nshapeP1,i1) += fact;
+            ek(j2+2*nshapeV1+nshapeP1,i1) += fact*fTheta;
             
         }
        
@@ -670,7 +675,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
                 }
             }
             
-            ek(i2+nshapeV1+nshapeP1,j1) += (1./2.) * weight * fViscosity * InnerVec(phiV2i, GradV1nj)*Detjac*0 ;
+            STATE fact = (1./2.) * weight * fViscosity * InnerVec(phiV2i, GradV1nj);
+            
+            ek(i2+nshapeV1+nshapeP1,j1) += fact;
+            ek(j1,i2+nshapeV1+nshapeP1) += fact*fTheta;
             
         }
         
@@ -680,10 +688,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             TPZFNMatrix<9> phiP1j(1,1,0.);
             phiP1j(0,0)=phiP1(j1,0);
             
-            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV2ni,phiP1j)*0;
+            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV2ni,phiP1j);
             
             ek(i2+nshapeV1+nshapeP1,j1+nshapeV1) += fact;
-            ek(j1+nshapeV1,i2+nshapeV1+nshapeP1) += fact;
+            ek(j1+nshapeV1,i2+nshapeV1+nshapeP1) += fact*fTheta;
             
         }
         
@@ -699,11 +707,16 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
                 GradV2nj.Zero();
                 for (int e=0; e<fDimension; e++) {
                     for (int f=0; f<fDimension; f++) {
-                        GradV2nj(e,0) = datavecright[vindex].fNormalVec(e,jvec2)*dphiVx2(f,jphi2)*normal[f];
+                        GradV2nj(e,0) += datavecright[vindex].fNormalVec(e,jvec2)*dphiVx2(f,jphi2)*normal[f];
                     }
+                }
             }
             
-            ek(i2+nshapeV1+nshapeP1,j2+nshapeV1+nshapeP1) += (1./2.) * weight * fViscosity * InnerVec(phiV2i,GradV2nj);
+            STATE fact = (1./2.) * weight * fViscosity * InnerVec(phiV2i,GradV2nj);
+            
+            ek(i2+nshapeV1+nshapeP1,j2+nshapeV1+nshapeP1) += fact;
+            ek(j2+nshapeV1+nshapeP1,i2+nshapeV1+nshapeP1) += fact*fTheta;
+            
             
         }
         
@@ -713,10 +726,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             TPZFNMatrix<9> phiP2j(1,1,0.);
             phiP2j(0,0)=phiP2(j2,0);
             
-            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV2ni,phiP2j)*0;
+            STATE fact = (-1./2.) * weight * fViscosity * InnerVec(phiV2ni,phiP2j);
 
             ek(i2+nshapeV1+nshapeP1,j2+2*nshapeV1+nshapeP1) += fact;
-            ek(j2+2*nshapeV1+nshapeP1,i2+nshapeV1+nshapeP1) += fact;
+            ek(j2+2*nshapeV1+nshapeP1,i2+nshapeV1+nshapeP1) += fact*fTheta;
         }
         
     }

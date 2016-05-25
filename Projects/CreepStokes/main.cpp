@@ -19,6 +19,7 @@
 #include "TPZInterfaceEl.h"
 #include "TPZMultiPhysicsInterfaceEl.h"
 #include "pzmat2dlin.h"
+#include "pzfstrmatrix.h"
 
 
 #include "TPZGeoLinear.h"
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 {
 
 //    int dim = 2; //dimensao do problema
-    double hx=2.,hy=2.; //dimensoes em x e y do dominio
+    double hx=4.,hy=2.; //dimensoes em x e y do dominio
     
     int nelx=2, nely=1; //nuemero de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //numero de nos em x  y
@@ -133,9 +134,26 @@ int main(int argc, char *argv[])
     bool optimizeBandwidth = false; //impede a renumeracao das equacoes do problema(para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //cria objeto de analise que gerenciaria a analise do problema
     an.Run();//assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equacoes
-    
+
+    // Imprimir vetor solucao
+
     TPZFMatrix<REAL> solucao=cmesh_m->Solution();//Pegando o vetor de solucao, alphaj
+    
     solucao.Print("Sol",cout,EMathematicaInput);//imprime na formatacao do Mathematica
+    
+    
+    // Imprimir Matriz de rigidez Global
+    
+    int neq = cmesh_m->NEquations();
+    TPZFMatrix<STATE> stiff(neq,neq,0.),rhs(neq,1,0.);
+    TPZFStructMatrix fstr(cmesh_m);
+    fstr.Assemble(stiff, rhs, 0);
+    
+    std::ofstream filestiff("stiffness.txt");
+    stiff.Print("Global Stiffness matrix",filestiff,EMathematicaInput);
+    
+    
+    
     
     //fazendo pos processamento para paraview
 
@@ -355,12 +373,16 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmesh->SetDimModel(dim);//seta dimensao do modelo
-                            // criar funcoes HDIV
-//    cmesh->SetAllCreateFunctionsHDiv(); // Setting up h1 approximation space
-                                        // criar funcoes H1
-    cmesh->SetAllCreateFunctionsContinuous();
+  
+    //Criar funções H1
+//    cmesh->SetAllCreateFunctionsContinuous();
+    
+    //Criar funções HDIV
+    cmesh->SetAllCreateFunctionsHDiv(); // Setting up h1 approximation space
+    
+    
 // para criar elementos com graus de liberdade differentes para cada elemento (descontinuo)
-    cmesh->ApproxSpace().CreateDisconnectedElements(true);
+   // cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
     // Criando material
     
@@ -371,7 +393,13 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
     
-    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+    //Dimensoes do material (para H1)
+//    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+//    material->SetMaterial(xkin, xcin, xfin);
+    
+    
+    //Dimensoes do material (para HDiv)
+    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
     material->SetMaterial(xkin, xcin, xfin);
 
     
@@ -416,14 +444,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->AdjustBoundaryElements();
     cmesh->CleanUpUnconnectedNodes();
     
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     return cmesh;
     
@@ -507,7 +528,8 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     const int dim = 2; //dimensao do problema
     const int matId = 1, bc0 = -1, bc1 = -2, bc2=-3, bc3=-4; //MESMOS ids da malha geometrica
     const int dirichlet = 0, neumann = 1, mixed = 2; //tipo da condicao de contorno do problema ->default dirichlet na esquerda e na direita
-    REAL visco=1.;
+    REAL visco=1.,theta=-1.;
+    
     
     ///criar malha computacional
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
@@ -516,7 +538,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetAllCreateFunctionsMultiphysicElem();
     
     // Criando material
-    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco);//criando material que implementa a formulacao fraca do problema modelo
+    TPZStokesMaterial *material = new TPZStokesMaterial(matId,dim,visco,theta);//criando material que implementa a formulacao fraca do problema modelo
     // Inserindo material na malha
     cmesh->InsertMaterialObject(material);
     

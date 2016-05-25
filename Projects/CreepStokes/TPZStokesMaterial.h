@@ -43,7 +43,7 @@ public:
     /** Creates a material object and inserts it in the vector of
      *  material pointers of the mesh.
      */
-    TPZStokesMaterial(int matid, int dimension, STATE viscosity);
+    TPZStokesMaterial(int matid, int dimension, STATE viscosity, STATE theta);
     
     
     /** Creates a material object based on the referred object and
