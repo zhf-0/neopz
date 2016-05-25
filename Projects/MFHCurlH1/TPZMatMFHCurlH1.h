@@ -25,7 +25,6 @@ protected:
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);
     REAL fLambda;
-    REAL fKz;
     REAL fE0;
     REAL fW;
     REAL fTheta;
@@ -33,11 +32,11 @@ protected:
     whichMatrix assembling;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
-    
+    bool isTesting;
     
 public:
     
-    TPZMatMFHCurlH1(int id, REAL lambda, REAL kz , STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatMFHCurlH1(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
     
     TPZMatMFHCurlH1(int id);
     
@@ -75,7 +74,7 @@ public:
      */
     virtual void SetMatrixB(){ assembling = B;};
     
-    virtual void ContributeValidateFunctions(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+    virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
      * @param data [in] stores all input data
