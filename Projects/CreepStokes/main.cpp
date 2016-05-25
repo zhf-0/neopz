@@ -583,6 +583,6 @@ void AddMultiphysicsInterfaces(TPZCompMesh &cmesh)
         }
         gel->SetMaterialId(1);
         long index;
-        new TPZMultiphysicsInterfaceElement(cmesh,gel,index,celstack[0],celstack[1]);
+        new TPZMultiphysicsInterfaceElement(cmesh,gel,index,celstack[1],celstack[0]);
     }
 }

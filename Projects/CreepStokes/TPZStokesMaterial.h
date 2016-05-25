@@ -103,6 +103,9 @@ public:
     /** inner product of two tensors. See Gurtin (2003), p. 5. */
     STATE Inner(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
     
+    /** inner product of two vectors. See Gurtin (2003), p. 5. */
+    STATE InnerVec(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
+    
     /** trace of the tensor GradU = Div(U)*/
     STATE Tr(TPZFMatrix<REAL> &GradU );
     
