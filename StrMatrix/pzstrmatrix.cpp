@@ -232,6 +232,7 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
         if(guiInterface) if(guiInterface->AmIKilled()){
             return;
         }
+        ek.fMat.Print("EK=",std::cout,EMathematicaInput);
         
 #ifdef LOG4CXX
         if (loggerelmat->isDebugEnabled())

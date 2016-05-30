@@ -336,7 +336,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     {
         int iphi = datavec[vindex].fVecShapeIndex[i].second;
         int ivec = datavec[vindex].fVecShapeIndex[i].first;
-        TPZFNMatrix<9> GradVi(fDimension,fDimension);
+        TPZFNMatrix<4> GradVi(fDimension,fDimension);
         for (int e=0; e<fDimension; e++) {
             for (int f=0; f<fDimension; f++) {
                 GradVi(e,f) = datavec[vindex].fNormalVec(e,ivec)*dphiVx(f,iphi);
@@ -344,18 +344,35 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
             }
         }
         
+        
+        std::cout<<iphi<<std::endl;
+        
+        std::cout<<datavec[vindex].phi(iphi,0)<<std::endl;
+        
+        for (int e=0; e<fDimension; e++) {
+            
+            std::cout<<dphiVx(e,iphi)<<std::endl;
+            
+        }
+        
+        std::cout<<"____"<<std::endl;
+        
+        
+        
+        
+        
         // matrix A - gradV
         for(int j = 0; j < nshapeV; j++){
             int jphi = datavec[vindex].fVecShapeIndex[j].second;
             int jvec = datavec[vindex].fVecShapeIndex[j].first;
-            TPZFNMatrix<9> GradVj(fDimension,fDimension);
+            TPZFNMatrix<4> GradVj(fDimension,fDimension);
             for (int e=0; e<fDimension; e++) {
                 for (int f=0; f<fDimension; f++) {
                     GradVj(e,f) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi);
                 }
             }
-            
-            ek(i,j) += weight * fViscosity * Inner(GradVi, GradVj) ; ///Visc*(GradU+GradU^T):GradPhi
+            STATE val = Inner(GradVi, GradVj);
+            ek(i,j) += weight * fViscosity * val ; ///Visc*(GradU+GradU^T):GradPhi
 
             
         }
@@ -401,20 +418,22 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
             // talvez aqui nao tem nada???
 
         }
+        
+
+        
     }
     
     //teste: Zerar contribuições dos elementos
     
-    for(int i=0;i<nshapeV+nshapeP;i++){
-        for(int j=0;j<nshapeV+nshapeP;j++){
-            ek(i,j)*=0.0;
-        }
+//    for(int i=0;i<nshapeV+nshapeP;i++){
+//        for(int j=0;j<nshapeV+nshapeP;j++){
+//            ek(i,j)*=0.0;
+//        }
+//    
+//    }
     
-    }
     
-    
-    
-    std::cout<<ek<<std::endl;
+   std::cout<<ek<<std::endl;
 
     
 
@@ -566,9 +585,19 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             }
         }
         
-        std::cout<<phiV1i<<std::endl;
-        std::cout<<phiV1ni<<std::endl;
-        std::cout<<GradV1ni<<std::endl;
+
+//        std::cout<<iphi1<<std::endl;
+//        
+//        std::cout<<datavecleft[vindex].phi(iphi1,0)<<std::endl;
+//        
+//        for (int e=0; e<fDimension; e++) {
+//            
+//            std::cout<<datavecleft[vindex].fNormalVec(e,ivec1)<<std::endl;
+//            
+//        }
+//        
+//        std::cout<<"____"<<std::endl;
+
         
         TPZFNMatrix<9> GradV1nj(fDimension,1,0.);
         
@@ -662,6 +691,24 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
                 GradV2ni(e,0) += datavecright[vindex].fNormalVec(e,ivec2)*dphiVx2(f,iphi2)*normal[f];
             }
         }
+      
+        
+//        std::cout<<iphi2<<std::endl;
+//        
+//        std::cout<<datavecright[vindex].phi(iphi2,0)<<std::endl;
+//        
+//        for (int e=0; e<fDimension; e++) {
+//            
+//            std::cout<<datavecright[vindex].fNormalVec(e,ivec2)<<std::endl;
+//   
+//        }
+//        
+//        std::cout<<"____"<<std::endl;
+
+//        std::cout<<phiV2ni<<std::endl;
+//        std::cout<<GradV2ni<<std::endl;
+
+        
         
         // K31 - (trial V right) * (test V left)
         for(int j1 = 0; j1 < nshapeV1; j1++){
