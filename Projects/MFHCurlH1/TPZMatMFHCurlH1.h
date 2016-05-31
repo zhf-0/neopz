@@ -30,8 +30,8 @@ protected:
     REAL fTheta;
     REAL fScale;
     whichMatrix assembling;
-    const int h1meshindex = 1;
-    const int hcurlmeshindex = 0;
+    const int h1meshindex = 0;
+    const int hcurlmeshindex = 1;
     bool isTesting;
     
 public:

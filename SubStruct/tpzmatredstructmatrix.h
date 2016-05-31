@@ -15,7 +15,7 @@
 
 /**
  * @ingroup substructure
- * @brief .. . \ref substructure "Sub Structure"
+ * @brief .. . \ref substructure " Structure"
  */
 template<class TStructMatrix, class TSparseMatrix>
 class TPZMatRedStructMatrix : TPZStructMatrix

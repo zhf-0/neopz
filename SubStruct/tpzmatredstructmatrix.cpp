@@ -6,6 +6,8 @@
 
 #include "tpzmatredstructmatrix.h"
 #include "pzskylstrmatrix.h"
+#include "pzsbstrmatrix.h"
+#include "pzsbndmat.h"
 #include "tpzverysparsematrix.h"
 #include "pzsubcmesh.h"
 #include "pzmatred.h"
@@ -47,3 +49,4 @@ TPZMatrix<STATE> *TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::Create()
 
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZVerySparseMatrix<STATE> >;
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZFMatrix<STATE> >;
+template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZSBMatrix<STATE> >;
