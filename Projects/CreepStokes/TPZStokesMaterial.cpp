@@ -84,8 +84,10 @@ void TPZStokesMaterial::Print(std::ostream &out) {
 
 int TPZStokesMaterial::VariableIndex(const std::string &name) {
     
-    if (!strcmp("Pressure", name.c_str())) return this->PIndex();
-    if (!strcmp("Velocity", name.c_str())) return this->VIndex();
+    if (!strcmp("Pressure", name.c_str()))  return 0;
+    if (!strcmp("Velocity", name.c_str()))  return 1;
+    if (!strcmp("f", name.c_str()))         return 2;
+    if (!strcmp("V_exact", name.c_str()))   return 3;
    
     std::cout  << " Var index not implemented " << std::endl;
     DebugStop();
@@ -102,7 +104,10 @@ int TPZStokesMaterial::NSolutionVariables(int var) {
             return 1; // Pressure, Scalar
         case 1:
             return this->Dimension(); // Velocity, Vector
-    
+        case 2:
+            return this->Dimension(); // f, Vector
+        case 3:
+            return this->Dimension(); // V_exact, Vector
         default:
         {
             std::cout  << " Var index not implemented " << std::endl;
@@ -119,12 +124,12 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
     
     //itapopo conferir esse metodo
     
-    int Vblock = this->VIndex();
-    int Pblock = this->PIndex();
+    int vindex = this->VIndex();
+    int pindex = this->PIndex();
     
-    TPZManVector<REAL,3> V = datavec[Vblock].sol[0];
+    TPZManVector<REAL,3> v_h = datavec[vindex].sol[0];
     
-    REAL P = datavec[Pblock].sol[0][0];
+    REAL p_h = datavec[pindex].sol[0][0];
     
     Solout.Resize(this->NSolutionVariables(var));
     
@@ -132,18 +137,37 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
         
         case 0: //Pressure
         {
-            Solout[0] = P;
+            Solout[0] = p_h;
         }
             break;
         
         case 1: //Velocity
         {
-            Solout[0] = V[0]; // Vx
-            Solout[1] = V[1]; // Vy
-            Solout[2] = V[2]; // Vy
+            Solout[0] = v_h[0]; // Vx
+            Solout[1] = v_h[1]; // Vy
+        }
+            break;
+        case 2: //f
+        {
+            TPZVec<double> f;
+            if(this->HasForcingFunction()){
+                this->ForcingFunction()->Execute(datavec[vindex].x, f);
+            }
+            Solout[0] = f[0]; // fx
+            Solout[1] = f[1]; // fy
         }
             break;
         
+        case 3: //v_exact
+        {
+            TPZVec<double> v;
+            if(this->HasfForcingFunctionExact()){
+                this->ForcingFunctionExact()->Execute(datavec[vindex].x, v);
+            }
+            Solout[0] = v[0]; // vx
+            Solout[1] = v[1]; // vy
+        }
+            break;
         default:
         {
             std::cout  << " Var index not implemented " << std::endl;
@@ -330,6 +354,8 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
     
+    TPZVec<double> f;
+    TPZFMatrix<STATE> phiVi(fDimension,1,0.0);
 
     
     for(int i = 0; i < nshapeV; i++ )
@@ -338,42 +364,54 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
         int ivec = datavec[vindex].fVecShapeIndex[i].first;
         TPZFNMatrix<4> GradVi(fDimension,fDimension);
         for (int e=0; e<fDimension; e++) {
+            phiVi(e,0) = phiV(iphi,0)*datavec[vindex].fNormalVec(e,ivec);
             for (int f=0; f<fDimension; f++) {
                 GradVi(e,f) = datavec[vindex].fNormalVec(e,ivec)*dphiVx(f,iphi);
 
             }
         }
         
-        
-        std::cout<<iphi<<std::endl;
-        
-        std::cout<<datavec[vindex].phi(iphi,0)<<std::endl;
-        
-        for (int e=0; e<fDimension; e++) {
-            
-            std::cout<<dphiVx(e,iphi)<<std::endl;
-            
+        if(this->HasForcingFunction()){
+            this->ForcingFunction()->Execute(datavec[vindex].x, f);
         }
         
-        std::cout<<"____"<<std::endl;
         
         
+        STATE phi_dot_f = 0.0;
+        for (int e=0; e<fDimension; e++) {
+            phi_dot_f += phiVi(e)*f[e];
+        }
         
+        ef(i) += weight * phi_dot_f;
         
+//        std::cout<<iphi<<std::endl;
+//        
+//        std::cout<<datavec[vindex].phi(iphi,0)<<std::endl;
+//        
+//        for (int e=0; e<fDimension; e++) {
+//            
+//            std::cout<<dphiVx(e,iphi)<<std::endl;
+//            
+//        }
+//        
+//        std::cout<<"____"<<std::endl;
+        
+
         
         // matrix A - gradV
         for(int j = 0; j < nshapeV; j++){
             int jphi = datavec[vindex].fVecShapeIndex[j].second;
             int jvec = datavec[vindex].fVecShapeIndex[j].first;
+            
             TPZFNMatrix<4> GradVj(fDimension,fDimension);
             for (int e=0; e<fDimension; e++) {
                 for (int f=0; f<fDimension; f++) {
                     GradVj(e,f) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi);
                 }
             }
+            
             STATE val = Inner(GradVi, GradVj);
             ek(i,j) += weight * fViscosity * val ; ///Visc*(GradU+GradU^T):GradPhi
-
             
         }
         
@@ -388,6 +426,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
             }
             
             STATE fact = (-1.) * weight * phiP(j,0) * Tr( GradVi ); ///p*div(U)
+            
             
             // colocar vectoriais vezes pressao
             // Matrix B
@@ -433,7 +472,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //    }
     
     
-   std::cout<<ek<<std::endl;
+   //std::cout<<ek<<std::endl;
 
     
 
@@ -443,27 +482,169 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     
 
-    DebugStop();
     
-//#ifdef PZDEBUG
-//    //2 = 1 Vel space + 1 Press space
-//    int nrefl =  datavecleft.size();
-//    int nrefr =  datavecright.size();
-//    if (nrefl != 2 || nrefr != 2) {
-//        std::cout << " Erro. The size of the datavec is different from 2 \n";
-//        DebugStop();
+#ifdef PZDEBUG
+    //2 = 1 Vel space + 1 Press space
+    int nref =  datavec.size();
+    if (nref != 2 ) {
+        std::cout << " Erro. The size of the datavec is different from 2 \n";
+        DebugStop();
+    }
+#endif
+    
+    
+    const int vindex = this->VIndex();
+    const int pindex = this->PIndex();
+    
+    if (datavec[vindex].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavec[vindex]);
+    }
+    // Setting forcing function
+    /*STATE force = 0.;
+     if(this->fForcingFunction) {
+     TPZManVector<STATE> res(1);
+     fForcingFunction->Execute(datavec[pindex].x,res);
+     force = res[0];
+     }*/
+    
+    //Gravity
+//    STATE rhoi = 900.; //itapopo
+//    STATE g = 9.81; //itapopo
+//    STATE force = rhoi*g;
+    
+    // Setting the phis
+    // V
+    TPZFMatrix<REAL> &phiV = datavec[vindex].phi;
+    TPZFMatrix<REAL> &dphiV = datavec[vindex].dphix;
+    // P
+    TPZFMatrix<REAL> &phiP = datavec[pindex].phi;
+//    TPZFMatrix<REAL> &dphiP = datavec[pindex].dphix;
+//    //Normal
+//    TPZManVector<REAL,3> &normal = datavec[vindex].normal;
+    
+    // Getting the linear combination or finite element approximations
+    
+    TPZManVector<STATE> v_h = datavec[vindex].sol[0];
+    TPZManVector<STATE> p_h = datavec[pindex].sol[0];
+    
+    
+    TPZFNMatrix<220,REAL> dphiVx(fDimension,dphiV.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiV, dphiVx, datavec[vindex].axes);
+    
+    
+    int nshapeV, nshapeP;
+    nshapeP = phiP.Rows();
+    nshapeV = datavec[vindex].fVecShapeIndex.NElements();
+    
+    TPZFNMatrix<9> phiVi(fDimension,1), phiVj(fDimension,1);
+    
+    switch (bc.Type()) {
+        case 0: //Dirichlet for continuous formulation
+        {
+            STATE vx_D = bc.Val2()(0,0);
+            STATE vy_D = bc.Val2()(1,0);
+            
+            for(int i = 0; i < nshapeV; i++ )
+            {
+                int iphi = datavec[vindex].fVecShapeIndex[i].second;
+                int ivec = datavec[vindex].fVecShapeIndex[i].first;
+                
+                for (int e=0; e<fDimension; e++) {
+                    phiVi(e,0)=datavec[vindex].fNormalVec(e,ivec)*phiV(iphi,0);
+                }
+                
+                std::cout<<iphi<<std::endl;
+                std::cout<<phiVi<<std::endl;
+                
+                //
+                //        for (int e=0; e<fDimension; e++) {
+                //
+                //            std::cout<<dphiVx(e,iphi)<<std::endl;
+                //
+                //        }
+                //        
+                //std::cout<<"____"<<std::endl;
+                
+                
+                ef(i) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
+                
+                for(int j = 0; j < nshapeV; j++){
+                    int jphi = datavec[vindex].fVecShapeIndex[j].second;
+                    int jvec = datavec[vindex].fVecShapeIndex[j].first;
+                 
+                    
+                    
+                    for (int e=0; e<fDimension; e++) {
+                        phiVj(e,0)=datavec[vindex].fNormalVec(e,jvec)*phiV(jphi,0);
+                    }
+                    
+                    ek(i,j) += weight * gBigNumber * ( phiVj(0,0) * phiVi(0,0) + phiVj(1,0) * phiVi(1,0) );
+                    
+                }
+                
+            }
+            
+        }
+            break;
+            
+        default:
+        {
+            std::cout << "Boundary not implemented " << std::endl;
+            DebugStop();
+        }
+            break;
+    }
+    
+//    for(int i = 0; i < nshapeV; i++ )
+//    {
+//        int iphi = datavec[vindex].fVecShapeIndex[i].second;
+//        int ivec = datavec[vindex].fVecShapeIndex[i].first;
+//        TPZFNMatrix<9> GradVnj(fDimension,1),phiVi(fDimension,1);
+//        for (int e=0; e<fDimension; e++) {
+//                phiVi(e,0)=datavec[vindex].fNormalVec(e,ivec)*phiV(iphi,0);
+//        }
+//        
+//        std::cout<<iphi<<std::endl;
+//        std::cout<<phiVi<<std::endl;
+//        
+//        //
+//        //        for (int e=0; e<fDimension; e++) {
+//        //
+//        //            std::cout<<dphiVx(e,iphi)<<std::endl;
+//        //
+//        //        }
+//        //        
+//        //std::cout<<"____"<<std::endl;
+//        
+//        
+//        ef(i) += weight * gBigNumber * ();
+//        
+//        for(int j = 0; j < nshapeV; j++){
+//            int jphi = datavec[vindex].fVecShapeIndex[j].second;
+//            int jvec = datavec[vindex].fVecShapeIndex[j].first;
+//            
+//            for (int e=0; e<fDimension; e++) {
+//                for (int f=0; f<fDimension; f++) {
+//                    GradVnj(e,0) += datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi)*normal[f];
+//                    
+//                }
+//            }
+//            //std::cout<<GradVnj<<std::endl;
+//            //std::cout<<"____"<<std::endl;
+//            
+//            ek(i,j) += (-1.) * weight * fViscosity * InnerVec(phiVi, GradVnj) ;
+//            //ek(i,j) += ftheta*Transpose(ek);
+//        }
+//        
+//        std::cout<<ek<<std::endl;
 //    }
-//#endif
 //    
 //    
-//    if (datavecleft[vindex].fVecShapeIndex.size() == 0) {
-//        FillVecShapeIndex(datavecleft[vindex]);
-//    }
-//    if (datavecright[vindex].fVecShapeIndex.size() == 0) {
-//        FillVecShapeIndex(datavecright[vindex]);
-//    }
-    
-
+//    
+//    
+//    
+//
+//    std::cout<<"____"<<std::endl;
     
     
 }
@@ -782,245 +963,17 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
     }
 
     
-    std::cout<<ek<<std::endl;
+    //std::cout<<ek<<std::endl;
     
+    //teste: Zerar contribuições dos elementos
     
+//    for(int i=0;i<2*(nshapeV1+nshapeP1);i++){
+//        for(int j=0;j<2*(nshapeV1+nshapeP1);j++){
+//            ek(i,j)*=0.0;
+//        }
+//        
+//    }
     
-//    const int pindex = this->PIndex();
-//    const int vindex = this->VIndex();
-//
-//
-//    TPZFMatrix<REAL> &dphiLdAxes = datavecleft[fb].dphix;
-//    TPZFMatrix<REAL> &dphiRdAxes = datavecright[fb].dphix;
-//    TPZFMatrix<REAL> &phiL = datavecleft[fb].phi;
-//    TPZFMatrix<REAL> &phiR = datavecright[fb].phi;
-//    TPZManVector<REAL,3> &normal = data.normal;
-//
-//    TPZFNMatrix<660> dphiL, dphiR;
-//    TPZAxesTools<REAL>::Axes2XYZ(dphiLdAxes, dphiL, dataleft.axes);
-//    TPZAxesTools<REAL>::Axes2XYZ(dphiRdAxes, dphiR, dataright.axes);
-//    
-//    int &LeftPOrder=dataleft.p;
-//    int &RightPOrder=dataright.p;
-//    
-//    REAL &faceSize=data.HSize;
-//    
-//    
-//    int nrowl = phiL.Rows();
-//    int nrowr = phiR.Rows();
-//    int il,jl,ir,jr,id;
-//    
-//    //Convection term
-//    REAL ConvNormal = 0.;
-//    for(id=0; id<fDim; id++) ConvNormal += fC * fConvDir[id] * normal[id];
-//    if(ConvNormal > 0.) {
-//        for(il=0; il<nrowl; il++) {
-//            for(jl=0; jl<nrowl; jl++) {
-//                ek(il,jl) += weight * ConvNormal * phiL(il)*phiL(jl);
-//            }
-//        }
-//        for(ir=0; ir<nrowr; ir++) {
-//            for(jl=0; jl<nrowl; jl++) {
-//                ek(ir+nrowl,jl) -= weight * ConvNormal * phiR(ir) * phiL(jl);
-//            }
-//        }
-//    } else {
-//        for(ir=0; ir<nrowr; ir++) {
-//            for(jr=0; jr<nrowr; jr++) {
-//                ek(ir+nrowl,jr+nrowl) -= weight * ConvNormal * phiR(ir) * phiR(jr);
-//            }
-//        }
-//        for(il=0; il<nrowl; il++) {
-//            for(jr=0; jr<nrowr; jr++) {
-//                ek(il,jr+nrowl) += weight * ConvNormal * phiL(il) * phiR(jr);
-//            }
-//        }
-//    }
-//    
-//    if(IsZero(fK)) return;
-//    //diffusion term
-//    STATE leftK, rightK;
-//    leftK  = this->fK;
-//    rightK = this->fK;
-//    
-//    // 1) phi_I_left, phi_J_left
-//    for(il=0; il<nrowl; il++) {
-//        REAL dphiLinormal = 0.;
-//        for(id=0; id<fDim; id++) {
-//            dphiLinormal += dphiL(id,il)*normal[id];
-//        }
-//        for(jl=0; jl<nrowl; jl++) {
-//            REAL dphiLjnormal = 0.;
-//            for(id=0; id<fDim; id++) {
-//                dphiLjnormal += dphiL(id,jl)*normal[id];
-//            }
-//            ek(il,jl) += (STATE)(weight * ( this->fSymmetry * (0.5)*dphiLinormal*phiL(jl,0)-(0.5)*dphiLjnormal*phiL(il,0))) * leftK;
-//        }
-//    }
-//    
-//    // 2) phi_I_right, phi_J_right
-//    for(ir=0; ir<nrowr; ir++) {
-//        REAL dphiRinormal = 0.;
-//        for(id=0; id<fDim; id++) {
-//            dphiRinormal += dphiR(id,ir)*normal[id];
-//        }
-//        for(jr=0; jr<nrowr; jr++) {
-//            REAL dphiRjnormal = 0.;
-//            for(id=0; id<fDim; id++) {
-//                dphiRjnormal += dphiR(id,jr)*normal[id];
-//            }
-//            ek(ir+nrowl,jr+nrowl) += (STATE)(weight * (this->fSymmetry * ((-0.5) * dphiRinormal * phiR(jr) ) + (0.5) * dphiRjnormal * phiR(ir))) * rightK;
-//        }
-//    }
-//    
-//    // 3) phi_I_left, phi_J_right
-//    for(il=0; il<nrowl; il++) {
-//        REAL dphiLinormal = 0.;
-//        for(id=0; id<fDim; id++) {
-//            dphiLinormal += dphiL(id,il)*normal[id];
-//        }
-//        for(jr=0; jr<nrowr; jr++) {
-//            REAL dphiRjnormal = 0.;
-//            for(id=0; id<fDim; id++) {
-//                dphiRjnormal += dphiR(id,jr)*normal[id];
-//            }
-//            ek(il,jr+nrowl) += (STATE)weight * ((STATE)fSymmetry * ((STATE)((-0.5) * dphiLinormal * phiR(jr)) * leftK ) - (STATE)((0.5) * dphiRjnormal * phiL(il))* rightK );
-//        }
-//    }
-//    
-//    // 4) phi_I_right, phi_J_left
-//    for(ir=0; ir<nrowr; ir++) {
-//        REAL dphiRinormal = 0.;
-//        for(id=0; id<fDim; id++) {
-//            dphiRinormal += dphiR(id,ir)*normal[id];
-//        }
-//        for(jl=0; jl<nrowl; jl++) {
-//            REAL dphiLjnormal = 0.;
-//            for(id=0; id<fDim; id++) {
-//                dphiLjnormal += dphiL(id,jl)*normal[id];
-//            }
-//            ek(ir+nrowl,jl) += (STATE)weight * (
-//                                                (STATE)(fSymmetry * (0.5) * dphiRinormal * phiL(jl)) * rightK + (STATE)((0.5) * dphiLjnormal * phiR(ir)) * leftK
-//                                                );
-//        }
-//    }
-//    
-//    if (this->IsSymetric()){
-//        if ( !ek.VerifySymmetry() ) cout << __PRETTY_FUNCTION__ << "\nMATRIZ NAO SIMETRICA" << endl;
-//    }
-//    
-//    if (this->fPenaltyConstant == 0.) return;
-//    
-//    leftK  = this->fK;
-//    rightK = this->fK;
-//    
-//    
-//    
-//    //penalty = <A p^2>/h
-//    REAL penalty = fPenaltyConstant * (0.5 * (abs(leftK)*LeftPOrder*LeftPOrder + abs(rightK)*RightPOrder*RightPOrder)) / faceSize;
-//    
-//    if (this->fPenaltyType == ESolutionPenalty || this->fPenaltyType == EBoth){
-//        
-//        // 1) left i / left j
-//        for(il=0; il<nrowl; il++) {
-//            for(jl=0; jl<nrowl; jl++) {
-//                ek(il,jl) += weight * penalty * phiL(il,0) * phiL(jl,0);
-//            }
-//        }
-//        
-//        // 2) right i / right j
-//        for(ir=0; ir<nrowr; ir++) {
-//            for(jr=0; jr<nrowr; jr++) {
-//                ek(ir+nrowl,jr+nrowl) += weight * penalty * phiR(ir,0) * phiR(jr,0);
-//            }
-//        }
-//        
-//        // 3) left i / right j
-//        for(il=0; il<nrowl; il++) {
-//            for(jr=0; jr<nrowr; jr++) {
-//                ek(il,jr+nrowl) += -1.0 * weight * penalty * phiR(jr,0) * phiL(il,0);
-//            }
-//        }
-//        
-//        // 4) right i / left j
-//        for(ir=0; ir<nrowr; ir++) {
-//            for(jl=0; jl<nrowl; jl++) {
-//                ek(ir+nrowl,jl) += -1.0 * weight *  penalty * phiL(jl,0) * phiR(ir,0);
-//            }
-//        }
-//        
-//    }
-//    
-//    if (this->fPenaltyType == EFluxPenalty || this->fPenaltyType == EBoth){
-//        
-//        REAL NormalFlux_i = 0.;
-//        REAL NormalFlux_j = 0.;
-//        
-//        // 1) left i / left j
-//        for(il=0; il<nrowl; il++) {
-//            NormalFlux_i = 0.;
-//            for(id=0; id<fDim; id++) {
-//                NormalFlux_i += dphiL(id,il)*normal[id];
-//            }
-//            for(jl=0; jl<nrowl; jl++) {
-//                NormalFlux_j = 0.;
-//                for(id=0; id<fDim; id++) {
-//                    NormalFlux_j += dphiL(id,jl)*normal[id];
-//                }
-//                ek(il,jl) += (STATE)(weight * ((1.)/penalty) * NormalFlux_i * NormalFlux_j) * leftK;
-//            }
-//        }
-//        
-//        // 2) right i / right j
-//        for(ir=0; ir<nrowr; ir++) {
-//            NormalFlux_i = 0.;
-//            for(id=0; id<fDim; id++) {
-//                NormalFlux_i += dphiR(id,ir)*normal[id];
-//            }
-//            for(jr=0; jr<nrowr; jr++) {
-//                NormalFlux_j = 0.;
-//                for(id=0; id<fDim; id++) {
-//                    NormalFlux_j += dphiR(id,jr)*normal[id];
-//                }      
-//                ek(ir+nrowl,jr+nrowl) += (STATE)(weight * ((1.)/penalty) * NormalFlux_i * NormalFlux_j) * rightK;
-//            }
-//        }
-//        
-//        // 3) left i / right j
-//        for(il=0; il<nrowl; il++) {
-//            NormalFlux_i = 0.;
-//            for(id=0; id<fDim; id++) {
-//                NormalFlux_i += dphiL(id,il)*normal[id];
-//            }
-//            for(jr=0; jr<nrowr; jr++) {
-//                NormalFlux_j = 0.;
-//                for(id=0; id<fDim; id++) {
-//                    NormalFlux_j += dphiR(id,jr)*normal[id];
-//                }      
-//                ek(il,jr+nrowl) += (STATE)((-1.) * weight * ((1.)/penalty) * NormalFlux_i * NormalFlux_j) * rightK;
-//            }
-//        }
-//        
-//        // 4) right i / left j
-//        for(ir=0; ir<nrowr; ir++) {
-//            NormalFlux_i = 0.;
-//            for(id=0; id<fDim; id++) {
-//                NormalFlux_i += dphiR(id,ir)*normal[id];
-//            }
-//            for(jl=0; jl<nrowl; jl++) {
-//                NormalFlux_j = 0.;
-//                for(id=0; id<fDim; id++) {
-//                    NormalFlux_j += dphiL(id,jl)*normal[id];
-//                }
-//                ek(ir+nrowl,jl) += (STATE)((-1.) * weight * ((1.)/penalty) * NormalFlux_i * NormalFlux_j) * leftK;
-//            }
-//        }
-//        
-//    }
-//    
-//    
-
-   
     
 }
 

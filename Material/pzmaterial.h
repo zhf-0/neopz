@@ -353,6 +353,11 @@ public:
 	TPZAutoPointer<TPZFunction<STATE> > &ForcingFunction() {
 		return fForcingFunction;
 	}
+    
+    /** @brief Returns a procedure as source function for the material */
+    TPZAutoPointer<TPZFunction<STATE> > &ForcingFunctionExact() {
+        return fForcingFunctionExact;
+    }
 	
     /** 
 	 * @brief Sets a procedure as exact solution for the problem
