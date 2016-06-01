@@ -58,6 +58,9 @@ public:
     /** @brief Returns the number of state variables associated with the material */
     virtual int NStateVariables() { return 1;}
     
+    int HCurlIndex() const { return hcurlmeshindex;}
+    int H1Index() const { return h1meshindex;}
+    
 public:
     /**
      * @brief Sets Matrix A for assembling
