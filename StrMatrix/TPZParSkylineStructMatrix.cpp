@@ -40,17 +40,17 @@ TPZStructMatrix * TPZParSkylineStructMatrix::Clone(){
 }
 
 TPZMatrix<STATE> * TPZParSkylineStructMatrix::Create(){
-    long neq = fEquationFilter.NActiveEquations();
+    long neq = fAssembleConfig.fEquationFilter.NActiveEquations();
     TPZVec<long> skyline;
-    fMesh->Skyline(skyline);
-    fEquationFilter.FilterSkyline(skyline);
+    fAssembleConfig.fMesh->Skyline(skyline);
+    fAssembleConfig.fEquationFilter.FilterSkyline(skyline);
     neq = skyline.size();
     return new TPZSkylParMatrix<STATE>(neq,skyline,fNumThreads);
 }
-TPZMatrix<STATE> * TPZParSkylineStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface){
+TPZMatrix<STATE> * TPZParSkylineStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs){
 	TPZMatrix<STATE> *mat = Create();
 	rhs.Redim(mat->Rows(),1);
-	Assemble(*mat,rhs,guiInterface);
+	Assemble(*mat,rhs);
 	return mat;
 }
 

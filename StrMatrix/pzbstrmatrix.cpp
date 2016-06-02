@@ -13,20 +13,20 @@ TPZStructMatrix * TPZBandStructMatrix::Clone(){
     return new TPZBandStructMatrix(*this);
 }
 
-TPZMatrix<STATE> * TPZBandStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
+TPZMatrix<STATE> * TPZBandStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs){
 	TPZMatrix<STATE> *stiff = Create();
 	long neq = stiff->Rows();
 	rhs.Redim(neq,1);
-	Assemble(*stiff,rhs,guiInterface);
+	Assemble(*stiff,rhs);
 	return stiff;
 }
 
 TPZMatrix<STATE> * TPZBandStructMatrix::Create(){
-    if (fEquationFilter.IsActive()) {
+    if (fAssembleConfig.fEquationFilter.IsActive()) {
         DebugStop();
     }
-    long neq = fEquationFilter.NActiveEquations();
-    long band = fMesh->BandWidth();
+    long neq = fAssembleConfig.fEquationFilter.NActiveEquations();
+    long band = fAssembleConfig.fMesh->BandWidth();
     return new TPZFBMatrix<STATE>(neq,band);
 }
 

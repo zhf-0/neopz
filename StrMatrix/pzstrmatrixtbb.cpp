@@ -563,7 +563,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::CreateGraphRhs()
 }
 
 
-
+// this method builds the graph which controls element assembly
 void TPZStructMatrixTBB::TPZFlowGraph::CreateGraph()
 {
     long nelem = fCMesh->NElements();
@@ -593,6 +593,8 @@ void TPZStructMatrixTBB::TPZFlowGraph::CreateGraph()
         for (int ic=0; ic<connects.size(); ic++) {
             long c = connects[ic];
             if (elementloaded[c] != -1) {
+                // the current element can be computed only if elorig has been computed first'
+                // therefor put an edge from elorig to me
                 long elorig = elementloaded[c];
 //                in order to compute only once
                 if (fromwhere.find(elorig) == fromwhere.end()) {
@@ -610,6 +612,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::CreateGraph()
             }
         }
         
+        // the next element which touches one of the nodes will depend on me
         for (int ic=0; ic<connects.size(); ic++) {
             long c = connects[ic];
             elementloaded[c] = graphindex;
@@ -618,7 +621,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::CreateGraph()
     
 }
 
-
+/// assemble the matrix and rhs
 void TPZStructMatrixTBB::TPZFlowGraph::ExecuteGraph(TPZFMatrix<STATE> *rhs, TPZMatrix<STATE> *matrix)
 {
     if (fOnlyRhs && matrix != 0) {
@@ -627,7 +630,8 @@ void TPZStructMatrixTBB::TPZFlowGraph::ExecuteGraph(TPZFMatrix<STATE> *rhs, TPZM
     this->fGlobMatrix = matrix;
     this->fGlobRhs = rhs;
     
-    
+    /// compute all element stiffness matrices and rhs at once
+    // the calctask will trigger the assembly task. There is one assembly task for each element
     TPZCalcTask calcTasks(this);
     parallel_for(tbb::blocked_range<long>(0, felSequenceColor.size()), calcTasks );
     
@@ -639,6 +643,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::ExecuteGraph(TPZFMatrix<STATE> *rhs)
     if (!fOnlyRhs) {
         DebugStop();
     }
+    /// compute all the rhs at once and put them in a separate color
     this->fGlobRhs = rhs;
     this->fGlobMatrix = 0;
     long numcolors = fFirstElColor.size()-1;
@@ -656,12 +661,15 @@ void TPZStructMatrixTBB::TPZFlowGraph::ExecuteGraph(TPZFMatrix<STATE> *rhs)
 
 void TPZStructMatrixTBB::TPZFlowGraph::TAssembleOneColor::operator()(const tbb::blocked_range<long> &range) const
 {
+    /// for each color in the range
     for(long color = range.begin(); color != range.end(); ++color)
     {
+        // trigger the rhs computation for each element in the range
         TComputeElementRange elrange(fFlowGraph,color);
         long firstel = fFlowGraph->fFirstElColor[color];
         long lastel = fFlowGraph->fFirstElColor[color+1];
         parallel_for(tbb::blocked_range<long>(firstel,lastel),elrange);
+        // after computing all rhs in parallel
         // trigger the sum node
         long node = fFlowGraph->fNodeDest[color];
         (fFlowGraph->fNodes)[node]->try_put(tbb::flow::continue_msg());
@@ -790,6 +798,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::TPZCalcTask::operator()(const tbb::blocke
             DebugStop();
         }
         
+        /// access the AssembleTask object corresponding to element
         TPZAssembleTask Assemble = tbb::flow::copy_body<TPZAssembleTask,tbb::flow::continue_node<tbb::flow::continue_msg> >(*fFlowGraph->fNodes[element]);
         if (Assemble.fIel != element) {
             DebugStop();
@@ -844,6 +853,7 @@ void TPZStructMatrixTBB::TPZFlowGraph::TPZCalcTask::operator()(const tbb::blocke
             LOGPZ_DEBUG(logger, sout.str())
         }
 #endif
+        /// try to assemble the stiffness matrix and rhs
         (fFlowGraph->fNodes)[element]->try_put(tbb::flow::continue_msg());
         
     }

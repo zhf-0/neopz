@@ -284,15 +284,14 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::Assemble(){
 	
 	bool exist = false;
 	if(fSolver->Matrix()) if (fSolver->Matrix()->Rows()==sz) exist = true;
-	TPZAutoPointer<TPZGuiInterface> inter = new TPZGuiInterface;
 	if (exist){
 		if (fIsLinearProblem){
 			//      TPZStructMatrix::Assemble(fRhs, *Mesh());
-			fStructMatrix->Assemble(fRhs,inter);
+			fStructMatrix->Assemble(fRhs);
 		}
 		else{
 			fSolver->Matrix()->Zero();
-			fStructMatrix->Assemble((TPZMatrix<STATE>&)fSolver->Matrix(),fRhs,inter);
+			fStructMatrix->Assemble((TPZMatrix<STATE>&)fSolver->Matrix(),fRhs);
 		}
 	}
 	else{
@@ -301,7 +300,7 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::Assemble(){
 			<< " methodTPZTransientAnalysis::ComputeLinearTangentMatrix()"
 			<< " when (this->fIsLinearProblem == true)\n";
 		}
-		TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs,NULL);
+		TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs);
 		fSolver->SetMatrix(mat);
 	}
 	fSolver->UpdateFrom(fSolver->Matrix());
@@ -313,7 +312,7 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::ComputeLinearTangentMatrix(){
 	this->SetCurrentState();
 	const int sz = this->Mesh()->NEquations();
 	fRhs.Redim(sz,1);
-	TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs,NULL);
+	TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs);
 	fSolver->SetMatrix(mat);
 }//method
 
@@ -322,7 +321,7 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::ComputeMassMatrix(){
 	this->SetMassMatrix();
 	const int sz = this->Mesh()->NEquations();
 	fRhs.Redim(sz,1);
-	TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs,NULL);
+	TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs);
 	fSolver->SetMatrix(mat);
 }//method
 
@@ -339,7 +338,7 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::ComputeFluxOnly(){
 	int sz = fCompMesh->NEquations();
 	fRhs.Redim(sz,1);
 	if(fSolver->Matrix() && fSolver->Matrix()->Rows()==sz){
-		fStructMatrix->Assemble(fRhs,NULL);
+		fStructMatrix->Assemble(fRhs);
 		//    TPZStructMatrix::Assemble(fRhs, *Mesh());
 	}//if
 }//method

@@ -90,7 +90,7 @@ int main3(int argc, char *argv[])
     cmeshreferred->ComputeNodElCon();
     TPZFStructMatrix fstr(cmeshreferred);
     TPZFMatrix<STATE> rhs(1);
-    TPZAutoPointer<TPZMatrix<STATE> > strmat = fstr.CreateAssemble(rhs,NULL);
+    TPZAutoPointer<TPZMatrix<STATE> > strmat = fstr.CreateAssemble(rhs);
     
     strmat->Print("rigidez");
     rhs.Print("forca");

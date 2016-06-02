@@ -217,23 +217,23 @@ int TPBSpStructMatrix::main() {
 TPZStructMatrix * TPBSpStructMatrix::Clone(){
     return new TPBSpStructMatrix(*this);
 }
-TPZMatrix<STATE> * TPBSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
-    long neq = fMesh->NEquations();
-    if(fMesh->FatherMesh()) {
+TPZMatrix<STATE> * TPBSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs){
+    long neq = fAssembleConfig.fMesh->NEquations();
+    if(fAssembleConfig.fMesh->FatherMesh()) {
 		cout << "TPZSpStructMatrix should not be called with CreateAssemble for a substructure mesh\n";
 		return new TPZFYsmpMatrix<STATE>(0,0);
     }
     TPZMatrix<STATE> *stiff = Create();//new TPZFYsmpMatrix(neq,neq);
     rhs.Redim(neq,1);
     //stiff->Print("Stiffness TPZFYsmpMatrix :: CreateAssemble()");
-    Assemble(*stiff,rhs, guiInterface);
+    Assemble(*stiff,rhs);
     //stiff->Print("Stiffness TPZFYsmpMatrix :: CreateAssemble()");
     return stiff;
 }
 TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
     //checked
     
-    long neq = fEquationFilter.NActiveEquations();
+    long neq = fAssembleConfig.fEquationFilter.NActiveEquations();
     TPZFYsmpMatrix<STATE> * mat = new TPZFYsmpMatrix<STATE>(neq,neq);
 	
     /**Rearange elements order*/
@@ -246,10 +246,10 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
     TPZStack<long> elgraph;
     TPZVec<long> elgraphindex;
 	//    int nnodes = 0;
-    fMesh->ComputeElGraph(elgraph,elgraphindex);
+    fAssembleConfig.fMesh->ComputeElGraph(elgraph,elgraphindex);
     /**Creates a element graph*/
     TPZMetis metis;
-    metis.SetElementsNodes(elgraphindex.NElements() -1 ,fMesh->NIndependentConnects());
+    metis.SetElementsNodes(elgraphindex.NElements() -1 ,fAssembleConfig.fMesh->NIndependentConnects());
     metis.SetElementGraph(elgraph,elgraphindex);
 	
     TPZVec<long> nodegraph;
@@ -265,9 +265,9 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
     long totalvar = 0;
     long totaleq = 0;
     for(i=0;i<nblock;i++){
-		long iblsize = fMesh->Block().Size(i);
-		long iblpos = fMesh->Block().Position(i);
-        long numactive = fEquationFilter.NumActive(iblpos, iblpos+iblsize);
+		long iblsize = fAssembleConfig.fMesh->Block().Size(i);
+		long iblpos = fAssembleConfig.fMesh->Block().Position(i);
+        long numactive = fAssembleConfig.fEquationFilter.NumActive(iblpos, iblpos+iblsize);
         if (!numactive) {
             continue;
         }
@@ -282,9 +282,9 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
 		totalvar+=iblsize*iblsize;
 		for(j=icfirst;j<iclast;j++) {
 			long col = nodegraph[j];
-			long colsize = fMesh->Block().Size(col);
-			long colpos = fMesh->Block().Position(col);
-            long numactive = fEquationFilter.NumActive(colpos, colpos+colsize);
+			long colsize = fAssembleConfig.fMesh->Block().Size(col);
+			long colpos = fAssembleConfig.fMesh->Block().Position(col);
+            long numactive = fAssembleConfig.fEquationFilter.NumActive(colpos, colpos+colsize);
             if (!numactive) {
                 continue;
             }
@@ -295,15 +295,15 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
     long ieq = 0;
     long pos = 0;
 	
-    nblock=fMesh->NIndependentConnects();
+    nblock= fAssembleConfig.fMesh->NIndependentConnects();
 	
     long * Eq = new long[totaleq+1];
     long * EqCol = new long[totalvar/2];
     STATE * EqValue = new STATE[totalvar/2];
     for(i=0;i<nblock;i++){
-		long iblsize = fMesh->Block().Size(i);
-		long iblpos = fMesh->Block().Position(i);
-        long numactive = fEquationFilter.NumActive(iblpos, iblpos+iblsize);
+		long iblsize = fAssembleConfig.fMesh->Block().Size(i);
+		long iblpos = fAssembleConfig.fMesh->Block().Position(i);
+        long numactive = fAssembleConfig.fEquationFilter.NumActive(iblpos, iblpos+iblsize);
         if (!numactive) {
             continue;
         }
@@ -314,8 +314,8 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
 				ieq++;
 				continue;
 			}
-			long colsize = fMesh->Block().Size(i);
-			long colpos = fMesh->Block().Position(i);
+			long colsize = fAssembleConfig.fMesh->Block().Size(i);
+			long colpos = fAssembleConfig.fMesh->Block().Position(i);
 			long jbleq;
 			for(jbleq=0; jbleq<colsize; jbleq++) {
 				/**It can also be implemented using half the size of both columns and data vectors*/
@@ -330,9 +330,9 @@ TPZMatrix<STATE> * TPBSpStructMatrix::Create(){
 			long j;
 			for(j=icfirst;j<iclast;j++) {
 				long col = nodegraph[j];
-				colsize = fMesh->Block().Size(col);
-				colpos = fMesh->Block().Position(col);
-                long numactive = fEquationFilter.NumActive(colpos, colpos+colsize);
+				colsize = fAssembleConfig.fMesh->Block().Size(col);
+				colpos = fAssembleConfig.fMesh->Block().Position(col);
+                long numactive = fAssembleConfig.fEquationFilter.NumActive(colpos, colpos+colsize);
                 if (!numactive) {
                     continue;
                 }

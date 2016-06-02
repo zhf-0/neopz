@@ -264,15 +264,6 @@ TPZMatrix<STATE> * TPZDohrStructMatrix::Create()
 }
 
 
-// this will create a DohrMatrix and compute its matrices
-TPZMatrix<STATE> * TPZDohrStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface,
-                                                       unsigned numthreads_assemble, unsigned numthreads_decompose)
-{
-    TPZMatrix<STATE> *dohrgeneric = Create();
-    Assemble(*dohrgeneric, rhs, guiInterface, numthreads_assemble, numthreads_decompose);
-    return dohrgeneric;
-}
-
 template<class TVar>
 class parallel_assemble_task_t
 {
@@ -325,7 +316,7 @@ public:
         {
             work_item_t<TVar>& wi = *it;
             TPZSubCompMesh* submesh = SubMesh(fMesh, wi.fSubMeshIndex);
-            ::AssembleMatrices(submesh, wi.fSubstruct, fAssembly,NULL);
+            ::AssembleMatrices(submesh, wi.fSubstruct, fAssembly);
             ::DecomposeBig(wi.fSubstruct, -2 /* Do not realloc */);
             ::DecomposeInternal(wi.fSubstruct, -2 /* Do not realloc */);
         }
@@ -429,9 +420,7 @@ RunStatsTable dohr_ass   ("-tpz_dohr_ass", "Raw data table statistics for TPZDoh
 RunStatsTable dohr_dec   ("-tpz_dohr_dec", "Raw data table statistics for TPZDohrStructMatrix::Assemble decompose (second)");
 
 
-void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & rhs,
-                                   TPZAutoPointer<TPZGuiInterface> guiInterface,
-                                   unsigned numthreads_assemble, unsigned numthreads_decompose)
+void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & rhs)
 {
 #ifdef PERF_ANALYSIS
     ClockTimer timer;
@@ -455,12 +444,6 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
         it++;
     }
     
-    if(guiInterface){
-        if(guiInterface->AmIKilled()){
-            return ;//0;
-        }
-    }
-    
     // First pass : assembling the matrices
     ThreadDohrmanAssemblyList<STATE> worklistAssemble(worklist);
     std::list<TPZAutoPointer<ThreadDohrmanAssembly<STATE> > >::iterator itwork =
@@ -478,7 +461,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
 #endif
     
     dohr_ass.start();
-    if (numthreads_assemble == 0) {
+    if (fAssembleConfig.fNumThreads == 0) {
         /* Put the main thread to work on all items. */
         ThreadDohrmanAssemblyList_ThreadArgs_t<STATE> targ;
         targ.thread_idx=0;
@@ -487,10 +470,10 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
     }
     else {
         /* Threads arguments. */
-        std::vector<ThreadDohrmanAssemblyList_ThreadArgs_t<STATE> > args(numthreads_assemble);
+        std::vector<ThreadDohrmanAssemblyList_ThreadArgs_t<STATE> > args(fAssembleConfig.fNumThreads);
         
         /* Assemble multi-threaded */
-        for(unsigned itr=0; itr<numthreads_assemble; itr++)
+        for(unsigned itr=0; itr<fAssembleConfig.fNumThreads; itr++)
         {
             ThreadDohrmanAssemblyList_ThreadArgs_t<STATE>* targ = &(args[itr]);
             targ->thread_idx=itr;
@@ -500,7 +483,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
                               targ, __FUNCTION__);
         }
         /* Sync. */
-        for(unsigned itr=0; itr<numthreads_assemble; itr++)
+        for(unsigned itr=0; itr<fAssembleConfig.fNumThreads; itr++)
         {
             PZ_PTHREAD_JOIN(args[itr].pthread, NULL, __FUNCTION__);
         }
@@ -546,7 +529,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
     }
     
     dohr_dec.start();
-    if (numthreads_decompose == 0) {
+    if (fAssembleConfig.fNumThreads == 0) {
         /* Compute it sequentialy */
         ThreadDohrmanAssemblyList_ThreadArgs_t<STATE> targ;
         targ.thread_idx = 0;
@@ -556,8 +539,8 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
     else {
         /* Threads arguments. */
         std::vector<ThreadDohrmanAssemblyList_ThreadArgs_t<STATE> >
-        args(numthreads_decompose);
-        for(unsigned itr=0; itr<numthreads_decompose; itr++)
+        args(fAssembleConfig.fNumThreads);
+        for(unsigned itr=0; itr<fAssembleConfig.fNumThreads; itr++)
         {
             ThreadDohrmanAssemblyList_ThreadArgs_t<STATE>& targ = args[itr];
             targ.thread_idx=itr;
@@ -566,7 +549,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
                               ThreadDohrmanAssemblyList<STATE>::ThreadWork,
                               &targ, __FUNCTION__);
         }
-        for(unsigned itr=0; itr<numthreads_decompose; itr++)
+        for(unsigned itr=0; itr<fAssembleConfig.fNumThreads; itr++)
         {
             PZ_PTHREAD_JOIN(args[itr].pthread, NULL, __FUNCTION__);
         }
@@ -581,7 +564,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
         fDohrAssembly->Assemble(isub,rhsloc,rhs);
     }
     
-    dohr->SetNumThreads(this->fNumThreads);
+    dohr->SetNumThreads(this->fAssembleConfig.fNumThreads);
 
     dohr->Initialize();
     TPZDohrPrecond<STATE,TPZDohrSubstructCondense<STATE> > *precond = new TPZDohrPrecond<STATE,TPZDohrSubstructCondense<STATE> > (*dohr,fDohrAssembly);
@@ -594,7 +577,7 @@ void TPZDohrStructMatrix::Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<STATE> & r
 /**
  * @brief Assemble the global right hand side
  */
-void TPZDohrStructMatrix::Assemble(TPZFMatrix<STATE> & rhs, TPZAutoPointer<TPZGuiInterface> guiInterface)
+void TPZDohrStructMatrix::Assemble(TPZFMatrix<STATE> & rhs)
 {
     int rows = fMesh->NEquations();
     rhs.Redim(rows,1);
@@ -615,7 +598,7 @@ void TPZDohrStructMatrix::Assemble(TPZFMatrix<STATE> & rhs, TPZAutoPointer<TPZGu
         }
         TPZFStructMatrix fullstr(submesh);
         (*it)->fLocalLoad.Zero();
-        fullstr.Assemble((*it)->fLocalLoad,guiInterface);
+        fullstr.Assemble((*it)->fLocalLoad);
         it++;
     }
     for (it=sublist.begin(), isub=0; it != sublist.end(); it++,isub++) {

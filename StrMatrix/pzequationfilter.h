@@ -15,6 +15,11 @@ public:
 
     }
 
+    TPZEquationFilter() : fNumEq(-1), fIsActive(false), fActiveEqs(), fDestIndices()
+    {
+        
+    }
+    
     TPZEquationFilter(const TPZEquationFilter&cp):fNumEq(cp.fNumEq),fIsActive(cp.fIsActive),
            fActiveEqs(cp.fActiveEqs),fDestIndices(cp.fDestIndices)
     {
@@ -81,6 +86,12 @@ public:
         fIsActive = false;
         fActiveEqs.Resize(0);
         fDestIndices.Resize(0);
+    }
+    
+    void SetNumEq(long numeq)
+    {
+        Reset();
+        fNumEq = numeq;
     }
 
     /** Filtra as equações:

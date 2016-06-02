@@ -89,7 +89,7 @@ void *TPZParFrontStructMatrix<front>::ElementAssemble(void *t){
     
 	TPZParFrontStructMatrix<front> *parfront = (TPZParFrontStructMatrix<front> *) t;
 	
-	TPZAdmChunkVector<TPZCompEl *> &elementvec = parfront->fMesh->ElementVec();
+	TPZAdmChunkVector<TPZCompEl *> &elementvec = parfront->fAssembleConfig.fMesh->ElementVec();
 	
 	
 	while(parfront->fCurrentElement < parfront->fNElements) {
@@ -157,8 +157,8 @@ void *TPZParFrontStructMatrix<front>::ElementAssemble(void *t){
 		//		int dim = el->NumNodes();
 		
 		//Builds elements stiffness matrix
-		TPZElementMatrix *ek = new TPZElementMatrix(parfront->fMesh,TPZElementMatrix::EK);
-		TPZElementMatrix *ef = new TPZElementMatrix(parfront->fMesh,TPZElementMatrix::EF);
+		TPZElementMatrix *ek = new TPZElementMatrix(parfront->fAssembleConfig.fMesh,TPZElementMatrix::EK);
+		TPZElementMatrix *ef = new TPZElementMatrix(parfront->fAssembleConfig.fMesh,TPZElementMatrix::EF);
 		
 		el->CalcStiff(*ek, *ef);
 		//Locks a mutex and adds element contribution to frontmatrix
@@ -235,7 +235,7 @@ template<class front>
 void *TPZParFrontStructMatrix<front>::GlobalAssemble(void *t){
     
 	TPZParFrontStructMatrix<front> *parfront = (TPZParFrontStructMatrix<front> *) t;
-	TPZAdmChunkVector<TPZCompEl *> &elementvec = parfront->fMesh->ElementVec();
+	TPZAdmChunkVector<TPZCompEl *> &elementvec = parfront->fAssembleConfig.fMesh->ElementVec();
 	while(parfront->fCurrentAssembled < parfront->fNElements) {
 		
 #ifndef USING_ATLAS
@@ -394,9 +394,8 @@ void *TPZParFrontStructMatrix<front>::GlobalAssemble(void *t){
 }
 
 template<class front>
-void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiInterface> guiInterface)
+void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMatrix<STATE> & rhs)
 {
-	this->fGuiInterface = guiInterface;
 	
 #ifdef STACKSTORAGE
 	TPZParFrontMatrix<STATE, TPZStackEqnStorage<STATE>, front> *mat = dynamic_cast<TPZParFrontMatrix<STATE, TPZStackEqnStorage<STATE>, front> *>(&matref);
@@ -414,11 +413,11 @@ void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMat
 	//cout << "Number of Threads " << endl;
 	//cin >> nthreads;
 	//fNThreads = nthreads;
-    if (this->fNumThreads < 3) {
-        this->fNumThreads = 3;
+    if (this->fAssembleConfig.fNumThreads < 3) {
+        this->fAssembleConfig.fNumThreads = 3;
     }
-	cout << "Number of Threads " << this->fNumThreads << endl;
-	nthreads = this->fNumThreads;
+	cout << "Number of Threads " << this->fAssembleConfig.fNumThreads << endl;
+	nthreads = this->fAssembleConfig.fNumThreads;
 	cout.flush();
 	//int nthreads = fNThreads+1;
 	
@@ -426,7 +425,7 @@ void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMat
 	int *res = new int[nthreads];
 	int i;
 	
-	TPZVec <int> numelconnected(this->fMesh->NEquations(),0);
+	TPZVec <int> numelconnected(this->fAssembleConfig.fMesh->NEquations(),0);
 	//TPZFrontMatrix<TPZStackEqnStorage, front> *mat = new TPZFrontMatrix<TPZStackEqnStorage, front>(fMesh->NEquations());
 	
 	//TPZFrontMatrix<TPZFileEqnStorage, front> *mat = new TPZFrontMatrix<TPZFileEqnStorage, front>(fMesh->NEquations());
@@ -435,7 +434,7 @@ void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMat
 	
 	
 	//TPZParFrontMatrix<TPZStackEqnStorage, front> *mat = new TPZParFrontMatrix<TPZStackEqnStorage, front>(this->fMesh->NEquations());
-	fNElements = this->fMesh->NElements();
+	fNElements = this->fAssembleConfig.fMesh->NElements();
 	
 	this->OrderElement();
 	
@@ -444,7 +443,7 @@ void TPZParFrontStructMatrix<front>::Assemble(TPZMatrix<STATE> & matref, TPZFMat
 #ifdef LOG4CXX
     if (logger->isDebugEnabled()) {
         std::stringstream sout;
-        this->fMesh->Print(sout);
+        this->fAssembleConfig.fMesh->Print(sout);
         LOGPZ_DEBUG(logger, sout.str())
     }
 #endif
@@ -720,13 +719,13 @@ int TPZParFrontStructMatrix<front>::main() {
 #endif
 
 template<class front>
-TPZMatrix<STATE> * TPZParFrontStructMatrix<front>::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface)
+TPZMatrix<STATE> * TPZParFrontStructMatrix<front>::CreateAssemble(TPZFMatrix<STATE> &rhs)
 {
 	
 	//TPZFrontMatrix<TPZStackEqnStorage, front> *mat = new TPZFrontMatrix<TPZStackEqnStorage, front>(fMesh->NEquations());
 	
 	//TPZFrontMatrix<TPZFileEqnStorage, front> *mat = new TPZFrontMatrix<TPZFileEqnStorage, front>(fMesh->NEquations());
-	long neq = this->fEquationFilter.NActiveEquations();
+	long neq = this->fAssembleConfig.fEquationFilter.NActiveEquations();
 	
 	//
 #ifdef STACKSTORAGE
@@ -740,7 +739,7 @@ TPZMatrix<STATE> * TPZParFrontStructMatrix<front>::CreateAssemble(TPZFMatrix<STA
     }
 	rhs.Redim(neq,1);
 	
-	Assemble(*mat,rhs,guiInterface);
+	Assemble(*mat,rhs);
 	return mat;
 	
 }

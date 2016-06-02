@@ -718,7 +718,7 @@ void TPZNonLinMultGridAnalysis::TwoGridAlgorithm(std::ostream &out,int nummat){
 		if(residuo == 1){// forma 1
 			coarsean.Solution().Zero();
 			fSolvers[1]->SetMatrix(0);
-			fSolvers[1]->SetMatrix(coarsean.StructMatrix()->CreateAssemble(coarsean.Rhs(),NULL));
+			fSolvers[1]->SetMatrix(coarsean.StructMatrix()->CreateAssemble(coarsean.Rhs()));
 			CalcResidual(projfinesol,coarsean,"LDLt",rhs);//rhs = Stiffcoar * projfinesol
 			//no assemble ser�adicionado +fRhs por isso: rhs = rhs - fRhs
 			rhs = rhs + projfineres;
@@ -728,7 +728,7 @@ void TPZNonLinMultGridAnalysis::TwoGridAlgorithm(std::ostream &out,int nummat){
 			coarsean.Solution().Zero();
 			fSolvers[1]->SetMatrix(0);
 			//argumento 1 espera? adicionar o res�uo anterior ao atual calculado
-			fSolvers[1]->SetMatrix(coarsean.StructMatrix()->CreateAssemble(coarsean.Rhs(),NULL));
+			fSolvers[1]->SetMatrix(coarsean.StructMatrix()->CreateAssemble(coarsean.Rhs()));
 			TPZFMatrix<STATE> coarres = coarsean.Rhs() + projfineres;
 			coarsean.Rhs() = coarres;//res�uo
 			coarsean.Solve();

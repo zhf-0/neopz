@@ -27,6 +27,8 @@ class TPZFMatrix;
  * @brief It is responsible for a interface among Matrix and Finite Element classes. \ref structural "Structural Matrix"
  * @ingroup structural
  */
+/// this version of structural matrix uses OMP directives for computing the stiffness matrices
+// NOTE : the stiffness matrix must use OMP also for sinchronizing element accesses. Only skyline matrix and full matrix (for rhs) has such a directive
 class TPZStructMatrixST {
     
 public:

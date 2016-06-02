@@ -28,9 +28,9 @@ TPZSkylineStructMatrix::TPZSkylineStructMatrix(TPZAutoPointer<TPZCompMesh> cmesh
 
 TPZMatrix<STATE> * TPZSkylineStructMatrix::Create(){
     TPZVec<long> skyline;
-    fMesh->Skyline(skyline);
-    fEquationFilter.FilterSkyline(skyline);
-    long neq = fEquationFilter.NActiveEquations();
+    fAssembleConfig.fMesh->Skyline(skyline);
+    fAssembleConfig.fEquationFilter.FilterSkyline(skyline);
+    long neq = fAssembleConfig.fEquationFilter.NActiveEquations();
 //    std::cout << skyline << std::endl;
     return this->ReallyCreate(neq,skyline);//new TPZSkylMatrix<STATE>(neq,skyline);
 }

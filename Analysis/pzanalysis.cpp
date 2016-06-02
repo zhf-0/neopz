@@ -268,7 +268,7 @@ void TPZAnalysis::AssembleResidual(){
     }
 	long sz = this->Mesh()->NEquations();
 	this->Rhs().Redim(sz,numloadcases);
-	fStructMatrix->Assemble(this->Rhs(),fGuiInterface);
+	fStructMatrix->Assemble(this->Rhs());
 }//void
 
 void TPZAnalysis::Assemble()
@@ -297,12 +297,12 @@ void TPZAnalysis::Assemble()
 	if(fSolver->Matrix() && fSolver->Matrix()->Rows()==sz)
 	{
 		fSolver->Matrix()->Zero();
-		fStructMatrix->Assemble(*(fSolver->Matrix().operator ->()),fRhs,fGuiInterface);
+		fStructMatrix->Assemble(*(fSolver->Matrix().operator ->()),fRhs);
 	}
 	else
 	{
         
-		TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs,fGuiInterface);
+		TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs);
 		fSolver->SetMatrix(mat);
 		//aqui TPZFMatrix<STATE> nao eh nula
 	}

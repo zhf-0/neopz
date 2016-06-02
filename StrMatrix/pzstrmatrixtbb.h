@@ -29,16 +29,15 @@ class TPZFMatrix;
 #include "tbb/flow_graph.h"
 
 
-/**
- * @brief Refines geometrical mesh (all the elements) num times
- * @ingroup geometry
- */
-//void UniformRefine(int num, TPZGeoMesh &m);
 
 /**
  * @brief It is responsible for a interface among Matrix and Finite Element classes. \ref structural "Structural Matrix"
  * @ingroup structural
  */
+/// for computing the matrix : all calcstiff tasks are spawn simulataneously. at the end of the task an assembly task is spawn which is synchronized through the graph dependency
+/// the rhs is computed using straight coloring. All rhs are computed simultaneously in vectors corresponding to colors. The final vectors are assembled in a binary tree
+/// fashion
+// observation : this approach creates too many nodes for large meshes
 class TPZStructMatrixTBB {
     
 public:

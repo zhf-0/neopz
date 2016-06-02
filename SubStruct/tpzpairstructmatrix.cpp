@@ -377,7 +377,7 @@ public:
       
       ek.ComputeDestinationIndices();
 
-    fStrMatrix->FilterEquations(ek.fSourceIndex,ek.fDestinationIndex);
+    fStrMatrix->EquationFilter().Filter(ek.fSourceIndex,ek.fDestinationIndex);
       
       // ThreadAssembly 1
       if(!has_dependency) 
@@ -475,7 +475,7 @@ void TPZPairStructMatrix::SerialAssemble(TPZMatrix<STATE> *first, TPZMatrix<STAT
 		
 		if(!el->HasDependency()) {
 			ek.ComputeDestinationIndices();
-            fStrMatrix.FilterEquations(ek.fSourceIndex,ek.fDestinationIndex);
+            fStrMatrix.EquationFilter().Filter(ek.fSourceIndex,ek.fDestinationIndex);
 			
 			first->AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
 			rhs.AddFel(ef.fMat,ek.fSourceIndex,ek.fDestinationIndex);
@@ -496,7 +496,7 @@ void TPZPairStructMatrix::SerialAssemble(TPZMatrix<STATE> *first, TPZMatrix<STAT
 			ef.ApplyConstraints();
 			ek.ComputeDestinationIndices();
             //FIXME: (Edson) - O operador é  && ou ||
-            fStrMatrix.FilterEquations(ek.fSourceIndex,ek.fDestinationIndex);
+            fStrMatrix.EquationFilter().Filter(ek.fSourceIndex,ek.fDestinationIndex);
 			first->AddKel(ek.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
 			rhs.AddFel(ef.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
 			PermuteScatter(ek.fDestinationIndex);
@@ -621,7 +621,7 @@ void *TPZPairStructMatrix::ThreadData::ThreadWork(void *datavoid)
 		if(!el->HasDependency()) {
 			ek->ComputeDestinationIndices();
 			
-            data->fStrMatrix->FilterEquations(ek->fSourceIndex,ek->fDestinationIndex);
+            data->fStrMatrix->EquationFilter().Filter(ek->fSourceIndex,ek->fDestinationIndex);
 #ifdef LOG4CXX
 			if(loggerel->isDebugEnabled())
 			{
@@ -636,7 +636,7 @@ void *TPZPairStructMatrix::ThreadData::ThreadWork(void *datavoid)
 			ek->ApplyConstraints();
 			ef->ApplyConstraints();
 			ek->ComputeDestinationIndices();
-            data->fStrMatrix->FilterEquations(ek->fSourceIndex,ek->fDestinationIndex);
+            data->fStrMatrix->EquationFilter().Filter(ek->fSourceIndex,ek->fDestinationIndex);
 
 		}
 		

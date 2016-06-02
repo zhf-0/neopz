@@ -68,7 +68,7 @@ void TPZSubMeshAnalysis::Assemble(){
 	matred->SetSolver(dynamic_cast<TPZMatrixSolver<STATE> *>(fSolver->Clone()));
 	//	TPZStructMatrix::Assemble(fReducableStiff,fRhs, *fMesh);
 //	time_t before = time (NULL);
-	fStructMatrix->Assemble(fReducableStiff,fRhs,fGuiInterface);
+	fStructMatrix->Assemble(fReducableStiff,fRhs);
 //	time_t after = time(NULL);
 //	double diff = difftime(after, before);
 //	std::cout << __PRETTY_FUNCTION__ << " tempo " << diff << std::endl;

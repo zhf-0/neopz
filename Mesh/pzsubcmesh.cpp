@@ -1127,7 +1127,7 @@ void TPZSubCompMesh::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
 	}
 	if (! fAnalysis){
 		TPZFStructMatrix local(this);
-		TPZAutoPointer<TPZMatrix<STATE> > stiff = local.CreateAssemble(ef.fMat,NULL);
+		TPZAutoPointer<TPZMatrix<STATE> > stiff = local.CreateAssemble(ef.fMat);
 		ek.fMat = *(stiff.operator->());
 		//		TPZStructMatrix::Assemble(ek.fMat,ef.fMat,*this,-1,-1);
 	}

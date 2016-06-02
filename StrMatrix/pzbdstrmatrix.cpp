@@ -27,8 +27,8 @@ void TPZBlockDiagonalStructMatrix::AssembleBlockDiagonal(TPZBlockDiagonal<STATE>
 	BlockSizes(blocksizes);
 	block.Initialize(blocksizes);
 	int nblock = blocksizes.NElements();
-	TPZAdmChunkVector<TPZCompEl *> &elementvec = fMesh->ElementVec();
-	TPZAdmChunkVector<TPZConnect> &connectvec = fMesh->ConnectVec();
+	TPZAdmChunkVector<TPZCompEl *> &elementvec = fAssembleConfig.fMesh->ElementVec();
+	TPZAdmChunkVector<TPZConnect> &connectvec = fAssembleConfig.fMesh->ConnectVec();
 	TPZStack<long> connectlist;
 	TPZBlockDiagonal<STATE> elblock;
 	long numel = elementvec.NElements();
@@ -44,10 +44,10 @@ void TPZBlockDiagonalStructMatrix::AssembleBlockDiagonal(TPZBlockDiagonal<STATE>
 		for(c=0; c<ncon; c++) {
 			TPZConnect &con = connectvec[connectlist[c]];
 			seqnum = con.SequenceNumber();
-			long eqnum = fMesh->Block().Position(seqnum);
+			long eqnum = fAssembleConfig.fMesh->Block().Position(seqnum);
 			if(seqnum <0 || seqnum >= nblock) continue;
 			int bsize = blocksizes[seqnum];
-            long numactive = fEquationFilter.NumActive(eqnum, eqnum+bsize);
+            long numactive = fAssembleConfig.fEquationFilter.NumActive(eqnum, eqnum+bsize);
             if (!numactive) {
                 continue;
             }
@@ -55,7 +55,7 @@ void TPZBlockDiagonalStructMatrix::AssembleBlockDiagonal(TPZBlockDiagonal<STATE>
                 // Please implement me
                 DebugStop();
             }
-			if(con.NDof(*fMesh) != bsize ) {
+			if(con.NDof(*fAssembleConfig.fMesh) != bsize ) {
 				cout << "TPZBlockDiagonalStructMatrix::AssembleBlockDiagonal wrong data structure\n";
 				continue;
 			}
@@ -68,12 +68,12 @@ void TPZBlockDiagonalStructMatrix::AssembleBlockDiagonal(TPZBlockDiagonal<STATE>
 
 void TPZBlockDiagonalStructMatrix::BlockSizes(TPZVec < int > & blocksizes){
 	
-    if(fMesh->FatherMesh() != 0) {
-		TPZSubCompMesh *mesh = (TPZSubCompMesh *) fMesh;
+    if(fAssembleConfig.fMesh->FatherMesh() != 0) {
+		TPZSubCompMesh *mesh = (TPZSubCompMesh *) fAssembleConfig.fMesh;
 		mesh->PermuteExternalConnects();
     }
     int nblocks = 0;
-    TPZAdmChunkVector<TPZConnect> &connectvec = fMesh->ConnectVec();
+    TPZAdmChunkVector<TPZConnect> &connectvec = fAssembleConfig.fMesh->ConnectVec();
     long nc = connectvec.NElements();
     long c;
     for(c=0; c<nc; c++) {
@@ -87,9 +87,9 @@ void TPZBlockDiagonalStructMatrix::BlockSizes(TPZVec < int > & blocksizes){
         TPZConnect &con = connectvec[c];
         if(con.HasDependency() || con.IsCondensed() || con.SequenceNumber() < 0) continue;
         bl = con.SequenceNumber();
-        blsize = con.NDof(*fMesh);
-        long blpos = fMesh->Block().Position(bl);
-        long numactiv = fEquationFilter.NumActive(blpos, blpos+blsize);
+        blsize = con.NDof(*fAssembleConfig.fMesh);
+        long blpos = fAssembleConfig.fMesh->Block().Position(bl);
+        long numactiv = fAssembleConfig.fEquationFilter.NumActive(blpos, blpos+blsize);
         if (numactiv && numactiv != blsize) {
             DebugStop();
         }
@@ -107,11 +107,11 @@ void TPZBlockDiagonalStructMatrix::BlockSizes(TPZVec < int > & blocksizes){
 TPZStructMatrix * TPZBlockDiagonalStructMatrix::Clone(){
     return new TPZBlockDiagonalStructMatrix(*this);
 }
-TPZMatrix<STATE> * TPZBlockDiagonalStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
-	long neq = fMesh->NEquations();
+TPZMatrix<STATE> * TPZBlockDiagonalStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs){
+	long neq = fAssembleConfig.fMesh->NEquations();
 	TPZBlockDiagonal<STATE> *block = new TPZBlockDiagonal<STATE>();
 	rhs.Redim(neq,1);
-	Assemble(rhs,guiInterface);
+	Assemble(rhs);
 	AssembleBlockDiagonal(*block);
 	return block;
 }

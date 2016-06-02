@@ -123,7 +123,7 @@ void TPZEulerAnalysis::BufferLastStateAssemble()
 	fRhsLast.Zero();
 	fRhsLast.Redim(fCompMesh->NEquations(),1);
 	SetLastState();
-	fStructMatrix->Assemble(fRhsLast,NULL);
+	fStructMatrix->Assemble(fRhsLast);
 	//   TPZStructMatrix::Assemble(fRhsLast, *fFlowCompMesh);
 	SetAdvancedState();
 	UpdateHistory();
@@ -138,12 +138,12 @@ REAL TPZEulerAnalysis::EvaluateFluxEpsilon()
 	Flux.Zero();
 	// contribution of last state
 	SetLastState();
-	fStructMatrix->Assemble(Flux,NULL);
+	fStructMatrix->Assemble(Flux);
 	//   TPZStructMatrix::Assemble(Flux, *fFlowCompMesh);
 	
 	// constribution of adv state
 	SetAdvancedState();
-	fStructMatrix->Assemble(Flux,NULL);
+	fStructMatrix->Assemble(Flux);
 	//   TPZStructMatrix::Assemble(Flux, *fFlowCompMesh);
 	
 	// reseting the residual type to residual
@@ -182,7 +182,7 @@ void TPZEulerAnalysis::Assemble()
 	
 	if(!pTangentMatrix || dynamic_cast<TPZParFrontStructMatrix <TPZFrontNonSym<STATE> > *>(fStructMatrix.operator->()))
 	{
-		pTangentMatrix = fStructMatrix->CreateAssemble(fRhs,NULL);
+		pTangentMatrix = fStructMatrix->CreateAssemble(fRhs);
 		fSolver->SetMatrix(pTangentMatrix);
 	}
 	else
@@ -199,7 +199,7 @@ void TPZEulerAnalysis::Assemble()
 		
 		// Contributing referring to the advanced state
 		// (n+1 index)
-		fStructMatrix->Assemble(pTangentMatrix, fRhs,NULL);
+		fStructMatrix->Assemble(pTangentMatrix, fRhs);
 	}
 	
 	if(fpBlockDiag)
@@ -219,7 +219,7 @@ void TPZEulerAnalysis::AssembleRhs()
 	
 	// Contributing referring to the advanced state
 	// (n+1 index)
-	fStructMatrix->Assemble(fRhs,NULL);
+	fStructMatrix->Assemble(fRhs);
 	//   TPZStructMatrix::Assemble(fRhs, *fFlowCompMesh);
 	
 }
@@ -257,7 +257,7 @@ int TPZEulerAnalysis::RunNewton(REAL & epsilon, int & numIter)
 	{
 		TPZFrontStructMatrix <TPZFrontNonSym<STATE> > StrMatrix(Mesh());
 		StrMatrix.SetQuiet(1);
-		TPZMatrix<STATE> *front = StrMatrix.CreateAssemble(fRhs,NULL);
+		TPZMatrix<STATE> *front = StrMatrix.CreateAssemble(fRhs);
 		TPZStepSolver<STATE> FrontSolver;
 		FrontSolver.SetDirect(ELU);
 		FrontSolver.SetMatrix(front);
@@ -598,7 +598,7 @@ void TPZEulerAnalysis::SetGMResFront(REAL tol, int numiter, int numvectors)
 {
 	TPZFrontStructMatrix <TPZFrontNonSym<STATE> > strfront(Mesh());
 	strfront.SetQuiet(1);
-	TPZMatrix<STATE> *front = strfront.CreateAssemble(fRhs,NULL);
+	TPZMatrix<STATE> *front = strfront.CreateAssemble(fRhs);
 	
 	TPZStepSolver<STATE> FrontSolver;
 	FrontSolver.SetDirect(ELU);

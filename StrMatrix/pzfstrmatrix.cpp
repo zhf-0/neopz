@@ -18,11 +18,11 @@ static LoggerPtr loggerel(Logger::getLogger("pz.strmatrix.element"));
 
 using namespace std;
 
-TPZMatrix<STATE> * TPZFStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
+TPZMatrix<STATE> * TPZFStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs){
 	TPZMatrix<STATE> *stiff = Create();
-	long neq = this->fMesh->NEquations();
+	long neq = this->fAssembleConfig.fMesh->NEquations();
 	rhs.Redim(neq,1);
-	Assemble(*stiff,rhs,guiInterface);
+	Assemble(*stiff,rhs);
 	
 #ifdef LOG4CXX
 	if(loggerel->isDebugEnabled())
@@ -37,7 +37,7 @@ TPZMatrix<STATE> * TPZFStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAu
 }
 
 TPZMatrix<STATE> * TPZFStructMatrix::Create(){
-	long neq = fEquationFilter.NActiveEquations();
+	long neq = fAssembleConfig.fEquationFilter.NActiveEquations();
     
 	return new TPZFMatrix<STATE>(neq,neq,0.);
 }

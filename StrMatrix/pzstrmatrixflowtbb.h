@@ -39,6 +39,9 @@ class TPZFMatrix;
  * @brief It is responsible for a interface among Matrix and Finite Element classes. \ref structural "Structural Matrix"
  * @ingroup structural
  */
+/// one single tbb node triggers all nodes of the graph.
+// the node of a graph computes and assembles an element
+// identical approaches are taken for computing the matrix or rhs
 class TPZStructMatrixTBBFlow {
     
 public:
