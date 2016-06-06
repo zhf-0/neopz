@@ -22,6 +22,8 @@
 #include "TPZTimer.h"
 #include "TPZThreadTools.h"
 
+#include "TPZMultiphysicsInterfaceEl.h"
+
 
 #include "pzcheckconsistency.h"
 #include "pzmaterial.h"
@@ -283,10 +285,20 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
             fEquationFilter.Filter(ek.fSourceIndex, ek.fDestinationIndex);
             //			TPZSFMatrix<STATE> test(stiffness);
             //			TPZFMatrix<STATE> test2(stiffness.Rows(),stiffness.Cols(),0.);
-            //			stiffness.Print("before assembly",std::cout,EMathematicaInput);
+//            TPZMultiphysicsInterfaceElement *mfint = dynamic_cast<TPZMultiphysicsInterfaceElement *>(el);
+//
+//            if(mfint)
+//            {
+//                std::ofstream out("matrix.nb");
+//                stiffness.Print("EKB = ",out,EMathematicaInput);
+//            }
             stiffness.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
             rhs.AddFel(ef.fMat,ek.fSourceIndex,ek.fDestinationIndex);
-            //			stiffness.Print("stiffness after assembly STK = ",std::cout,EMathematicaInput);
+//            if (mfint)
+//            {
+//                std::ofstream out("matrix.nb",std::ios::app);
+//                stiffness.Print("EKA = ",out,EMathematicaInput);
+//            }
             //			rhs.Print("rhs after assembly Rhs = ",std::cout,EMathematicaInput);
             //			test2.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
             //			test -= stiffness;
@@ -314,6 +326,8 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
                 else {
                     sout << "Stiffness for computational element without associated geometric element\n";
                 }
+                sout << "source index " << ek.fSourceIndex << std::endl;
+                sout << "destin index " << ek.fDestinationIndex << std::endl;
                 ek.Print(sout);
                 ef.Print(sout);
                 LOGPZ_DEBUG(loggerel,sout.str())
@@ -327,6 +341,7 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
             fEquationFilter.Filter(ek.fSourceIndex, ek.fDestinationIndex);
             stiffness.AddKel(ek.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
             rhs.AddFel(ef.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
+            
             // tototototototo
 //            GK.Zero();
 //            GF.Zero();

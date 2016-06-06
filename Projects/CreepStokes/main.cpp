@@ -21,6 +21,7 @@
 #include "pzmat2dlin.h"
 #include "pzfstrmatrix.h"
 #include "pzskylstrmatrix.h"
+#include "TPZSkylineNSymStructMatrix.h"
 #include "pzstepsolver.h"
 #include "TPZGeoLinear.h"
 #include "tpzgeoelrefpattern.h"
@@ -90,6 +91,9 @@ int main(int argc, char *argv[])
 
     TPZMaterial::gBigNumber = 1.e16;
     
+#ifdef LOG4CXX
+    InitializePZLOG();
+#endif
     //Dados do problema:
     
     double hx=1.,hy=0.5; //Dimensões em x e y do domínio
@@ -146,7 +150,7 @@ int main(int argc, char *argv[])
     
     bool optimizeBandwidth = false; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
-    TPZSkylineStructMatrix matskl(cmesh_m); //caso simetrico
+    TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso simetrico
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
     step.SetDirect(ELDLt);
