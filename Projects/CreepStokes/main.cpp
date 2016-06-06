@@ -92,10 +92,10 @@ int main(int argc, char *argv[])
     
     //Dados do problema:
     
-    double hx=1.,hy=1.; //Dimensões em x e y do domínio
-    int nelx=1, nely=1; //Número de elementos em x e y
+    double hx=1.,hy=0.5; //Dimensões em x e y do domínio
+    int nelx=2, nely=1; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 8; //Ordem polinomial de aproximação
+    int pOrder = 1; //Ordem polinomial de aproximação
     //int dim = 2; //Dimensão do problema
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     TPZStepSolver<STATE> step;
     step.SetDirect(ELDLt);
     an.SetSolver(step);
-    an.Run();//Assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equações
+    an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equações
 
 #ifdef PZDEBUG
     //Imprimindo vetor solução:
@@ -161,19 +161,19 @@ int main(int argc, char *argv[])
     solucao.Print("Sol",cout,EMathematicaInput);//Imprime na formatação do Mathematica
 #endif
     
-#ifdef PZDEBUG
+
     //Imprimir Matriz de rigidez Global:
     
-    int neq = cmesh_m->NEquations();
-    TPZFMatrix<STATE> stiff(neq,neq,0.),rhs(neq,1,0.);
-    TPZFStructMatrix fstr(cmesh_m);
-    fstr.Assemble(stiff, rhs, 0);
-    
     std::ofstream filestiff("stiffness.txt");
-    stiff.Print("Global Stiffness matrix",filestiff,EMathematicaInput);
-#endif
+    an.Solver().Matrix()->Print("K = ",filestiff,EMathematicaInput);
+
+    std::ofstream filerhs("rhs.txt");
+    an.Rhs().Print("R = ",filerhs,EMathematicaInput);
     
+    std::ofstream fileAlpha("alpha.txt");
+    an.Solution().Print("Alpha = ",fileAlpha,EMathematicaInput);
     
+    an.Solve();
     
     //Pós-processamento (paraview):
 
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     vecnames.Push("V_exact");
     
     
-    int postProcessResolution = 5; //  keep low as possible
+    int postProcessResolution = 4; //  keep low as possible
     int dim = gmesh->Dimension();
     an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
     an.PostProcess(postProcessResolution,dim);
@@ -384,7 +384,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     nodind3[1]=4;
     
     //gmesh->CreateGeoElement(EOned, nodind3, matInterface, index); //Criando elemento de interface (GeoElement)
-    //new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (nodind3,matInterface,*gmesh); //Criando elemento de interface (RefPattern)
+    new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (nodind3,matInterface,*gmesh); //Criando elemento de interface (RefPattern)
     id++;
     
     gmesh->AddInterfaceMaterial(quadmat1, quadmat2, quadmat3);
@@ -503,7 +503,8 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     REAL visco=1.; //Coeficiente de viscosidade
     
     // @omar::
-    pOrder--; // Space restriction
+    
+    //pOrder--; // Space restriction apapapa
     
     //Criando malha computacional:
     
@@ -512,10 +513,10 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetDimModel(dim); //Insere dimensão do modelo
 
     // @omar::
-    cmesh->SetAllCreateFunctionsDiscontinuous();
+   // cmesh->SetAllCreateFunctionsDiscontinuous();
     
-//    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1
-//    cmesh->ApproxSpace().CreateDisconnectedElements(true);
+    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1
+    cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
     
     //Criando material:
