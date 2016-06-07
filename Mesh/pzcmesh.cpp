@@ -1,4 +1,3 @@
-|
 /**
  * @file
  * @brief Contains the implementation of the TPZCompMesh methods.
