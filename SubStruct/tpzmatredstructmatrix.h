@@ -18,7 +18,7 @@
  * @brief .. . \ref substructure " Structure"
  */
 template<class TStructMatrix, class TSparseMatrix>
-class TPZMatRedStructMatrix : TPZStructMatrix
+class TPZMatRedStructMatrix : public TPZStructMatrix
 {
 public:
 	/** @brief Constructor */

@@ -49,4 +49,6 @@ TPZMatrix<STATE> *TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::Create()
 
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZVerySparseMatrix<STATE> >;
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZFMatrix<STATE> >;
-template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZSBMatrix<STATE> >;
+template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZVerySparseMatrix<STATE> >;
+template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZFMatrix<STATE> >;
+
