@@ -306,7 +306,7 @@ void TPZStokesMaterial::FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<S
 // Contricucao dos elementos internos
 
 void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
-    return;
+ 
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
     int nref =  datavec.size();
@@ -483,7 +483,6 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 
 void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     
-    return;
     
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
@@ -539,7 +538,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     nshapeP = phiP.Rows();
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
-    TPZFNMatrix<9> phiVi(fDimension,1), phiVj(fDimension,1);
+    TPZFNMatrix<9> phiVi(fDimension,1), phiVj(fDimension,1), phiPi(fDimension,1),phiPj(fDimension,1);
     
     switch (bc.Type()) {
         case 0: //Dirichlet for continuous formulation
@@ -589,20 +588,18 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
             
         }
             break;
-//        case 1: //Neumann for continuous formulation
-//        {
-//            STATE p_D = bc.Val2()(0,0);
-//
-//            
-//            for(int i = 0; i < nshapeV; i++ )
-//            {
-//                int iphi = datavec[pindex].fVecShapeIndex[i].second;
-//                int ivec = datavec[pindex].fVecShapeIndex[i].first;
-//                
-//                for (int e=0; e<fDimension; e++) {
-//                    phiVi(e,0)=datavec[vindex].fNormalVec(e,ivec)*phiV(iphi,0);
-//                }
-//                
+        case 3: //Neumann for continuous formulation
+        {
+            STATE p_D = bc.Val2()(0,0);
+
+            
+           for(int i = 0; i < nshapeP; i++ )
+            {
+
+                for (int e=0; e<fDimension; e++) {
+                    phiPi(e,0)=phiP(i,0);
+                }
+                
 //                //std::cout<<iphi<<std::endl;
 //                //std::cout<<phiVi<<std::endl;
 //                
@@ -614,28 +611,23 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 //                //        }
 //                //
 //                //std::cout<<"____"<<std::endl;
-//                
-//                
-//                ef(i) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
-//                
-//                for(int j = 0; j < nshapeV; j++){
-//                    int jphi = datavec[vindex].fVecShapeIndex[j].second;
-//                    int jvec = datavec[vindex].fVecShapeIndex[j].first;
-//                    
-//                    
-//                    
-//                    for (int e=0; e<fDimension; e++) {
-//                        phiVj(e,0)=datavec[vindex].fNormalVec(e,jvec)*phiV(jphi,0);
-//                    }
-//                    
-//                    ek(i,j) += weight * gBigNumber * (phiVj(0,0) * phiVi(0,0) + phiVj(1,0) * phiVi(1,0) );
-//                    
-//                }
-//                
-//            }
-//            
-//        }
-//            break;
+          
+                ef(i) += weight * gBigNumber * ( (p_h[0] - p_D) * phiPi(0,0));
+                
+                for(int j = 0; j < nshapeP; j++){
+                    
+                    for (int e=0; e<fDimension; e++) {
+                        phiPj(e,0)=phiP(j,0);
+                    }
+                    
+                    ek(i,j) += weight * gBigNumber * (phiPj(0,0) * phiPi(0,0));
+                    
+                }
+                
+            }
+            
+        }
+            break;
             
         default:
         {
@@ -1019,16 +1011,9 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
     }
 
     
-    std::cout<<ek<<std::endl;
+    //std::cout<<ek<<std::endl;
     
-    //teste: Zerar contribuições dos elementos
-    
-//    for(int i=0;i<2*(nshapeV1+nshapeP1);i++){
-//        for(int j=0;j<2*(nshapeV1+nshapeP1);j++){
-//            ek(i,j)*=0.0;
-//        }
-//        
-//    }
+
     
     
 }
