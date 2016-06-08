@@ -15,6 +15,10 @@
 template< class TStructMatrix, class TSparseMatrix>
 TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(TPZSubCompMesh *mesh) : TPZStructMatrix(mesh)
 {
+    if(!mesh)
+    {
+        DebugStop();
+    }
 	fInternalEqs = mesh->NumInternalEquations();
 }
 
