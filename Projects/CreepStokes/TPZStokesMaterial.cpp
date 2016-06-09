@@ -568,7 +568,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 //std::cout<<"____"<<std::endl;
                 
                 
-                ef(i) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
+                ef(i,0) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
                 
                 for(int j = 0; j < nshapeV; j++){
                     int jphi = datavec[vindex].fVecShapeIndex[j].second;
@@ -588,7 +588,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
             
         }
             break;
-        case 3: //Neumann for continuous formulation
+        case 3: //Contribuicao ponto
         {
             STATE p_D = bc.Val2()(0,0);
 
@@ -612,7 +612,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 //                //
 //                //std::cout<<"____"<<std::endl;
           
-                ef(i) += weight * gBigNumber * ( (p_h[0] - p_D) * phiPi(0,0));
+                ef(nshapeV+i,0) += weight * gBigNumber * ( (p_h[0] - p_D) * phiPi(0,0));
                 
                 for(int j = 0; j < nshapeP; j++){
                     
@@ -620,7 +620,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                         phiPj(e,0)=phiP(j,0);
                     }
                     
-                    ek(i,j) += weight * gBigNumber * (phiPj(0,0) * phiPi(0,0));
+                    ek(nshapeV+i,nshapeV+j) += weight * gBigNumber * (phiPj(0,0) * phiPi(0,0));
                     
                 }
                 
@@ -697,7 +697,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 ////////////////////////////////////////////////////////////////////
 
 void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
-
+    return;
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space for datavecleft
     int nrefleft =  datavecleft.size();
@@ -1021,7 +1021,7 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
 
 void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     
-    DebugStop();
+    
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
     int nref =  datavec.size();
@@ -1081,26 +1081,27 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
     {
         int iphi = datavec[vindex].fVecShapeIndex[i].second;
         int ivec = datavec[vindex].fVecShapeIndex[i].first;
-        TPZFNMatrix<9> GradVnj(fDimension,fDimension),phiVi(fDimension,fDimension);
+        TPZFNMatrix<9> GradVnj(fDimension,1),phiVi(fDimension,1);
         for (int e=0; e<fDimension; e++) {
             for (int f=0; f<fDimension; f++) {
-                phiVi(e,f)=datavec[vindex].fNormalVec(e,ivec)*phiVx(f,iphi);
+                phiVi(e,0)=datavec[vindex].fNormalVec(e,ivec)*phiVx(f,iphi);
             }
         }
         
         for(int j = 0; j < nshapeV; j++){
             int jphi = datavec[vindex].fVecShapeIndex[j].second;
             int jvec = datavec[vindex].fVecShapeIndex[j].first;
-            TPZFNMatrix<9> GradVnj(fDimension,fDimension);
+            TPZFNMatrix<9> GradVnj(fDimension,1);
             for (int e=0; e<fDimension; e++) {
                 for (int f=0; f<fDimension; f++) {
-                    GradVnj(e,f) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi)*normal[f];
+                    GradVnj(e,0) = datavec[vindex].fNormalVec(e,jvec)*dphiVx(f,jphi)*normal[f];
                     
                 }
             }
             
-            ek(i,j) += (-1.) * weight * fViscosity * Inner(phiVi, GradVnj) ;
-            //ek(i,j) += ftheta*Transpose(ek);
+            STATE fact=(-1.) * weight * fViscosity * InnerVec(phiVi, GradVnj) ;
+            ek(i,j) += fact ;
+            ek(j,i) += fTheta*fact;
         }
         
     }
