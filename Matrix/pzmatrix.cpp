@@ -380,7 +380,7 @@ void TPZMatrix<std::complex<float> >::Print(const char *name, std::ostream& out,
             for ( long col = 0; col < Cols(); col++ ) {
                 std::complex<double> val = Get (row, col);
                 
-                sprintf(number, "%16.16Lf",(long double) std::real(val));
+                sprintf(number, "%16.16Lf + ",(long double) std::real(val));
                 out << number;
                 out << "Sqrt[-1] * ";
                 sprintf(number, "%16.16Lf",(long double) std::imag(val));
@@ -451,7 +451,7 @@ void TPZMatrix<std::complex<double> >::Print(const char *name, std::ostream& out
                 std::complex<double> val = Get (row, col);
                 
                 //sprintf(number, "{%16.16lf,%16.16lf}", val.real(), val.imag());
-                sprintf(number, "%16.16Lf",(long double) std::real(val));
+                sprintf(number, "%16.16Lf + ",(long double) std::real(val));
                 out << number;
                 out << "Sqrt[-1] * ";
                 sprintf(number, "%16.16Lf",(long double) std::imag(val));
