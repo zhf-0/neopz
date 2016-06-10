@@ -643,6 +643,9 @@ void TPZFMatrix<double>::MultAdd(const TPZFMatrix<double> &x,const TPZFMatrix<do
 	if (beta != (double)0.) {
 	   	z = y;
 	}
+    if (this->Rows() == 0 || this->Cols() == 0 || x.Cols() == 0) {
+        return;
+    }
 	if (!opt) { 
         cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, this->Rows(), x.Cols(), this->Cols(),
                 alpha, this->fElem, this->Rows(), x.fElem, x.Rows(), beta, z.fElem, z.Rows());

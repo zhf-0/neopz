@@ -123,10 +123,12 @@ int main(int argc, char *argv[])
     TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder); //Função para criar a malha computacional multifísica
 
 #ifdef PZDEBUG
-    std::ofstream filecv("MalhaC_v.txt"); //Impressão da malha computacional da velocidade (formato txt)
-    std::ofstream filecp("MalhaC_p.txt"); //Impressão da malha computacional da pressão (formato txt)
-    cmesh_v->Print(filecv);
-    cmesh_p->Print(filecp);
+    {
+        std::ofstream filecv("MalhaC_v.txt"); //Impressão da malha computacional da velocidade (formato txt)
+        std::ofstream filecp("MalhaC_p.txt"); //Impressão da malha computacional da pressão (formato txt)
+        cmesh_v->Print(filecv);
+        cmesh_p->Print(filecp);
+    }
 #endif
     
     TPZManVector<TPZCompMesh *, 2> meshvector(2);
@@ -157,27 +159,28 @@ int main(int argc, char *argv[])
     an.SetSolver(step);
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equações
 
-#ifdef PZDEBUG
-    //Imprimindo vetor solução:
-
-    TPZFMatrix<REAL> solucao=cmesh_m->Solution();//Pegando o vetor de solução, alphaj
-    
-    solucao.Print("Sol",cout,EMathematicaInput);//Imprime na formatação do Mathematica
-#endif
-    
 
     //Imprimir Matriz de rigidez Global:
-    
-    std::ofstream filestiff("stiffness.txt");
-    an.Solver().Matrix()->Print("K = ",filestiff,EMathematicaInput);
+    {
+        std::ofstream filestiff("stiffness.txt");
+        an.Solver().Matrix()->Print("K1 = ",filestiff,EMathematicaInput);
 
-    std::ofstream filerhs("rhs.txt");
-    an.Rhs().Print("R = ",filerhs,EMathematicaInput);
-    
-    std::ofstream fileAlpha("alpha.txt");
-    an.Solution().Print("Alpha = ",fileAlpha,EMathematicaInput);
-    
+        std::ofstream filerhs("rhs.txt");
+        an.Rhs().Print("R = ",filerhs,EMathematicaInput);
+        
+        std::ofstream fileAlpha("alpha.txt");
+        an.Solution().Print("Alpha = ",fileAlpha,EMathematicaInput);
+    }
     an.Solve();
+    
+#ifdef PZDEBUG
+    //Imprimindo vetor solução:
+    {
+        TPZFMatrix<REAL> solucao=cmesh_m->Solution();//Pegando o vetor de solução, alphaj
+        std::ofstream solout("sol.txt");
+        solucao.Print("Sol",solout,EMathematicaInput);//Imprime na formatação do Mathematica
+    }
+#endif
     
     //Pós-processamento (paraview):
 
@@ -556,8 +559,8 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     TPZMaterial * BCPoint = material->CreateBC(material, bcpoint, pointtype, val1, val2); //Cria material que implementa um ponto para a pressao
     cmesh->InsertMaterialObject(BCPoint); //Insere material na malha
 
-    TPZMaterial * BCond2 = material->CreateBC(material, bc2, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno inferior
-    cmesh->InsertMaterialObject(BCond2); //Insere material na malha
+//    TPZMaterial * BCond2 = material->CreateBC(material, bcpoint2, pointtype, val1, val2); //Cria material que implementa a condicao de contorno inferior
+//    cmesh->InsertMaterialObject(BCond2); //Insere material na malha
     
 
     //Criando elementos computacionais que gerenciarão o espaco de aproximação da malha
@@ -570,6 +573,13 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         if(facel)DebugStop();
         
     }
+    std::set<int> materialids;
+    materialids.insert(matId);
+    cmesh->AutoBuild(materialids);
+    cmesh->LoadReferences();
+    cmesh->ApproxSpace().CreateDisconnectedElements(false);
+    cmesh->AutoBuild();
+    
 
     // @omar::
     int ncon = cmesh->NConnects();
@@ -579,7 +589,6 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         newnod.SetLagrangeMultiplier(1);
     }
     
-    cmesh->AutoBuild();
 //    cmesh->AdjustBoundaryElements();
 //    cmesh->CleanUpUnconnectedNodes();
     
