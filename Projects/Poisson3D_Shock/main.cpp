@@ -152,7 +152,7 @@ bool ApplyingStrategyHPAdaptiveBasedOnErrorOfSolutionAndGradient(TPZCompMesh *cm
 void ApplyingStrategyPAdaptiveBasedOnExactSphereSolution(TPZCompMesh *cmesh,TPZVec<REAL> &ervecbyel,TPZVec<REAL> &gradervecbyel,REAL MaxErrorByElement,REAL &MinErrorByElement,int ref);
 
 // Writing a relation between number of degree of freedom and L2 error.
-bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrrVec,TPZVec<long> &NEquations,std::ostream &fileerrors);
+bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrorVec,TPZVec<long> &NEquations,std::ostream &fileerrors, int Error_type);
 
 void PrintNRefinementsByType(int nref, long nels,long newnels,TPZVec<long> &counter,ostream &out = std::cout);
 
@@ -232,13 +232,13 @@ int main(int argc,char *argv[]) {
         Case_2.eltype = 6;
         Case_2.nthreads = 12;
         Case_2.dir_name = "PrismHdiv_Case_2";
-        
-        struct SimulationCase Case_3;
-        Case_3.IsHdivQ = true;
-        Case_3.n_acc_terms = 0;
-        Case_3.eltype = 7;
-        Case_3.nthreads = 12;
-        Case_3.dir_name = "CubeHdiv_Case_3";
+
+//        struct SimulationCase Case_3;
+//        Case_3.IsHdivQ = true;
+//        Case_3.n_acc_terms = 0;
+//        Case_3.eltype = 7;
+//        Case_3.nthreads = 12;
+//        Case_3.dir_name = "CubeHdiv_Case_3";
         
 //        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_1.eltype,Case_1)){ // this breaks after adaptation
 //            return 1;
@@ -248,9 +248,9 @@ int main(int argc,char *argv[]) {
             return 1;
         }
         
-        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_3.eltype,Case_3)){
-            return 1;
-        }
+//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_3.eltype,Case_3)){
+//            return 1;
+//        }
         
 
         
@@ -302,11 +302,21 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 	ptime = ctime(&sttime);
 	fileerrors << "Approximation Error in " << time_formated << std::endl;
 	
+    if (!sim_case.IsHdivQ) {
+        fileerrors << "H1 approximation\n";
+        fileerrors << "H1plusplus = " << sim_case.n_acc_terms << std::endl;
+    }
+    else
+    {
+        fileerrors << "HDiv approximation\n";
+        fileerrors << "HDivplusplus = " << sim_case.n_acc_terms << std::endl;
+    }
+    
 	int nref = 1;
 	int nthread = 2, NThreads = 4;
 
 	// Initializing the auto adaptive process
-	TPZVec<REAL> ervec, ErrorVec(100,0.0);
+	TPZVec<REAL> ervec, ErrorVec_h1(100,0.0),ErrorVec_l2(100,0.0),ErrorVec_semi_norm(100,0.0);
 	TPZVec<long> NEquations(100,0L);
 	TPZVec<REAL> ervecbyel;
 	TPZVec<REAL> gradervecbyel;
@@ -335,6 +345,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 	TPZStack<std::string> scalnames, vecnames;
 	scalnames.Push("POrder");
 	scalnames.Push("Pressure");
+    vecnames.Push("Flux");
 
 	fileerrors.flush();
 	out.flush();
@@ -397,8 +408,15 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
         cmesh = CreateHDivMesh(gmesh, meshvec, p, ModelDimension,hdivplusplus);
     }
 	// To storing number of equations and errors obtained for all iterations
-	ErrorVec.Resize(NRefs);
-	ErrorVec.Fill(0.0L);
+	ErrorVec_l2.Resize(NRefs);
+	ErrorVec_l2.Fill(0.0L);
+    
+    ErrorVec_h1.Resize(NRefs);
+    ErrorVec_h1.Fill(0.0L);
+    
+    ErrorVec_semi_norm.Resize(NRefs);
+    ErrorVec_semi_norm.Fill(0.0L);
+    
 	NEquations.Resize(NRefs);
 	NEquations.Fill(0L);
     if(meshvec.size() == 0)
@@ -529,7 +547,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvec, cmesh);
         }
         
-//        meshvec[1]->Solution().Print("Press");
+
 		// Post processing
 		if(nref > 8 || !(nref%1) || nref==NRefs-1)
 			an.PostProcess(0,ModelDimension);
@@ -543,8 +561,10 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 		time(&endtime);
 		time_elapsed = endtime - sttime;
 		formatTimeInSec(time_formated,256,time_elapsed);
+
+        
 		out << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
-		fileerrors << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n";
+		fileerrors << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
 		std::cout << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
 				
 		REAL MinErrorByElement, MinGradErrorByElement;
@@ -556,14 +576,33 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 			std::cout << "L2 Error is wrong (BIG?!) By! \n\n";
 //			break;
 		}
-		ErrorVec[nref] = ervec[1];
 		NEquations[nref] = cmesh->NEquations();
+        
+		ErrorVec_h1[nref] = ervec[0]; // H1 norm
+        if(!PrintResultsInMathematicaFormat(ErrorVec_h1,NEquations,fileerrors,0)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+        ErrorVec_l2[nref] = ervec[1]; // L2 norm
+        if(!PrintResultsInMathematicaFormat(ErrorVec_l2,NEquations,fileerrors,1)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+        ErrorVec_semi_norm[nref] = ervec[2]; // Semi norm
+        if(!PrintResultsInMathematicaFormat(ErrorVec_semi_norm,NEquations,fileerrors,2)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+		std::cout << "  NEquations: " << NEquations[nref] << "; NRef " << nref << "; PUsed " << MaxPUsed << "; HMax " << MaxHUsed
+        << ";\tH1 Error " << ervec[0] << ";\tL2 Error " << ervec[1] << ";\tSemiNorm H1 Error " << ervec[2] << std::endl;
+        out << "  NEquations: " << NEquations[nref] << "; NRef " << nref << "; PUsed " << MaxPUsed << "; HMax " << MaxHUsed
+        << ";\tH1 Error " << ervec[0] << ";\tL2 Error " << ervec[1] << ";\tSemiNorm H1 Error " << ervec[2] << std::endl;
 
-		std::cout << "\n NRef " << nref << "\tL2 Error " << ervec[1] << "  NEquations: " << NEquations[nref] << " PUsed " << MaxPUsed << " HMax " << MaxHUsed << std::endl << std::endl;
-		out << "\n NRef " << nref << "\tL2 Error " << ervec[1] << "  NEquations: " << NEquations[nref] << " PUsed " << MaxPUsed << " HMax " << MaxHUsed << std::endl << std::endl;
+		ErrorVec_l2[nref] = ervec[1]; // @omar:: may be it need L2 norm erros to adapt the mesh
+        
 		if(cmesh->NEquations() > MaxEquations) {
 			NRefs = nref+1;							// final iteration
-			ErrorVec.Resize(NRefs);
+			ErrorVec_l2.Resize(NRefs);
 			NEquations.Resize(NRefs);
 			continue;
 		}
@@ -606,20 +645,12 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 #endif
 		fileerrors.flush();
 		out.flush();
-		// Sometimes Writing a relation between number of degree of freedom and L2 error.
-    
-        if (meshvec.size() == 0) {
-            fileerrors << "H1 approximation\n";
-            fileerrors << "H1plusplus = " << hdivplusplus << std::endl;
-        }
-        else
-        {
-            fileerrors << "HDiv approximation\n";
-            fileerrors << "HDivplusplus = " << hdivplusplus << std::endl;
-        }
-        PrintResultsInMathematicaFormat(ErrorVec,NEquations,fileerrors);
-        fileerrors.flush();
-        fileerrors << "done\n";
+//		// Sometimes Writing a relation between number of degree of freedom and L2 error.
+//    
+//
+////        PrintResultsInMathematicaFormat(ErrorVec_l2,NEquations,fileerrors);
+//        fileerrors.flush();
+//        fileerrors << "done\n";
 	}
 	if(cmesh)
 		delete cmesh;
@@ -627,9 +658,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 	if(gmesh)
 		delete gmesh;
 	gmesh = NULL;
-	// Writing a relation between number of degree of freedom and L2 error.
-	if(!PrintResultsInMathematicaFormat(ErrorVec,NEquations,fileerrors))
-		std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+
 	
 	fileerrors << std::endl << "Finished running for element " << itypeel << std::endl << std::endl;
 	fileerrors.close();
@@ -1166,31 +1195,60 @@ REAL ProcessingError(TPZAnalysis &analysis,TPZVec<REAL> &ervec,TPZVec<REAL> &erv
 		ervec[i] = sqrt(totalerror[i]);
     return maxError;
 }
-// Writing a relation between number of degree of freedom and L2 error.
-bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrorVec,TPZVec<long> &NEquations,std::ostream &fileerrors) {
+// Writing a relation between number of degree of freedom and error type.
+bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrorVec,TPZVec<long> &NEquations,std::ostream &fileerrors, int Error_type) {
 	int nref;
     STATE fact = 1.0e6;
 	long NRefs = ErrorVec.NElements();
 	// setting format for ostream
 	fileerrors << setprecision(20);
 	fileerrors.setf(std::ios::fixed, std::ios::floatfield);
-	fileerrors << "\n\n NEquations = {";
+    std::string plottype, color;
+    switch (Error_type) {
+        case 0:
+        {
+            fileerrors << "(* H1 norm  *)" << std::endl;
+            plottype = "ph1 = ";
+            color = "Red";
+        }
+            break;
+            
+        case 1:
+        {
+            fileerrors << "(* L2 norm  *)" << std::endl;
+            plottype = "pl2 = ";
+            color = "Green";
+        }
+            break;
+        case 2:
+        {
+            fileerrors << "(* H1 Seminorm or L2 flux  *)" << std::endl;
+            plottype = "psemi = ";
+            color = "Blue";
+        }
+            break;
+        default:
+        {
+            DebugStop();
+        }
+            break;
+    }
+    
+    fileerrors << " NEquations = {";
 
 	// printing number of equations into a list
 	for(nref=0;nref<NRefs-1;nref++) {
 		fileerrors << NEquations[nref] << ", ";
 	}
-	fileerrors << NEquations[nref] << "};" << std::endl << "L2Error = {";
+	fileerrors << NEquations[nref] << "};" << std::endl << "Error = {";
 	// printing error values into a list
 	for(nref=0;nref<NRefs-1;nref++) {
 		fileerrors << ErrorVec[nref]*fact << ", ";
 	}
 	fileerrors << ErrorVec[nref] << "}/1000000.0;";
-	// printing lines to create lists of logarithms
-	fileerrors << std::endl << "LogNEquations = Table[Log[10,NEquations[[i]]],{i,1,Length[NEquations]}];" << std::endl;
-	fileerrors << "LogL2Errors = Table[Log[10,L2Error[[i]]],{i,1,Length[L2Error]}];" << std::endl;
-	fileerrors << "ListPlot[{Table[{LogNEquations[[i]],LogL2Errors[[i]]},{i,1,Length[LogNEquations]}]";
-	fileerrors << "},Joined->True,PlotRange->All]\n" << std::endl;
+	fileerrors <<  plottype + "ListLogLogPlot[{Table[{NEquations[[i]],Error[[i]]},{i,1,Length[LogNEquations]}]";
+	fileerrors << "},Joined->True,PlotRange->All," "PlotStyle -> {"+  color +  "}]\n" << std::endl;
+    
 	return true;
 }
 

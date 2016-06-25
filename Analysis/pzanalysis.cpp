@@ -745,7 +745,7 @@ void TPZAnalysis::PostProcess(int resolution, int dimension){
 	}
 	if(matit == fCompMesh->MaterialVec().end()) return;
 	fGraphMesh[dim1]->SetCompMesh(fCompMesh,matit->second);
-	
+
 	fGraphMesh[dim1]->SetResolution(resolution);
 	fGraphMesh[dim1]->DrawMesh(1);
 	fGraphMesh[dim1]->DrawSolution(fStep,fTime);
