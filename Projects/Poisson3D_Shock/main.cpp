@@ -220,17 +220,17 @@ int main(int argc,char *argv[]) {
         // Case 1
         
         struct SimulationCase Case_1;
-        Case_1.IsHdivQ = false;
-        Case_1.n_acc_terms = 0;
+        Case_1.IsHdivQ = true;
+        Case_1.n_acc_terms = 1;
         Case_1.eltype = 7;
-        Case_1.nthreads = 12;
+        Case_1.nthreads = 8;
         Case_1.dir_name = "H1_Case_1";
         
         struct SimulationCase Case_2;
         Case_2.IsHdivQ = true;
-        Case_2.n_acc_terms = 0;
+        Case_2.n_acc_terms = 2;
         Case_2.eltype = 6;
-        Case_2.nthreads = 12;
+        Case_2.nthreads = 8;
         Case_2.dir_name = "PrismHdiv_Case_2";
 
 //        struct SimulationCase Case_3;
@@ -240,14 +240,14 @@ int main(int argc,char *argv[]) {
 //        Case_3.nthreads = 12;
 //        Case_3.dir_name = "CubeHdiv_Case_3";
         
-//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_1.eltype,Case_1)){ // this breaks after adaptation
-//            return 1;
-//        }
-        
-        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_2.eltype,Case_2)){
+        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_1.eltype,Case_1)){ // this breaks after adaptation
             return 1;
         }
         
+//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_2.eltype,Case_2)){
+//            return 1;
+//        }
+//        
 //        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_3.eltype,Case_3)){
 //            return 1;
 //        }
@@ -385,9 +385,11 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 	MaxPUsed = pinit = p;
 	MaxHUsed = 1;
 	TPZCompEl::SetgOrder(p);
+//    TPZManVector<TPZGeoEl *> subels;
+//    gmesh->ElementVec()[11]->Divide(subels);
 	TPZCompMesh *cmesh;
 	gmesh->SetName("Malha Geometrica original");
-	if(gDebug) {
+	if(1) {
 		sprintf(saida,"gmesh_%02dD_H%dE%dIndex.vtk",ModelDimension,nref,typeel);
 		PrintGeoMeshAsCompMeshInVTKWithElementIndexAsData(gmesh,saida);
 	}
@@ -542,7 +544,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
         
         UnwrapMesh(cmesh);
 		
-        if(! meshvec.size() == 0)
+        if(! (meshvec.size() == 0))
         {
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvec, cmesh);
         }
@@ -2320,7 +2322,7 @@ void PrintGeoMeshAsCompMeshInVTKWithElementIndexAsData(TPZGeoMesh *gmesh,char *f
 	// Making dimension of the elements as data element
 	for(i=0;i<size;i++) {
 		TPZGeoEl *gel = gmesh->ElementVec()[i];
-		if(gel && gel->Reference())
+		if(gel && !gel->HasSubElement() && gel->Dimension() == gmesh->Dimension())
 			DataElement[i] = gel->Id();
 		else
 			DataElement[i] = -999;
