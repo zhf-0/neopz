@@ -318,7 +318,7 @@ void AdjustFluxPolynomialOrders(TPZCompMesh *fluxmesh, int hdivplusplus)
         if (c.NElConnected() != 1) {
             DebugStop();
         }
-        if (c.Order()+hdivplusplus != maxorder) {
+        if (c.Order() != maxorder+hdivplusplus) {
 //            std::cout << "Changing the order of the central connect " << cindex << " from " << c.Order() << " to " << maxorder+hdivplusplus << std::endl;
             // change the internal connect order to be equal do maxorder
             intel->SetSideOrder(nsides-1, maxorder+hdivplusplus);
