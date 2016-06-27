@@ -411,8 +411,8 @@ TPZCompMesh *CreateHDivMesh(TPZGeoMesh *gmesh, TPZVec<TPZCompMesh *> &meshvec, i
     meshvec[0] = fluxmesh;
     meshvec[1] = pressuremesh;
     TPZCompMesh *mixed = CMeshMixed(gmesh, meshvec);
-//    TPZCompMeshTools::GroupElements(mixed);
-//    TPZCompMeshTools::CreatedCondensedElements(mixed, true);
+    TPZCompMeshTools::GroupElements(mixed);
+    TPZCompMeshTools::CreatedCondensedElements(mixed, true);
     return mixed;
 }
 

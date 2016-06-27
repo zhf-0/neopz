@@ -138,6 +138,7 @@ void GetFilenameFromGID(MElementType typeel, std::string &name);
 
 /** PROBLEMS */
 bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase sim_case);
+bool SolveSymmetricPoissonProblemOnCubeMesh_Uniform(int itypeel, struct SimulationCase sim_case);
 bool SolveLaplaceProblemOnLShapeMesh();
 
 
@@ -187,6 +188,7 @@ int main(int argc,char *argv[]) {
 	gRefDBase.InitializeAllUniformRefPatterns();
 //    gRefDBase.InitializeRefPatterns();
 
+    HDivPiola = 1;
     bool IsOldSettingQ = false;
     
 
@@ -216,43 +218,44 @@ int main(int argc,char *argv[]) {
     else{
        
         //////////////////////////////////////////////////////////
-        // Data defined on overleaf file
-        // Case 1
         
-        struct SimulationCase Case_1;
-        Case_1.IsHdivQ = true;
-        Case_1.n_acc_terms = 1;
-        Case_1.eltype = 7;
-        Case_1.nthreads = 8;
-        Case_1.dir_name = "H1_Case_1";
+        struct SimulationCase Cube_H1;
+        Cube_H1.IsHdivQ = false;
+        Cube_H1.n_acc_terms = 0;
+        Cube_H1.eltype = 7;
+        Cube_H1.nthreads = 12;
+        Cube_H1.dir_name = "Cube_H1";
         
-        struct SimulationCase Case_2;
-        Case_2.IsHdivQ = true;
-        Case_2.n_acc_terms = 2;
-        Case_2.eltype = 6;
-        Case_2.nthreads = 8;
-        Case_2.dir_name = "PrismHdiv_Case_2";
-
-//        struct SimulationCase Case_3;
-//        Case_3.IsHdivQ = true;
-//        Case_3.n_acc_terms = 0;
-//        Case_3.eltype = 7;
-//        Case_3.nthreads = 12;
-//        Case_3.dir_name = "CubeHdiv_Case_3";
+        struct SimulationCase Cube_Hdiv;
+        Cube_Hdiv.IsHdivQ = true;
+        Cube_Hdiv.n_acc_terms = 0;
+        Cube_Hdiv.eltype = 7;
+        Cube_Hdiv.nthreads = 12;
+        Cube_Hdiv.dir_name = "Cube_Hdiv";
         
-        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_1.eltype,Case_1)){ // this breaks after adaptation
+        struct SimulationCase Cube_Hdiv_p1;
+        Cube_Hdiv_p1.IsHdivQ = true;
+        Cube_Hdiv_p1.n_acc_terms = 1;
+        Cube_Hdiv_p1.eltype = 7;
+        Cube_Hdiv_p1.nthreads = 12;
+        Cube_Hdiv_p1.dir_name = "Cube_Hdiv_p1";
+        
+        
+//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Cube_Hdiv.eltype,Cube_Hdiv)){
+//            return 1;
+//        }
+        
+        if(!SolveSymmetricPoissonProblemOnCubeMesh_Uniform(Cube_H1.eltype,Cube_H1)){
             return 1;
         }
         
-//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_2.eltype,Case_2)){
-//            return 1;
-//        }
-//        
-//        if(!SolveSymmetricPoissonProblemOnCubeMesh(Case_3.eltype,Case_3)){
-//            return 1;
-//        }
+        if(!SolveSymmetricPoissonProblemOnCubeMesh_Uniform(Cube_Hdiv.eltype,Cube_Hdiv)){
+            return 1;
+        }
         
-
+        if(!SolveSymmetricPoissonProblemOnCubeMesh_Uniform(Cube_Hdiv_p1.eltype,Cube_Hdiv_p1)){
+            return 1;
+        }
         
         
     }
@@ -264,7 +267,7 @@ int main(int argc,char *argv[]) {
 
 bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase sim_case) {
 	// Variables
-
+    bool IsUniformRefQ = false;
     // Creating the directory
     std::string command = "mkdir " + sim_case.dir_name;
     system(command.c_str());
@@ -378,8 +381,16 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 		printingsol = false;
 	}
 	else
-		UniformRefinement(ninitialrefs,gmesh,ModelDimension);
-            
+     
+    if(IsUniformRefQ){
+        ninitialrefs = 1;
+        UniformRefinement(ninitialrefs,gmesh,ModelDimension);
+    }
+    else
+    {
+        UniformRefinement(ninitialrefs,gmesh,ModelDimension);
+    }
+    
 	// Creating computational mesh (approximation space and materials)
 	int p = 1, pinit;
 	MaxPUsed = pinit = p;
@@ -519,28 +530,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
         
         TPZAutoPointer<TPZMatrix<STATE> > glob = an.Solver().Matrix();
         
-//        an.Solution().Zero();
-//        UnitPressure( meshvec[1]);
-//        meshvec[0]->Solution().Zero();
-//        TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvec, cmesh);
-//        TPZFMatrix<STATE> matsol;
-//        glob->Multiply(an.Solution(), matsol);
-        
-        //        matsol.Print("matsol");
-//        TPZFMatrix<STATE> diff(matsol), analytic;
-//        diff -=an.Rhs();
-//        analytic = cmesh->Solution();
-//        matsol.Print("diff");
-//        std::cout << "Norm diff " << Norm(diff) << std::endl;
-//        an.Rhs().Print("rhs");
-//        an.PrintVectorByElement(std::cout, diff, 1.e-6);
-        
         an.Solve();
-        
-//        an.Solution().Print("solucao");
-//        diff = analytic;
-//        diff -= cmesh->Solution();
-//        std::cout << "Norm diff after solve " << Norm(diff) << std::endl;
         
         UnwrapMesh(cmesh);
 		
@@ -580,7 +570,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 		}
 		NEquations[nref] = cmesh->NEquations();
         
-		ErrorVec_h1[nref] = ervec[0]; // H1 norm
+		ErrorVec_h1[nref] = ervec[0]; // H1 / Hdiv norm
         if(!PrintResultsInMathematicaFormat(ErrorVec_h1,NEquations,fileerrors,0)){
             std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
         }
@@ -610,6 +600,11 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 		}
 		fileerrors.flush();
 		out.flush();
+        
+        if(IsUniformRefQ){
+            continue;
+        }
+        
 		if(NRefs > 1 && nref < (NRefs-1)) {
 			out << "\n\nApplying Adaptive Methods... step " << nref << "\n";
 			std::cout << "\n\nApplying Adaptive Methods... step " << nref << "\n";
@@ -647,12 +642,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 #endif
 		fileerrors.flush();
 		out.flush();
-//		// Sometimes Writing a relation between number of degree of freedom and L2 error.
-//    
-//
-////        PrintResultsInMathematicaFormat(ErrorVec_l2,NEquations,fileerrors);
-//        fileerrors.flush();
-//        fileerrors << "done\n";
+
 	}
 	if(cmesh)
 		delete cmesh;
@@ -667,6 +657,370 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 	std::cout << std::endl << "\tFinished running for element " << itypeel << std::endl << std::endl;
 	out.close();
 	return true;
+}
+
+bool SolveSymmetricPoissonProblemOnCubeMesh_Uniform(int itypeel, struct SimulationCase sim_case){
+    // Variables
+    
+    // Creating the directory
+    std::string command = "mkdir " + sim_case.dir_name;
+    system(command.c_str());
+    
+    
+    int materialId = 1;
+    int id_bc0 = -1;
+    int id_bc1 = -2;
+
+    int ninitialrefs = 1;
+    int nref = 1;
+    
+    // auxiliar string
+    char saida[512];
+    
+    // To compute processing times
+    time_t sttime;
+    time_t endtime;
+    int time_elapsed;
+    char time_formated[256];
+    char * ptime = time_formated;
+    memset(time_formated,0,256);
+    
+    // Output files
+    std::string file_name = sim_case.dir_name + "/" + "ErrorsHP_Poisson.txt";
+    std::ofstream fileerrors(file_name,ios::app);   // To store all errors calculated by TPZAnalysis (PosProcess)
+    // Initial message to print computed errors
+    time(&sttime);
+    ptime = ctime(&sttime);
+    fileerrors << "Approximation Error in " << time_formated << std::endl;
+    
+    if (!sim_case.IsHdivQ) {
+        fileerrors << "H1 approximation\n";
+        fileerrors << "H1plusplus = " << sim_case.n_acc_terms << std::endl;
+    }
+    else
+    {
+        fileerrors << "HDiv approximation\n";
+        fileerrors << "HDivplusplus = " << sim_case.n_acc_terms << std::endl;
+    }
+    
+    // Initializing the auto adaptive process
+    TPZVec<REAL> ervec, ErrorVec_h1(100,0.0),ErrorVec_l2(100,0.0),ErrorVec_semi_norm(100,0.0);
+    TPZVec<long> NCEquations(100,0L), NEquations(100,0L);
+    TPZVec<REAL> ervecbyel;
+    TPZVec<REAL> gradervecbyel;
+    
+    MElementType typeel;
+    
+    /** Solving for type of geometric elements */
+    typeel = (MElementType)sim_case.eltype;
+    //	fileerrors << "\nType of element: " << typeel << endl;
+
+    
+    TPZManVector<STATE> x(3,0.5),sol(1),ddsol(6);
+    TPZFNMatrix<9,STATE> dsol(3,1);
+    ExactSolutionArcTangent(x, sol, dsol);
+    std::cout << "Solution at center "<< sol << std::endl;
+    
+    
+    /** Variable names for post processing */
+    TPZStack<std::string> scalnames, vecnames;
+    scalnames.Push("POrder");
+    scalnames.Push("Pressure");
+    vecnames.Push("Flux");
+    
+    fileerrors.flush();
+    out.flush();
+    
+    // Adjusting parameters
+    int NRefs = 3;
+    MaxPUsed = 2;
+
+    // To storing number of equations and errors obtained for all iterations
+    ErrorVec_l2.Resize(NRefs+1);
+    ErrorVec_l2.Fill(0.0L);
+    
+    ErrorVec_h1.Resize(NRefs+1);
+    ErrorVec_h1.Fill(0.0L);
+    
+    ErrorVec_semi_norm.Resize(NRefs+1);
+    ErrorVec_semi_norm.Fill(0.0L);
+    
+    NEquations.Resize(NRefs+1);
+    NEquations.Fill(0L);
+    
+    NCEquations.Resize(NRefs+1);
+    NCEquations.Fill(0L);
+    
+
+    
+    int nthread = sim_case.nthreads;
+    
+    if (NRefs == 0) {
+        std::cout << " Do you want to computed convergence rates?" << "; was given NRefs = " << NRefs << std::endl;
+        DebugStop();
+    }
+    
+    for (int ip = 1; ip <= MaxPUsed ; ip++) {
+        
+        TPZCompEl::SetgOrder(ip);
+        fileerrors << std::endl << "Case:: " <<  "P order = " <<  ip << std::endl;
+
+        
+        for (int iref = 0; iref <= NRefs; iref++) {
+
+            TPZGeoMesh *gmesh;
+            gmesh = CreateGeomMesh(typeel,materialId,id_bc0,id_bc1);
+            ModelDimension = DefineDimensionOverElementType(typeel);
+            
+            // Printing geometric mesh to validate
+            if(gDebug) {
+                sprintf(saida,"gmesh_%02dD_H%dE%d.vtk",ModelDimension,nref,typeel);
+                PrintGeoMeshInVTKWithDimensionAsData(gmesh,saida);
+            }
+
+            UniformRefinement(ninitialrefs+iref,gmesh,ModelDimension);
+            
+            TPZCompMesh *cmesh;
+            gmesh->SetName("Geometric mesh modified");
+            if(1) {
+                sprintf(saida,"gmesh_%02dD_H%dE%dIndex.vtk",ModelDimension,nref,typeel);
+                PrintGeoMeshAsCompMeshInVTKWithElementIndexAsData(gmesh,saida);
+            }
+            
+            int n_meshes = 0;
+            if (sim_case.IsHdivQ) {
+                n_meshes = 2;
+            }
+            
+            TPZManVector<TPZCompMesh *,2> meshvec(n_meshes,0);
+            
+            int hdivplusplus = sim_case.n_acc_terms;
+            if(meshvec.size() == 0)
+            {
+                cmesh = CreateComputationalMesh(gmesh,ModelDimension,materialId,1,id_bc0,id_bc1);     // Forcing function is out 2013_07_25
+            }
+            else{
+                cmesh = CreateHDivMesh(gmesh, meshvec, ip, ModelDimension,hdivplusplus);
+            }
+
+            if(meshvec.size() == 0)
+            {
+                AdjustFluxPolynomialOrders(cmesh, hdivplusplus);
+            }
+            else
+            {
+                ReconstructHDivMesh(cmesh, meshvec, hdivplusplus);
+            }
+           
+            // Initializing the generation mesh process
+            time(& sttime);
+            
+            // Introduzing exact solution depending on the case
+            // Solving adaptive process
+            cmesh->CleanUpUnconnectedNodes();
+            
+            
+            TPZAnalysis an(cmesh,true);
+            an.SetExact(ExactSolutionArcTangent);
+            {
+                std::stringstream sout;
+                sout << sim_case.dir_name << "/" << "Poisson" << ModelDimension << "D_E" << typeel << "Thr" << nthread << "H" << std::setprecision(2) << iref << "P" << ip << ".vtk";
+                an.DefineGraphMesh(ModelDimension,scalnames,vecnames,sout.str());
+            }
+            std::string MeshFileName;
+            {
+                std::stringstream sout(sim_case.dir_name + "/");
+                sout << sim_case.dir_name << "/" << "meshAngle" << ModelDimension << "D_E" << typeel << "Thr" << nthread << "H" << std::setprecision(2) << iref << "P" << ip << ".vtk";
+                MeshFileName = sout.str();
+            }
+            
+            
+            
+            cmesh->SetName("Malha computacional adaptada");
+            // Printing geometric and computational mesh
+#ifdef PZDEBUG
+            if(0)
+            {
+                std::ofstream out("Meshes.txt");
+                cmesh->Reference()->Print(out);
+                cmesh->Print(out);
+            }
+#endif
+            // Solve using symmetric matrix then using Cholesky (direct method)
+            
+#ifdef USING_MKL
+            if(meshvec.size() == 0)
+            {
+                TPZSymetricSpStructMatrix strmat(cmesh);
+                strmat.SetNumThreads(nthread);
+                an.SetStructuralMatrix(strmat);
+            }
+            else
+            {
+                TPZParFrontStructMatrix<TPZFrontSym<STATE> > strmat(cmesh);
+                strmat.SetNumThreads(nthread);
+                strmat.SetDecomposeType(ELDLt);
+                an.SetStructuralMatrix(strmat);
+            }
+#else
+            TPZParFrontStructMatrix<TPZFrontSym<STATE> > strmat(cmesh);
+            strmat.SetNumThreads(nthread);
+            strmat.SetDecomposeType(ELDLt);
+            //		TPZSkylineStructMatrix strmat3(cmesh);
+            //        strmat3.SetNumThreads(8);
+#endif
+            
+            TPZStepSolver<STATE> *direct = new TPZStepSolver<STATE>;
+            direct->SetDirect(ELDLt);
+            an.SetSolver(*direct);
+            delete direct;
+            direct = 0;
+            
+            an.Assemble();
+            
+            TPZAutoPointer<TPZMatrix<STATE> > glob = an.Solver().Matrix();
+            
+            an.Solve();
+            
+            if(meshvec.size() == 0)
+            {
+                NEquations[iref] = cmesh->NEquations();
+                NCEquations[iref] = cmesh->NEquations();
+            }
+            else{
+                NEquations[iref] = meshvec[0]->NEquations()+meshvec[1]->NEquations();
+                NCEquations[iref] = cmesh->NEquations();
+            }
+            
+            UnwrapMesh(cmesh);
+            
+            if(! (meshvec.size() == 0))
+            {
+                TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvec, cmesh);
+            }
+            
+            
+            // Post processing
+            if(nref > 8 || !(nref%1) || nref==NRefs-1)
+                an.PostProcess(0,ModelDimension);
+            if(gDebug) {
+                std::ofstream out(MeshFileName.c_str());
+                cmesh->LoadReferences();
+                TPZVTKGeoMesh::PrintGMeshVTK(cmesh->Reference(),out,false);
+            }
+            
+            // generation mesh process finished
+            time(&endtime);
+            time_elapsed = endtime - sttime;
+            formatTimeInSec(time_formated,256,time_elapsed);
+            
+            
+            out << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
+            fileerrors << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
+            std::cout << "  Time elapsed " << time_elapsed << " <-> " << time_formated << "\n\n";
+            
+            REAL MinErrorByElement, MinGradErrorByElement;
+            ervecbyel.Resize(0);
+            gradervecbyel.Resize(0);
+            REAL MaxErrorByElement = ProcessingError(an,ervec,ervecbyel,gradervecbyel,MinErrorByElement,MinGradErrorByElement);
+            
+            std::cout << "L2 Error by element " << MaxErrorByElement << std::endl;
+            
+            // Printing obtained errors
+            if(ervec[1] > 10. || ervec[1] < 0.) {
+                std::cout << "L2 Error is wrong (BIG?!) By! \n\n";
+                //			break;
+            }
+
+            
+            // Updatting current errors
+            ErrorVec_h1[iref] = ervec[0]; // H1 / Hdiv norm
+            ErrorVec_l2[iref] = ervec[1]; // L2 norm
+            ErrorVec_semi_norm[iref] = ervec[2]; // Semi norm
+            
+            if(!PrintResultsInMathematicaFormat(ErrorVec_h1,NEquations,fileerrors,0)){
+                std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+            }
+            
+            if(!PrintResultsInMathematicaFormat(ErrorVec_l2,NEquations,fileerrors,1)){
+                std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+            }
+            
+            if(!PrintResultsInMathematicaFormat(ErrorVec_semi_norm,NEquations,fileerrors,2)){
+                std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+            }
+            
+
+
+            
+            std::cout << "  NCondensedEquations: " << NCEquations[iref] << "  NEquations: " << NEquations[iref] << "; iref " << iref << "; p order  " << ip << ";\tH1 Error " << ervec[0] << ";\tL2 Error " << ervec[1] << ";\tSemiNorm H1 Error " << ervec[2] << std::endl;
+            fileerrors << "  NCondensedEquations: " << NCEquations[iref] << "  NEquations: " << NEquations[iref] << "; iref " << iref << "; p order  " << ip << ";\tH1 Error " << ervec[0] << ";\tL2 Error " << ervec[1] << ";\tSemiNorm H1 Error " << ervec[2] << std::endl;
+            
+            if(cmesh){
+                delete cmesh;
+            }
+
+            cmesh = NULL;
+            
+            if(gmesh){
+                delete gmesh;
+            }
+            gmesh = NULL;
+            
+        }
+
+        fileerrors << std::endl << std::endl;
+        fileerrors << "****************************************************************" << std::endl;
+        fileerrors << "Summary:: P order = " << ip << std::endl;
+        fileerrors << "****************************************************************" << std::endl;
+        fileerrors << std::endl;
+        
+        if(!PrintResultsInMathematicaFormat(ErrorVec_h1,NEquations,fileerrors,0)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+        if(!PrintResultsInMathematicaFormat(ErrorVec_l2,NEquations,fileerrors,1)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+        if(!PrintResultsInMathematicaFormat(ErrorVec_semi_norm,NEquations,fileerrors,2)){
+            std::cout << "\nThe errors and nequations values in Mathematica format was not done.\n";
+        }
+        
+        TPZManVector<STATE> pqrates(NRefs,0.0);
+        TPZManVector<STATE> prates(NRefs,0.0);
+        TPZManVector<STATE> qrates(NRefs,0.0);
+        
+        for (int i = 0; i < NRefs; i++) {
+            STATE logZerop5 = log(0.5);
+            
+            STATE pqnum = log(ErrorVec_h1[i+1]) - log(ErrorVec_h1[i]);
+            STATE pnum = log(ErrorVec_l2[i+1]) - log(ErrorVec_l2[i]);
+            STATE qnum = log(ErrorVec_semi_norm[i+1]) - log(ErrorVec_semi_norm[i]);
+            STATE pqrate = pqnum / logZerop5;
+            STATE prate = pnum / logZerop5;
+            STATE qrate = qnum / logZerop5;
+            
+            pqrates[i] = pqrate;
+            prates[i] = prate;
+            qrates[i] = qrate;
+        }
+        
+        fileerrors <<  "Convergence Rates " <<  ip << std::endl;
+        fileerrors <<  "H1/Hdiv rates = " <<  pqrates << std::endl;
+        fileerrors <<  "Pressure rates  = " <<  prates << std::endl;
+        fileerrors <<  "Flux rates = " <<  qrates << std::endl;
+        
+        fileerrors << "****************************************************************" << std::endl;
+        fileerrors << std::endl;
+        
+    }
+    
+    
+    fileerrors.close();
+    std::cout << std::endl << "\tFinished running for element " << itypeel << std::endl << std::endl;
+    out.close();
+    return true;
 }
 
 bool ApplyingStrategyHPAdaptiveBasedOnErrorOfSolutionAndGradient(TPZCompMesh *cmesh,TPZVec<REAL> &ervecbyel,TPZVec<REAL> &gradervecbyel,REAL MaxErrorByElement,REAL &MinErrorByElement,REAL &MinGrad,int nref,int itypeel,REAL &factorError) {
@@ -738,9 +1092,6 @@ bool ApplyingStrategyHPAdaptiveBasedOnErrorOfSolutionAndGradient(TPZCompMesh *cm
 			continue;
 		}
         
-//        if (i== 68 || cmesh->NElements() > 1246) {
-//            std::cout << "Tem que parar\n";
-//        }
         
 		// element data
         TPZGeoEl *gel = derived->Reference();
@@ -1137,6 +1488,9 @@ void PrintNRefinementsByType(int nref, long nels,long newnels,TPZVec<long> &coun
  */
 
 REAL ProcessingError(TPZAnalysis &analysis,TPZVec<REAL> &ervec,TPZVec<REAL> &ervecbyel,TPZVec<REAL> &gradervecbyel,REAL &MinErrorByElement,REAL &MinGradErrorByElement) {
+    
+    std::cout << "Begin:: Processing Error " <<  std::endl;
+
     long neq = analysis.Mesh()->NEquations();
 	if(ModelDimension != analysis.Mesh()->Dimension())
 		DebugStop();
@@ -1170,9 +1524,9 @@ REAL ProcessingError(TPZAnalysis &analysis,TPZVec<REAL> &ervec,TPZVec<REAL> &erv
                 totalerror[ier] += errors[ier] * errors[ier];
             }
 			// L2 error for each element
-            if(i%100 == 0)
+            if(i%1000 == 0)
             {
-                std::cout << "Computed " << i << " elements from " << nel << " total error " << sqrt(totalerror[1]) <<  std::endl;
+                std::cout << "Computed " << i << " elements from " << nel << " total pressure error " << sqrt(totalerror[1]) <<  std::endl;
             }
 			ervecbyel[i] = sqrt(errors[1]*errors[1]);
 			gradervecbyel[i] = sqrt(errors[2]*errors[2]);
@@ -1209,7 +1563,7 @@ bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrorVec,TPZVec<long> &NEquat
     switch (Error_type) {
         case 0:
         {
-            fileerrors << "(* H1 norm  *)" << std::endl;
+            fileerrors << "(* H1 / Hdiv norm  *)" << std::endl;
             plottype = "ph1 = ";
             color = "Red";
         }
@@ -1248,7 +1602,7 @@ bool PrintResultsInMathematicaFormat(TPZVec<REAL> &ErrorVec,TPZVec<long> &NEquat
 		fileerrors << ErrorVec[nref]*fact << ", ";
 	}
 	fileerrors << ErrorVec[nref] << "}/1000000.0;";
-	fileerrors <<  plottype + "ListLogLogPlot[{Table[{NEquations[[i]],Error[[i]]},{i,1,Length[LogNEquations]}]";
+	fileerrors <<  plottype + "ListLogLogPlot[{Table[{NEquations[[i]],Error[[i]]},{i,1,Length[NEquations]}]";
 	fileerrors << "},Joined->True,PlotRange->All," "PlotStyle -> {"+  color +  "}]\n" << std::endl;
     
 	return true;

@@ -116,7 +116,8 @@ void ExactSolutionArcTangent(const TPZVec<REAL> &x, TPZVec<STATE> &sol, TPZFMatr
     if(ModelDimension>1) {
         dsol(1,0) = B*prodx*prodz*((1.-2*xloc[1])*temp - (2*F*(xloc[1]-CCircle[1])*(prody/den)));
     }
-    else if(ModelDimension>2) {
+    
+    if(ModelDimension>2) {
         dsol(2,0) = B*prodx*prody*((1.-2*xloc[2])*temp - (2*F*(xloc[2]-CCircle[2])*(prodz/den)));
     }
     dsol *= 1./GlobScale;
