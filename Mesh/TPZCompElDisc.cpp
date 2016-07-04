@@ -982,7 +982,7 @@ void TPZCompElDisc::ComputeSolution(TPZVec<REAL> &qsi, TPZMaterialData &data){
     this->ComputeSolution(qsi, data.phi, data.dphix, data.axes, data.sol, data.dsol);
 }
 
-void TPZCompElDisc::ComputeSolution(TPZVec<REAL> &qsi, TPZSolVec &sol, TPZGradSolVec &dsol,TPZFMatrix<REAL> & axes){
+void TPZCompElDisc::ComputeSolution(TPZVec<REAL> &qsi, TPZSolVec &sol, TPZGradSolVec &dsol, TPZFMatrix<REAL> & axes){
 	TPZGeoEl * ref = this->Reference();
 	const int nshape = this->NShapeF();
 	const int dim = ref->Dimension();

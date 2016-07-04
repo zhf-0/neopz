@@ -122,10 +122,9 @@ TPZGeoMesh *CreateGeoMeshWithClassesPre(MElementType typeel);
 // Crea malla computacional sem forcingfunction quando hasforcingfunction = 0, ou toma diferentes forcingfuncition para diferentes
 // valores de hasforcingfunction
 TPZCompMesh *CreateMesh(TPZGeoMesh *gmesh,int dim,int hasforcingfunction);
-TPZGeoMesh *ConstructingPositiveCube(REAL InitialL,MElementType typeel);
+TPZGeoMesh *ConstructingCube(REAL InitialL);
 TPZGeoMesh *ConstructingTetrahedraInCube(REAL InitialL);
 TPZGeoMesh *ConstructingPrismsInCube(REAL InitialL);
-TPZGeoMesh *ConstructingPyramidsInCube(REAL InitialL);
 TPZGeoMesh *ConstructingSeveral3DElementsInCube(REAL InitialL,MElementType typeel);
 
 /** Fucntions to apply refinement. */
@@ -811,7 +810,7 @@ TPZGeoMesh *CreateGeoMesh(MElementType typeel) {
 			gmesh = ConstructingPyramidsInCube(1.);
 			break;
 		case ECube:
-			gmesh = ConstructingPositiveCube(1.,typeel);
+			gmesh = ConstructingCube(1.);
 			break;
 		default:
             gmesh = 0;
@@ -822,7 +821,7 @@ TPZGeoMesh *CreateGeoMesh(MElementType typeel) {
 }
 
 #include "TPZRefPatternDataBase.h"
-TPZGeoMesh *ConstructingPositiveCube(REAL InitialL,MElementType typeel) {
+TPZGeoMesh *ConstructingCube(REAL InitialL) {
 	// CREATING A CUBE WITH MASS CENTER (0.5*INITIALL, 0.5*INITIALL, 0.5*INITIALL) AND VOLUME = INITIALL*INITIALL*INITIALL
     // Dependig on dimension of the typeel
 	const int nelem = 1;
@@ -862,20 +861,8 @@ TPZGeoMesh *ConstructingPositiveCube(REAL InitialL,MElementType typeel) {
 	}
     gmesh->BuildConnectivity();
 	
-	// Introduzing boundary condition for cube - ALL DIRICHLET
+	// Introducing boundary condition for cube - ALL DIRICHLET
     // Boundary condition on one dimensional sides
-	TPZGeoElBC gbc00(gmesh->ElementVec()[0],8,id_bc0);
-	TPZGeoElBC gbc01(gmesh->ElementVec()[0],9,id_bc0);
-	TPZGeoElBC gbc02(gmesh->ElementVec()[0],10,id_bc0);
-	TPZGeoElBC gbc03(gmesh->ElementVec()[0],11,id_bc0);
-	TPZGeoElBC gbc04(gmesh->ElementVec()[0],12,id_bc0);
-	TPZGeoElBC gbc05(gmesh->ElementVec()[0],13,id_bc0);
-	TPZGeoElBC gbc06(gmesh->ElementVec()[0],14,id_bc0);
-	TPZGeoElBC gbc07(gmesh->ElementVec()[0],15,id_bc0);
-	TPZGeoElBC gbc08(gmesh->ElementVec()[0],16,id_bc0);
-	TPZGeoElBC gbc09(gmesh->ElementVec()[0],17,id_bc0);
-	TPZGeoElBC gbc10(gmesh->ElementVec()[0],18,id_bc0);
-	TPZGeoElBC gbc11(gmesh->ElementVec()[0],19,id_bc0);
 	// face 0 (20) bottom XY - face 1 (21) lateral left XZ - face 4 (24) lateral back YZ : Dirichlet
 	TPZGeoElBC gbc20(gmesh->ElementVec()[0],20,id_bc0);
 	TPZGeoElBC gbc21(gmesh->ElementVec()[0],21,id_bc0);
@@ -887,212 +874,6 @@ TPZGeoMesh *ConstructingPositiveCube(REAL InitialL,MElementType typeel) {
 	// face 5 (25) Neumann - Partial derivative (du/dz) - top
 	TPZGeoElBC gbc25(gmesh->ElementVec()[0],25,id_bc0);
 
-	TPZVec<TPZGeoEl *> sub;
-	std::string filename = REFPATTERNDIR;
-    switch (typeel) {
-        case ENoType:
-        {
-            char buf[1024];
-			std::istringstream str(buf);
-			TPZAutoPointer<TPZRefPattern> refpat = new TPZRefPattern(str);
-			TPZAutoPointer<TPZRefPattern> refpatFound = gRefDBase.FindRefPattern(refpat);
-			if(!refpatFound)
-			{
-				gRefDBase.InsertRefPattern(refpat);
-			}
-			else
-			{
-				refpatFound->SetName(refpat->Name());
-			}
-			refpat->InsertPermuted();
-        }
-    break;
-
-        case EPrisma:   // hexahedron -> four prisms
-		{
-            // Dividing hexahedron in four prisms (anymore)
-            filename += "/3D_Hexa_directional_2faces.rpt";
-            
-            TPZAutoPointer<TPZRefPattern> refpat = new TPZRefPattern(filename);
-			TPZAutoPointer<TPZRefPattern> refpatFound = gRefDBase.FindRefPattern(refpat);
-            if(!refpatFound)
-            {
-                gRefDBase.InsertRefPattern(refpat);
-            }
-			else
-			{
-				refpatFound->SetName(refpat->Name());
-			}
-			refpat->InsertPermuted();
-            TPZGeoEl *gel = gmesh->ElementVec()[0];
-            TPZGeoElRefPattern <TPZGeoCube> *gelrp = dynamic_cast<TPZGeoElRefPattern<TPZGeoCube> *> (gel);
-            gelrp->SetRefPattern(refpat);
-            gel->Divide(sub);
-		}   
-            break;
-        case EPiramide:
-		{
-            // Dividing hexahedron in four pyramids (anymore)
-            filename += "/3D_Hexa_Rib_Side_08.rpt";
-            
-            TPZAutoPointer<TPZRefPattern> refpat = new TPZRefPattern(filename);
-            if(!gRefDBase.FindRefPattern(refpat))
-            {
-                gRefDBase.InsertRefPattern(refpat);
-            }
-            TPZGeoEl *gel = gmesh->ElementVec()[0];
-            TPZGeoElRefPattern <TPZGeoCube> *gelrp = dynamic_cast<TPZGeoElRefPattern<TPZGeoCube> *> (gel);
-            gelrp->SetRefPattern(refpat);
-            gel->Divide(sub);
-		}
-			break;
-        case ETetraedro:
-		{
-            // Dividing hexahedron in two tetrahedras, two prisms and one pyramid
-            filename += "/3D_Hexa_Rib_Side_16_17_18.rpt";
-            
-            TPZAutoPointer<TPZRefPattern> refpat = new TPZRefPattern(filename);
-            if(!gRefDBase.FindRefPattern(refpat))
-            {
-                gRefDBase.InsertRefPattern(refpat);
-            }
-            TPZGeoEl *gel = gmesh->ElementVec()[0];
-            TPZGeoElRefPattern <TPZGeoCube> *gelrp = dynamic_cast<TPZGeoElRefPattern<TPZGeoCube> *> (gel);
-            gelrp->SetRefPattern(refpat);
-            gel->Divide(sub);
-		}
-			break;
-		case ECube:
-			break;
-        default:
-		{
-            // hexahedron -> three prisms (anymore)
-            // Dividing hexahedron in prisms
-            filename += "/3D_Hexa_Rib_Side_16_18.rpt";
-            
-            TPZAutoPointer<TPZRefPattern> refpat = new TPZRefPattern(filename);
-            if(!gRefDBase.FindRefPattern(refpat))
-            {
-                gRefDBase.InsertRefPattern(refpat);
-            }
-            TPZGeoEl *gel = gmesh->ElementVec()[0];
-            TPZGeoElRefPattern <TPZGeoCube> *gelrp = dynamic_cast<TPZGeoElRefPattern<TPZGeoCube> *> (gel);
-            gelrp->SetRefPattern(refpat);
-            gel->Divide(sub);
-		}
-            break;
-    }
-	
-//	gmesh->BuildConnectivity();
-	
-/*	switch(typeel) {
-		case ECube:
-		{
-			// face 0 (20) bottom XY - face 1 (21) lateral left XZ - face 4 (24) lateral back YZ : Dirichlet
-			TPZGeoElBC gbc10(gmesh->ElementVec()[0],20,-1);
-			TPZGeoElBC gbc11(gmesh->ElementVec()[0],21,-1);
-			TPZGeoElBC gbc12(gmesh->ElementVec()[0],24,-1);
-			
-			// face 2 (22) Neumann - Partial derivative (du/dx) - lateral front
-			TPZGeoElBC gbc13(gmesh->ElementVec()[0],22,-1);
-			// face 3 (23) Neumann - Partial derivative (du/dy) - lateral right
-			TPZGeoElBC gbc14(gmesh->ElementVec()[0],23,-1);
-			// face 5 (25) Neumann - Partial derivative (du/dz) - top
-			TPZGeoElBC gbc15(gmesh->ElementVec()[0],25,-1);
-		}
-			break;
-		case EPrisma:
-		{
-			// First sub element - faces: 15, 16, 18 and 19
-			TPZGeoElBC gbc10(gmesh->ElementVec()[1],15,-1);
-			TPZGeoElBC gbc11(gmesh->ElementVec()[1],16,-1);
-			TPZGeoElBC gbc12(gmesh->ElementVec()[1],18,-1);
-			TPZGeoElBC gbc13(gmesh->ElementVec()[1],19,-1);
-			// Second sub element - faces: 15 and 19
-			TPZGeoElBC gbc20(gmesh->ElementVec()[2],15,-1);
-			TPZGeoElBC gbc21(gmesh->ElementVec()[2],19,-1);
-			// Third sub element - faces: 15, 16, 17 and 19
-			TPZGeoElBC gbc30(gmesh->ElementVec()[3],15,-1);
-			TPZGeoElBC gbc31(gmesh->ElementVec()[3],17,-1);
-			TPZGeoElBC gbc32(gmesh->ElementVec()[3],18,-1);
-			TPZGeoElBC gbc33(gmesh->ElementVec()[3],19,-1);
-			// Fouthrd sub element - faces: 15, 17, 18 and 19
-			TPZGeoElBC gbc40(gmesh->ElementVec()[4],15,-1);
-			TPZGeoElBC gbc41(gmesh->ElementVec()[4],17,-1);
-			TPZGeoElBC gbc42(gmesh->ElementVec()[4],18,-1);
-			TPZGeoElBC gbc43(gmesh->ElementVec()[4],19,-1);
-			gmesh->ElementVec()[1]->Divide(sub);
-			gmesh->ElementVec()[3]->Divide(sub);
-		}
-			break;
-		case EPiramide:
-		{
-			// First sub element - faces: 13, 14 and 17
-			TPZGeoElBC gbc10(gmesh->ElementVec()[1],13,-1);
-			TPZGeoElBC gbc11(gmesh->ElementVec()[1],14,-1);
-			TPZGeoElBC gbc12(gmesh->ElementVec()[1],17,-1);
-			// Second sub element - faces: 13 and 14
-			TPZGeoElBC gbc20(gmesh->ElementVec()[2],13,-1);
-			TPZGeoElBC gbc21(gmesh->ElementVec()[2],14,-1);
-			// Third sub element - faces: 13, 14 and 17
-			TPZGeoElBC gbc30(gmesh->ElementVec()[3],13,-1);
-			TPZGeoElBC gbc31(gmesh->ElementVec()[3],14,-1);
-			TPZGeoElBC gbc32(gmesh->ElementVec()[3],17,-1);
-			// Fouthrd sub element - faces: 13 and 14
-			TPZGeoElBC gbc40(gmesh->ElementVec()[4],13,-1);
-			TPZGeoElBC gbc41(gmesh->ElementVec()[4],14,-1);
-		}
-			break;
-		case ETetraedro:
-		{
-			// First sub element - faces: 10, 11 and 13
-			TPZGeoElBC gbc10(gmesh->ElementVec()[1],10,-1);
-			TPZGeoElBC gbc11(gmesh->ElementVec()[1],11,-1);
-			TPZGeoElBC gbc12(gmesh->ElementVec()[1],13,-1);
-			// Second sub element - faces: 10, 11 and 13
-			TPZGeoElBC gbc20(gmesh->ElementVec()[2],10,-1);
-			TPZGeoElBC gbc21(gmesh->ElementVec()[2],11,-1);
-			TPZGeoElBC gbc22(gmesh->ElementVec()[2],13,-1);
-			// Third sub element - faces: 15, 16, 18 and 19
-			TPZGeoElBC gbc30(gmesh->ElementVec()[3],15,-1);
-			TPZGeoElBC gbc31(gmesh->ElementVec()[3],16,-1);
-			TPZGeoElBC gbc32(gmesh->ElementVec()[3],18,-1);
-			TPZGeoElBC gbc33(gmesh->ElementVec()[3],19,-1);
-			// Fouthrd sub element - faces: 15, 18 and 19
-			TPZGeoElBC gbc40(gmesh->ElementVec()[4],15,-1);
-			TPZGeoElBC gbc41(gmesh->ElementVec()[4],18,-1);
-			TPZGeoElBC gbc42(gmesh->ElementVec()[4],19,-1);
-			// Fifth sub element - faces: 13 and 15
-			TPZGeoElBC gbc50(gmesh->ElementVec()[5],14,-1);
-			TPZGeoElBC gbc51(gmesh->ElementVec()[5],16,-1);
-			gmesh->ElementVec()[3]->Divide(sub);
-			gmesh->ElementVec()[4]->Divide(sub);
-		}
-			break;
-		default:
-		{
-			// First sub element - faces: 15, 16, 18 and 19
-			TPZGeoElBC gbc10(gmesh->ElementVec()[1],15,-1);
-			TPZGeoElBC gbc11(gmesh->ElementVec()[1],16,-1);
-			TPZGeoElBC gbc12(gmesh->ElementVec()[1],18,-1);
-			TPZGeoElBC gbc13(gmesh->ElementVec()[1],19,-1);
-			// Second sub element - faces: 15, 16, 18 and 19
-			TPZGeoElBC gbc20(gmesh->ElementVec()[2],15,-1);
-			TPZGeoElBC gbc21(gmesh->ElementVec()[2],16,-1);
-			TPZGeoElBC gbc22(gmesh->ElementVec()[2],18,-1);
-			TPZGeoElBC gbc23(gmesh->ElementVec()[2],19,-1);
-			// Third sub element - faces: 15, 17 and 19
-			TPZGeoElBC gbc30(gmesh->ElementVec()[3],15,-1);
-			TPZGeoElBC gbc31(gmesh->ElementVec()[3],17,-1);
-			TPZGeoElBC gbc32(gmesh->ElementVec()[3],19,-1);
-			gmesh->ElementVec()[1]->Divide(sub);
-			gmesh->ElementVec()[2]->Divide(sub);
-			gmesh->ElementVec()[3]->Divide(sub);
-		}
-			break;
-	}*/
-	gmesh->ResetConnectivities();
-	gmesh->BuildConnectivity();
 	
 	return gmesh;
 }
@@ -3868,7 +3649,7 @@ TPZGeoMesh *CreateGeoMeshWithClassesPre(MElementType typeel) {
 		case EPrisma:
 		case EPiramide:
 		case ECube:
-			gmesh = ConstructingPositiveCube(1.,typeel);
+			gmesh = ConstructingCube(1.,typeel);
 			break;
 		default:
             gmesh = 0;

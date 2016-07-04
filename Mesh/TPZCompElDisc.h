@@ -340,7 +340,7 @@ protected:
 	 */
 	void SolutionX(TPZVec<REAL> &x,TPZVec<STATE> &uh);
 	
-    private:
+    public:
 	/**
 	 * @brief Computes solution and its derivatives in the local coordinate qsi.
 	 * @param qsi master element coordinate
@@ -348,7 +348,7 @@ protected:
 	 * @param dsol solution derivatives
 	 * @param axes axes associated with the derivative of the solution
 	 */
-	virtual void ComputeSolution(TPZVec<REAL> &qsi, TPZSolVec &sol, TPZGradSolVec &dsol,TPZFMatrix<REAL> & axes);
+	virtual void ComputeSolution(TPZVec<REAL> &qsi, TPZSolVec &sol, TPZGradSolVec &dsol, TPZFMatrix<REAL> & axes);
     
 public:
     

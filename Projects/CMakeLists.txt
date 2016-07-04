@@ -25,6 +25,7 @@ ENABLE_TESTING()
 			add_subdirectory(Poisson2D_ArcTan_Disc)
 			add_subdirectory(Poisson3D_Fichera)
 			add_subdirectory(Poisson3D_Shock)
+			add_subdirectory(ErrorEstimation)
 			# the auto adaptive process is working again!!!
 			#add_subdirectory(adaptivity)
 

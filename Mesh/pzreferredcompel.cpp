@@ -141,9 +141,10 @@ void TPZReferredCompEl< TCOMPEL >::AppendOtherSolution(TPZVec<REAL> &qsi, TPZSol
 	TPZGradSolVec ThisDSol(dsol);
 	
 	TPZSolVec OtherSol;
-	TPZGradSolVec OtherDSol,OtherDSol2;
+	TPZGradSolVec OtherDSol;
 	TPZFNMatrix<9> otheraxes(3,3,0.);
 	other->ComputeSolution(qsi, OtherSol, OtherDSol, otheraxes);
+    TPZGradSolVec OtherDSol2(OtherDSol.size());
     long numbersol = sol.size();
     for (long is=0; is<numbersol; is++) {
         if(sol[is].NElements()){
@@ -232,6 +233,16 @@ void TPZReferredCompEl< TCOMPEL >::ComputeSolution(TPZVec<REAL> &qsi,
 	TCOMPEL::ComputeSolution(qsi, phi, dphix, axes, sol, dsol);
 	this->AppendOtherSolution(qsi, sol, dsol, axes);
 }//method
+
+//template< class TCOMPEL >
+//void TPZReferredCompEl< TCOMPEL >::ComputeSolution(TPZVec<REAL> &qsi,
+//                                                   TPZSolVec &sol,
+//                                                   TPZGradSolVec &dsol,
+//                                                   TPZFMatrix<REAL> &axes)
+//{
+//    TCOMPEL::ComputeSolution(qsi, sol, dsol, axes);
+//    this->AppendOtherSolution(qsi, sol, dsol, axes);
+//}//method
 
 
 template< class TCOMPEL >

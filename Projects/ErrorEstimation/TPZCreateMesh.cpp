@@ -6,7 +6,7 @@
 //
 //
 
-#include "TPZCreateHDivMesh.h"
+#include "TPZCreateMesh.h"
 #include "pzbndcond.h"
 #include "pzpoisson3d.h"
 #include "TPZCompElDisc.h"
@@ -17,6 +17,7 @@
 #include "TPZCompMeshTools.h"
 #include "pzintel.h"
 #include "pzcheckmesh.h"
+#include "tpzcompmeshreferred.h"
 
 TPZCompMesh *CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim)
 {
@@ -41,12 +42,12 @@ TPZCompMesh *CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim)
     TPZMaterial * BCond4;
     TPZMaterial * BCond5;
     
-    if( dim == 3 ) { BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);}
+    BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);
     BCond1 = material->CreateBC(mat, bc1,dirichlet, val1, val2);
     BCond2 = material->CreateBC(mat, bc2,dirichlet, val1, val2);
     BCond3 = material->CreateBC(mat, bc3,dirichlet, val1, val2);
     BCond4 = material->CreateBC(mat, bc4,dirichlet, val1, val2);
-    if( dim == 3 ) { BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);}
+    BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);
     
     cmesh->InsertMaterialObject(mat);
     
@@ -55,17 +56,12 @@ TPZCompMesh *CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim)
     cmesh->SetAllCreateFunctionsHDiv();
     
     
-    if( dim == 3 ) {
-        cmesh->InsertMaterialObject(BCond0);
-    }
+    cmesh->InsertMaterialObject(BCond0);
     cmesh->InsertMaterialObject(BCond1);
     cmesh->InsertMaterialObject(BCond2);
     cmesh->InsertMaterialObject(BCond3);
     cmesh->InsertMaterialObject(BCond4);
-    if(dim == 3 )
-    {
-        cmesh->InsertMaterialObject(BCond5);
-    }
+    cmesh->InsertMaterialObject(BCond5);
     
     cmesh->SetDefaultOrder(pOrder);
     
@@ -92,42 +88,69 @@ TPZCompMesh *CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim)
     
 }
 
-TPZCompMesh *CMeshPressure(TPZGeoMesh *gmesh, int pOrder, int dim)
+TPZCompMesh *CMeshPressure(TPZGeoMesh *gmesh, int pOrder, int dim, bool disconnected, bool referred)
 {
     /// criar materiais
     //TPZMatPoisson3d *material = new TPZMatPoisson3d(matId,dim);
     TPZMatPoisson3d *material = new TPZMatPoisson3d(matId,dim);
     material->NStateVariables();
     
+    if(!referred)
+    {
+        //solucao exata
+        TPZAutoPointer<TPZFunction<STATE> > solexata;
+        int polorder = 4;
+        TPZDummyFunction<STATE> *func = new TPZDummyFunction<STATE>(RightTermArcTangentBad);
+        func->SetPolynomialOrder(polorder);
+        solexata = func;
+        material->SetForcingFunction(solexata);
+    }
+    
     //    TPZAutoPointer<TPZFunction<STATE> > force1 = new TPZDummyFunction<STATE>(Forcing1);
     //	material->SetForcingFunction(force1);
     
-    TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
+    TPZCompMesh * cmesh;
+    if (referred) {
+        cmesh = new TPZCompMeshReferred(gmesh);
+    }
+    else
+    {
+        cmesh = new TPZCompMesh(gmesh);
+    }
     cmesh->SetDimModel(dim);
     TPZMaterial * mat(material);
     cmesh->InsertMaterialObject(mat);
     
     ///Inserir condicao de contorno
     TPZFMatrix<STATE> val1(2,2,0.), val2(2,1,0.);
-    //    TPZMaterial * BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);
-    //    TPZMaterial * BCond1 = material->CreateBC(mat, bc1,dirichlet, val1, val2);
-    //    TPZMaterial * BCond2 = material->CreateBC(mat, bc2,dirichlet, val1, val2);
-    //    TPZMaterial * BCond3 = material->CreateBC(mat, bc3,dirichlet, val1, val2);
-    //    TPZMaterial * BCond4 = material->CreateBC(mat, bc4,dirichlet, val1, val2);
-    //    TPZMaterial * BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);
-    //
-    //    cmesh->InsertMaterialObject(BCond0);
-    //    cmesh->InsertMaterialObject(BCond1);
-    //    cmesh->InsertMaterialObject(BCond2);
-    //    cmesh->InsertMaterialObject(BCond3);
-    //    cmesh->InsertMaterialObject(BCond4);
-    //    cmesh->InsertMaterialObject(BCond5);
-    
+    if (!referred)
+    {
+        TPZMaterial * BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);
+        TPZMaterial * BCond1 = material->CreateBC(mat, bc1,dirichlet, val1, val2);
+        TPZMaterial * BCond2 = material->CreateBC(mat, bc2,dirichlet, val1, val2);
+        TPZMaterial * BCond3 = material->CreateBC(mat, bc3,dirichlet, val1, val2);
+        TPZMaterial * BCond4 = material->CreateBC(mat, bc4,dirichlet, val1, val2);
+        TPZMaterial * BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);
+
+        cmesh->InsertMaterialObject(BCond0);
+        cmesh->InsertMaterialObject(BCond1);
+        cmesh->InsertMaterialObject(BCond2);
+        cmesh->InsertMaterialObject(BCond3);
+        cmesh->InsertMaterialObject(BCond4);
+        cmesh->InsertMaterialObject(BCond5);
+    }
     cmesh->SetDefaultOrder(pOrder);
     //cmesh->SetDimModel(dim);
     
     cmesh->SetAllCreateFunctionsContinuous();
-    cmesh->ApproxSpace().CreateDisconnectedElements(true);
+    if (disconnected)
+    {
+        cmesh->ApproxSpace().CreateDisconnectedElements(disconnected);
+    }
+    if (referred)
+    {
+        cmesh->ApproxSpace().SetAllCreateFunctionsContinuousReferred();
+    }
     
     
     //Ajuste da estrutura de dados computacional
@@ -220,10 +243,7 @@ TPZCompMesh *CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCompMesh *> &meshvec)
     TPZMaterial * BCond5;
     
     TPZFMatrix<STATE> val1(2,2,0.), val2(2,1,0.);
-    if (dim==3)
-    {
-        BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);
-    }
+    BCond0 = material->CreateBC(mat, bc0,dirichlet, val1, val2);
     
     
     
@@ -245,19 +265,16 @@ TPZCompMesh *CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCompMesh *> &meshvec)
     
     
     
-    if (dim==3)
-    {
-        BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);
-    }
+    BCond5 = material->CreateBC(mat, bc5,dirichlet, val1, val2);
     
     
     mphysics->SetAllCreateFunctionsMultiphysicElem();
-    if( dim == 3 ) { mphysics->InsertMaterialObject(BCond0); }
+    mphysics->InsertMaterialObject(BCond0);
     mphysics->InsertMaterialObject(BCond1);
     mphysics->InsertMaterialObject(BCond2);
     mphysics->InsertMaterialObject(BCond3);
     mphysics->InsertMaterialObject(BCond4);
-    if( dim == 3 ) { mphysics->InsertMaterialObject(BCond5); }
+    mphysics->InsertMaterialObject(BCond5);
     
     //Fazendo auto build
     mphysics->AutoBuild();
@@ -401,24 +418,51 @@ void UnwrapMesh(TPZCompMesh *cmesh)
     }
 }
 
-TPZCompMesh *CreateHDivMesh(TPZGeoMesh *gmesh, TPZVec<TPZCompMesh *> &meshvec, int porder, int dim, int hdivplusplus)
+void CreateAllMeshes(TPZGeoMesh *gmesh, TPZVec<TPZCompMesh *> &meshvec, int porder, int dim, int hdivplusplus)
 {
+    meshvec.resize(5);
+    // the HDiv flux mesh used to reconstruct the internal fluxes
     TPZCompMesh *fluxmesh = CMeshFlux(gmesh,porder,dim);
-    TPZCompMesh *pressuremesh = CMeshPressure(gmesh, porder, dim);
+    meshvec[2] = fluxmesh;
+    bool disconnected = false;
+    bool referred = false;
+    // this is the continuous pressure mesh for which we will test the error estimator
+    TPZCompMesh *pressuremeshH1 = CMeshPressure(gmesh, porder, dim, disconnected,referred);
+    meshvec[0] = pressuremeshH1;
+    disconnected = true;
+    referred = true;
+    TPZCompMesh *pressuremeshHDiv = CMeshPressure(gmesh, porder, dim, disconnected,referred);
+    meshvec[3] = pressuremeshHDiv;
     AdjustFluxPolynomialOrders(fluxmesh, hdivplusplus);
-    SetPressureOrders(fluxmesh, pressuremesh);
-    meshvec.resize(2);
-    meshvec[0] = fluxmesh;
-    meshvec[1] = pressuremesh;
-    TPZCompMesh *mixed = CMeshMixed(gmesh, meshvec);
+    SetPressureOrders(fluxmesh, pressuremeshHDiv);
+    TPZManVector<TPZCompMesh *> meshvecloc(2);
+    meshvecloc[0] = fluxmesh;
+    meshvecloc[1] = pressuremeshHDiv;
+    TPZCompMesh *mixed = CMeshMixed(gmesh, meshvecloc);
+    meshvec[1] = mixed;
+    
+    disconnected = false;
+    referred = true;
+    TPZCompMesh *PartitionUnity = CMeshPressure(gmesh, 1, dim, disconnected, referred);
+    TPZCompMeshReferred *PartitionRef = dynamic_cast<TPZCompMeshReferred *>(PartitionUnity);
+    if (!PartitionRef) {
+        DebugStop();
+    }
+    PartitionRef->LoadReferred(pressuremeshH1);
+    TPZCompMeshReferred *refcomp = dynamic_cast<TPZCompMeshReferred *>(pressuremeshHDiv);
+    refcomp->LoadReferred(PartitionUnity);
+    // pressureHDiv -> PartitionUnity -> pressureH1
+    meshvec[4] = PartitionUnity;
 //    TPZCompMeshTools::GroupElements(mixed);
 //    TPZCompMeshTools::CreatedCondensedElements(mixed, true);
-    return mixed;
 }
 
 /// Reconstruct the multi physics mesh from the fluxmesh
-void ReconstructHDivMesh(TPZCompMesh *HDivMesh, TPZVec<TPZCompMesh *> &meshvec, int hdivplusplus)
+void ReconstructHDivMesh(TPZVec<TPZCompMesh *> &meshvec, int hdivplusplus)
 {
+    TPZCompMesh *HDivMesh = meshvec[1];
+    TPZCompMesh *fluxmesh = meshvec[2];
+    TPZCompMesh *pressuremesh = meshvec[3];
     TPZGeoMesh *gmesh = meshvec[0]->Reference();
     {
         std::map<int ,TPZMaterial * > HDivMat = HDivMesh->MaterialVec();
@@ -429,30 +473,30 @@ void ReconstructHDivMesh(TPZCompMesh *HDivMesh, TPZVec<TPZCompMesh *> &meshvec, 
     }
     {
         std::map<int ,TPZMaterial * > PressMat = meshvec[1]->MaterialVec();
-        meshvec[1]->MaterialVec().clear();
+        pressuremesh->MaterialVec().clear();
         gmesh->ResetReference();
         long nel = meshvec[1]->NElements();
         for (long el=0; el<nel; el++) {
-            TPZCompEl *cel = meshvec[1]->Element(el);
+            TPZCompEl *cel = pressuremesh->Element(el);
             if (cel) {
                 delete cel;
             }
         }
-        meshvec[1]->CleanUp();
-        meshvec[1]->MaterialVec() = PressMat;
-        meshvec[1]->CleanUpUnconnectedNodes();
+        pressuremesh->CleanUp();
+        pressuremesh->MaterialVec() = PressMat;
+        pressuremesh->CleanUpUnconnectedNodes();
     }
     int meshdim = gmesh->Dimension();
     gmesh->ResetReference();
-    meshvec[0]->LoadReferences();
-    meshvec[0]->CleanUpUnconnectedNodes();
-    meshvec[0]->ExpandSolution();
-    AdjustFluxPolynomialOrders(meshvec[0], hdivplusplus);
+    fluxmesh->LoadReferences();
+    fluxmesh->CleanUpUnconnectedNodes();
+    fluxmesh->ExpandSolution();
+    AdjustFluxPolynomialOrders(fluxmesh, hdivplusplus);
     {
         //        std::ofstream out("checkmesh.txt");
         gmesh->ResetReference();
-        meshvec[0]->LoadReferences();
-        TPZCheckMesh check(meshvec[0],&std::cout);
+        fluxmesh->LoadReferences();
+        TPZCheckMesh check(fluxmesh,&std::cout);
         check.VerifyAllConnects();
     }
     
@@ -486,14 +530,14 @@ void ReconstructHDivMesh(TPZCompMesh *HDivMesh, TPZVec<TPZCompMesh *> &meshvec, 
             }
             meshvec[1]->SetDefaultOrder(loadels[el]);
             long index;
-            TPZCompEl *cel = meshvec[1]->ApproxSpace().CreateCompEl(gmesh->Element(el), *meshvec[1], index);
+            TPZCompEl *cel = pressuremesh->ApproxSpace().CreateCompEl(gmesh->Element(el), *meshvec[1], index);
             cel->Reference()->ResetReference();
         }
     }
     meshvec[1]->ExpandSolution();
     long nconn = meshvec[1]->NConnects();
     for (long ic = 0; ic<nconn; ic++) {
-        meshvec[1]->ConnectVec()[ic].SetLagrangeMultiplier(1);
+        pressuremesh->ConnectVec()[ic].SetLagrangeMultiplier(1);
     }
     // create the multiphysics elements
     gmesh->ResetReference();
@@ -505,10 +549,14 @@ void ReconstructHDivMesh(TPZCompMesh *HDivMesh, TPZVec<TPZCompMesh *> &meshvec, 
         }
     }
     
-    TPZBuildMultiphysicsMesh::AddElements(meshvec, HDivMesh);
+    TPZManVector<TPZCompMesh *,2> locmeshvec(2);
+    locmeshvec[0] = meshvec[2];
+    locmeshvec[1] = meshvec[3];
     
-    TPZBuildMultiphysicsMesh::AddConnects(meshvec,HDivMesh);
-    TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvec, HDivMesh);
+    TPZBuildMultiphysicsMesh::AddElements(locmeshvec, HDivMesh);
+    
+    TPZBuildMultiphysicsMesh::AddConnects(locmeshvec,HDivMesh);
+    TPZBuildMultiphysicsMesh::TransferFromMeshes(locmeshvec, HDivMesh);
     
     HDivMesh->ExpandSolution();
     TPZCompMeshTools::GroupElements(HDivMesh);
@@ -531,7 +579,6 @@ void ReconstructHDivMesh(TPZCompMesh *HDivMesh, TPZVec<TPZCompMesh *> &meshvec, 
     TPZCompMeshTools::CreatedCondensedElements(HDivMesh, true);
     
 }
-
 
 void UnitPressure(TPZCompMesh *PressMesh)
 {

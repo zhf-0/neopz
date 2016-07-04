@@ -288,10 +288,44 @@ void TPZMixedPoisson::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
             }
         }
     }
-    
-    //termo fonte referente a equacao da pressao
-    for(int ip=0; ip<phrp; ip++){
-        ef(phrq+ip,0) += (-1.)*weight*force*phip(ip,0);
+    if (datavec[1].sol[0].size() == 3)
+    {
+        REAL psival = datavec[1].sol[0][1];
+        TPZFNMatrix<9,STATE> dsolprimal(3,3),gradpsi(3,1),gradpressure(3,1);
+        TPZAxesTools<STATE>::Axes2XYZ(datavec[1].dsol[0], dsolprimal, datavec[1].axes);
+        for (int i=0; i<3; i++) {
+            gradpsi(i,0) = dsolprimal(i,1);
+            gradpressure(i,0) = dsolprimal(i,2);
+        }
+        
+        for (int jq=0; jq<phrq; jq++)
+        {
+            // vector value
+            TPZFNMatrix<3,REAL> jvec(3,1,0.);
+            int jvecind = datavec[0].fVecShapeIndex[jq].first;
+            int jshapeind = datavec[0].fVecShapeIndex[jq].second;
+            REAL phival = datavec[0].phi(jshapeind);
+            for(int id=0; id<3; id++){
+                jvec(id,0) = datavec[0].fNormalVec(id,jvecind)*phival;
+            }
+            STATE inner = 0.;
+            for(int i=0; i<3; i++) inner += jvec(i,0)*gradpressure(i,0);
+            ef(jq) -= weight*inner*psival;
+        }
+        STATE inner2 = 0.;
+        for (int i=0; i<3; i++) {
+            inner2 += gradpressure(i,0)*gradpsi(i,0);
+        }
+        for (int ip=0; ip<phrp; ip++) {
+            ef(phrq+ip,0) += (-1.)*weight*force*phip(ip,0)*psival-weight*phip(ip,0)*inner2;
+        }
+    }
+    else
+    {
+        //termo fonte referente a equacao da pressao
+        for(int ip=0; ip<phrp; ip++){
+            ef(phrq+ip,0) += (-1.)*weight*force*phip(ip,0);
+        }
     }
     
     //Contribution for estabilization delta1 for gradPu*gradPv. Matrix D
@@ -607,7 +641,7 @@ void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
 	
 	Solout.Resize( this->NSolutionVariables(var));
 	
-	TPZVec<STATE> SolP, SolQ;
+	TPZManVector<STATE,10> SolP, SolQ;
     
    // SolQ = datavec[0].sol[0];
     SolP = datavec[1].sol[0];
@@ -701,6 +735,7 @@ void TPZMixedPoisson::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 		datavec[i].fNeedsNeighborCenter = false;
 		datavec[i].fNeedsNormal = false;
         datavec[i].fNeedsHSize = true;
+        datavec[i].fNeedsSol = true;
 	}
 	
 }
