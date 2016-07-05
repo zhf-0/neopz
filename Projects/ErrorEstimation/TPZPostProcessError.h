@@ -28,7 +28,7 @@ struct TPZPatch
     TPZManVector<long,25> fConnectIndices;
     
     // vector of closed set of connect indexes included in the elements
-    TPZManVector<long,30> fAllConnectIndices;
+    TPZManVector<long,30> fBoundaryConnectIndices;
     
     void ClosedSet(std::set<long> &closed)
     {
@@ -42,7 +42,7 @@ struct TPZPatch
     }
     
     TPZPatch(const TPZPatch &copy) : fPartitionConnectIndex(copy.fPartitionConnectIndex), fElIndices(copy.fElIndices),
-    fConnectIndices(copy.fConnectIndices), fAllConnectIndices(copy.fAllConnectIndices)
+    fConnectIndices(copy.fConnectIndices), fBoundaryConnectIndices(copy.fBoundaryConnectIndices)
     {
         
     }
@@ -51,7 +51,7 @@ struct TPZPatch
         fPartitionConnectIndex = copy.fPartitionConnectIndex;
         fElIndices = copy.fElIndices;
         fConnectIndices = copy.fConnectIndices;
-        fAllConnectIndices = copy.fAllConnectIndices;
+        fBoundaryConnectIndices = copy.fBoundaryConnectIndices;
         return *this;
     }
     
@@ -60,8 +60,13 @@ struct TPZPatch
         out << "The generating partitionindex = " << fPartitionConnectIndex << std::endl;
         out << "Element indices " << fElIndices << std::endl;
         out << "Open set connect indices " << fConnectIndices << std::endl;
-        out << "Closed set connect indices " << fAllConnectIndices << std::endl;
+        out << "Boundary set connect indices " << fBoundaryConnectIndices << std::endl;
     }
+    
+    // return the first equation associated with a lagrange multiplier
+    long FirstLagrangeEquation(TPZCompMesh *cmesh) const;
+    
+
 };
 
 class TPZPostProcessError
@@ -98,7 +103,19 @@ private:
     // solve for the reconstructed fluxes of a given color. Add the flux coefficients
     void ComputePatchFluxes();
     
+    // determine if a given patch is boundary or not
+    bool PatchHasBoundary(TPZPatch &patch) const;
+    
+    // Sum the solution stored in fSolution of the second mesh to the fSolution vector
+    void TransferAndSumSolution(TPZCompMesh *cmesh);
+    
+    // Reset the state of the HDiv mesh to its original structure
+    void ResetState();
+    
 public:
+    
+    // print partition diagnostics
+    void PrintPartitionDiagnostics(int color, std::ostream &out) const ;
     
     // Collect the connect indices and elements which will contribute to the patch caracterized by the set of nodes
     // generally each node will form a patch

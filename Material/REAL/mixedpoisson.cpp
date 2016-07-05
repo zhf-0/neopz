@@ -317,7 +317,9 @@ void TPZMixedPoisson::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
             inner2 += gradpressure(i,0)*gradpsi(i,0);
         }
         for (int ip=0; ip<phrp; ip++) {
-            ef(phrq+ip,0) += (-1.)*weight*force*phip(ip,0)*psival-weight*phip(ip,0)*inner2;
+            ef(phrq+ip,0) += (-1.)*weight*force*phip(ip,0)*psival+weight*phip(ip,0)*inner2;
+//            ef(phrq+ip,0) += (-1.)*weight*phip(ip,0);
+            
         }
     }
     else

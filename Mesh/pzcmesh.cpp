@@ -626,8 +626,14 @@ void TPZCompMesh::ComputeNodElCon(TPZVec<int> &nelconnected ) const {
 
 long TPZCompMesh::NEquations() {
 	long neq = 0;
-	long i, ncon = NConnects();
-	for(i=0; i<ncon; i++) {
+#ifdef PZDEBUG
+    long numvalid = 0;
+    std::set<long> seqnumset;
+    TPZVec<long> blocsizes(NConnects(),0);
+    long neqblock = 0;
+#endif
+	long ncon = NConnects();
+	for(long i=0; i<ncon; i++) {
 		TPZConnect &df = fConnectVec[i];
         if(df.HasDependency() || df.IsCondensed() || !df.NElConnected() || df.SequenceNumber() == -1){
             continue;
@@ -638,14 +644,35 @@ long TPZCompMesh::NEquations() {
         // check the consistency between the block size and the data structure of the connect
         {
             long seqnum = df.SequenceNumber();
+            if (seqnumset.find(seqnum) != seqnumset.end()) {
+                DebugStop();
+            }
+            seqnumset.insert(seqnum);
+            numvalid++;
             long blsize = fBlock.Size(seqnum);
             if (blsize != dofsize) {
                 DebugStop();
+            }
+            if (neqblock < fBlock.Position(seqnum)+fBlock.Size(seqnum)) {
+                neqblock = fBlock.Position(seqnum)+fBlock.Size(seqnum);
             }
         }
 #endif
         neq += dofsize;
 	}
+#ifdef PZDEBUG
+    long highseqnum = *seqnumset.rbegin();
+    if(numvalid != highseqnum+1 || neq != neqblock)
+    {
+        for (long i=1; i<numvalid; i++) {
+            if(fBlock.Position(i) != fBlock.Position(i-1)+fBlock.Size(i-1))
+            {
+                DebugStop();
+            }
+        }
+        DebugStop();
+    }
+#endif
 	return neq;
 }
 

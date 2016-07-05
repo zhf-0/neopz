@@ -2916,7 +2916,9 @@ TPZSkylMatrix<TVar>::Decompose_LDLt(std::list<long> &singular)
 #endif
     
     singular.clear();
-    
+#ifdef PZDEBUG
+    double minpivot = 1.;
+#endif
     // Third try
     TVar *elj,*ell;
     long j,l,minj,minl,minrow,dimension = this->Dim();
@@ -2940,7 +2942,13 @@ TPZSkylMatrix<TVar>::Decompose_LDLt(std::list<long> &singular)
             }
             *elj -= sum;
             if(ell != elj) *elj /= *ell;
-            else if(IsZero(*elj)) {
+#ifdef PZDEBUG
+            if(ell== elj)
+            {
+                if(fabs(*ell) < minpivot) minpivot = fabs(*ell);
+            }
+#endif
+            if(ell == elj && IsZero(*elj)) {
                 singular.push_back(l);
                 *elj = 1.;
             }
@@ -2948,6 +2956,10 @@ TPZSkylMatrix<TVar>::Decompose_LDLt(std::list<long> &singular)
         }
         j++;
     }
+#ifdef PZDEBUG
+    if(fabs(GetVal(this->Rows()-1,this->Rows()-1)) < minpivot) minpivot = fabs(GetVal(this->Rows()-1,this->Rows()-1));
+    std::cout << "Decompose_LDLt minpivot " << minpivot << std::endl;
+#endif
     
     if(this->Rows() && IsZero(GetVal(this->Rows()-1,this->Rows()-1)))
     {

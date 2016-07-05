@@ -333,11 +333,11 @@ bool SolvePoissonProblem(int itypeel, struct SimulationCase sim_case) {
     pressuremesh->SetName("Malha computacional adaptada");
     // Printing geometric and computational mesh
 #ifdef PZDEBUG
-    if(0)
+    if(1)
     {
-        std::ofstream out("PressureMesh.txt");
+        std::ofstream out("../GeoMesh.txt");
         pressuremesh->Reference()->Print(out);
-        pressuremesh->Print(out);
+//        pressuremesh->Print(out);
     }
 #endif
     // Solve using symmetric matrix then using Cholesky (direct method)
@@ -363,6 +363,7 @@ bool SolvePoissonProblem(int itypeel, struct SimulationCase sim_case) {
     out << "\tRefinement: " << nref << " TypeElement: " << typeel << "NEquations " << pressuremesh->NEquations() << "\n";
     an.Assemble();
     
+    
 
     an.Solve();
     
@@ -376,7 +377,7 @@ bool SolvePoissonProblem(int itypeel, struct SimulationCase sim_case) {
     TPZFunction<STATE> *exact = new TPZDummyFunction<STATE>(ExactSolutionArcTangent);
     TPZVec<STATE> estimatedelementerror, exactelementerror;
     error.ComputeElementErrors(estimatedelementerror);
-    error.ComputeExactH1SemiNormErrors(*exact, exactelementerror);
+//    error.ComputeExactH1SemiNormErrors(*exact, exactelementerror);
     
     if(gDebug) {
         std::ofstream out(MeshFileName.c_str());
