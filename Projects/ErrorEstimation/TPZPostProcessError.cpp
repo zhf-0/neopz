@@ -275,6 +275,10 @@ void TPZPostProcessError::ComputeElementErrors(TPZVec<STATE> &elementerrors)
     {
         std::ofstream out("../CMeshError.txt");
         meshmixed->Print(out);
+        std::ofstream out2("../PressureCMesh.txt");
+        fMeshVector[3]->Print(out2);
+        std::ofstream out3("../FluxCMesh.txt");
+        fMeshVector[2]->Print(out3);
     }
     meshmixed->NEquations();
     TPZCompMesh *meshweight = fMeshVector[4];
@@ -458,10 +462,10 @@ void TPZPostProcessError::ComputeElementErrors(TPZVec<STATE> &elementerrors)
         for (long el=0; el<nelem; el++) {
             meshmixed->ElementVec()[el] = elpointers[el];
         }
+        meshmixed->ComputeNodElCon();
         TransferAndSumSolution(meshmixed);
         ResetState();
 
-        std::cout << "Solution norm " << Norm(meshmixed->Solution()) << std::endl;
         an.SetStep(color);
 
         // now draw the full mesh with the summed flux
@@ -476,7 +480,6 @@ void TPZPostProcessError::ComputeElementErrors(TPZVec<STATE> &elementerrors)
         fMeshVector[2]->Solution().Zero();
         fMeshVector[3]->Solution().Zero();
         an.Solution().Zero();
-        std::cout << "Solution norm " << Norm(meshmixed->Solution()) << std::endl;
 
     }
 }
@@ -593,19 +596,10 @@ void TPZPostProcessError::TransferAndSumSolution(TPZCompMesh *cmesh)
         long targetseqnum = fConnectSeqNumbers[ic];
         long targetpos = fBlock.Position(targetseqnum);
         
-        if(ic==24)
-        {
-            std::cout << "patch sol " << pos << " " << cmesh->Solution()(pos,0) << " " << cmesh->Solution()(pos+1,0) << std::endl;
-            std::cout << "glob sol " << targetpos << " " << fSolution(targetpos,0) << " " << fSolution(targetpos+1,0) << std::endl;
-        }
         
         for (int eq=0; eq<neq; eq++) {
             // tototototo
             fSolution(targetpos+eq,0) += cmesh->Solution()(pos+eq,0);
-        }
-        if(ic==24)
-        {
-            std::cout << "glob sol " << targetpos << " " << fSolution(targetpos,0) << " " << fSolution(targetpos+1,0) << std::endl;
         }
     }
     cmesh->Solution().Zero();
