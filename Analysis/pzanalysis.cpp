@@ -269,15 +269,6 @@ void TPZAnalysis::AssembleResidual(){
 	long sz = this->Mesh()->NEquations();
 	this->Rhs().Redim(sz,numloadcases);
 	fStructMatrix->Assemble(this->Rhs(),fGuiInterface);
-#ifdef LOG4CXX
-    if(logger->isDebugEnabled())
-    {
-        std::stringstream sout;
-        PrintVectorByElement(sout, fRhs, 1.e-6);
-        //        fRhs.Print("Rhs",sout);
-        LOGPZ_DEBUG(logger,sout.str())
-    }
-#endif
 }//void
 
 void TPZAnalysis::Assemble()
@@ -342,7 +333,7 @@ void TPZAnalysis::Solve() {
         //      STATE normres  = Norm(residual);
         //	cout << "TPZAnalysis::Solve residual : " << normres << " neq " << numeq << endl;
 #ifdef LOG4CXX
-        if (logger->isDebugEnabled() && fSolution.Rows() == fRhs.Rows())
+        if (logger->isDebugEnabled())
         {
             TPZFMatrix<STATE> res2(fRhs);
             fSolver->Matrix()->Residual(fSolution,fRhs,res2);
@@ -414,16 +405,6 @@ void TPZAnalysis::Solve() {
 #endif	
 	fCompMesh->LoadSolution(fSolution);
     fCompMesh->TransferMultiphysicsSolution();
-#ifdef LOG4CXX
-    if(logger->isDebugEnabled())
-    {
-        std::stringstream sout;
-        PrintVectorByElement(sout, fSolution, 1.e-6);
-        //        fRhs.Print("Rhs",sout);
-        LOGPZ_DEBUG(logger,sout.str())
-    }
-#endif
-
 
 }
 
@@ -690,12 +671,6 @@ void TPZAnalysis::Run(std::ostream &out)
 #endif
 }
 
-void TPZAnalysis::DefineGraphMesh(int dim, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames,
-                                  const TPZVec<std::string> &tensornames, const std::string &plotfile) {
-    fTensorNames[dim-1] = tensornames;
-    DefineGraphMesh(dim, scalnames, vecnames, plotfile);
-}
-
 void TPZAnalysis::DefineGraphMesh(int dim, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames, const std::string &plotfile) {
 	
 	int dim1 = dim-1;
@@ -733,7 +708,7 @@ void TPZAnalysis::DefineGraphMesh(int dim, const TPZVec<std::string> &scalnames,
 		fGraphMesh[dim1] = new TPZMVGraphMesh(fCompMesh,dim,matit->second);
 	}
 	else if(filelength-posvtk == 4) {
-		fGraphMesh[dim1] = new TPZVTKGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames,fTensorNames[dim1]);
+		fGraphMesh[dim1] = new TPZVTKGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames);
 	} else {
 		cout << "grafgrid was not created\n";
 		fGraphMesh[dim1] = 0;
