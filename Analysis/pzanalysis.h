@@ -65,6 +65,8 @@ protected:
 	TPZVec<std::string> fScalarNames[3];
 	/** @brief Vector variables names - to post process */
 	TPZVec<std::string> fVectorNames[3];
+    /// Tensor variable names to be post processed
+    TPZVec<std::string> fTensorNames[3];
 	/** @brief Time step */
 	int fStep;
 	/** @brief Time variable which is used in dx output */
@@ -213,6 +215,9 @@ public:
 	
 	/** @brief Calls the appropriate sequence of methods to build a solution or a time stepping sequence */
 	virtual void Run(std::ostream &out = std::cout);
+    /** @brief Define GrapMesh as V3D, DX, MV or VTK depending on extension of the file */
+    virtual void DefineGraphMesh(int dimension, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames,
+                                 const TPZVec<std::string> &tensornames, const std::string &plotfile);
 	/** @brief Define GrapMesh as V3D, DX, MV or VTK depending on extension of the file */
 	virtual void DefineGraphMesh(int dimension, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames, const std::string &plotfile);
 	/** @brief Clean the GrapMesh vector */

@@ -250,6 +250,10 @@ void TPZPostProcMat::SetPostProcessVarIndexList(TPZVec<std::string> & varIndexNa
             
 			k++;
 		}
+        else
+        {
+            std::cout << "variable " << varIndexNames[i] << " not found " << std::endl;
+        }
 	}
     
 	

@@ -176,7 +176,7 @@ void TPZIntelGen<TSHAPE>::GetInterpolationOrder(TPZVec<int> &ord) {
 /**return the preferred order of the polynomial along side iside*/
 template<class TSHAPE>
 int TPZIntelGen<TSHAPE>::PreferredSideOrder(int side) {
-	if(side < TSHAPE::NCornerNodes) return 0;
+	if(side < TSHAPE::NCornerNodes) return 1;
 	if(side<TSHAPE::NSides) {
 		int order =fPreferredOrder;
 		return AdjustPreferredSideOrder(side,order);

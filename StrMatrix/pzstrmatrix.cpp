@@ -409,13 +409,13 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
         sout << "The comparaison results are : consistency check " << globalresult << " write read check " << writereadresult;
         LOGPZ_DEBUG(loggerCheck,sout.str())
     }
-//    if (loggerel->isDebugEnabled())
-//    {
-//        std::stringstream sout;
-//        stiffness.Print("GK = ",sout,EMathematicaInput);
-//        rhs.Print("GR = ", sout,EMathematicaInput);
-//        LOGPZ_DEBUG(loggerel,sout.str())
-//    }
+    if (loggerel->isDebugEnabled())
+    {
+        std::stringstream sout;
+        stiffness.Print("GK = ",sout,EMathematicaInput);
+        rhs.Print("GR = ", sout,EMathematicaInput);
+        LOGPZ_DEBUG(loggerel,sout.str())
+    }
     
 #endif
     
@@ -451,6 +451,28 @@ void TPZStructMatrixOR::Serial_Assemble(TPZFMatrix<STATE> & rhs, TPZAutoPointer<
         assemble.start();
         
         if(!ef.HasDependency()) {
+            
+#ifdef LOG4CXX
+            if(loggerel->isDebugEnabled())
+            {
+                std::stringstream sout;
+                TPZGeoEl *gel = el->Reference();
+                if(gel)
+                {
+                    TPZManVector<REAL> center(gel->Dimension()),xcenter(3,0.);
+                    gel->CenterPoint(gel->NSides()-1, center);
+                    gel->X(center, xcenter);
+                    sout << "Residual for computational element index " << el->Index() << " material id " << gel->MaterialId() << std::endl;
+                    sout << "Residual for geometric element " << gel->Index() << " center " << xcenter << std::endl;
+                }
+                else {
+                    sout << "Residual for computational element without associated geometric element\n";
+                }
+                ef.Print(sout);
+                LOGPZ_DEBUG(loggerel,sout.str())
+            }
+#endif
+
             ef.ComputeDestinationIndices();
             fEquationFilter.Filter(ef.fSourceIndex, ef.fDestinationIndex);
             rhs.AddFel(ef.fMat, ef.fSourceIndex, ef.fDestinationIndex);
@@ -477,6 +499,13 @@ void TPZStructMatrixOR::Serial_Assemble(TPZFMatrix<STATE> & rhs, TPZAutoPointer<
     }
 #endif
     //std::cout << std::endl;
+#ifdef LOG4CXX
+    if (logger->isDebugEnabled()) {
+        std::stringstream sout;
+        rhs.Print("Rhs =",sout,EMathematicaInput);
+        LOGPZ_DEBUG(logger, sout.str())
+    }
+#endif
 }
 
 /// filter out the equations which are out of the range

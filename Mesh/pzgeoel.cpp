@@ -1076,7 +1076,7 @@ void TPZGeoEl::MidSideNodeIndices(int side,TPZVec<long> &indices) const {
 
 /** Defines the refinement pattern. It's used only in TPZGeoElRefPattern objects. */
 void TPZGeoEl::SetRefPattern(TPZAutoPointer<TPZRefPattern> ){
-	PZError << "TPZGeoEl::SetRefPattern ERROR : Should not be called in TPZGeoEl" << endl;
+    std::cout << "TPZGeoEl::SetRefPattern ERROR : Should not be called in TPZGeoEl" << endl;
 }
 
 void TPZGeoEl::Read(TPZStream &buf, void *context) {

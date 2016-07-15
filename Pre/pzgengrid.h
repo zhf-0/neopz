@@ -93,7 +93,7 @@ public:
 	 * @param gr object mesh
 	 * @param side boundary side of the rectangular domain which will be set the boundary condition
 	 * @param bc boundary condition id (material), generally negative
-     * @note Note : range of the side parameter 0 <= side < 4
+     * @note Note : range of the side parameter 4 <= side < 8
      */
     virtual void SetBC(TPZGeoMesh *gr, int side, int bc);
     

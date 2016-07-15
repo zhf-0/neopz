@@ -165,6 +165,24 @@ if(USING_OPENSSL)
 	link_libraries(crypto)
 endif(USING_OPENSSL)
 
+#enabling MATLIB library (used for Plasticity computation)
+option(USING_MATLIB "Whether the Matlib library will be linked in" OFF)
+if(USING_MATLIB)
+	add_definitions(-DUSING_MATLIB)
+	find_path(MATLIB_INCLUDE MatLib.h PATHS ${SEARCH_DIRS})
+	find_library(MATLIB_LIB NAMES libmatlib.dylib PATHS ${SEARCH_DIRS})
+	if(MATLIB_INCLUDE-NOTFOUND)
+		set (MATLIB_INCLUDE "" CACHE PATH "Directory where matlib header files can be found")
+	else()
+		include_directories(${MATLIB_INCLUDE})
+	endif()
+	if(MATLIB_LIB-NOTFOUND)
+		set (MATLIB_LIB "" CACHE PATH "Directory where the matlib library can be found")
+	endif()
+endif(USING_MATLIB)
+
+
+
 #enabling TBB library
 option(USING_TBB "Whether the TBB library will be linked in" OFF)
 if(USING_TBB)
@@ -202,6 +220,8 @@ if(USING_OPENMP)
 		link_libraries(${OPENMP_LIB})
 	endif()
 endif(USING_OPENMP)
+
+
 
 #enabling LIKWID library
 option(USING_LIKWID "Whether the likwid library will be linked in" OFF)

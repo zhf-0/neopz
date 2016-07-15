@@ -705,6 +705,16 @@ void TPZGenGrid::SetBC(TPZGeoMesh*g, int side, int bc) {
 	int elementside = side;
 	for(layer=0; layer<fNumLayers; layer++) {
 		switch(side) {
+            case 0:
+                ielfirst = 0;
+                iellast = ielfirst+1;
+                ielinc = 1;
+                break;
+            case 1:
+                ielfirst = fNx[0]-1;
+                iellast = fNx[0];
+                ielinc = 1;
+                break;
             case 4:
                 ielfirst = layer*fNx[0]*fNx[1];
                 iellast = ielfirst+fNx[0];
@@ -730,7 +740,7 @@ void TPZGenGrid::SetBC(TPZGeoMesh*g, int side, int bc) {
                 DebugStop();
 				return;
 		}
-		if(fElementType == ETriangle) {
+		if(fElementType == ETriangle && side > 3) {
 			elementside -= 1;
 			ielfirst *= 2;
 			iellast *= 2;

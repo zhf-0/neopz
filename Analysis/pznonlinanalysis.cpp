@@ -170,6 +170,7 @@ void TPZNonLinearAnalysis::IterativeProcess(std::ostream &out,REAL tol,int numit
 		fSolution.Redim(0,0);
 		Assemble();
 		Solve();
+        // here fSolution is the solution increment
 		if (linesearch){
 			TPZFMatrix<STATE> nextSol;
 			REAL LineSearchTol = 1e-3 * Norm(fSolution);
@@ -180,9 +181,8 @@ void TPZNonLinearAnalysis::IterativeProcess(std::ostream &out,REAL tol,int numit
 		else{
 			fSolution += prevsol;
 		}
-		
-		prevsol -= fSolution;
-		REAL normDeltaSol = Norm(prevsol);
+        TPZFMatrix<STATE> delu = fSolution-prevsol;
+		REAL normDeltaSol = Norm(delu);
 		prevsol = fSolution;
 		this->LoadSolution(fSolution);
 		this->AssembleResidual();

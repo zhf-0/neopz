@@ -200,6 +200,12 @@ void TPZGraphMesh::SetNames(const TPZVec<std::string>&scalarnames, const TPZVec<
 	fVecNames = vecnames;
 }
 
+void TPZGraphMesh::SetNames(const TPZVec<std::string>&scalarnames, const TPZVec<std::string>&vecnames, const TPZVec<std::string> &tensornames) {
+    fScalarNames = scalarnames;
+    fVecNames = vecnames;
+    fTensorNames = tensornames;
+}
+
 TPZMaterial * TPZGraphMesh::Material() {
 	return fMaterial;
 }
