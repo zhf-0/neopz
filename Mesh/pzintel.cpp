@@ -239,12 +239,9 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
     elvecall.Push(thisside);
     thisside.EqualLevelElementList(elvecall,1,0);
 	int i;
-    // Verify is the side order of all elements is equal to neworder
-    long connectindex = ConnectIndex(MidSideConnectLocId(side));
-    
 	for(i=0; i<elvecall.NElements(); i++)
 	{
-		if(elvecall[i].ConnectIndex() != -1 && elvecall[i].ConnectIndex() == connectindex) elvecequal.Push(elvecall[i]);
+		if(elvecall[i].ConnectIndex() != -1) elvecequal.Push(elvecall[i]);
 	}
 	
 	TPZInterpolatedElement *equal;
@@ -292,7 +289,7 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
             DebugStop();
 			large = thisside.LowerLevelElementList(1);
 		}
-        /// compare the fPreferred Orders of the neighbouring elements
+        /// comparte the fPreferred Orders of the neighbouring elements
 		neworder = ComputeSideOrder(elvecequal);
 		// Verify is the side order of all elements is equal to neworder
         long connectindex = ConnectIndex(MidSideConnectLocId(side));
