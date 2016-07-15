@@ -80,7 +80,6 @@ public:
 	
 	void Print(std::ostream &out);
 	void SetNames(const TPZVec<std::string>&scalarnames, const TPZVec<std::string>&vecnames);
-    void SetNames(const TPZVec<std::string>&scalarnames, const TPZVec<std::string>&vecnames, const TPZVec<std::string> &tensornames);
 	
 protected:
 	/** @brief Computational mesh associated */
@@ -103,7 +102,7 @@ protected:
 	std::ofstream fOutFile;
 	std::string fFileName;
 	/** @brief Vectors of the variables names (scalar and vectorial) */
-	TPZVec<std::string> fScalarNames, fVecNames, fTensorNames;
+	TPZVec<std::string> fScalarNames, fVecNames;
 	virtual void SequenceNodes();
 	
 	TPZCompEl *FindFirstInterpolatedElement(TPZCompMesh *mesh,int dimension);

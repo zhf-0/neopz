@@ -22,8 +22,6 @@ public:
 	
 	/** @brief Constructor for graphical mesh using VTK format */
 	TPZVTKGraphMesh(TPZCompMesh *cmesh, int dimension, TPZMaterial * mat, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames);
-    /** @brief Constructor for graphical mesh using VTK format */
-    TPZVTKGraphMesh(TPZCompMesh *cmesh, int dimension, TPZMaterial * mat, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames, const TPZVec<std::string> &tensornames);
 	/** @brief Copy constructor for graphical mesh using VTK format */
 	TPZVTKGraphMesh(TPZCompMesh *cmesh,int dim,TPZVTKGraphMesh *graph,TPZMaterial * mat);
 	
