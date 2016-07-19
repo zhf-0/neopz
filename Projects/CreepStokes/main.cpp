@@ -7,12 +7,15 @@
 #include <fstream>
 #include <string>
 #include "pzgmesh.h"
+#include "pzstack.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
 #include "pzbndcond.h"
 #include "TPZStokesMaterial.h"
 #include <pzgeoel.h>
 #include "pzgeoelbc.h"
+#include "pzfmatrix.h"
+#include "pzbstrmatrix.h"
 #include <TPZGeoElement.h>
 #include "TPZVTKGeoMesh.h"
 #include "pzbuildmultiphysicsmesh.h"
@@ -25,6 +28,7 @@
 #include "pzstepsolver.h"
 #include "TPZGeoLinear.h"
 #include "tpzgeoelrefpattern.h"
+
 
 //------------------STOKES Creep Of Concrete------------------------
 
@@ -70,6 +74,9 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder);
 
 TPZCompEl *CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,int &index);
 
+
+void Error(TPZCompMesh *hdivmesh, std::ostream &out, int p, int ndiv);
+
 //Variáveis globais do problema:
 
 const int dim = 2; //Dimensão do problema
@@ -96,6 +103,10 @@ void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f);
 
 // definition of v analytic
 void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f);
+
+// definition of sol analytic
+void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& p, TPZFMatrix<STATE>& v);
+
 
 //Função principal do programa:
 
@@ -174,7 +185,8 @@ int main(int argc, char *argv[])
     step.SetDirect(ELU);
     an.SetSolver(step);
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equações
-
+    
+    
 
     //Imprimir Matriz de rigidez Global:
     {
@@ -197,6 +209,15 @@ int main(int argc, char *argv[])
         solucao.Print("Sol",solout,EMathematicaInput);//Imprime na formatação do Mathematica
     }
 #endif
+    
+    //Calculo do erro
+    
+    TPZManVector<REAL,3> Errors(3,0.);
+    ofstream ErroOut("Erro.txt");
+    an.SetExact(sol_exact);
+    an.PostProcessError(Errors,ErroOut);
+    
+    
     
     //Pós-processamento (paraview):
 
@@ -239,7 +260,8 @@ void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
 
 // definition of v analytic
 void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
-    f.resize(2);
+    
+    f.Resize(2);
     
     STATE xv = x[0];
     STATE yv = x[1];
@@ -249,6 +271,25 @@ void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
     f[0] = v_x; // x direction
     f[1] = v_y; // y direction
+    
+}
+
+// Solução analítica - Artigo
+void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& p, TPZFMatrix<STATE>& v){
+    
+    v.Resize(2,1);
+    p.Resize(1);
+    
+    STATE xv = x[0];
+    STATE yv = x[1];
+    
+    STATE v_x =  -2.*((-1. + xv)*(-1. + xv))*(xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
+    STATE v_y =  +2.*(-1. + xv)*xv*(-1. + 2.*xv)*((-1. + yv)*(-1. + yv))*(yv*yv);
+    
+    v(0,0) = v_x; // x direction
+    v(1,0) = v_y; // y direction
+    
+    p[0] = 0.;
     
 }
 
@@ -462,9 +503,9 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Definição do espaço de aprximação:
     
-    //cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
+    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
     
-    cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
+    //cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
     
     
     //Criando elementos com graus de liberdade differentes para cada elemento (descontínuo):
@@ -480,12 +521,12 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->InsertMaterialObject(material); //Insere material na malha
     
     //Dimensões do material (para H1 e descontinuo):
-    //TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
-    //material->SetMaterial(xkin, xcin, xfin);
+    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+    material->SetMaterial(xkin, xcin, xfin);
     
     //Dimensões do material (para HDiv):
-    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
-    material->SetMaterial(xkin, xcin, xfin);
+    //TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
+    //material->SetMaterial(xkin, xcin, xfin);
 
     
     //Condições de contorno:
@@ -617,8 +658,10 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     // Inserindo material na malha
     TPZAutoPointer<TPZFunction<STATE> > fp = new TPZDummyFunction<STATE> (f_source);
     TPZAutoPointer<TPZFunction<STATE> > vp = new TPZDummyFunction<STATE> (v_exact);
+    //TPZAutoPointer<TPZFunction<STATE> > solp = new TPZDummyFunction<STATE> (sol_exact);
     material->SetForcingFunction(fp);
     material->SetForcingFunctionExact(vp);
+    //material->SetForcingFunctionExact(solp);
     cmesh->InsertMaterialObject(material);
     
     
@@ -685,7 +728,9 @@ void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget)
         if (gel->MaterialId() != matfrom) {
             continue;
         }
-        int nsides = gel->NSides();
+        
+        int nsides= gel->NSides();
+        
         TPZGeoElSide gelside(gel,nsides-1);
         TPZStack<TPZCompElSide> celstack;
         gelside.EqualLevelCompElementList(celstack, 0, 0);
@@ -698,3 +743,32 @@ void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget)
     }  
     
 }
+
+//Função Erro (Não utilizada)
+void Error(TPZCompMesh *cmesh, std::ostream &out, int p, int ndiv)
+{
+    DebugStop();
+    long nel = cmesh->NElements();
+    //int dim = cmesh->Dimension();
+    TPZManVector<STATE,10> globalerrors(10,0.);
+    for (long el=0; el<nel; el++) {
+        TPZCompEl *cel = cmesh->ElementVec()[el];
+        TPZManVector<STATE,10> elerror(10,0.);
+        cel->EvaluateError(sol_exact, elerror, NULL);
+        int nerr = elerror.size();
+        for (int i=0; i<nerr; i++) {
+            globalerrors[i] += elerror[i]*elerror[i];
+        }
+        
+    }
+    out << "Errors associated with HDiv space - ordem polinomial = " << p << "- divisoes = " << ndiv << endl;
+    out << "L2 Norm for flux - L2 Norm for divergence - Hdiv Norm for flux " << endl;
+    out <<  setw(16) << sqrt(globalerrors[1]) << setw(25)  << sqrt(globalerrors[2]) << setw(21)  << sqrt(globalerrors[3]) << endl;
+    //
+    //    out << "L2 Norm for flux = "    << sqrt(globalerrors[1]) << endl;
+    //    out << "L2 Norm for divergence = "    << sqrt(globalerrors[2])  <<endl;
+    //    out << "Hdiv Norm for flux = "    << sqrt(globalerrors[3])  <<endl;
+    //
+}
+
+

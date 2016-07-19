@@ -18,6 +18,7 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
+    fk=1;
     
 }
 
@@ -31,6 +32,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
+    fk=1;
 
 }
 
@@ -38,7 +40,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
 
 TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
 {
-
+        fk= mat.fk;
     
 }
 
@@ -127,9 +129,12 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
     int vindex = this->VIndex();
     int pindex = this->PIndex();
     
-    TPZManVector<REAL,3> v_h = datavec[vindex].sol[0];
+   // TPZManVector<REAL,3> v_h = datavec[vindex].sol[0];
+   // REAL p_h = datavec[pindex].sol[0][0];
     
-    REAL p_h = datavec[pindex].sol[0][0];
+    TPZManVector<STATE> v_h = datavec[vindex].sol[0];
+    TPZManVector<STATE> p_h = datavec[pindex].sol[0];
+    
     
     Solout.Resize(this->NSolutionVariables(var));
     
@@ -137,7 +142,7 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
         
         case 0: //Pressure
         {
-            Solout[0] = p_h;
+            Solout[0] = p_h[0];
         }
             break;
         
@@ -590,6 +595,8 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
             break;
         case 3: //Contribuicao ponto
         {
+            
+            
             STATE p_D = bc.Val2()(0,0);
 
             
@@ -698,6 +705,8 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 
 void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
    
+    
+    
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space for datavecleft
     int nrefleft =  datavecleft.size();
@@ -1202,3 +1211,38 @@ void TPZStokesMaterial::FillVecShapeIndex(TPZMaterialData &data)
     }
 }
 
+
+
+void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors)
+{
+    
+    
+    //                             TPZVec<REAL> &x,TPZVec<STATE> &u,
+    //                             TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &/*flux*/,
+    //                             TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values) {
+    
+    errors.Resize(NEvalErrors());
+    errors.Fill(0.0);
+    TPZManVector<STATE> Velocity, Pressure;
+    Velocity.Fill(0.0);
+    Pressure.Fill(0.0);
+    
+    this->Solution(data,VariableIndex("Velocity"), Velocity);
+    this->Solution(data,VariableIndex("Pressure"), Pressure);
+    
+    int id;
+    
+    //values[1] : eror em norma L2
+    STATE diff = fabs(Pressure[0] - u_exact[0]);
+    errors[1]  = diff*diff;
+    
+    
+    //values[2] : erro em semi norma H1
+    errors[2] = 0.;
+    for(id=0; id<Dimension(); id++) {
+        diff = fabs(Velocity[id] - du_exact(id,0));
+        errors[2]  += fabs(fk)*diff*diff;
+    }
+    //values[0] : erro em norma H1 <=> norma Energia
+    errors[0]  = errors[1]+errors[2];
+}

@@ -27,6 +27,9 @@ private:
     /// viscosidade
     STATE fViscosity;
     
+    /** @brief Medium permeability. Coeficient which multiplies the gradient operator*/
+    REAL fk;
+    
     /// termo contrario a beta na sua formulacao (para ser conforme a literatura)
     STATE fTheta;
 
@@ -66,13 +69,17 @@ public:
     
     void FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData> &datavec);
     
+    void SetPermeability(REAL perm) {
+        fk = perm;
+    }
+    
     /** returns the name of the material */
     std::string Name() {
         return "TPZStokesMaterial";
     }
     
     /** returns the integrable dimension of the material */
-    int Dimension() const {return 2;}
+    int Dimension() const {return fDimension;}
     
     /** returns the number of state variables associated with the material */
     int NStateVariables() {return 4;} // for hdiv are 3, plus pressure, so 3 + 1 = 4 itapopo
@@ -238,6 +245,18 @@ public:
      * Read the element data from a stream
      */
     void Read(TPZStream &buf, void *context);
+    
+    
+    virtual int NEvalErrors() {return 6;}
+    
+    /**
+     * It computes errors contribution in differents spaces.
+     * @param data[in] stores all input data
+     * @param weight[in] is the weight of the integration rule
+     * @param ef[out] is the load vector
+     * @param bc[in] is the boundary condition material
+     */
+    virtual void Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors);
     
     
     
