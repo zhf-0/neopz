@@ -86,7 +86,7 @@ const int matInterface = 4; //Material do elemento de interface
 const int matIntBCbott=-11, matIntBCtop=-12, matIntBCleft=-13, matIntBCright=-14; //Materiais das condições de contorno (elementos de interface)
 const int matPoint =-5; //Materia de um ponto
 const int dirichlet = 0, neumann = 1, mixed = 2, pointtype=3; //Condições de contorno do problema ->default Dirichlet na esquerda e na direita
-const REAL visco=1.,theta=1.; //Coeficientes: viscosidade, fator simetria
+const REAL visco=1.,theta=-1.; //Coeficientes: viscosidade, fator simetria
 
 const int quadmat1 = 1; //Parte inferior do quadrado
 const int quadmat2 = 2; //Parte superior do quadrado
@@ -120,10 +120,10 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
-    double hx=2.,hy=1.; //Dimensões em x e y do domínio
+    double hx=1.,hy=1.; //Dimensões em x e y do domínio
     int nelx=2, nely=1; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 1; //Ordem polinomial de aproximação
+    int pOrder = 3; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     TPZStepSolver<STATE> step;
     step.SetDirect(ELU);
     an.SetSolver(step);
-    an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equações
+    an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
     
 
@@ -200,6 +200,14 @@ int main(int argc, char *argv[])
         an.Solution().Print("Alpha = ",fileAlpha,EMathematicaInput);
     }
     an.Solve();
+
+    //    REAL a[] = {-4.94792e-18, 4.16667e-18, -4.94792e-18,-3.19038e-33,4.94792e-18,3.14852e-32,4.94792e-18,4.16667e-18, -4.94792e-18, -4.16667e-18, 4.94792e-18,-4.16667e-18,1.54074e-49, 0.216146, -0.216146, 1.0689e-15,-0.208333,-0.0078125, 0.0078125, 0.208333};
+//    int size = an.Solution().Rows();
+//    for (int i = 0; i < size; i++) {
+//        an.Solution()(i,0) = a[i];
+//    }
+//    an.LoadSolution();
+
     
 #ifdef PZDEBUG
     //Imprimindo vetor solução:
@@ -261,7 +269,7 @@ void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
 // definition of v analytic
 void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
-    f.Resize(2);
+    f.resize(2);
     
     STATE xv = x[0];
     STATE yv = x[1];
@@ -573,7 +581,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     
     // @omar::
     
-    //pOrder--; // Space restriction apapapa
+    pOrder--; // Space restriction apapapa
     
     //Criando malha computacional:
     

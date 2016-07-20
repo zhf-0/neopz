@@ -79,7 +79,7 @@ public:
     }
     
     /** returns the integrable dimension of the material */
-    int Dimension() const {return fDimension;}
+    int Dimension() const {return 2;}
     
     /** returns the number of state variables associated with the material */
     int NStateVariables() {return 4;} // for hdiv are 3, plus pressure, so 3 + 1 = 4 itapopo

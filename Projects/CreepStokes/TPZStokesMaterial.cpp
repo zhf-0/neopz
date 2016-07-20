@@ -18,7 +18,7 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
-    fk=1;
+    //fk=1;
     
 }
 
@@ -32,7 +32,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
-    fk=1;
+    //fk=1;
 
 }
 
@@ -40,7 +40,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
 
 TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
 {
-        fk= mat.fk;
+       //fk= mat.fk;
     
 }
 
@@ -129,11 +129,11 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
     int vindex = this->VIndex();
     int pindex = this->PIndex();
     
-   // TPZManVector<REAL,3> v_h = datavec[vindex].sol[0];
-   // REAL p_h = datavec[pindex].sol[0][0];
+    TPZManVector<REAL,3> v_h = datavec[vindex].sol[0];
+    REAL p_h = datavec[pindex].sol[0][0];
     
-    TPZManVector<STATE> v_h = datavec[vindex].sol[0];
-    TPZManVector<STATE> p_h = datavec[pindex].sol[0];
+   // TPZManVector<STATE> v_h = datavec[vindex].sol[0];
+   // TPZManVector<STATE> p_h = datavec[pindex].sol[0];
     
     
     Solout.Resize(this->NSolutionVariables(var));
@@ -142,7 +142,7 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
         
         case 0: //Pressure
         {
-            Solout[0] = p_h[0];
+            Solout[0] = p_h;
         }
             break;
         
@@ -312,6 +312,7 @@ void TPZStokesMaterial::FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<S
 
 void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
  
+    
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
     int nref =  datavec.size();
@@ -705,7 +706,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 
 void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
    
-    
+
     
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space for datavecleft
@@ -864,7 +865,6 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
             
             
             
-            std::cout<<"____"<<std::endl;
             
             
             STATE fact = (1./2.) * weight * fViscosity * Inner(phiV1ni,phiP1j);
@@ -1023,11 +1023,14 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
     
 
     
+    //std::cout<<"____"<<std::endl;
     
 }
 
 
 void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+    
+    
     
     
 #ifdef PZDEBUG
