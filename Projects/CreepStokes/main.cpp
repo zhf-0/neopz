@@ -120,8 +120,10 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
+    int h_level = 25;
+    
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
-    int nelx=16, nely=16; //Número de elementos em x e y
+    int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
     int pOrder = 2; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
@@ -225,7 +227,7 @@ int main(int argc, char *argv[])
     
     //Calculo do erro
     
-    TPZManVector<REAL,3> Errors(3,0.);
+    TPZManVector<REAL,3> Errors;
     ofstream ErroOut("Erro.txt");
     an.SetExact(sol_exact);
     an.PostProcessError(Errors,ErroOut);

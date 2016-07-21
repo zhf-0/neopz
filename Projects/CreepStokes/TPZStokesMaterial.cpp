@@ -1243,17 +1243,15 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     TPZFNMatrix<2,STATE> dsolxy(Dimension(),Dimension());
     TPZAxesTools<STATE>::Axes2XYZ(dsol, dsolxy, data[vindex].axes);
 
-    
-//    values[1] : eror em norma L2
-//    STATE diff = fabs(Pressure[0] - u_exact[2]);
-//    errors[1]  = diff*diff;
+    int shift = 3;
+    // velocity
     
     //values[2] : erro em semi norma H1
     REAL diff;
     errors[1] = 0.;
     for(int i=0; i<Dimension(); i++) {
-            diff = Velocity[i] - u_exact[i];
-            errors[1]  += diff*diff;
+        diff = Velocity[i] - u_exact[i];
+        errors[1]  += diff*diff;
     }
     
     //values[2] : erro em semi norma H1
@@ -1272,8 +1270,13 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     errors[0]  = errors[1]+errors[2];
     
     
-    ///L2 norm
-//    values[1] = (u[0] - u_exact[0])*(u[0] - u_exact[0]);
+    // pressure
+    
+    /// values[1] : eror em norma L2
+    diff = Pressure[0] - u_exact[2];
+    errors[1+shift]  = diff*diff;
+    
+    // pressure gradient error ....
     
     
 }
