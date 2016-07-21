@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     //Dados do problema:
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
-    int nelx=2, nely=2; //Número de elementos em x e y
+    int nelx=16, nely=16; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
     int pOrder = 2; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::AddConnects(meshvector, cmesh_m);
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
     cmesh_m->LoadReferences();
+    
     AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
     AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
     AddMultiphysicsInterfaces(*cmesh_m,matIntBCtop,matBCtop);
@@ -177,9 +178,10 @@ int main(int argc, char *argv[])
     
     //Resolvendo o Sistema:
     
-    bool optimizeBandwidth = false; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
+    bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso nao simetrico ***
+    matskl.SetNumThreads(2);
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
     step.SetDirect(ELU);
@@ -187,7 +189,7 @@ int main(int argc, char *argv[])
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
     
-
+#ifdef PZDEBUG
     //Imprimir Matriz de rigidez Global:
     {
         std::ofstream filestiff("stiffness.txt");
@@ -199,6 +201,9 @@ int main(int argc, char *argv[])
         std::ofstream fileAlpha("alpha.txt");
         an.Solution().Print("Alpha = ",fileAlpha,EMathematicaInput);
     }
+#endif
+    
+    
     an.Solve();
 
     //    REAL a[] = {-4.94792e-18, 4.16667e-18, -4.94792e-18,-3.19038e-33,4.94792e-18,3.14852e-32,4.94792e-18,4.16667e-18, -4.94792e-18, -4.16667e-18, 4.94792e-18,-4.16667e-18,1.54074e-49, 0.216146, -0.216146, 1.0689e-15,-0.208333,-0.0078125, 0.0078125, 0.208333};
@@ -283,21 +288,40 @@ void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
 }
 
 // Solução analítica - Artigo
-void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& p, TPZFMatrix<STATE>& v){
+void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& dsol){
     
-    v.Resize(2,1);
-    p.Resize(1);
+    dsol.Resize(2,2);
+    sol.Resize(3);
     
     STATE xv = x[0];
     STATE yv = x[1];
     
     STATE v_x =  -2.*((-1. + xv)*(-1. + xv))*(xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
     STATE v_y =  +2.*(-1. + xv)*xv*(-1. + 2.*xv)*((-1. + yv)*(-1. + yv))*(yv*yv);
+    STATE pressure= 0.;
     
-    v(0,0) = v_x; // x direction
-    v(1,0) = v_y; // y direction
+    sol[0]=v_x;
+    sol[1]=v_y;
+    sol[2]=pressure;
+
     
-    p[0] = 0.;
+//    // old
+//    // x direction
+//    dsol(0,0)= -4*(-1 + xv)*(-1 + xv)*xv*(-1 + yv)*yv*(-1 + 2*yv) - 4*(-1 + xv)*xv*xv*(-1 + yv)*yv*(-1 + 2*yv);
+//    dsol(0,1)=-4*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*yv - 2*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*(-1 + 2*yv) - 2*(-1 + xv)*(-1 + xv)*xv*xv*yv*(-1 + 2*yv);
+//    
+//    // y direction
+//    dsol(1,0)= 4*(-1 + xv)*xv*(-1 + yv)*(-1 + yv)*yv*yv + 2*(-1 + xv)*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv + 2*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv;
+//    dsol(1,1)= 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv + 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*yv*yv;
+
+    
+    // x direction
+    dsol(0,0)= -4*(-1 + xv)*(-1 + xv)*xv*(-1 + yv)*yv*(-1 + 2*yv) - 4*(-1 + xv)*xv*xv*(-1 + yv)*yv*(-1 + 2*yv);
+    dsol(0,1)= 4*(-1 + xv)*xv*(-1 + yv)*(-1 + yv)*yv*yv + 2*(-1 + xv)*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv + 2*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv;
+    
+    // y direction
+    dsol(1,0)= -4*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*yv - 2*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*(-1 + 2*yv) - 2*(-1 + xv)*(-1 + xv)*xv*xv*yv*(-1 + 2*yv);
+    dsol(1,1)= 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv + 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*yv*yv;
     
 }
 

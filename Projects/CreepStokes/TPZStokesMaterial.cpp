@@ -1117,7 +1117,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
     
 
    
-    std::cout<<"__"<<std::endl;
+//    std::cout<<"__"<<std::endl;
 
 }
 
@@ -1219,6 +1219,7 @@ void TPZStokesMaterial::FillVecShapeIndex(TPZMaterialData &data)
 void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors)
 {
     
+    // @omar:: ate this point just velocity norms
     
     //                             TPZVec<REAL> &x,TPZVec<STATE> &u,
     //                             TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &/*flux*/,
@@ -1235,24 +1236,37 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     int vindex = this->VIndex();
     
-    TPZFMatrix<REAL> dudx(Dimension(),1);
+    TPZFMatrix<REAL> dudx(Dimension(),Dimension());
+    TPZFMatrix<REAL> &dsol = data[vindex].dsol[0];
+    //std::cout<<dsol<<std::endl;
     
-    for (int i=0; i<Dimension(); i++) {
-        dudx(i,0)=data[vindex].dsol[0][i];
+    TPZFNMatrix<2,STATE> dsolxy(Dimension(),Dimension());
+    TPZAxesTools<STATE>::Axes2XYZ(dsol, dsolxy, data[vindex].axes);
+
+    
+//    values[1] : eror em norma L2
+//    STATE diff = fabs(Pressure[0] - u_exact[2]);
+//    errors[1]  = diff*diff;
+    
+    //values[2] : erro em semi norma H1
+    REAL diff;
+    errors[1] = 0.;
+    for(int i=0; i<Dimension(); i++) {
+            diff = Velocity[i] - u_exact[i];
+            errors[1]  += diff*diff;
     }
-    
-    //values[1] : eror em norma L2
-    STATE diff = fabs(Pressure[0] - u_exact[0]);
-    errors[1]  = diff*diff;
-    
     
     //values[2] : erro em semi norma H1
     errors[2] = 0.;
-    for(int id=0; id<Dimension(); id++) {
-        diff = fabs(dudx(id,0) - du_exact(id,0));
-        errors[2]  += fabs(fk)*diff*diff;
+    TPZFMatrix<STATE> S(Dimension(),Dimension(),0.0);
+    for(int i=0; i<Dimension(); i++) {
+        for(int j=0; j<Dimension(); j++) {
+            S(i,j) = dsolxy(i,j) - du_exact(i,j);
+        }
     }
     
+    diff = Inner(S, S);
+    errors[2]  += diff;
     
     //values[0] : erro em norma H1 <=> norma Energia
     errors[0]  = errors[1]+errors[2];
