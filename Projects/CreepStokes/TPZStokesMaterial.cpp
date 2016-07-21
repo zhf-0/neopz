@@ -18,7 +18,7 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDisc
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
-    //fk=1;
+    fk=1;
     
 }
 
@@ -32,7 +32,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
-    //fk=1;
+    fk=1;
 
 }
 
@@ -40,7 +40,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, REAL viscosity, R
 
 TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
 {
-       //fk= mat.fk;
+       fk= mat.fk;
     
 }
 
@@ -1233,7 +1233,13 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     this->Solution(data,VariableIndex("Velocity"), Velocity);
     this->Solution(data,VariableIndex("Pressure"), Pressure);
     
-    int id;
+    int vindex = this->VIndex();
+    
+    TPZFMatrix<REAL> dudx(Dimension(),1);
+    
+    for (int i=0; i<Dimension(); i++) {
+        dudx(i,0)=data[vindex].dsol[0][i];
+    }
     
     //values[1] : eror em norma L2
     STATE diff = fabs(Pressure[0] - u_exact[0]);
@@ -1242,10 +1248,18 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     //values[2] : erro em semi norma H1
     errors[2] = 0.;
-    for(id=0; id<Dimension(); id++) {
-        diff = fabs(Velocity[id] - du_exact(id,0));
+    for(int id=0; id<Dimension(); id++) {
+        diff = fabs(dudx(id,0) - du_exact(id,0));
         errors[2]  += fabs(fk)*diff*diff;
     }
+    
+    
     //values[0] : erro em norma H1 <=> norma Energia
     errors[0]  = errors[1]+errors[2];
+    
+    
+    ///L2 norm
+//    values[1] = (u[0] - u_exact[0])*(u[0] - u_exact[0]);
+    
+    
 }

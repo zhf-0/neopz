@@ -121,9 +121,9 @@ int main(int argc, char *argv[])
     //Dados do problema:
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
-    int nelx=2, nely=1; //Número de elementos em x e y
+    int nelx=2, nely=2; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 3; //Ordem polinomial de aproximação
+    int pOrder = 2; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
@@ -464,12 +464,36 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     }
     
     // Criando e inserindo elemento de interfação:
-    TPZVec<long> nodind3(2);
+//    TPZVec<long> nodind3(2);
+//    
+//    nodind3[0]=1;
+//    nodind3[1]=4;
+//    
+//    gmesh->CreateGeoElement(EOned, nodind3, matInterface, index); //Criando elemento de interface (GeoElement)
     
-    nodind3[0]=1;
-    nodind3[1]=4;
     
-    gmesh->CreateGeoElement(EOned, nodind3, matInterface, index); //Criando elemento de interface (GeoElement)
+    //Criando interface (Geralizado):
+    
+    TPZVec<long> nodint(2);
+    for(i = 0; i < (ny - 1); i++){
+        for(j = 0; j < (nx - 1); j++){
+            if(j>0&&j<(nx-1)){
+                nodint[0]=j+nx*i;
+                nodint[1]=j+nx*(i+1);
+                gmesh->CreateGeoElement(EOned, nodint, matInterface, index); //Criando elemento de interface (GeoElement)
+                
+            }
+            if(i>0&&j<(ny-1)){
+                nodint[0]=j+ny*i;
+                nodint[1]=j+ny*i+1;
+                gmesh->CreateGeoElement(EOned, nodint, matInterface, index); //Criando elemento de interface (GeoElement)
+            
+            }
+    
+        }
+    }
+    
+    
     //new TPZGeoElRefPattern< pzgeom::TPZGeoLinear > (nodind3,matInterface,*gmesh); //Criando elemento de interface (RefPattern)
     id++;
     
