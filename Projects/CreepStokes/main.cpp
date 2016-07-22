@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
-    int h_level = 25;
+    int h_level = 2;
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y

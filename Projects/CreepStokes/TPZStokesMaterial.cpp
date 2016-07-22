@@ -499,7 +499,6 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     }
 #endif
     
-  
     
     const int vindex = this->VIndex();
     const int pindex = this->PIndex();
@@ -535,7 +534,6 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     TPZManVector<STATE> v_h = datavec[vindex].sol[0];
     TPZManVector<STATE> p_h = datavec[pindex].sol[0];
     
-    
     TPZFNMatrix<220,REAL> dphiVx(fDimension,dphiV.Cols());
     TPZAxesTools<REAL>::Axes2XYZ(dphiV, dphiVx, datavec[vindex].axes);
     
@@ -544,15 +542,22 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     nshapeP = phiP.Rows();
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
+    //Adaptação para Hdiv
+    int ekr= ek.Rows();
+
+    
+    int gy=v_h.size();
+    
     TPZFNMatrix<9> phiVi(fDimension,1), phiVj(fDimension,1), phiPi(fDimension,1),phiPj(fDimension,1);
     
     switch (bc.Type()) {
         case 0: //Dirichlet for continuous formulation
         {
+            
             STATE vx_D = bc.Val2()(0,0);
             STATE vy_D = bc.Val2()(1,0);
             
-            for(int i = 0; i < nshapeV; i++ )
+            for(int i = 0; i < ekr; i++ )
             {
                 int iphi = datavec[vindex].fVecShapeIndex[i].second;
                 int ivec = datavec[vindex].fVecShapeIndex[i].first;
@@ -574,9 +579,18 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 //std::cout<<"____"<<std::endl;
                 
                 
-                ef(i,0) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
+                //Adaptação para Hdiv
                 
-                for(int j = 0; j < nshapeV; j++){
+                STATE factef=0.0;
+                for(int is=0; is<gy ; is++){
+                    factef += (v_h[is] - vx_D) * phiVi(is,0);
+                }
+
+                ef(i,0) += weight * gBigNumber * factef;
+
+//                    ef(i,0) += weight * gBigNumber * ( (v_h[0] - vx_D) * phiVi(0,0) + (v_h[1] - vy_D) * phiVi(1,0) );
+                
+                for(int j = 0; j < ekr; j++){
                     int jphi = datavec[vindex].fVecShapeIndex[j].second;
                     int jvec = datavec[vindex].fVecShapeIndex[j].first;
                  
@@ -586,7 +600,16 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                         phiVj(e,0)=datavec[vindex].fNormalVec(e,jvec)*phiV(jphi,0);
                     }
                     
-                    ek(i,j) += weight * gBigNumber * (phiVj(0,0) * phiVi(0,0) + phiVj(1,0) * phiVi(1,0) );
+                    //Adaptação para Hdiv
+                    
+                    STATE factek=0.0;
+                    for(int is=0; is<gy ; is++){
+                        factek += phiVj(is,0) * phiVi(is,0);
+                    }
+                    
+                    ek(i,j) += weight * gBigNumber * factek;
+                    
+//                    ek(i,j) += weight * gBigNumber * (phiVj(0,0) * phiVi(0,0) + phiVj(1,0) * phiVi(1,0) );
                     
                 }
                 
@@ -1240,7 +1263,10 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     TPZFMatrix<REAL> &dsol = data[vindex].dsol[0];
     //std::cout<<dsol<<std::endl;
     
-    TPZFNMatrix<2,STATE> dsolxy(Dimension(),Dimension());
+    //Adaptação feita para Hdiv
+    dsol.Resize(Dimension(),Dimension());
+    
+    TPZFNMatrix<2,STATE> dsolxy(3,3);
     TPZAxesTools<STATE>::Axes2XYZ(dsol, dsolxy, data[vindex].axes);
 
     int shift = 3;
