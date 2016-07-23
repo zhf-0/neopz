@@ -68,10 +68,10 @@ public:
 	struct TPZDepend
 	{
 		long			fDepConnectIndex;
-		TPZFNMatrix<50,REAL> fDepMatrix;
+		TPZFNMatrix<50,STATE> fDepMatrix;
 		TPZDepend		*fNext;
 		
-		TPZDepend(long DepConnectIndex,TPZFMatrix<REAL> &depmat,long ipos,long jpos, int isize, int jsize);
+		TPZDepend(long DepConnectIndex,TPZFMatrix<STATE> &depmat,long ipos,long jpos, int isize, int jsize);
 		
 		TPZDepend(const TPZDepend &copy);
 		TPZDepend(long connectindex);

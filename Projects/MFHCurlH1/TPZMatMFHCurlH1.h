@@ -217,6 +217,8 @@ public:
     
     /** @brief Returns the solution associated with the var index based on the finite element approximation */
     virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+    
+    virtual void Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout);
 };
 
 #endif

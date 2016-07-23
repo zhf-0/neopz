@@ -145,7 +145,7 @@ TPZConnect::TPZDepend *TPZConnect::AddDependency(long myindex, long dependindex,
 		connect->fNext = fDependList;
 		fDependList = connect;
 	} else {
-		TPZFNMatrix<50,REAL> temp(isize,jsize);
+		TPZFNMatrix<50,STATE> temp(isize,jsize);
 		int i,j;
 		for(i=0; i<isize; i++) for(j=0; j<jsize; j++) temp(i,j) = depmat(ipos+i,jpos+j);
 		
