@@ -23,6 +23,7 @@ TPZCondensedCompEl::TPZCondensedCompEl(TPZCompEl *ref)
     TPZGeoEl *gel = ref->Reference();
     if (gel) {
         SetReference(gel->Index());
+        gel->ResetReference();
     }
     SetIndex(ref->Index());
     fMesh->ElementVec()[fIndex] = this;
@@ -71,6 +72,10 @@ void TPZCondensedCompEl::Unwrap()
     int ncon = NConnects();
     for (int ic=0; ic<ncon ; ic++) {
         Connect(ic).SetCondensed(false);
+    }
+    TPZGeoEl *ref = Reference();
+    if (ref) {
+        ref->ResetReference();
     }
     delete this;
 }

@@ -89,6 +89,9 @@ class TPZMat1dLin : public TPZMaterial{
 		TPZMaterial::Contribute(data,weight,ef);
 	}
 	
+    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef) {
+    }
+
 	/** @brief Computes contribution to the stiffness matrix and right hand
 	 * side at the integration point of a boundary*/
 	virtual void ContributeBC(TPZMaterialData &data,

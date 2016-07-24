@@ -314,6 +314,7 @@ TPZBlock<TVar>::operator()(const int bRow,const int bCol,const int r,const int c
 	int row(r),col(c);
 	if(bRow <0 || bRow >= MaxBlocks || bCol <0 || bCol >= MaxBlocks || row < 0 || row >= fBlock[bRow].dim) {
 		cout << "TPZBlock::operator() indexes out of range\n";
+        cout << "MaxBlock = " << MaxBlocks << " blockdim " << fBlock[bRow].dim << std::endl;
 		DebugStop();
 	}
 	row += fBlock[bRow].pos;

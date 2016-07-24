@@ -63,6 +63,7 @@ TPZCompEl *CreateNoElement(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
         LOGPZ_WARN(logger, sout.str())
     }
 #endif
+    DebugStop();
     index = -1;
 	return NULL;
 }
@@ -405,6 +406,81 @@ void TPZCreateApproximationSpace::SetAllCreateFunctionsHDiv(int dimension){
      pzgeom::TPZGeoPyramid::fp = CreateHDivPyramEl;
      pzgeom::TPZGeoCube::fp = CreateHDivCubeEl;
      */
+}
+
+/// Create tensor type elements
+#include "TPZCompElSymTensor.h"
+
+
+void TPZCreateApproximationSpace::SetAllCreateFunctionsSymTensor(int dimension){
+    
+    switch (dimension) {
+        case 1:
+            DebugStop();
+            break;
+        case 2:
+            fp[EPoint] = CreateNoElement;
+            fp[EOned] = CreateSyMTensorBoundLinearEl;
+            fp[ETriangle] = CreateSymTensorTriangleEl;
+            fp[EQuadrilateral] = CreateNoElement;
+            fp[ETetraedro] = CreateNoElement;
+            fp[EPiramide] = CreateNoElement;
+            fp[EPrisma] = CreateNoElement;
+            fp[ECube] = CreateNoElement;
+            break;
+        case 3:
+            DebugStop();
+            break;
+        default:
+            DebugStop();
+            break;
+    }
+    
+    /*
+     pzgeom::TPZGeoPoint::fp =  CreateHDivPointEl;
+     pzgeom::TPZGeoLinear::fp =  CreateHDivLinearEl;
+     pzgeom::TPZGeoQuad::fp = CreateHDivQuadEl;
+     pzgeom::TPZGeoTriangle::fp =  CreateHDivTriangleEl;
+     pzgeom::TPZGeoPrism::fp = CreateHDivPrismEl;
+     pzgeom::TPZGeoTetrahedra::fp = CreateHDivTetraEl;
+     pzgeom::TPZGeoPyramid::fp = CreateHDivPyramEl;
+     pzgeom::TPZGeoCube::fp = CreateHDivCubeEl;
+     */
+}
+
+#include "TPZSBFemVolume.h"
+
+void TPZCreateApproximationSpace::SetAllCreateFunctionsSBFem(int dimension){
+    
+    switch (dimension) {
+        case 1:
+            DebugStop();
+            break;
+        case 2:
+            fp[EPoint] = CreatePointEl;
+            fp[EOned] = CreateLinearEl;
+            fp[ETriangle] = CreateNoElement;
+            fp[EQuadrilateral] = CreateSBFemCompEl;
+            fp[ETetraedro] = CreateNoElement;
+            fp[EPiramide] = CreateNoElement;
+            fp[EPrisma] = CreateNoElement;
+            fp[ECube] = CreateNoElement;
+            break;
+        case 3:
+            fp[EPoint] = CreatePointEl;
+            fp[EOned] = CreateLinearEl;
+            fp[ETriangle] = CreateTriangleEl;
+            fp[EQuadrilateral] = CreateQuadEl;
+            fp[ETetraedro] = CreateNoElement;
+            fp[EPiramide] = CreateNoElement;
+            fp[EPrisma] = CreateSBFemCompEl;
+            fp[ECube] = CreateSBFemCompEl;
+            DebugStop();
+            break;
+        default:
+            DebugStop();
+            break;
+    }
 }
 
 #include "pzhdivfull.h"

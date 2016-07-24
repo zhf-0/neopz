@@ -46,6 +46,10 @@
 
 class TPZMatElasticity2D : public TPZMaterial {
     
+public:
+    
+    enum MBCType {EDirichletXY, ENeumannXY,EMixedXY,EDirichletXYIncremental,ENeumannNormal,EMixedNormal,EMixedNormal2,EDirichletX,EDirichletY};
+    
 protected:
     
     /** @brief Forcing vector */
@@ -97,7 +101,12 @@ public:
     virtual ~TPZMatElasticity2D();
     
     /** @brief Copy constructor */
-    TPZMatElasticity2D(const TPZMatElasticity2D &cp);    
+    TPZMatElasticity2D(const TPZMatElasticity2D &cp);
+    
+    virtual TPZMaterial *NewMaterial() 
+    {
+        return new TPZMatElasticity2D(*this);
+    }
     
     virtual void Print(std::ostream & out);
     
@@ -221,19 +230,28 @@ public:
     virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef);
     
+    void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+
+    
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc);
     
+    void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek,
+                      TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+
     virtual int VariableIndex(const std::string &name);
     
     virtual int NSolutionVariables(int var);
     
     //public:
     virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+    virtual void Solution(TPZVec<TPZMaterialData> &data, int var, TPZVec<STATE> &Solout);
     virtual void Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * Left, TPZCompEl * Right) {
         DebugStop();
     }
     
+    virtual void Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors);
+
     /**
      * Save the element data to a stream
      */

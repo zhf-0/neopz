@@ -1042,8 +1042,17 @@ void TPZGeoElSide::Normal(TPZVec<REAL> &point, TPZGeoEl *LeftEl, TPZGeoEl *Right
 	REAL vecnorm = sdot(vec, vec);
 	if(vecnorm < 1.e-10)
 	{
-		LOGPZ_ERROR(logger,"Left and Right element centers coincide")
-        vec[0]=1.;
+        std::cout << __PRETTY_FUNCTION__ << " Normal cannot be computed : Left and Right element centers coincide\n";
+        if (InterfaceDimension == 1) {
+            normal[0] = -axes(0,1);
+            normal[1] = axes(0,0);
+            return;
+        }
+        else
+        {
+            std::cout << __PRETTY_FUNCTION__ << "PLEASE IMPLEMENT ME\n";
+            DebugStop();
+        }
 	}
 	
 	

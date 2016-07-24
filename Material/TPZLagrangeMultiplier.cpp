@@ -73,16 +73,14 @@ void TPZLagrangeMultiplier::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
  */
 void TPZLagrangeMultiplier::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-	TPZFMatrix<REAL> &dphiLdAxes = dataleft.dphix;
-	TPZFMatrix<REAL> &dphiRdAxes = dataright.dphix;
+    if(dataleft.fVecShapeIndex.size())
+    {
+        ContributeInterfaceVecLeft(data, dataleft, dataright, weight, ek, ef);
+        return;
+    }
 	TPZFMatrix<REAL> &phiL = dataleft.phi;
 	TPZFMatrix<REAL> &phiR = dataright.phi;
 	
-	TPZFNMatrix<660> dphiL, dphiR;
-	TPZAxesTools<REAL>::Axes2XYZ(dphiLdAxes, dphiL, dataleft.axes);
-	TPZAxesTools<REAL>::Axes2XYZ(dphiRdAxes, dphiR, dataright.axes);
-	
-
 	int nrowl = phiL.Rows();
 	int nrowr = phiR.Rows();
     int secondblock = ek.Rows()-phiR.Rows();
@@ -104,6 +102,35 @@ void TPZLagrangeMultiplier::ContributeInterface(TPZMaterialData &data, TPZMateri
     
 }
 
+void TPZLagrangeMultiplier::ContributeInterfaceVecLeft(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+{
+    TPZFMatrix<REAL> &phiL = dataleft.phi;
+    TPZFMatrix<REAL> &phiR = dataright.phi;
+    
+    int nrowl = dataleft.fVecShapeIndex.size();
+    int nrowr = phiR.Rows()*fNStateVariables;
+    
+#ifdef DEBUG
+    if (ek.Rows() != nrowl+nrowr) {
+        DebugStop();
+    }
+#endif
+    int secondblock = nrowl;
+    int il,jl,ir,jr;
+    // 3) phi_I_left, phi_J_right
+    for(il=0; il<nrowl; il++) {
+        int ivec = dataleft.fVecShapeIndex[il].first;
+        int iphindex = dataleft.fVecShapeIndex[il].second;
+        TPZManVector<REAL,3> vec(fDimension,0);
+        for(int i=0; i< fDimension; i++) vec[i] = dataleft.fNormalVec(i,ivec);
+        for(jr=0; jr<nrowr; jr++) {
+            REAL val = weight * fMultiplier * (phiL(iphindex) *vec[jr%fDimension] * phiR(jr/fDimension));
+            ek(il,jr+secondblock) += val;
+            ek(jr+secondblock,il) += val;
+        }
+    }
+}
+
 /**
  * @brief It computes a contribution to residual vector at one integration point
  * @param data [in]
@@ -115,7 +142,7 @@ void TPZLagrangeMultiplier::ContributeInterface(TPZMaterialData &data, TPZMateri
  */
 void TPZLagrangeMultiplier::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef)
 {
-    
+    DebugStop();
 }
 
 

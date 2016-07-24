@@ -36,7 +36,7 @@ namespace pzgeom {
 	void TPZGeoTriangle::Jacobian(const TPZFMatrix<REAL> & coord, TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv){
 		
         int spacedim = coord.Rows();
-        jacobian.Resize(2,2); axes.Resize(2,3); jacinv.Resize(2,2);
+        jacobian.Redim(2,2); axes.Redim(2,3); jacinv.Redim(2,2);
 		TPZFNMatrix<3> phi(3,1);
         TPZFNMatrix<6> dphi(2,3),axest(3,2);
 		jacobian.Zero();

@@ -522,7 +522,7 @@ public:
 	/**
 	 * @brief Set the index i to node inode
 	 * @param inode node to set index
-	 * @param index index to be seted
+	 * @param index index to be set
 	 */
 	virtual void SetConnectIndex(int inode, long index) = 0;
 	

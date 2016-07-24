@@ -225,7 +225,13 @@ void TPZMultiphysicsInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElement
     for(int id = 0; id<nmesh; id++){
         datavecleft[id].fNeedsNormal=true;
         TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(leftel->Element(id));
-        datavecleft[id].p =msp->MaxOrder();
+        if (msp) {
+            datavecleft[id].p =msp->MaxOrder();
+        }
+        else
+        {
+            datavecleft[id].p =0;
+        }
     }
     data.fNeedsHSize=true;
     
@@ -429,7 +435,10 @@ void TPZMultiphysicsInterfaceElement::InitMaterialData(TPZMaterialData &data)
     TPZManVector<REAL> center(dim);
     gel->CenterPoint(nsides-1 , center);
     TPZGeoElSide gelside(gel,nsides-1);
-    gelside.Normal(center, fLeftElSide.Element()->Reference(), fRightElSide.Element()->Reference(), data.normal);
+    if (data.fNeedsNormal)
+    {
+        gelside.Normal(center, fLeftElSide.Element()->Reference(), fRightElSide.Element()->Reference(), data.normal);
+    }
     data.axes.Redim(dim,3);
     data.jacobian.Redim(dim,dim);
 	data.jacinv.Redim(dim,dim);
@@ -444,7 +453,9 @@ void TPZMultiphysicsInterfaceElement::ComputeRequiredData(TPZMaterialData &data,
     TPZGeoElSide gelside(gel,gel->NSides()-1);
     gel->Jacobian(point, data.jacobian, data.axes, data.detjac, data.jacinv);
     //ComputeRequiredData(Point,data);
-    gelside.Normal(point, fLeftElSide.Element()->Reference(), fRightElSide.Element()->Reference(), data.normal);
+    if (data.fNeedsNormal) {
+        gelside.Normal(point, fLeftElSide.Element()->Reference(), fRightElSide.Element()->Reference(), data.normal);
+    }
     
     if (data.fNeedsHSize){
 		const int dim = this->Dimension();

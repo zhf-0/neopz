@@ -130,7 +130,7 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
 
     TPZManVector<REAL,3> sol_u =    data.sol[0];
     
-    TPZFMatrix<REAL> dsol_u = data.dsol[0];
+    TPZFNMatrix<200,REAL> dsol_u = data.dsol[0];
     
     REAL LambdaL, MuL;
     
@@ -144,7 +144,7 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
         //	Elastic equation
         //	Linear strain operator
         //	Ke Matrix
-        TPZFMatrix<REAL>	du(2,2);
+        TPZFNMatrix<4,REAL>	du(2,2);
         for(int iu = 0; iu < phrU; iu++ )
         {
             //	Derivative for Vx
@@ -270,7 +270,154 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
     
 }
 
+void TPZMatElasticity2D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef) {
+    int nref=datavec.size();
+    if (nref!= 2) {
+        DebugStop();
+    }
+    
+    int ntensors = datavec[0].fVecShapeIndex.size();
+    int ndesloc = datavec[1].phi.Rows();
+    
+    if (ntensors+2*ndesloc != ek.Rows()) {
+        DebugStop();
+    }
+    
+    TPZFNMatrix<256,REAL> dphidx(2,datavec[0].dphix.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(datavec[0].dphix, dphidx, datavec[0].axes);
 
+    TPZManVector<REAL,3> force(ff);
+    if (HasForcingFunction()) {
+        fForcingFunction->Execute(datavec[0].x, force);
+    }
+
+    for (int i=0; i<ntensors; i++) {
+        int ishape = datavec[0].fVecShapeIndex[i].second;
+        int ivec = datavec[0].fVecShapeIndex[i].first;
+        // Compute C-1 sigma
+        TPZFNMatrix<4,REAL> sigmai(2,2),sigmaishape(2,2),epsiloni(2,2);
+        for (int k=0; k<2; k++) {
+            for (int l=0; l<2; l++) {
+                sigmai(k,l) = datavec[0].fNormalVec(k+2*l,ivec);
+            }
+        }
+        sigmaishape = sigmai*datavec[0].phi(ishape);
+        if (fPlaneStress == 1) {
+            epsiloni(0,0) = sigmaishape(0,0)/fE - sigmaishape(1,1)*fnu/fE;
+            epsiloni(1,1) = sigmaishape(1,1)/fE - sigmaishape(0,0)*fnu/fE;
+            epsiloni(0,1) = sigmaishape(0,1)*(1+fnu)/fE;
+            epsiloni(1,0) = sigmaishape(1,0)*(1+fnu)/fE;
+        }
+        else
+        {
+            epsiloni(0,0) = sigmaishape(0,0)*(1-fnu*fnu)/fE - sigmaishape(1,1)*fnu*(1+fnu)/fE;
+            epsiloni(1,1) = sigmaishape(1,1)*(1-fnu*fnu)/fE - sigmaishape(0,0)*fnu*(1+fnu)/fE;
+            epsiloni(0,1) = sigmaishape(0,1)*(1+fnu)/fE;
+            epsiloni(1,0) = sigmaishape(1,0)*(1+fnu)/fE;
+        }
+        for (int j=0; j<ntensors; j++) {
+            int jshape = datavec[0].fVecShapeIndex[j].second;
+            int jvec = datavec[0].fVecShapeIndex[j].first;
+            TPZFNMatrix<4,REAL> sigmaj(2,2);
+            for (int k=0; k<2; k++) {
+                for (int l=0; l<2; l++) {
+                    sigmaj(k,l) = datavec[0].fNormalVec(k+2*l,jvec)*datavec[0].phi(jshape);
+                }
+            }
+            REAL product = 0.;
+            for (int k=0; k<2; k++) {
+                for (int l=0; l<2; l++) {
+                    product += sigmaj(k,l)*epsiloni(k,l);
+                }
+            }
+            ek(i,j) += product*weight;
+        }
+        TPZManVector<REAL,2> divSigmai(2);
+        divSigmai[0] = sigmai(0,0)*dphidx(0,ishape)+sigmai(0,1)*dphidx(1,ishape);
+        divSigmai[1] = sigmai(1,0)*dphidx(0,ishape)+sigmai(1,1)*dphidx(1,ishape);
+        
+#ifdef LOG4CXX2
+        if (logger->isDebugEnabled()) {
+            std::stringstream sout;
+            sout << "i = " << i << " divSigmai = " << divSigmai << std::endl;
+            dphidx.Print("dphix = ",sout);
+            datavec[1].phi.Print("phi = ",sout);
+            LOGPZ_DEBUG(logger, sout.str())
+        }
+#endif
+        
+        for (int j=0; j<2*ndesloc; j++) {
+            int jshape = j/2;
+            if (j%2 == 0) {
+                ek(i,ntensors+j) += divSigmai[0]*datavec[1].phi(jshape)*weight;
+                ek(ntensors+j,i) += divSigmai[0]*datavec[1].phi(jshape)*weight;
+            }
+            else
+            {
+                ek(i,ntensors+j) += divSigmai[1]*datavec[1].phi(jshape)*weight;
+                ek(ntensors+j,i) += divSigmai[1]*datavec[1].phi(jshape)*weight;
+            }
+        }
+    }
+    for (int i=0; i<ndesloc; i++) {
+        int ishape = i;
+        ef(ntensors+2*ishape,0) += datavec[1].phi(i)*force[0]*weight;
+        ef(ntensors+2*ishape+1,0) += datavec[1].phi(i)*force[1]*weight;
+    }
+}
+
+void TPZMatElasticity2D::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek,
+                               TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+    // take the tangent vector from axes
+    TPZManVector<REAL,2> tangent(2);
+    for (int i=0; i<2; i++) {
+        tangent[i] = datavec[0].axes(0,i);
+    }
+    // compute the normal vector = tangent oounter clock wise
+    TPZManVector<REAL,2> normal(2);
+    normal[0] = tangent[1];
+    normal[1] = -tangent[0];
+    
+    TPZFNMatrix<6,REAL> v1(2,2),v2(2);
+    v1 = bc.Val1();
+    v2 = bc.Val2();
+    
+    if (bc.HasForcingFunction()) {
+        TPZManVector<REAL,2> val2(2);
+        bc.ForcingFunction()->Execute(datavec[0].x, val2);
+        v2(0) = val2[0];
+        v2(1) = val2[1];
+    }
+    
+    long nfunc = datavec[0].fVecShapeIndex.size();
+    
+    switch (bc.Type()) {
+        case EDirichletXY:
+            for (int i=0; i<nfunc; i++) {
+                int iphi = datavec[0].fVecShapeIndex[i].second;
+                int ivec = datavec[0].fVecShapeIndex[i].first;
+                REAL iphival = datavec[0].phi(iphi);
+                TPZManVector<REAL,2> vec(2);
+                vec[0] = datavec[0].fNormalVec(0,ivec);
+                vec[1] = datavec[0].fNormalVec(1,ivec);
+                REAL inneri = vec[0]*v2(0)+vec[1]*v2(1);
+                
+                ef(i,0) += weight*iphival*inneri;
+                
+            }
+            break;
+            
+        default:
+            DebugStop();
+            break;
+    }
+    // if Dirichlet add sigma_n .uD to the right hand side
+    
+    
+    // Neumann given in xy - apply bignumber to EK and EF
+    
+    // no penetration - the tangential part of the sigma_n should be zero
+}
 
 void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
 {
@@ -286,10 +433,14 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
     
     int phru = phiu.Rows();
     short in,jn;
-    STATE v2[3]; TPZFMatrix<STATE> &v1 = bc.Val1();
+    TPZManVector<STATE> v2(3);
+    TPZFMatrix<STATE> &v1 = bc.Val1();
     v2[0] = bc.Val2()(0,0);	//	Ux displacement or Tnx
     v2[1] = bc.Val2()(1,0);	//	Uy displacement or Tny
     
+    if (HasForcingFunction()) {
+        fForcingFunction->Execute(data.x, v2);
+    }
     //	Here each digit represent an individual boundary condition corresponding to each state variable.
     //	0 means Dirichlet condition on x-y
     //	1 means Neumann condition
@@ -299,7 +450,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
     const REAL BIGNUMBER  = TPZMaterial::gBigNumber;
     switch (bc.Type())
     {
-        case 0 :
+        case EDirichletXY:
         {
             //	Dirichlet condition for each state variable
             //	Elasticity Equation
@@ -319,7 +470,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             
             break;
         }
-        case 1 :
+        case ENeumannXY :
         {
             //	Neumann condition for each state variable
             //	Elasticity Equation
@@ -331,7 +482,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             }
             break;
         }
-        case 2 :
+        case EMixedXY :
         {
             //	Mixed condition for each state variable no used here
             //	Elasticity Equation
@@ -359,7 +510,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             
             break;
         }
-        case 3 :
+        case EDirichletXYIncremental :
         {
             //	Null Dirichlet condition for each state variable
             //	Elasticity Equation
@@ -379,7 +530,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             
             break;
         }
-        case 4 :
+        case ENeumannNormal :
         {
             //	Stress Field as Neumann condition for each state variable
             //	Elasticity Equation
@@ -395,7 +546,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             
             break;
         }
-        case 5 :
+        case EMixedNormal :
             //	Normal Pressure condition Pressure value Should be inserted in v2[0]
             //	Elasticity Equation
             {
@@ -420,7 +571,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
                 }
             }
             break;
-        case 6 :
+        case EMixedNormal2 :
             //	Normal Pressure condition Pressure value Should be inserted in v2[0]
             //	Elasticity Equation
             {
@@ -445,9 +596,9 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
                 }
             }
             break;
-        case 7 :
+        case EDirichletX :
         {
-            //	Dirichlet condition for each state variable
+            //	Dirichlet condition for ux
             //	Elasticity Equation
             for(in = 0 ; in < phru; in++)
             {
@@ -463,7 +614,7 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
             
             break;
         }
-        case 8 :
+        case EDirichletY :
         {
             //	Dirichlet condition for uy
             //	Elasticity Equation
@@ -855,7 +1006,7 @@ int TPZMatElasticity2D::VariableIndex(const std::string &name)
     if(!strcmp("SigmaY",name.c_str()))						return	4;
     if(!strcmp("SigmaZ",name.c_str()))						return	5;
     if(!strcmp("TauXY",name.c_str()))						return	6;
-    PZError << "TPZMatElastoPlastic::VariableIndex Error\n";
+    PZError << "TPZMatElasticity2D::VariableIndex Error name : " << name << " not found\n";
     return -1;
     
     return TPZMaterial::VariableIndex(name);
@@ -1013,4 +1164,105 @@ void TPZMatElasticity2D::Solution(TPZMaterialData &data, int var, TPZVec<STATE> 
     
 }
 
+void TPZMatElasticity2D::Solution(TPZVec<TPZMaterialData> &data, int var, TPZVec<STATE> &Solout)
+{
+    Solout.Resize(this->NSolutionVariables(var));
+//    if(!strcmp("Displacement",name.c_str()))				return	1;
+//    if(!strcmp("SolidPressure",name.c_str()))				return	2;
+//    if(!strcmp("SigmaX",name.c_str()))						return	3;
+//    if(!strcmp("SigmaY",name.c_str()))						return	4;
+//    if(!strcmp("SigmaZ",name.c_str()))						return	5;
+//    if(!strcmp("TauXY",name.c_str()))						return	6;
+
+    TPZManVector<STATE,2> disp(2);
+    disp[0] = data[1].sol[0][0];
+    disp[1] = data[1].sol[0][1];
+    
+    TPZFNMatrix<4> stress(2,2);
+    for (int i=0; i<4; i++) {
+        stress(i%2,i/2) = data[0].sol[0][i];
+    }
+    
+    TPZFNMatrix<8,STATE> dstressxy(2,4);
+    TPZAxesTools<STATE>::Axes2XYZ(data[0].dsol[0], dstressxy, data[0].axes);
+    
+    TPZManVector<REAL,3> x(data[0].x);
+    
+//    REAL sigx = 6.+8.*x[0]+18.*x[1];
+//    REAL sigy = 12.+10.*x[0]+27.*x[1];
+//    REAL sigxy = 2.5+3.5*x[0]+6.*x[1];
+//    
+//    TPZManVector<REAL,2> result(2);
+//    result[0] = 100.+x[0]*x[0]+3.*x[0]*x[1]+4.*x[1]*x[1];
+//    result[1] = 200.+5.*x[0]+6.*x[1]+2.*x[0]*x[0]+4.*x[0]*x[1]+6.*x[1]*x[1];
+
+//    STATE divsigx = dstressxy(0,0)+dstressxy(1,1);
+//    STATE divsigy = dstressxy(0,1)+dstressxy(1,3);
+    
+    switch (var) {
+        case 1:
+            Solout[0] = disp[0];
+            Solout[1] = disp[1];
+            break;
+        case 2:
+            Solout[0] = stress(0,0)+stress(1,1);
+            break;
+        case 3:
+            Solout[0] = stress(0,0);
+            break;
+        case 4:
+            Solout[0] = stress(1,1);
+            break;
+        case 5:
+            DebugStop();
+            break;
+        case 6:
+            Solout[0] = stress(0,1);
+            break;
+        default:
+            DebugStop();
+            break;
+    }
+    
+}
+
+void TPZMatElasticity2D::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors)
+{
+    TPZManVector<STATE,2> disp(2), dispexact(2);
+    disp[0] = data[1].sol[0][0];
+    disp[1] = data[1].sol[0][1];
+    dispexact[0] = u_exact[0];
+    dispexact[1] = u_exact[1];
+    
+    TPZFNMatrix<4> stress(2,2),stress_exact(2,2);
+    for (int i=0; i<4; i++) {
+        stress(i%2,i/2) = data[0].sol[0][i];
+        stress_exact(i%2,i/2) = u_exact[2+i];
+    }
+    
+    TPZFNMatrix<8,STATE> dstressxy(2,4), dstress_exact(2,4);
+    for (int i=0; i<4; i++) {
+        dstress_exact(0,i) = du_exact(0,2+i);
+        dstress_exact(1,i) = du_exact(1,2+i);
+    }
+    STATE divsigx_exact = dstress_exact(0,0)+dstress_exact(1,1);
+    STATE divsigy_exact = dstress_exact(0,1)+dstress_exact(1,3);
+    
+    TPZAxesTools<STATE>::Axes2XYZ(data[0].dsol[0], dstressxy, data[0].axes);
+    STATE divsigx = dstressxy(0,0)+dstressxy(1,1);
+    STATE divsigy = dstressxy(0,1)+dstressxy(1,3);
+
+    errors[0] = (disp[0]-dispexact[0])*(disp[0]-dispexact[0])+(disp[1]-dispexact[1])*(disp[1]-dispexact[1]);
+    
+    errors[1] = 0.;
+    for (int i=0; i<2; i++) {
+        for (int j=0; j<2; j++) {
+            errors[1] += (stress(i,j)-stress_exact(i,j))*(stress(i,j)-stress_exact(i,j));
+        }
+    }
+    
+    errors[2] = (divsigx-divsigx_exact)*(divsigx-divsigx_exact)+(divsigy-divsigy_exact)*(divsigy-divsigy_exact);
+//    std::cout << "disp = " << disp;
+//    std::cout << " errors " << errors << std::endl;
+}
 

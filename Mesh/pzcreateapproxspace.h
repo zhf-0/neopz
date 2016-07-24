@@ -68,6 +68,9 @@ public:
     {
         fCreateLagrangeMultiplier = flag;
     }
+
+    /// Create tensor type elements
+    void SetAllCreateFunctionsSymTensor(int dimension);
     
     /** @brief Create discontinuous approximation spaces */
     void SetAllCreateFunctionsDiscontinuous();
@@ -82,6 +85,8 @@ public:
 	/** @brief Create an approximation space with HDiv elements and full basis for quadrilateral element */
 	void SetAllCreateFunctionsHDivFull(int meshdim);
 	
+    /** @brief Create SBFem approximation space */
+    void SetAllCreateFunctionsSBFem(int meshdim);
 #ifndef STATE_COMPLEX
     /** @brief Create an approximation space with HDivxL2 elements */
 	void SetAllCreateFunctionsHDivPressure(int meshdim);

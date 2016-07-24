@@ -249,7 +249,7 @@ namespace pzgeom {
 	
 	void TPZGeoQuad::Jacobian(const TPZFMatrix<REAL> & coord, TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv){
 		
-		jacobian.Resize(2,2); axes.Resize(2,3); jacinv.Resize(2,2);
+		jacobian.Redim(2,2); axes.Redim(2,3); jacinv.Redim(2,2);
 		TPZFNMatrix<4> phi(4,1);
 		TPZFNMatrix<8> dphi(2,4);
 		TPZFNMatrix<6> axest(3,2);

@@ -52,6 +52,7 @@ void TPZElementMatrix::Print(std::ostream &out){
         out << "Connect vector\n";
         for(ic=0; ic<ncon; ic++) {
             //	out << "Connect index " << fConnect[ic] << endl;
+            out << fConnect[ic] << " - ";
             this->fMesh->ConnectVec()[fConnect[ic]].Print(*fMesh,out);
         }
         out << "Constrained connect vector\n";

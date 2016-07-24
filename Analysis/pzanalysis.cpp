@@ -549,7 +549,7 @@ void TPZAnalysis::PostProcessError(TPZVec<REAL> &ervec, std::ostream &out ){
     fCompMesh->LoadSolution(fSolution);
     //	SetExact(&Exact);
     TPZAdmChunkVector<TPZCompEl *> elvec = fCompMesh->ElementVec();
-    TPZManVector<REAL,10> errors(10);
+    TPZManVector<REAL,10> errors(3);
     errors.Fill(0.0);
     long i, nel = elvec.NElements();
     for(i=0;i<nel;i++) {

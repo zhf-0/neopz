@@ -90,16 +90,17 @@ void TPZInterpolationSpace::Print(std::ostream &out) const {
 void TPZInterpolationSpace::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
                                          TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,
                                          REAL &detjac, TPZFMatrix<REAL> &jacinv,
-                                         TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi, TPZFMatrix<REAL> &dphidx){
+                                         TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi, TPZFMatrix<REAL> &dphidaxes){
 	TPZGeoEl * ref = this->Reference();
 	if (!ref){
 		PZError << "\nERROR AT " << __PRETTY_FUNCTION__ << " - this->Reference() == NULL\n";
 		return;
 	}//if
 
+    ref->X(intpoint,X);
 	ref->Jacobian( intpoint, jacobian, axes, detjac , jacinv);
 	this->Shape(intpoint,phi,dphi);
-    this->Convert2Axes(dphi, jacinv, dphidx);
+    this->Convert2Axes(dphi, jacinv, dphidaxes);
     
 }
 

@@ -970,7 +970,7 @@ void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(  void (*fp)(const TPZVec<R
 	int ndof = material->NStateVariables();
 	int nflux = material->NFluxes();
 	TPZManVector<STATE,10> u_exact(ndof);
-	TPZFNMatrix<90,STATE> du_exact(dim+1,ndof);
+	TPZFNMatrix<90,STATE> du_exact(dim,6);
 	TPZManVector<REAL,10> intpoint(3), values(NErrors);
 	values.Fill(0.0);
 	REAL weight;
@@ -1006,7 +1006,7 @@ void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(  void (*fp)(const TPZVec<R
 		//contribuicoes dos erros
 		if(fp) {
 			fp(datavec[0].x,u_exact,du_exact);
-      material->Errors(datavec,u_exact,du_exact,values);
+            material->Errors(datavec,u_exact,du_exact,values);
       
 			for(int ier = 0; ier < NErrors; ier++)
 				errors[ier] += values[ier]*weight;

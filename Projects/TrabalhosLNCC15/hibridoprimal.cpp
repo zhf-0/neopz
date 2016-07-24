@@ -569,12 +569,11 @@ int main(int argc, char *argv[])
                 nNzeros = matsky.GetNelemts();
 
 //                TPZSkylineStructMatrix skylstr(mphysics); //caso simetrico
-//                skylstr.SetNumThreads(6);                
 //                analysis.SetStructuralMatrix(skylstr);
                 
                 TPZParFrontStructMatrix<TPZFrontSym<STATE> > strmat(mphysics);
                 strmat.SetDecomposeType(ELDLt);
-                strmat.SetNumThreads(6);
+                strmat.SetNumThreads(8);
                 analysis.SetStructuralMatrix(strmat);
             }
 
@@ -588,20 +587,23 @@ int main(int argc, char *argv[])
             boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::local_time();
     #endif
             analysis.Assemble();
-            TPZAutoPointer<TPZMatrix<STATE> > glob = analysis.Solver().Matrix()->Clone();
-            TPZFMatrix<STATE> RHS(analysis.Rhs());
+            
+//            TPZAutoPointer<TPZMatrix<STATE> > glob = analysis.Solver().Matrix()->Clone();
+//            TPZFMatrix<STATE> RHS(analysis.Rhs());
 
 //            std::stringstream sout;
 //            analysis.StructMatrix()->Print("Matriz de RigidezBLABLA: ",sout,EMathematicaInput);
 
+            std::cout << "Neq = " << NDoFCond << std::endl;
     #ifdef USING_BOOST
             boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::local_time();
     #endif
             analysis.Solve();
-        
 //            TPZFMatrix<STATE> KU;
 //            glob->Multiply(analysis.Solution(), KU);
+//            
 //            KU -= RHS;
+//            
 //            std::cout << "Norma de KU " << Norm(KU) << std::endl;
 
     #ifdef USING_BOOST
@@ -661,15 +663,8 @@ int main(int argc, char *argv[])
                 
             }
             
-//            
-//            TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvec, mphysics);
-//            
-//            HDivSol-= mphysics->Solution();
-//            analysis.LoadSolution(mphysics->Solution());
-//            
-//            TPZFMatrix<STATE> resid(glob->Rows(),1);
-//            glob->Multiply(analysis.Solution(), resid);
-//            resid -= RHS;
+            TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvec, mphysics);
+            
 //            RHS -= analysis.Rhs();
 //            
 //            std::cout << "Norma diff rhs " << Norm(RHS) << std::endl;
@@ -680,8 +675,20 @@ int main(int argc, char *argv[])
 //            }
             
             
+//            myerrorfile << ndiv <<  setw(13) << NDoF << setw(15)<< NDoFCond <<"    "<< (t2-t1) << "     "<< (t3-t2) <<"     "<<(t2-t1)+(t3-t2) << setw(18);
+
+            
+//            RHS -= analysis.Rhs();
+//            
+//            std::cout << "Norma diff rhs " << Norm(RHS) << std::endl;
+//            std::cout << "Norma de resid " << Norm(resid) << std::endl;
+//            {
+//                std::ofstream errorel("ErrorElement.txt");
+//                analysis.PrintVectorByElement(errorel, resid);
+//            }
             TPZManVector<STATE,5> ErroP;
             TPZManVector<STATE,5> ErroF;
+            std::cout << "Computing errors\n";
             ErrorH1(cmesh2, ErroP /*,myerrorfile*/);
             ErrorHDiv(cmesh1, ErroF /*,myerrorfile*/);
             
@@ -1440,6 +1447,7 @@ void Prefinamento(TPZCompMesh * cmesh, int ndiv, int porder){
 }
 
 static REAL alpha = 2.;
+static int funcchoice = 3;
 
 void SolShockProblem(const TPZVec<REAL> &loc, TPZVec<STATE> &u, TPZFMatrix<STATE> &du){
     
@@ -1482,35 +1490,51 @@ void SolShockProblem(const TPZVec<REAL> &loc, TPZVec<STATE> &u, TPZFMatrix<STATE
     }
     else
     {
-//        u[0] = 3.+4.*x+5.*y+2.*z-7*z*z+x*x*x;//+9.*x*y+3*y*z+x*z+2.*x*x+2.*y*y-7.*z*z;
-//        du(0,0) = 4.+3*x*x;//+9*y+z+4.*x;
-//        du(1,0) = 5.;//+9.*x+3.*z+4.*y;
-//        du(2,0) = 2.-14.*z;//+3.*y+x-14.*z;
-//        du(0,0) = -du(0,0);
-//        du(1,0) = -du(1,0);
-//        du(2,0) = -du(2,0);
-//        return;
-        temp1 = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0);
-        r = sqrt(temp1);
-//        alpha = 5.;
-        temp2 = (r - r0)*alpha;
-        u[0] = M_PI/2. - atan(temp2);
-        
-        temp2 =  r*(1./alpha + (r - r0)*(r - r0)*alpha);
-        temp1 = (x0-x);
-        grad=temp1/temp2;
-        if(rodarHdiv) grad *= -1.;
-        du(0,0) = grad;
-        
-        temp1 = (y0-y);
-        grad=temp1/temp2;
-        if(rodarHdiv) grad *= -1.;
-        du(1,0) =grad;;
-        
-        temp1 = (z0-z);
-        grad=temp1/temp2;
-        if(rodarHdiv) grad *= -1.;
-        du(2,0) =grad;
+        if (funcchoice == 1) {
+            u[0] = 3.+4.*x+5.*y+2.*z-7*z*z+x*x*x;//+9.*x*y+3*y*z+x*z+2.*x*x+2.*y*y-7.*z*z;
+            du(0,0) = 4.+3*x*x;//+9*y+z+4.*x;
+            du(1,0) = 5.;//+9.*x+3.*z+4.*y;
+            du(2,0) = 2.-14.*z;//+3.*y+x-14.*z;
+            du(0,0) = -du(0,0);
+            du(1,0) = -du(1,0);
+            du(2,0) = -du(2,0);
+            return;
+
+        }
+        else if (funcchoice == 2)
+        {
+            temp1 = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0);
+            r = sqrt(temp1);
+    //        alpha = 5.;
+            temp2 = (r - r0)*alpha;
+            u[0] = M_PI/2. - atan(temp2);
+            
+            temp2 =  r*(1./alpha + (r - r0)*(r - r0)*alpha);
+            temp1 = (x0-x);
+            grad=temp1/temp2;
+            if(rodarHdiv) grad *= -1.;
+            du(0,0) = grad;
+            
+            temp1 = (y0-y);
+            grad=temp1/temp2;
+            if(rodarHdiv) grad *= -1.;
+            du(1,0) =grad;;
+            
+            temp1 = (z0-z);
+            grad=temp1/temp2;
+            if(rodarHdiv) grad *= -1.;
+            du(2,0) =grad;
+            return;
+        }
+        else if (funcchoice == 3)
+        {
+            u[0] = sin(M_PI*x)*sin(M_PI*y)*sin(M_PI*z);
+            du(0,0) = M_PI*cos(M_PI*x)*sin(M_PI*y)*sin(M_PI*z);
+            du(1,0) = M_PI*sin(M_PI*x)*cos(M_PI*y)*sin(M_PI*z);
+            du(2,0) = M_PI*sin(M_PI*x)*sin(M_PI*y)*cos(M_PI*z);
+            du *= -1.;
+            return;
+        }
     }
 }
 
@@ -1547,25 +1571,52 @@ void ForcingShockProblem(const TPZVec<REAL> &pt, TPZVec<STATE> &disp, TPZFMatrix
     }
     else
     {
-//        du(0,0) = 4.+9*y+z+4.*x;
-//        du(1,0) = 5.+9.*x+3.*z+4.*y;
-//        du(2,0) = 2.+3.*y+x-14.*z;
-//        disp[0] = 14.-6.0*x;//4.+ 4.-14;
-//        df(0,0) = 4.+3*x*x;//+9*y+z+4.*x;
-//        df(1,0) = 5.;//+9.*x+3.*z+4.*y;
-//        df(2,0) = 2.-14.*z;//+3.*y+x-14.*z;
-//        return;
-        temp1 = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0);
-        r = sqrt(temp1);
-//        alpha = 5.;
-        
-        temp1 = (2./alpha) + 2.*r0*(r0-r)*alpha;
-        temp2 = r*((r - r0)*(r - r0) + 1./(alpha*alpha));
-        temp3 = 1. + (r - r0)*(r - r0)*alpha*alpha;
-        
-        sol = temp1/(temp2*temp3);
-        if(rodarH1 || rodarSIPGD) sol *=-1.;
-        disp[0] = sol;
+        if (funcchoice == 1)
+        {
+            disp[0] = 14.-6.0*x;//4.+ 4.-14;
+            df(0,0) = 4.+3*x*x;//+9*y+z+4.*x;
+            df(1,0) = 5.;//+9.*x+3.*z+4.*y;
+            df(2,0) = 2.-14.*z;//+3.*y+x-14.*z;
+            return;
+        }
+        else if (funcchoice == 2)
+        {
+            temp1 = (x-x0)*(x-x0)+(y-y0)*(y-y0)+(z-z0)*(z-z0);
+            r = sqrt(temp1);
+    //        alpha = 5.;
+            
+            temp1 = (2./alpha) + 2.*r0*(r0-r)*alpha;
+            temp2 = r*((r - r0)*(r - r0) + 1./(alpha*alpha));
+            temp3 = 1. + (r - r0)*(r - r0)*alpha*alpha;
+            
+            sol = temp1/(temp2*temp3);
+            if(rodarH1 || rodarSIPGD) sol *=-1.;
+            disp[0] = sol;
+            temp2 =  r*(1./alpha + (r - r0)*(r - r0)*alpha);
+            temp1 = (x0-x);
+            STATE grad=temp1/temp2;
+    //        if(rodarHdiv) grad *= -1.;
+            df(0,0) = grad;
+            
+            temp1 = (y0-y);
+            grad=temp1/temp2;
+    //        if(rodarHdiv) grad *= -1.;
+            df(1,0) =grad;;
+            
+            temp1 = (z0-z);
+            grad=temp1/temp2;
+    //        if(rodarHdiv) grad *= -1.;
+            df(2,0) =grad;
+            return;
+        }
+        else if (funcchoice == 3)
+        {
+            disp[0] = -3.*M_PI*M_PI*sin(M_PI*x)*sin(M_PI*y)*sin(M_PI*z);
+            df(0,0) = M_PI*cos(M_PI*x)*sin(M_PI*y)*sin(M_PI*z);
+            df(1,0) = M_PI*sin(M_PI*x)*cos(M_PI*y)*sin(M_PI*z);
+            df(2,0) = M_PI*sin(M_PI*x)*sin(M_PI*y)*cos(M_PI*z);
+            return;
+        }
     }
 }
 
@@ -2384,19 +2435,19 @@ TPZCompMesh *MalhaCompMultifisica(TPZVec<TPZCompMesh *> meshvec,TPZGeoMesh * gme
         // increase the NumElConnected of one pressure connects in order to prevent condensation
         mphysics->ComputeNodElCon();
         // NADA DE CONDENSACAO ESTATICA
-//        for (long icel=0; icel < mphysics->NElements(); icel++) {
-//            TPZCompEl  * cel = mphysics->Element(icel);
-//            if(!cel) continue;
-//            int nc = cel->NConnects();
-//            for (int ic=0; ic<nc; ic++) {
-//                TPZConnect &c = cel->Connect(ic);
-//                if (c.LagrangeMultiplier() > 0) {
-//                    c.IncrementElConnected();
-//                    break;
-//                }
-//            }
-//            new TPZCondensedCompEl(cel);
-//        }
+        for (long icel=0; icel < mphysics->NElements(); icel++) {
+            TPZCompEl  * cel = mphysics->Element(icel);
+            if(!cel) continue;
+            int nc = cel->NConnects();
+            for (int ic=0; ic<nc; ic++) {
+                TPZConnect &c = cel->Connect(ic);
+                if (c.LagrangeMultiplier() > 0) {
+                    c.IncrementElConnected();
+                    break;
+                }
+            }
+            new TPZCondensedCompEl(cel);
+        }
         mphysics->CleanUpUnconnectedNodes();
         mphysics->ExpandSolution();
     }

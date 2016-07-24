@@ -260,6 +260,7 @@ void TPZMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TP
 	if (nref== 1) {
 		this->ContributeBC(datavec[0], weight, ek,ef,bc);
 	}
+    DebugStop();
 }
 
 void TPZMaterial::Clone(std::map<int, TPZMaterial * >&matvec) {

@@ -173,7 +173,8 @@ const int TPZHDIVTETRA_FULL_ID = 274;
 /** @brief Id of HDivFull pyramidal element */
 const int TPZHDIVPYRAM_FULL_ID = 275;
 
-
+/// Symmetric tensor triangular element
+const int TPZSYMTENSORTRIANGLEID = 431;
 
 /** @brief Id of HDiv one-dimensional boundary point element */
 const int TPZHDIVBOUND2POINTID = 256;
@@ -183,6 +184,9 @@ const int TPZHDIVBOUND2LINEARID = 257;
 const int TPZHDIVBOUND2TRIANGLEID = 258;
 /** @brief Id of HDiv three-dimensional boundary quadrilateral element */
 const int TPZHDIVBOUND2QUADID = 259;
+
+/// boundary element for symmetric tensor approximation
+const int TPZSYMTENSORBOUNDLINEARID =430;
 
 /** @brief Id of geometric blended point element (?) */
 const int TPZGEOBLENDPOINTID = 403;
