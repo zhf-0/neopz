@@ -128,9 +128,13 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
     
     int FirstU  = 0;
 
-    TPZManVector<REAL,3> sol_u =    data.sol[0];
+    TPZManVector<STATE,3> sol_u =    data.sol[0];
     
+<<<<<<< HEAD
     TPZFNMatrix<200,REAL> dsol_u = data.dsol[0];
+=======
+    TPZFMatrix<STATE> dsol_u = data.dsol[0];
+>>>>>>> master
     
     REAL LambdaL, MuL;
     
@@ -197,8 +201,8 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
     int phrU = phiU.Rows();
     int FirstU  = 0;
     
-    TPZManVector<REAL,3> sol_u =data.sol[0];
-    TPZFMatrix<REAL> dsol_u = data.dsol[0];
+    TPZManVector<STATE,3> sol_u =data.sol[0];
+    TPZFMatrix<STATE> dsol_u = data.dsol[0];
     REAL LambdaL, MuL;
     
     LambdaL = flambda;
@@ -425,8 +429,8 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight, TPZFMat
     
     
     TPZFMatrix<REAL>  &phiu = data.phi;
-    TPZManVector<REAL,3> sol_u = data.sol[0];
-    TPZFMatrix<REAL> dsol_u = data.dsol[0];
+    TPZManVector<STATE,3> sol_u = data.sol[0];
+    TPZFMatrix<STATE> dsol_u = data.dsol[0];
     
     REAL ux = sol_u[0];
     REAL uy = sol_u[1];
@@ -797,8 +801,8 @@ void TPZMatElasticity2D::ContributeBC(TPZMaterialData &data,REAL weight,TPZFMatr
     
     
     TPZFMatrix<REAL>  &phiu = data.phi;
-    TPZManVector<REAL,3> sol_u = data.sol[0];
-    TPZFMatrix<REAL> dsol_u = data.dsol[0];
+    TPZManVector<STATE,3> sol_u = data.sol[0];
+    TPZFMatrix<STATE> dsol_u = data.dsol[0];
     
     REAL ux = sol_u[0];
     REAL uy = sol_u[1];
