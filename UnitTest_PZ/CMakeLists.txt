@@ -7,11 +7,6 @@ if(BUILD_UNITTESTING)
 
 	if(USING_BOOST)
 
-		if(BUILD_COMPLEX_PROJECTS)
-
-			add_subdirectory(TestMatrixComplex)
-
-		else()
 			add_subdirectory(TestTopology)
 			add_subdirectory(TestMatrix)
 			add_subdirectory(TestMesh)
@@ -25,7 +20,6 @@ if(BUILD_UNITTESTING)
 			source_group(UnitTestIntegNum FILES ${pztestintegnum})
 			source_group(UnitTestGeometry FILES ${pztestgeometry})
 
-		endif()
 
 	else()
 
