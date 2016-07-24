@@ -10,6 +10,10 @@
 #include "TPZSBFemVolume.h"
 #include <Accelerate/Accelerate.h>
 
+#ifdef LOG4CXX
+static LoggerPtr logger(Logger::getLogger("pz.mesh.sbfemelementgroup"));
+#endif
+
 
 /**
  * @brief Computes the element stifness matrix and right hand side
@@ -139,80 +143,11 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, n, n, -1., &E1.fMat(0,0), n, &E0Inv(0,0), n, 0., &globmat(n,n), 2*n);
     globmat.Print("GlobMatCheck = ",std::cout, EMathematicaInput);
 
-    
-//    int dgehrd_(__CLPK_integer *__n, __CLPK_integer *__ilo, __CLPK_integer *__ihi,
-//                __CLPK_doublereal *__a, __CLPK_integer *__lda, __CLPK_doublereal *__tau,
-//                __CLPK_doublereal *__work, __CLPK_integer *__lwork,
-//                __CLPK_integer *__info) __OSX_AVAILABLE_STARTING(__MAC_10_2,
-//                                                                 __IPHONE_4_0);
-
     TPZFMatrix<STATE> globmatkeep(globmat);
-    int globsize = 2*n;
-    int one = 1;
-    TPZVec<STATE> tau(globsize,0.);
-    dgehrd_(&globsize, &one, &globsize, &globmat(0,0), &globsize, &tau[0], &work[0], &nwork, &info);
-    if (info != 0) {
-        DebugStop();
-    }
+    TPZFMatrix< std::complex<double> > eigenVectors;
+    TPZManVector<std::complex<double> > weights;
     
-    TPZFMatrix<STATE> Qorth(globmat);
-    dorghr_(&globsize, &one, &globsize, &Qorth(0,0), &globsize, &tau[0], &work[0], &nwork, &info);
-    if (info != 0) {
-        DebugStop();
-    }
-    Qorth.Print("Matriz Q");
-    
-    TPZFMatrix<STATE> Identity(globsize,globsize,0.);
-    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, globsize, globsize, globsize, 1., &Qorth(0,0), globsize, &Qorth(0,0), globsize, 0., &Identity(0,0), globsize);
-    
-    Identity.Print("Identity");
-    
-    TPZFMatrix<STATE> check(globsize,globsize,0.);
-    for (int i=0; i<globsize; i++) {
-        for (int j=0; j< globsize; j++) {
-            if (i-j <= 1) {
-                check(i,j) = -globmat(i,j);
-            }
-            for (int k=0; k<globsize; k++) {
-                for (int l=0; l<globsize; l++) {
-                    check(i,j) += Qorth(k,i)*globmatkeep(k,l)*Qorth(l,j);
-                }
-            }
-        }
-    }
-    std::cout << "Norm of check " << Norm(check) << std::endl;
-    check.Print("check");
-    
-    TPZVec<STATE> realeig(globsize,0.), imageig(globsize,0.);
-    char S = 'S', V = 'V';
-    dhseqr_(&S, &V, &globsize, &one, &globsize, &globmat(0,0), &globsize, &realeig[0], &imageig[0], &Qorth(0,0), &globsize, &work[0], &nwork, &info);
-
-    /// globmat now contains the T matrix
-    if (info != 0) {
-        DebugStop();
-    }
-    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, globsize, globsize, globsize, 1., &Qorth(0,0), globsize, &Qorth(0,0), globsize, 0., &Identity(0,0), globsize);
-    
-    Identity.Print("Identity");
-    
-    char side = 'R', eigsrc = 'Q',initv = 'N', howmny = 'A';
-    TPZVec<int> select(globsize,1);
-    int mm_required = 0;
-    TPZFMatrix<STATE> LeftEigVec(globsize,globsize,0.), RightEigVec(globsize,globsize,0.);
-    dtrevc_(<#char *__side#>, <#char *__howmny#>, __CLPK_logical *__select, <#__CLPK_integer *__n#>, <#__CLPK_doublereal *__t#>, <#__CLPK_integer *__ldt#>, <#__CLPK_doublereal *__vl#>, <#__CLPK_integer *__ldvl#>, <#__CLPK_doublereal *__vr#>, <#__CLPK_integer *__ldvr#>, <#__CLPK_integer *__mm#>, <#__CLPK_integer *__m#>, <#__CLPK_doublereal *__work#>, <#__CLPK_integer *__info#>)
-    
-    TPZVec<int> failL(globsize,0), failR(globsize,0);
-    dhsein_(&side, &eigsrc, &initv, &select[0], &globsize, &globmat(0,0), &globsize, &realeig[0], &imageig[0], &LeftEigVec(0,0), &globsize, &RightEigVec(0,0), &globsize, &globsize, &mm_required, &work[0], &failL[0], &failR[0], &info);
-
-    if (info != 0) {
-        DebugStop();
-    }
-    
-
-    std::cout << "Eig real " << realeig << std::endl;
-    std::cout << "Eig imag " << imageig << std::endl;
-    
-    Qorth.Print("EigVecCheck = ",std::cout,EMathematicaInput);
+    globmatkeep.SolveEigenProblem(weights, eigenVectors);
 }
 
 //http://www.netlib.org/lapack/lug/node50.html

@@ -130,11 +130,7 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
 
     TPZManVector<STATE,3> sol_u =    data.sol[0];
     
-<<<<<<< HEAD
     TPZFNMatrix<200,REAL> dsol_u = data.dsol[0];
-=======
-    TPZFMatrix<STATE> dsol_u = data.dsol[0];
->>>>>>> master
     
     REAL LambdaL, MuL;
     

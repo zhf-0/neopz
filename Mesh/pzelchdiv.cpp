@@ -276,8 +276,7 @@ int TPZCompElHDiv<TSHAPE>::NConnectShapeF(int connect, int order)const
      nexternalvectors = nvecignore;
      
      TPZGenMatrix<int> shapeorders(nshape,3);
-<<<<<<< HEAD
-     TSHAPE::ShapeOrder(id, order, shapeorders);
+     TSHAPE::ShapeOrder(id, orders, shapeorders);
 //    {
 //        static int first = 0;
 //        if (first==0) {
@@ -285,16 +284,6 @@ int TPZCompElHDiv<TSHAPE>::NConnectShapeF(int connect, int order)const
 //            first++;
 //        }
 //    }
-=======
-     TSHAPE::ShapeOrder(id, orders, shapeorders);
-    {
-        static int first = 0;
-        if (first==0) {
-            shapeorders.Print("ShapeOrders");
-            first++;
-        }
-    }
->>>>>>> master
      // VectorSide indicates the side associated with each vector entry
      TPZManVector<long,30> FirstIndex(TSHAPE::NSides+1);
      // the first index of the shape functions

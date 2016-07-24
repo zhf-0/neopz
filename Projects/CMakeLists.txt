@@ -7,10 +7,6 @@
 		# COMPLEX NUMBER PROJECTS
 		#
 		# If your project works with Complex numbers (STATE type = complex any type), please add it on the list below
-<<<<<<< HEAD
-		add_subdirectory(Elasticity2DTensor)
-		add_subdirectory(SBFem2D)
-=======
 		if(BUILD_COMPLEX_PROJECTS)
 
 			#Example to work with scalar as complex
@@ -32,6 +28,10 @@
 			#
 			# If your project DOES NOT use Complex numbers, please add it on the list below
 			#
+			add_subdirectory(Elasticity2DTensor)
+			add_subdirectory(SBFem2D)
+			
+			
 			########################## Nao aplicavel para Windows
 			if (NOT WIN32)
 				#Projeto Teo Refinamento Paralelo
@@ -100,7 +100,6 @@
 
 		endif(BUILD_COMPLEX_PROJECTS)
 		
->>>>>>> master
 		
 	endif(BUILD_PROJECTS)
 

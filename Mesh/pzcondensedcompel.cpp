@@ -75,15 +75,9 @@ void TPZCondensedCompEl::Unwrap()
     for (int ic=0; ic<ncon ; ic++) {
         Connect(ic).SetCondensed(false);
     }
-<<<<<<< HEAD
-    TPZGeoEl *ref = Reference();
-    if (ref) {
-        ref->ResetReference();
-=======
     TPZGeoEl *gel = Reference();
     if (gel) {
         gel->ResetReference();
->>>>>>> master
     }
     delete this;
     ReferenceEl->Mesh()->ElementVec()[myindex] = ReferenceEl;

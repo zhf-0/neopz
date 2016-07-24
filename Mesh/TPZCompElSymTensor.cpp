@@ -256,7 +256,8 @@ void TPZCompElSymTensor<TSHAPE>::SetSideOrder(int side, int order){
         DebugStop();
     }
 	TPZConnect &c = this->Connect(connectaux);
-    c.SetOrder(order);
+    long cindex = this->ConnectIndex(connectaux);
+    c.SetOrder(order,cindex);
     long seqnum = c.SequenceNumber();
     int nvar = 1;
     int nshape =this-> NConnectShapeF(connectaux);

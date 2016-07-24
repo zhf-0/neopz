@@ -970,11 +970,11 @@ void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(  void (*fp)(const TPZVec<R
 	int ndof = material->NStateVariables();
 	int nflux = material->NFluxes();
 	TPZManVector<STATE,10> u_exact(ndof);
-<<<<<<< HEAD
+    if(ndof != 6)
+    {
+        DebugStop();
+    }
 	TPZFNMatrix<90,STATE> du_exact(dim,6);
-=======
-	TPZFNMatrix<3,STATE> du_exact(dim,ndof);
->>>>>>> master
 	TPZManVector<REAL,10> intpoint(3), values(NErrors);
 	values.Fill(0.0);
 	REAL weight;
