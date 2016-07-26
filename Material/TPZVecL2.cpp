@@ -14,11 +14,6 @@
 #include "tpzintpoints.h"
 
 #include "pzlog.h"
-//HCURL
-
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
-
 
 #ifdef LOG4CXX
 #ifdef PZDEBUG
@@ -59,18 +54,18 @@ void TPZVecL2::Print(std::ostream & out) {
 }
 
 int TPZVecL2::VariableIndex(const std::string &name) {
-	if(!strcmp(name.c_str(),"state")) return 0;
-	if(!strcmp(name.c_str(),"State")) return 0;
-	if(!strcmp(name.c_str(),"Solution")) return 0;
-	
+    if(!strcmp(name.c_str(),"state")) return 0;
+    if(!strcmp(name.c_str(),"State")) return 0;
+    if(!strcmp(name.c_str(),"Solution")) return 0;
+    
     return TPZMaterial::VariableIndex(name );
 }
 
 int TPZVecL2::NSolutionVariables(int index) {
 #ifdef STATE_COMPLEX
-	if(index == 0) return NStateVariables()*2;    
+    if(index == 0) return NStateVariables()*2;
 #else
-	if(index == 0) return 3;
+    if(index == 0) return 3;
 #endif
     return TPZMaterial::NSolutionVariables(index);
 }
@@ -80,25 +75,25 @@ void TPZVecL2::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
     if (numbersol != 1) {
         DebugStop();
     }
-	this->Solution(data.sol[0], data.dsol[0], data.axes, var, Solout);
+    this->Solution(data.sol[0], data.dsol[0], data.axes, var, Solout);
 }
 
 void TPZVecL2::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
-	DebugStop();
+    DebugStop();
 }
 
 void TPZVecL2::Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout)
 {
-		this->Solution(data,dataleftvec,datarightvec, var, Solout);
+    this->Solution(data,dataleftvec,datarightvec, var, Solout);
 }
 
 void TPZVecL2::Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl *left, TPZCompEl *right)
 {
-	this->Solution(data,dataleftvec,datarightvec, var, Solout, left, right);
+    this->Solution(data,dataleftvec,datarightvec, var, Solout, left, right);
 }
 
 void TPZVecL2::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,
-						   TPZVec<STATE> &Solout){
+                        TPZVec<STATE> &Solout){
     if(var == 0) Solout = Sol;
     
     else if (var==1){
@@ -121,20 +116,20 @@ TPZMaterial * TPZVecL2::NewMaterial() {
 }
 
 void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef){
-	TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
-	this->Contribute(data, weight, fakeek, ef);
+    TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
+    this->Contribute(data, weight, fakeek, ef);
 }
 
 void TPZVecL2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-	TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
-	this->ContributeBC(data, weight, fakeek, ef, bc);
+    TPZFMatrix<STATE> fakeek(ef.Rows(), ef.Rows(), 0.);
+    this->ContributeBC(data, weight, fakeek, ef, bc);
 }
 
 void TPZVecL2::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef) {
-	int nref=datavec.size();
-	if (nref== 1) {
-		this->Contribute(datavec[0], weight, ek,ef);
-	}
+    int nref=datavec.size();
+    if (nref== 1) {
+        this->Contribute(datavec[0], weight, ek,ef);
+    }
 }
 
 
@@ -142,32 +137,21 @@ void TPZVecL2::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMat
 
 int TPZVecL2::ClassId() const
 {
-	return TPZVECL2ID;
+    return TPZVECL2ID;
 }
 
 /* Saves the element data to a stream */
 void TPZVecL2::Write(TPZStream &buf, int withclassid)
 {
-	TPZMaterial::Write(buf,withclassid);
-    if (fDim < 1 || fDim >3) {
-        DebugStop();
-    }
-    buf.Write(&fDim);
+    TPZMaterial::Write(buf,withclassid);
 }
 
 /* Reads the element data from a stream */
 void TPZVecL2::Read(TPZStream &buf, void *context)
 {
-	TPZMaterial::Read(buf,context);
-    buf.Read(&fDim);
-#ifdef PZDEBUG
-    if (fDim < 1 || fDim >3) {
-        DebugStop();
-    }
-#endif
+    TPZMaterial::Read(buf,context);
 }
 
-template class TPZRestoreClass<TPZVecL2, TPZVECL2ID>;
 /**
  * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
  * @param datavec [in] stores all input data
@@ -184,20 +168,10 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
         fForcingFunction->Execute(data.x,force);
     }
     
+    
     // Setting the phis
     TPZFMatrix<REAL> &phiQ = data.phi;
-    //HCURL
-	TPZFMatrix<REAL> &dphiQdaxes = data.dphix;//ELEMENTO DEFORMADO
-	TPZFNMatrix<3,REAL> dphiQ;
-	TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, data.axes);
-	
-	TPZManVector<REAL,3> ax1(3),ax2(3), normal(3);
-	for (int i=0; i<3; i++) {
-		ax1[i] = data.axes(0,i);//ELEMENTO DEFORMADO
-		ax2[i] = data.axes(1,i);//ELEMENTO DEFORMADO
-	}
-	Cross(ax1, ax2, normal);
-	
+    
     int phrq;
     phrq = data.fVecShapeIndex.NElements();
     
@@ -207,16 +181,13 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
         //ef(iq, 0) += 0.;
         int ivecind = data.fVecShapeIndex[iq].first;
         int ishapeind = data.fVecShapeIndex[iq].second;
-        TPZManVector<REAL> ivecHDiv(3), ivecHCurl(3);
+        TPZFNMatrix<3,REAL> ivec(3,1,0.);
         for(int id=0; id<3; id++){
-            ivecHDiv[id] = data.fNormalVec(id,ivecind);
+            ivec(id,0) = data.fNormalVec(id,ivecind);
         }
-			
-			//ROTATE FOR HCURL
-			Cross(normal, ivecHDiv, ivecHCurl);
         STATE ff = 0.;
         for (int i=0; i<3; i++) {
-            ff += ivecHCurl[i]*force[i];
+            ff += ivec(i,0)*force[i];
         }
         
         ef(iq,0) += weight*ff*phiQ(ishapeind,0);
@@ -232,20 +203,21 @@ void TPZVecL2::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> 
             }
             
             //jvecZ.Print("mat1 = ");
-            REAL prod1 = ivecHCurl[0]*jvec(0,0) + ivecHCurl[1]*jvec(1,0) + ivecHCurl[2]*jvec(2,0);
+            REAL prod1 = ivec(0,0)*jvec(0,0) + ivec(1,0)*jvec(1,0) + ivec(2,0)*jvec(2,0);
             ek(iq,jq) += weight*phiQ(ishapeind,0)*phiQ(jshapeind,0)*prod1;
-           
+            
         }
     }
 }
 
 void TPZVecL2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-
+    
     
     TPZFMatrix<REAL>  &phiQ = data.phi;
     int phrq = phiQ.Rows();
     
-  STATE v2;
+    //AQUIFRANREAL v2;
+    STATE v2;
     if(bc.HasForcingFunction())
     {
         TPZManVector<STATE> res(3);
@@ -289,7 +261,7 @@ void TPZVecL2::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE
             
             break;
     }
-
+    
 }
 
 void TPZVecL2::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values){
@@ -330,4 +302,3 @@ void TPZVecL2::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatri
         values[3]= values[1]+values[2];
     }
 }
-
