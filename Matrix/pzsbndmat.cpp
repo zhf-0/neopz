@@ -1656,7 +1656,7 @@ TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec 
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec< float > w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix<float> z( this->Dim(), this->Dim() );
@@ -1702,7 +1702,7 @@ TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec 
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec< float > w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix<float> z( this->Dim(), this->Dim() );
@@ -1743,7 +1743,7 @@ TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<f
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec<float> w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix <complex <float> > z( this->Dim() ,this->Dim() );
@@ -1790,7 +1790,7 @@ TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<f
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec<float> w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix <complex <float> > z( this->Dim() ,this->Dim() );
@@ -1833,7 +1833,7 @@ TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVe
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec< double > w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix<double> z( this->Dim(), this->Dim() );
@@ -1879,7 +1879,7 @@ TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVe
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec< double > w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix<double> z( this->Dim(), this->Dim() );
@@ -1919,7 +1919,7 @@ TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec<double> w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix <complex <double> > z( this->Dim() ,this->Dim() );
@@ -1966,7 +1966,7 @@ TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<
     int ka = this->fBand;
     int kb = B.fBand;
     int ldab = this->fBand + 1;
-    int ldbb = this->fBand + 1;
+    int ldbb = B.fBand + 1;
     TPZVec<double> w(0,0.);
     w.Resize( this->Dim() );
     TPZFMatrix <complex <double> > z( this->Dim() ,this->Dim() );
