@@ -583,12 +583,16 @@ void TPZAnalysis::PostProcessError(TPZVec<REAL> &ervec, std::ostream &out ){
     }
     else{
         out << "############" << endl;
-        out <<"Norma H1 = "  << sqrt(values[0]) << endl;
-        out <<"Norma L2 = "    << sqrt(values[1]) << endl;
-        out << "Semi-norma H1 = "    << sqrt(values[2])  <<endl;
-        for(int ier = 3; ier < nerrors; ier++)
-            out << "other norms = " << sqrt(values[ier]) << endl;
-    }
+        out <<"V - Norma H1 / HDIV = "  << sqrt(values[0]) << endl;
+        out <<"V - Norma L2 = "    << sqrt(values[1]) << endl;
+        out << "V - Semi-norma H1 = "    << sqrt(values[2])  <<endl;
+        out << "P - Norma H1 = " << sqrt(values[3]) << endl;
+        out << "P - Norma L2 = " << sqrt(values[4]) << endl;
+        out << "P - Semi-norma H1 = " << sqrt(values[5]) << endl;
+    
+//        for(int ier = 3; ier < nerrors; ier++)
+//            out << "other norms = " << sqrt(values[ier]) << endl;
+   }
 	// Returns the calculated errors.
 	for(i=0;i<nerrors;i++)
 		ervec[i] = sqrt(values[i]);

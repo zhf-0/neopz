@@ -1258,27 +1258,32 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     this->Solution(data,VariableIndex("Pressure"), Pressure);
     
     int vindex = this->VIndex();
+    int pindex = this->PIndex();
     
     TPZFMatrix<REAL> dudx(Dimension(),Dimension());
     TPZFMatrix<REAL> &dsol = data[vindex].dsol[0];
+    TPZFMatrix<REAL> &dsolp = data[pindex].dsol[0];
     //std::cout<<dsol<<std::endl;
     
     //Adaptação feita para Hdiv
     dsol.Resize(Dimension(),Dimension());
     
-    TPZFNMatrix<2,STATE> dsolxy(3,3);
+    TPZFNMatrix<2,STATE> dsolxy(2,2), dsolxyp(2,1);
     TPZAxesTools<STATE>::Axes2XYZ(dsol, dsolxy, data[vindex].axes);
-
+    TPZAxesTools<STATE>::Axes2XYZ(dsolp, dsolxyp, data[vindex].axes);
+    
     int shift = 3;
     // velocity
     
-    //values[2] : erro em semi norma H1
-    REAL diff;
+    //values[2] : erro norma L2
+    REAL diff, diffp;
     errors[1] = 0.;
     for(int i=0; i<Dimension(); i++) {
         diff = Velocity[i] - u_exact[i];
         errors[1]  += diff*diff;
     }
+    
+    ////////////////////////////////////////////////// H1 / GD
     
     //values[2] : erro em semi norma H1
     errors[2] = 0.;
@@ -1295,14 +1300,44 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     //values[0] : erro em norma H1 <=> norma Energia
     errors[0]  = errors[1]+errors[2];
     
+    ////////////////////////////////////////////////// H1 / GD
     
     // pressure
     
     /// values[1] : eror em norma L2
-    diff = Pressure[0] - u_exact[2];
-    errors[1+shift]  = diff*diff;
+    diffp = Pressure[0] - u_exact[2];
+    errors[shift+1]  = diffp*diffp;
     
     // pressure gradient error ....
     
+    errors[shift+2] = 0.;
+    TPZFMatrix<STATE> Sp(Dimension(),1,0.0);
+    for(int i=0; i<Dimension(); i++) {
+            Sp(i,0) = dsolxyp(i,0) - du_exact(2,i);
+    }
+    
+    diffp = InnerVec(Sp, Sp);
+    errors[shift+2]  += diffp;
+    
+    //values[0] : erro em norma H1 <=> norma Energia
+    errors[shift]  = errors[1+shift]+errors[2+shift];
+    
+    ////////////////////////////////////////////////// HDIV
+    
+//    /// erro norma HDiv
+//    
+//    STATE Div_exact=0., Div=0.;
+//    for(int i=0; i<Dimension(); i++) {
+//        Div_exact+=du_exact(i,i);
+//        Div+=dsolxy(i,i);
+//    }
+//    
+//    diff = (Div-Div_exact);
+//    
+//    errors[2]  = diff*diff;
+//    
+//    errors[0]  = errors[1+shift]+errors[1];
+    
+    ////////////////////////////////////////////////// HDIV
     
 }

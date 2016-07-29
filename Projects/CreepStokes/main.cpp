@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
-    int h_level = 2;
+    int h_level = 64;
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
@@ -292,7 +292,7 @@ void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
 // Solução analítica - Artigo
 void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& dsol){
     
-    dsol.Resize(2,2);
+    dsol.Resize(3,2);
     sol.Resize(3);
     
     STATE xv = x[0];
@@ -317,13 +317,19 @@ void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& ds
 //    dsol(1,1)= 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv + 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*yv*yv;
 
     
-    // x direction
+    // vx direction
     dsol(0,0)= -4*(-1 + xv)*(-1 + xv)*xv*(-1 + yv)*yv*(-1 + 2*yv) - 4*(-1 + xv)*xv*xv*(-1 + yv)*yv*(-1 + 2*yv);
     dsol(0,1)= 4*(-1 + xv)*xv*(-1 + yv)*(-1 + yv)*yv*yv + 2*(-1 + xv)*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv + 2*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv;
     
-    // y direction
+    // vy direction
     dsol(1,0)= -4*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*yv - 2*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*(-1 + 2*yv) - 2*(-1 + xv)*(-1 + xv)*xv*xv*yv*(-1 + 2*yv);
     dsol(1,1)= 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv + 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*yv*yv;
+    
+    // Gradiente pressão
+    
+    dsol(2,0)= 0;
+    dsol(2,1)= 0;
+    
     
 }
 
@@ -568,7 +574,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Criando elementos com graus de liberdade differentes para cada elemento (descontínuo):
     
-    //cmesh->ApproxSpace().CreateDisconnectedElements(true); //Criando elementos desconectados (descontínuo)
+    cmesh->ApproxSpace().CreateDisconnectedElements(true); //Criando elementos desconectados (descontínuo)
     
     
     //Criando material:
