@@ -223,11 +223,13 @@ void TPZInterpolatedElement::ForceSideOrder(int side, int order){
 
 void TPZInterpolatedElement::IdentifySideOrder(int side)
 {
-    if(MidSideConnectLocId(side) == -1)
+    int midsidelocid = MidSideConnectLocId(side);
+    if(midsidelocid == -1)
     {
         // there is no connect to adjust the order for
         return;
     }
+    long cindex = ConnectIndex(midsidelocid);
 	TPZCompElSide thisside(this,side);
 	TPZCompElSide large = thisside.LowerLevelElementList(1);
     //	int sideorder = MidSideConnect(side).Order();
@@ -241,7 +243,7 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
 	int i;
 	for(i=0; i<elvecall.NElements(); i++)
 	{
-		if(elvecall[i].ConnectIndex() != -1) elvecequal.Push(elvecall[i]);
+		if(elvecall[i].ConnectIndex() != -1 && elvecall[i].ConnectIndex() == cindex) elvecequal.Push(elvecall[i]);
 	}
 	
 	TPZInterpolatedElement *equal;
@@ -306,7 +308,7 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
 			equalside = elvecequal[il].Side();
             long equalindex = equal->ConnectIndex(equal->MidSideConnectLocId(equalside));
             if (equalindex != connectindex) {
-                DebugStop();
+                std::cout << __PRETTY_FUNCTION__ << " equalindex " << equalindex << " connectindex " << connectindex << std::endl;
             }
 			il++;
 		}
@@ -1573,7 +1575,8 @@ void TPZInterpolatedElement::Print(std::ostream &out) const {
 #ifdef PZDEBUG
         if(c.NShape() != NConnectShapeF(nod, c.Order()))
         {
-            DebugStop();
+            out << "***** NConnectShapeF ****** " << NConnectShapeF(nod, c.Order());
+//            DebugStop();
         }
 #endif
 		out << ConnectIndex(nod) <<  '/' << c.NShape() << ' ' ;

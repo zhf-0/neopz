@@ -1,6 +1,26 @@
 # @file neopz/Projects/CMakeList.txt  -- First CMake file for Projects directory 
 
 
+	if(BUILD_TUTORIAL)
+
+		if(BUILD_COMPLEX_PROJECTS)
+			#add_subdirectory(PDElinear1D)
+			#add_subdirectory(PDElinear2D)
+		else(BUILD_COMPLEX_PROJECTS)
+
+			# project to save and load a computational mesh
+			add_subdirectory(SaveAndLoad)
+
+			#Using discontinuous approximation functions
+			add_subdirectory(descontinuo)
+
+                	#Testing gradient reconstruction
+			add_subdirectory(Gradient_Reconstruction)
+                	#Testing generating ellipse from a vector of points by least square method
+			add_subdirectory(EllipseGenerator)
+		endif(BUILD_COMPLEX_PROJECTS)
+	endif(BUILD_TUTORIAL)
+	
 	if(BUILD_PROJECTS)
 		
 		#

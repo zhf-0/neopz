@@ -103,6 +103,36 @@ void OneTriangle(TPZAutoPointer<TPZGeoMesh> gmesh)
     gel->CreateBCGeoEl(5, 4);
 }
 
+void FourTriangle(TPZAutoPointer<TPZGeoMesh> gmesh)
+{
+    REAL coord[5][3] = {
+        {0,0,0},
+        {1,0},
+        {1,1},
+        {0,1},
+        {0.5,0.5}
+    };
+    gmesh->NodeVec().Resize(5);
+    for (int i=0; i<5; i++) {
+        TPZManVector<REAL> co(3);
+        for(int c=0; c<3; c++) co[c] = coord[i][c];
+        gmesh->NodeVec()[i].Initialize(co, gmesh);
+    }
+    for (int tr=0; tr<4; tr++)
+    {
+        TPZManVector<long> indices(3);
+        for(int i=0; i<2; i++) indices[i] = (i+tr)%4;
+        indices[2] = 4;
+        int matid = 1;
+        long index;
+        TPZGeoEl *gel = gmesh->CreateGeoElement(ETriangle, indices, matid, index);
+        gel->CreateBCGeoEl(3, Ebc1+tr);
+
+    }
+    gmesh->ResetConnectivities();
+    gmesh->BuildConnectivity();
+}
+
 void Displacement(const TPZVec<REAL> &xv, TPZVec<STATE> &result)
 {
     //1    result[0] = 100.+x[0]*x[0]+3.*x[0]*x[1]+4.*x[1]*x[1];
@@ -224,13 +254,10 @@ int main(int argc, char *argv[])
     
     std::string dirname = PZSOURCEDIR;
 #ifdef LOG4CXX
-    std::string FileName = dirname;
-    FileName = dirname + "/Projects/Elasticity2D/";
-    FileName += "Elasticity2DLog.cfg";
     InitializePZLOG();
 #endif
     int PElasticity = 2;
-    int maxnelx = 17;
+    int maxnelx = 3;
     for ( int nelx = 2; nelx < maxnelx; nelx *= 2)
     {
         
@@ -243,17 +270,18 @@ int main(int argc, char *argv[])
         TPZAutoPointer<TPZGeoMesh> gmesh = new TPZGeoMesh;
         
         //    OneTriangle(gmesh);
-        gengrid.Read(gmesh);
-        gengrid.SetBC(gmesh, 4, Ebc1);
-        gengrid.SetBC(gmesh, 5, Ebc2);
-        gengrid.SetBC(gmesh, 6, Ebc3);
-        gengrid.SetBC(gmesh, 7, Ebc4);
+        FourTriangle(gmesh);
+//        gengrid.Read(gmesh);
+//        gengrid.SetBC(gmesh, 4, Ebc1);
+//        gengrid.SetBC(gmesh, 5, Ebc2);
+//        gengrid.SetBC(gmesh, 6, Ebc3);
+//        gengrid.SetBC(gmesh, 7, Ebc4);
         
         
         if(0)
         {
             //  Print Geometrical Base Mesh
-            std::ofstream argument("../GeometicMesh.txt");
+            std::ofstream argument("../GeometricMesh.txt");
             gmesh->Print(argument);
             std::ofstream Dummyfile("../GeometricMesh.vtk");
             TPZVTKGeoMesh::PrintGMeshVTK(gmesh,Dummyfile, true);
@@ -265,13 +293,13 @@ int main(int argc, char *argv[])
         
         TPZCompMesh * TensorMesh = ComputationalTensorMesh(gmesh, PElasticity,PInternal, hybrid);
         TPZCompMesh * DisplacementMesh = ComputationalDisplacementMesh(gmesh, PInternal-1);
-        if(0)
+        if(1)
         {
             //	Print First computational mesh
             std::ofstream ArgumentElasticity("../TensorMeshForElasticity.txt");
             TensorMesh->Print(ArgumentElasticity);
         }
-        if(0)
+        if(1)
         {
             //	Print First computational mesh
             std::ofstream ArgumentElasticity("../DisplacementMeshForElasticity.txt");
@@ -285,7 +313,7 @@ int main(int argc, char *argv[])
         
         MultiPhysicsMesh(meshvec,mphysics,hybrid);
         
-        if(0)
+        if(1)
         {
             std::ofstream out("../CompMultiphysicsbefore.txt");
             mphysics->Print(out);
@@ -293,7 +321,7 @@ int main(int argc, char *argv[])
         
         CondenseInternalEquations(mphysics);
         
-        if(0)
+        if(1)
         {
             std::ofstream out("../CompMultiphysics.txt");
             mphysics->Print(out);
@@ -337,6 +365,9 @@ int main(int argc, char *argv[])
         gmesh->ResetReference();
         delete ElasticAnalysis;
         delete mphysics;
+        if (hybrid) {
+            TensorMesh->Reference()->ResetReference();
+        }
         delete TensorMesh;
         delete DisplacementMesh;
     }
@@ -431,11 +462,43 @@ TPZCompMesh * ComputationalTensorMesh(TPZAutoPointer<TPZGeoMesh> & gmesh,int pOr
     matid.insert(Emat2);
     cmesh->AutoBuild(matid);
     
-    
-    cmesh->LoadReferences();
-    cmesh->ApproxSpace().CreateDisconnectedElements(false);
-    cmesh->AutoBuild();
-    
+    if (hybrid)
+    {
+        cmesh->LoadReferences();
+        // create the boundary elements one at a time
+        std::map<TPZGeoEl *, TPZCompEl *> boundary;
+        long nel = gmesh->NElements();
+        for (long el=0; el<nel; el++) {
+            TPZGeoEl *gel = gmesh->Element(el);
+            if (!gel || gel->HasSubElement() || gel->Dimension() != 1) {
+                continue;
+            }
+            TPZGeoElSide gelside(gel,gel->NSides()-1);
+            TPZStack<TPZCompElSide> equal;
+            gelside.EqualLevelCompElementList(equal, 1, 0);
+            if (equal.size() != 1) {
+                DebugStop();
+            }
+            boundary[gel] = equal[0].Element();
+        }
+        gmesh->ResetReference();
+        for (std::map<TPZGeoEl*, TPZCompEl*>::iterator it = boundary.begin(); it!=boundary.end(); it++) {
+            TPZCompEl *cel = it->second;
+            TPZGeoEl *gel = it->first;
+            cel->LoadElementReference();
+            long index;
+            TPZCompEl *bnd = cmesh->ApproxSpace().CreateCompEl(gel, *cmesh, index);
+            cel->Reference()->ResetReference();
+            bnd->Reference()->ResetReference();
+            
+        }
+    }
+    else
+    {
+        cmesh->LoadReferences();
+        cmesh->ApproxSpace().CreateDisconnectedElements(false);
+        cmesh->AutoBuild();
+    }
     long nel = cmesh->NElements();
     for (long el=0; el<nel; el++) {
         TPZCompEl *cel = cmesh->Element(el);
@@ -690,10 +753,12 @@ TPZCompMesh * ComputationalDisplacementMesh(TPZAutoPointer<TPZGeoMesh> & gmesh,i
     
 }
 
+#include "pzbstrmatrix.h"
 #define VTK
 void SolveSist(TPZAnalysis *an, TPZCompMesh *fCmesh)
 {
     TPZSkylineStructMatrix skymat(fCmesh);
+//    TPZBandStructMatrix band(fCmesh);
     std::set<int> matids;
     matids.insert(Emat1);
     matids.insert(Emat2);

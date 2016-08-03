@@ -50,6 +50,18 @@ void TPZGeoElSideIndex::SetElement(TPZGeoEl* geoel){
 
 // Implementation of the TPZGeoElSide methods
 
+TPZGeoElSide::TPZGeoElSide(TPZGeoEl *gel,int side)
+{
+#ifdef PZDEBUG
+    if (gel && side >= gel->NSides()) {
+        DebugStop();
+    }
+#endif
+    fGeoEl = gel;
+    fSide = side;
+}
+
+
 TPZGeoElSide::TPZGeoElSide(TPZGeoEl *gel, std::set<long> &sideCornerNodes)
 {
 	fGeoEl = 0; fSide = -1;

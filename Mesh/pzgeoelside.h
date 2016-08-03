@@ -117,7 +117,7 @@ public:
 	
 	TPZGeoElSide(){ fGeoEl = 0; fSide  = -1;}
 	
-	TPZGeoElSide(TPZGeoEl *gel,int side){  fGeoEl = gel; fSide = side;}
+    TPZGeoElSide(TPZGeoEl *gel,int side);
 	
 	/** @brief This constructor set an TPZGeoElSide based in the cornerNodes of an side of gel */
 	/** If the cornerNodes are not consistent, the TPZGeoElSide created is NULL */

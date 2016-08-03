@@ -967,7 +967,7 @@ void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(  void (*fp)(const TPZVec<R
 	
 	intrule->SetOrder(maxorder);
 	
-	int ndof = material->NStateVariables();
+    int ndof = 6;//material->NStateVariables();
 	int nflux = material->NFluxes();
 	TPZManVector<STATE,10> u_exact(ndof);
     if(ndof != 6)
