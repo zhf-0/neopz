@@ -103,6 +103,7 @@ void TPZCompCloneMesh::AutoBuild() {
             if (cel){
                 if(gclm->IsPatchSon(gel)) {        // || gclm->IsNeighBCForPatchSon(gel)) {
 #ifdef LOG4CXX
+                    if(logger->isDebugEnabled())
                     {
                         std::stringstream sout;
                         sout << "TPZCompCloneMesh::AutoBuild : Creating computational element for geometric element:\n";
