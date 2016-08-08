@@ -28,6 +28,7 @@
 #include "pzstepsolver.h"
 #include "TPZGeoLinear.h"
 #include "tpzgeoelrefpattern.h"
+#include "TPZParFrontStructMatrix.h"
 
 
 //------------------STOKES Creep Of Concrete------------------------
@@ -120,7 +121,7 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
-    int h_level = 25;
+    int h_level = 64;
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
@@ -179,15 +180,40 @@ int main(int argc, char *argv[])
 #endif
     
     //Resolvendo o Sistema:
+    bool IsParFrontalQ = true;
+    int numthreads = 16;
     
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
-    TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso nao simetrico ***
-    matskl.SetNumThreads(2);
-    an.SetStructuralMatrix(matskl);
-    TPZStepSolver<STATE> step;
-    step.SetDirect(ELU);
-    an.SetSolver(step);
+    
+    if (IsParFrontalQ) {
+        TPZParFrontStructMatrix<TPZFrontSym<STATE> > strmat(cmesh_m);
+        strmat.SetDecomposeType(ELDLt);
+        
+        
+        //TPZSymetricSpStructMatrix strmat(cmesh_m);
+        
+
+        strmat.SetNumThreads(numthreads);
+        an.SetStructuralMatrix(strmat);
+        TPZStepSolver<STATE> step;
+        step.SetDirect(ELDLt); //caso simetrico
+        an.SetSolver(step);
+    }
+    else{
+        
+        TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso nao simetrico ***
+        matskl.SetNumThreads(numthreads);
+        an.SetStructuralMatrix(matskl);
+        TPZStepSolver<STATE> step;
+        step.SetDirect(ELU);
+        an.SetSolver(step);
+    }
+    
+
+    
+    std::cout << "N DoF = " << cmesh_m->NEquations() << std::endl;
+    
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
     
@@ -226,7 +252,7 @@ int main(int argc, char *argv[])
 #endif
     
     //Calculo do erro
-    
+    std::cout << "Comuting Error " << std::endl;
     TPZManVector<REAL,3> Errors;
     ofstream ErroOut("Erro.txt");
     an.SetExact(sol_exact);
@@ -235,7 +261,7 @@ int main(int argc, char *argv[])
     
     
     //Pós-processamento (paraview):
-
+    std::cout << "Post Processing " << std::endl;
     std::string plotfile("Stokes.vtk");
     TPZStack<std::string> scalnames, vecnames;
     scalnames.Push("Pressure");
@@ -244,7 +270,7 @@ int main(int argc, char *argv[])
     vecnames.Push("V_exact");
     
     
-    int postProcessResolution = 4; //  keep low as possible
+    int postProcessResolution = 2; //  keep low as possible
     int dim = gmesh->Dimension();
     an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
     an.PostProcess(postProcessResolution,dim);
