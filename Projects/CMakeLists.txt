@@ -138,8 +138,6 @@ ENABLE_TESTING()
 			add_subdirectory(MultipleLoad)
 
 			# add_subdirectory(adaptivity_refactor)
-
-			add_subdirectory(testMatLab)
 						
 			add_subdirectory(Cubo_do_Nathan)
 
@@ -160,7 +158,7 @@ ENABLE_TESTING()
 			add_subdirectory(Steam)
 			add_subdirectory(QuadraticElements)
 			add_subdirectory(ThermalStress)
-			Add_subdirectory(Conductivity)
+			#Add_subdirectory(Conductivity)
 			add_subdirectory(ConsLaw)
 			add_subdirectory(Descontinuo2)
 
@@ -177,11 +175,17 @@ ENABLE_TESTING()
 			add_subdirectory(DarcyflowAxisymmetricHdiv)
 			add_subdirectory(DarcyflowHdiv3D)
 			add_subdirectory(MonophasicWell)
+			add_subdirectory(GradOfX)
+			add_subdirectory(Hdiv3DCurved)
 			#collaborative project (NH GH PD, SG, OD) 18-04-2015
 			add_subdirectory(iRMS)
+
+
 			add_subdirectory(Elasticity2D)
 			add_subdirectory(Gridgeneration)
 			#add_subdirectory(Poisson2DLabyrinth)
+			add_subdirectory(Andrade)
+			add_subdirectory(MatrixMarket)
 			add_subdirectory(Frac1DHdiv)
 			add_subdirectory(SubStruct)
 			add_subdirectory(MultiphysicsSimulation)
@@ -224,12 +228,13 @@ ENABLE_TESTING()
 			# Colaboration with Laurent Stainier
 			
 			add_subdirectory(MatLib)
+
+			if(USING_MKL)
+				add_subdirectory(PardisoSample)
+			endif(USING_MKL)
 			
 
 		endif(BUILD_COMPLEX_PROJECTS)
 		
 		
 	endif(BUILD_PROJECTS)
-
-
-   

@@ -12,6 +12,13 @@
 static LoggerPtr logger(Logger::getLogger("pz.mesh.tpzcondensedcompel"));
 #endif
 
+#ifdef USING_LAPACK
+#define USING_DGER2
+#ifdef MACOSX
+#include <Accelerate/Accelerate.h>
+#endif
+#endif
+
 TPZCondensedCompEl::TPZCondensedCompEl(TPZCompEl *ref)
 {
     if(!ref)
@@ -67,12 +74,22 @@ TPZCondensedCompEl::TPZCondensedCompEl(const TPZCondensedCompEl &copy, TPZCompMe
 /** @brief unwrap the condensed element from the computational element and delete the condensed element */
 void TPZCondensedCompEl::Unwrap()
 {
-    fMesh->ElementVec()[fIndex] = fReferenceCompEl;
+    long myindex = fIndex;
+    fMesh->ElementVec()[myindex] = 0;
+    TPZCompEl *ReferenceEl = fReferenceCompEl;
     int ncon = NConnects();
     for (int ic=0; ic<ncon ; ic++) {
         Connect(ic).SetCondensed(false);
     }
+    TPZGeoEl *gel = Reference();
+    if (gel) {
+        gel->ResetReference();
+    }
     delete this;
+    ReferenceEl->Mesh()->ElementVec()[myindex] = ReferenceEl;
+    if (gel) {
+        gel->SetReference(ReferenceEl);
+    }
 }
 
 /**
@@ -276,7 +293,6 @@ void TPZCondensedCompEl::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
         }
         
 #ifdef STATEdouble
-
         cblas_dger (CblasColMajor, rows-i-1, cols-i-1,
                     -KF(i,i), &KF(i+1,i), 1,
                     &KF(i,i+1), rows, &KF(i+1,i+1), rows);
@@ -308,6 +324,14 @@ void TPZCondensedCompEl::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
             fCondensed.K01().operator()(i,j) = KF(i,j+dim0);
     
     fCondensed.K00()->Subst_LBackward(&fCondensed.K01()); //Com SubstL_Back chegamos ao K01 desejado
+    
+//    void cblas_dtrsm(const enum CBLAS_ORDER __Order, const enum CBLAS_SIDE __Side,
+//                     const enum CBLAS_UPLO __Uplo, const enum CBLAS_TRANSPOSE __TransA,
+//                     const enum CBLAS_DIAG __Diag, const int __M, const int __N,
+//                     const double __alpha, const double *__A, const int __lda, double *__B,
+//                     const int __ldb) __OSX_AVAILABLE_STARTING(__MAC_10_2,__IPHONE_4_0);
+
+    cblas_dtrsm(CblasColMajor,CblasLeft,CblasUpper,CblasNoTrans,CblasUnit,)
     fCondensed.SetK01IsComputed(1);
     fCondensed.SetReduced();
     
@@ -363,6 +387,14 @@ void TPZCondensedCompEl::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     
     
 #endif
+    
+#ifdef USING_DGER
+#ifdef USING_LAPACK
+    TPZFMatrix<STATE> * K00_temp = dynamic_cast<TPZFMatrix<STATE> * >(fCondensed.K00().operator->());
+    K00_temp->InitializePivot();
+#endif
+#endif
+    
     
 #ifdef LOG4CXX
     if(logger->isDebugEnabled())
@@ -482,6 +514,7 @@ void TPZCondensedCompEl::LoadSolution()
             u1(count++,0) = bl(seqnum,0,ibl,0);
         }
     }
+
     fCondensed.UGlobal(u1, elsol);
     count = 0;
     for (ic=0; ic<nc0 ; ic++) {
