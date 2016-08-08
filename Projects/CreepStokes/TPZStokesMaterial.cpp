@@ -12,6 +12,7 @@
 #include "pzaxestools.h"
 #include "pzmatwithmem.h"
 #include "pzfmatrix.h"
+//#define IsHDivQ
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -583,7 +584,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 
     
     int gy=v_h.size();
-    int phs=p_h.size();
+
     
     TPZFNMatrix<9> phiVi(fDimension,1), phiVj(fDimension,1), phiPi(fDimension,1),phiPj(fDimension,1);
     
@@ -602,6 +603,30 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 v_2(1,0) = vbc[1];
                 p_D = vbc[2];
             }
+            
+#ifdef IsHDivQ
+            
+            for(int i = 0; i < nshapeV; i++ )
+            {
+                
+                //Adaptação para Hdiv
+                
+                TPZManVector<REAL> n = datavec[0].normal;
+                
+                REAL vh_n = v_h[0];
+                REAL v_n = n[0] * v_2[0] + n[1] * v_2[1];
+                
+                ef(i,0) += weight * gBigNumber * (vh_n - v_n) * phiV(i,0);
+                
+                for(int j = 0; j < nshapeV; j++){
+                    
+                    ek(i,j) += weight * gBigNumber * phiV(j,0) * phiV(i,0);
+                    
+                }
+                
+            }
+            
+#else
             
             for(int i = 0; i < nshapeV; i++ )
             {
@@ -648,7 +673,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 }
                 
             }
-            
+#endif            
             //pressao
             
             for(int i = 0; i < nshapeP; i++ )
@@ -672,7 +697,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 
             }
             
-            
+
             
         }
             break;
@@ -1361,7 +1386,10 @@ void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
 
 void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
    
-    //return;
+    
+    //Caso H1 -> return
+    return;
+    
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
     int nref =  datavec.size();
