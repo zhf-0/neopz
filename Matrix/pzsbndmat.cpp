@@ -550,42 +550,12 @@ template<class TVar>
 int
 TPZSBMatrix<TVar>::Resize(const long newDim ,const long)
 {
-<<<<<<< HEAD
-	if ( newDim == this->Dim() )
-		return( 1 );
-	
-	if (fBand>this->Dim()-1) fBand=this->Dim()-1;//misael:19/10/96
-	// Cria nova matrix.
-	long newBand = fBand > newDim - 1 ? newDim - 1 : fBand;
-	long  newSize  = newDim * (newBand + 1);
-	TVar *newDiag = new TVar[newSize] ;
-	
-	// Copia os elementos para a nova matriz.
-	TVar *src = fDiag;
-	TVar *dst = newDiag;
-	TVar *end = &newDiag[ MIN(Size(), newSize) ];
-	while ( dst < end )
-		*dst++ = *src++;
-	
-	// Zera as posicoes que sobrarem (se sobrarem).
-	end = &newDiag[newSize];
-	while ( dst < end )
-		*dst++ = 0.0;
-	
-	// Descarta a matriz antiga e valida a nova matriz.
-	if ( fDiag != NULL )
-		delete( fDiag );
-	fDiag = newDiag;
-	this->fCol = this->fRow = newDim;
-	this->fDecomposed = 0;
-	return( 1 );
-=======
     if ( newDim == this->Dim() )
         return( 1 );
     
     Redim(newDim,newDim);
     return( 1 );
->>>>>>> HDiv-curved
+
 }
 
 /*************/
