@@ -46,8 +46,11 @@ protected:
 	/** @brief Pointer to forcing function, it is the right member at differential equation */
     TPZAutoPointer<TPZFunction<STATE> > fForcingFunction;
 	
-	/** @brief Pointer to exact solution function, needed to calculate exact error */
+	/** @brief Pointer to exact solution function, needed to calculate exact error (Velocity) */
     TPZAutoPointer<TPZFunction<STATE> > fForcingFunctionExact;
+    
+    /** @brief Pointer to exact solution function, needed to calculate exact error (Pressure) */
+    TPZAutoPointer<TPZFunction<STATE> > fForcingFunctionExactPressure;
 	
 	/** @brief Pointer to time dependent forcing function, it is the right member at differential equation */
     TPZAutoPointer<TPZFunction<STATE> > fTimeDependentForcingFunction;
@@ -358,8 +361,20 @@ public:
     TPZAutoPointer<TPZFunction<STATE> > &ForcingFunctionExact() {
         return fForcingFunctionExact;
     }
+    
+    /** @brief Returns a procedure as source function for the material (pressure)*/
+    TPZAutoPointer<TPZFunction<STATE> > &ForcingFunctionExactPressure() {
+        return fForcingFunctionExactPressure;
+    }
 	
-    /** 
+    
+    /** @brief Returns a procedure as source function for the material */
+    TPZAutoPointer<TPZFunction<STATE> > &ForcingFunctionBC() {
+        return fBCForcingFunction;
+    }
+    
+    
+    /**
 	 * @brief Sets a procedure as exact solution for the problem
 	 * @param fp pointer of exact solution function
 	 */
@@ -367,7 +382,16 @@ public:
 	{
 		fForcingFunctionExact = fp;
 	}
-	
+
+    /**
+     * @brief Sets a procedure as exact solution for the problem
+     * @param fp pointer of exact solution function
+     */
+    void SetForcingFunctionExactPressure(TPZAutoPointer<TPZFunction<STATE> > fp)
+    {
+        fForcingFunctionExactPressure = fp;
+    }
+    
     /** 
 	 * @brief Sets a procedure as source function for the material.
 	 * @param fp pointer of the forces function
@@ -409,6 +433,7 @@ public:
     
     virtual int HasForcingFunction() {return (fForcingFunction != 0);}
 	virtual int HasfForcingFunctionExact() {return (fForcingFunctionExact != 0);}
+    virtual int HasfForcingFunctionExactPressure() {return (fForcingFunctionExactPressure != 0);}
     virtual int HasffBCForcingFunction() {return (fBCForcingFunction != 0);}
     virtual int HasfTimedependentBCForcingFunction() {return (fTimedependentBCForcingFunction != 0);}    
     
