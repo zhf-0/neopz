@@ -12,7 +12,7 @@
 #include "pzaxestools.h"
 #include "pzmatwithmem.h"
 #include "pzfmatrix.h"
-//#define IsHDivQ
+#define IsHDivQ
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -1388,7 +1388,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
    
     
     //Caso H1 -> return
-    return;
+    //return;
     
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space
@@ -1405,13 +1405,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
     if (datavec[vindex].fVecShapeIndex.size() == 0) {
         FillVecShapeIndex(datavec[vindex]);
     }
-    // Setting forcing function
-    /*STATE force = 0.;
-     if(this->fForcingFunction) {
-     TPZManVector<STATE> res(1);
-     fForcingFunction->Execute(datavec[pindex].x,res);
-     force = res[0];
-     }*/
+
     
     //Gravity
     STATE rhoi = 900.; //itapopo
@@ -1681,19 +1675,19 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     ////////////////////////////////////////////////// H1 / GD
     
     //values[2] : erro em semi norma H1
-    errors[2] = 0.;
-    TPZFMatrix<STATE> S(Dimension(),Dimension(),0.0);
-    for(int i=0; i<Dimension(); i++) {
-        for(int j=0; j<Dimension(); j++) {
-            S(i,j) = dsolxy(i,j) - du_exact(i,j);
-        }
-    }
-    
-    diff = Inner(S, S);
-    errors[2]  += diff;
-    
-    //values[0] : erro em norma H1 <=> norma Energia
-    errors[0]  = errors[1]+errors[2];
+//    errors[2] = 0.;
+//    TPZFMatrix<STATE> S(Dimension(),Dimension(),0.0);
+//    for(int i=0; i<Dimension(); i++) {
+//        for(int j=0; j<Dimension(); j++) {
+//            S(i,j) = dsolxy(i,j) - du_exact(i,j);
+//        }
+//    }
+//    
+//    diff = Inner(S, S);
+//    errors[2]  += diff;
+//    
+//    //values[0] : erro em norma H1 <=> norma Energia
+//    errors[0]  = errors[1]+errors[2];
     
     ////////////////////////////////////////////////// H1 / GD
     
@@ -1719,19 +1713,19 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     ////////////////////////////////////////////////// HDIV
     
-//    /// erro norma HDiv
-//    
-//    STATE Div_exact=0., Div=0.;
-//    for(int i=0; i<Dimension(); i++) {
-//        Div_exact+=du_exact(i,i);
-//        Div+=dsolxy(i,i);
-//    }
-//    
-//    diff = (Div-Div_exact);
-//    
-//    errors[2]  = diff*diff;
-//    
-//    errors[0]  = errors[1+shift]+errors[1];
+    /// erro norma HDiv
+    
+    STATE Div_exact=0., Div=0.;
+    for(int i=0; i<Dimension(); i++) {
+        Div_exact+=du_exact(i,i);
+        Div+=dsolxy(i,i);
+    }
+    
+    diff = (Div-Div_exact);
+    
+    errors[2]  = diff*diff;
+    
+    errors[0]  = errors[1]+errors[2];
     
     ////////////////////////////////////////////////// HDIV
     
