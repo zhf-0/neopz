@@ -128,8 +128,8 @@ void LaplaceInCube::Run(int ordemP, int ndiv, std::map<REAL, REAL> &fDebugMapL2,
         
         
         TPZAnalysis anh1(cmeshH1, true);
-        
-        tools::SolveSyst(anh1, cmeshH1);
+        REAL t1,t2;
+        tools::SolveSyst(anh1, cmeshH1, t1, t2);
         
 //        stringstream refh1,grauh1;
 //        grauh1 << ordemP;
@@ -191,8 +191,8 @@ void LaplaceInCube::Run(int ordemP, int ndiv, std::map<REAL, REAL> &fDebugMapL2,
     DofCond = mphysics->NEquations();
     
     TPZAnalysis an(mphysics, true);
-    
-    tools::SolveSyst(an, mphysics);
+    REAL t1,t2;
+    tools::SolveSyst(an, mphysics, t1, t2);
 
     
     TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvec, mphysics);
@@ -1763,10 +1763,10 @@ void LaplaceInCube::ChangeExternalOrderConnects(TPZCompMesh *mesh){
                 nshape = co.NShape();
                 if(corder!=cordermin){
                     cordermin = corder-1;
-                    co.SetOrder(cordermin);
+                    co.SetOrder(cordermin,1);
                     
                     TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *>(cel);
-                    nshape = intel->NConnectShapeF(icon);
+                    nshape = intel->NConnectShapeF(icon,co.Order());
                     
                     co.SetNShape(nshape);
                     mesh->Block().Set(co.SequenceNumber(),nshape);

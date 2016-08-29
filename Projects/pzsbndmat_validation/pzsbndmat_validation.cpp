@@ -9,7 +9,10 @@
 
 #include <iostream>
 #include <fstream>
+<<<<<<< HEAD
 #include "TPZSBMatrixLapack.h"
+=======
+>>>>>>> HDiv-curved
 #include "pzfmatrix.cpp"
 #include "pzlog.h"
 #include "TPZTimer.h"
