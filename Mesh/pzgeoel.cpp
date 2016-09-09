@@ -1107,6 +1107,15 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
     
     
     switch (dim) {
+        case 0:
+        {
+            jac.Resize(dim,dim);
+            axes.Resize(dim,3);
+            jacinv.Resize(dim,dim);
+            jac.Zero();
+            
+        }
+            break;
         case 1:
         {
             jac.Resize(dim,dim);

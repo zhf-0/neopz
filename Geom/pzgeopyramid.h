@@ -66,6 +66,7 @@ namespace pzgeom {
         static void Shape(TPZVec<REAL> &loc,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi){
             TShape(loc, phi, dphi);
         }
+		
         
         /* @brief Compute x mapping from local parametric coordinates */
         template<class T>
