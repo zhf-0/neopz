@@ -101,6 +101,7 @@ ENABLE_TESTING()
 			add_subdirectory(StriplineFran)
 			add_subdirectory(HCurl2D)
 			add_subdirectory(MFHCurlH1)
+			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2DLagrange)
 			
