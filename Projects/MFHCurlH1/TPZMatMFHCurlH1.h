@@ -14,7 +14,10 @@
 enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
 /**
  * @ingroup material
- * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
+ * @brief This class implements the weak statement of a waveguide problem as stated in Jin's 
+ * The Finite Element Method in Electromagnetics (chapter 8 of 3rd edition).
+ * It used a 2D Hcurl space for the transversal components of the electric field and an 1D
+ * H1 space for the longitudinal component.
  */
 class  TPZMatMFHCurlH1 : public TPZVecL2
 {
@@ -24,11 +27,7 @@ protected:
     //COM CERTEZA
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);
-    REAL fLambda;
-    REAL fE0;
     REAL fW;
-    REAL fTheta;
-    REAL fScale;
     whichMatrix assembling;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
@@ -36,7 +35,7 @@ protected:
     
 public:
     
-    TPZMatMFHCurlH1(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatMFHCurlH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
     
     TPZMatMFHCurlH1(int id);
     

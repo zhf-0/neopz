@@ -1,25 +1,27 @@
 /**
- * @file TPZMatComplexH12D.h
- * @brief Header file for class TPZMatComplexH12D.\n
+ * @file TPZMatHelmholtz2DLagrange.h
+ * @brief Header file for class TPZMatHelmholtz2DLagrange.\n
  */
 
-#ifndef TPZMatComplexH12D_H
-#define TPZMatComplexH12D_H
+#ifndef TPZMATHELMHOLTZ2DLAGRANGE_H
+#define TPZMATHELMHOLTZ2DLAGRANGE_H
 
-
+#include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "TPZMatHCurl2D.h"
+#include "../HCurl2D/TPZMatHCurl2D.h"
 
 /**
  * @ingroup material
- * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
+ * @brief This class implements the weak formulation 
+ * using lagrange multipliers for the helmholtz 
+ * wave equation in 2d
  */
-class  TPZMatComplexH12D : public TPZMaterial
+class  TPZMatHelmholtz2DLagrange : public TPZVecL2
 {
     
 protected:
-    
+    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
     //COM CERTEZA
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);
@@ -28,25 +30,28 @@ protected:
     REAL fW;
     REAL fTheta;
     REAL fScale;
-    
+    whichMatrix assembling;
+    const int h1meshindex = 1;
+    const int hcurlmeshindex = 0;
+    bool isTesting;
     
 public:
     
-    TPZMatComplexH12D(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatHelmholtz2DLagrange(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
     
-    TPZMatComplexH12D(int id);
+    TPZMatHelmholtz2DLagrange(int id);
     
     /** @brief Default constructor */
-    TPZMatComplexH12D();
+    TPZMatHelmholtz2DLagrange();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
     /** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatComplexH12D(const TPZMatComplexH12D &mat);
+    TPZMatHelmholtz2DLagrange(const TPZMatHelmholtz2DLagrange &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatComplexH12D();
+    virtual ~TPZMatHelmholtz2DLagrange();
     
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatComplexH12D"; }
+    virtual std::string Name() { return "TPZMatHelmholtz2DLagrange"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
@@ -54,8 +59,26 @@ public:
     /** @brief Returns the number of state variables associated with the material */
     virtual int NStateVariables() { return 1;}
     
-public:
+    int HCurlIndex() const { return hcurlmeshindex;}
+    int H1Index() const { return h1meshindex;}
     
+public:
+    /**
+     * @brief Sets Matrix A for assembling
+     * @details This material is designed for solving the
+     * generalised eigenvalue problem stated as Ax = lBx
+     * Matrices A and B are assembled separatedly.
+     */
+    virtual void SetMatrixA(){ assembling = A;};
+    /**
+     * @brief Sets Matrix B for assembling
+     * @details This material is designed for solving the
+     * generalised eigenvalue problem stated as Ax = lBx
+     * Matrices A and B are assembled separatedly.
+     */
+    virtual void SetMatrixB(){ assembling = B;};
+    
+    virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
      * @param data [in] stores all input data
@@ -170,6 +193,20 @@ public:
         }
     }
     
+    /** @brief Gets the order of the integration rule necessary to integrate an element with polinomial order p */
+    virtual int IntegrationRuleOrder(int elPMaxOrder) const;
+    
+    
+    /** @brief This method defines which parameters need to be initialized in order to compute the contribution of the boundary condition */
+    virtual void FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
+    {
+        // default is no specific data requirements
+        int nref = datavec.size();
+        for(int iref = 0; iref<nref; iref++){
+            datavec[iref].SetAllRequirements(false);
+            datavec[iref].fNeedsNormal = true;
+        }
+    }
     
     virtual int VariableIndex(const std::string &name);
     
@@ -181,11 +218,9 @@ public:
     
     /** @brief Returns the solution associated with the var index based on the finite element approximation */
     virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+    
+    virtual void Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout);
 };
 
-
-
-STATE urDefault( const TPZVec<REAL> &x );//default material has ur=1
-STATE erDefault( const TPZVec<REAL> &x );//default material has er=1
 #endif
 

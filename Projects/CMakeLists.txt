@@ -102,6 +102,7 @@ ENABLE_TESTING()
 			add_subdirectory(HCurl2D)
 			add_subdirectory(MFHCurlH1)
 			add_subdirectory(HCurlProjection)
+			add_subdirectory(Helmholtz2DLagrange)
 			
 			#add_subdirectory(HDiv_demo)
 
