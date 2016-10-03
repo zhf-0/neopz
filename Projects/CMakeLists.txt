@@ -197,4 +197,14 @@ ENABLE_TESTING()
                         add_subdirectory(artigoPira)
 
 		endif(BUILD_COMPLEX_PROJECTS)
+<<<<<<< HEAD
 	endif(BUILD_PROJECTS)
+=======
+		
+		
+	endif(BUILD_PROJECTS)
+
+
+   
+add_subdirectory(artigoPira)
+>>>>>>> trying to fix bugs from previous merge

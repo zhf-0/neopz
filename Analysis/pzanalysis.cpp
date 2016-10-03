@@ -703,14 +703,14 @@ void TPZAnalysis::DefineGraphMesh(int dim, const TPZVec<std::string> &scalnames,
 	int pospos = plotfile.rfind(".pos");
 	int posvtk = plotfile.rfind(".vtk");
 	long filelength = plotfile.size();
-	if(filelength-posplot == 4 && posplot != -1)	{
+	if(filelength-posplot == 3)	{
 		fGraphMesh[dim1] = new TPZV3DGraphMesh(fCompMesh,dim,matit->second) ;
-	}else if(filelength-posdx == 3 && posdx != -1) {
+	}else if(filelength-posdx == 3) {
 		fGraphMesh[dim1] = new TPZDXGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames) ;
-	}else if(filelength-pospos == 4 && pospos != -1) {
+	}else if(filelength-pospos == 3) {
 		fGraphMesh[dim1] = new TPZMVGraphMesh(fCompMesh,dim,matit->second);
 	}
-	else if(filelength-posvtk == 4 && posvtk != -1) {
+	else if(filelength-posvtk == 4) {
 		fGraphMesh[dim1] = new TPZVTKGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames);
 	} else {
 		cout << "grafgrid was not created\n";

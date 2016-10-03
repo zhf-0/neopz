@@ -361,7 +361,7 @@ void TPZCompMesh::InitializeBlock() {
 }
 
 void TPZCompMesh::ExpandSolution() {
-  fBlock.Resequence();
+	fBlock.Resequence();
 	long ibl,nblocks = fBlock.NBlocks();
 	
 	//TPZFMatrix<REAL> OldSolution(fSolution);
@@ -896,7 +896,7 @@ void TPZCompMesh::BuildTransferMatrix(TPZCompMesh &coarsemesh, TPZTransfer<STATE
 			" between superelements\n";
 			continue;
 		}
-		TPZTransform<> t(coarsel->Dimension());
+		TPZTransform t(coarsel->Dimension());
 		t=finegel->BuildTransform2(finegel->NSides()-1,coarsegel,t);
 		finecel->BuildTransferMatrix(*coarsel,t,transfer);
 	}

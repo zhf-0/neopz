@@ -687,9 +687,9 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
         if (!intel) {
             continue;
         }
-        intel->SetPreferredOrder(1);//setting polynomial order to 1 for every computational element
+        intel->SetPreferredOrder(1);
     }
-    cmesh.ExpandSolution();//adjust size and indices of local functions on global system
+    cmesh.ExpandSolution();
     for (el = 0; el<numcell ; el++) {
         TPZCompEl *cel = cmesh.ElementVec()[el];
         TPZInterpolatedElement *intel = dynamic_cast<TPZInterpolatedElement *>(cel);
@@ -701,7 +701,7 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
         int is;
         int nsides = gel->NSides();
         for (is=0; is<nsides; is++) {
-            if (gel->SideDimension(is) != geldim-1) {//take the topological **SIDES**
+            if (gel->SideDimension(is) != geldim-1) {
                 continue;
             }
             int nsconnects = intel->NSideConnects(is);
@@ -709,10 +709,9 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
             if (nsconnects != 1) {
                 continue;
             }
-//            long cindex = intel->SideConnectIndex(0, is);
-					long cindex = intel->SideConnectLocId(0,is);//the LOCAL connect ID must be taken
-            TPZConnect &c = intel->Connect( cindex );
-          if (c.HasDependency()) {
+            long cindex = intel->SideConnectIndex(0, is);
+            TPZConnect &c = intel->Connect(intel->SideConnectLocId(0,is));
+            if (c.HasDependency()) {
                 continue;
             }
             int nshape = 1;
@@ -720,7 +719,7 @@ void TPZCreateApproximationSpace::MakeRaviartThomas(TPZCompMesh &cmesh)
             int order = 0;
             long cindex2 = cmesh.AllocateNewConnect(nshape, nstate, order);
             //            TPZConnect &c2 = cmesh.ConnectVec()[cindex];
-            TPZFNMatrix<2,REAL> depmat(2,1,1.);
+            TPZFNMatrix<2,STATE> depmat(2,1,1.);
             c.AddDependency(cindex, cindex2, depmat, 0, 0, 2, 1);
         }
     }
