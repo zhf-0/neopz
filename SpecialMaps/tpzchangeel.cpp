@@ -125,11 +125,6 @@ TPZGeoEl * TPZChangeEl::ChangeToQuadratic(TPZGeoMesh *Mesh, long ElemIndex)
     
     /** Deleting OldElem */
     Mesh->DeleteElement(OldElem);
-    long recoverindex = Mesh->ElementVec().AllocateNewElement();
-    
-    if (recoverindex != ElemIndex) {
-        DebugStop();
-    }
 
     switch(elType) /** Inserting New Element in Mesh */
     {

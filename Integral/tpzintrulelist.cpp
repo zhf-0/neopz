@@ -62,7 +62,7 @@ TPZGaussRule* TPZIntRuleList::GetRule(int order,int type) {
 	}
 	if(type == 1) {
 		if(order > TPZGaussRule::NRULESLOBATTO_ORDER)
-			order = TPZGaussRule::NRULESLOBATTO_ORDER;
+			order = 1;
 	}
 	else {
 		if(order > TPZGaussRule::NRULESLEGENDRE_ORDER)

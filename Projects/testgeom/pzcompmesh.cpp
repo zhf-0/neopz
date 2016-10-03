@@ -32,7 +32,6 @@
 #include "TPZRefPatternDataBase.h"
 #include "pzgengrid.h"
 #include "TPZExtendGridDimension.h"
-#include "TPZVTKGeoMesh.h"
 
 #include "pzartdiff.h"
 
@@ -59,7 +58,6 @@ int main() {
 	//TPZManVector<int> nx(6,2);   // subdivisions in X and in Y -> Then all the intervals are of  the 0.1 cm.
 	TPZManVector<int> nx(2,1);   // subdivisions in X and in Y -> Then all the intervals are of  the 0.3 cm in X and 0.2 cm in Y.
 	TPZManVector<REAL> x0(3,0.), x1(3,.6);  // Corners of the rectangular mesh
-    nx[0] = 2;
 	x1[1] = 0.2;
 	x1[2] = 0.;
 
@@ -108,10 +106,6 @@ int main() {
 	UniformRefine(gmesh2, nDiv);
 	gmesh2->Print(saida);
 
-    {
-        std::ofstream out("Merged.vtk");
-        TPZVTKGeoMesh::PrintGMeshVTK(gmesh2, out);
-    }
 	// Creating computational mesh associated with geometric mesh gmesh2
 	// First we need to create material object
 	int p = 2;   // interpolation order
@@ -144,10 +138,6 @@ int main() {
 	cmesh->AutoBuild();
 	cmesh->Print(saida);
 	
-    {
-        std::ofstream out("CMesh2D.vtk");
-        TPZVTKGeoMesh::PrintCMeshVTK(cmesh, out);
-    }
 	/** PART 2 : Constructing three-dimensional mesh for testing */
 	
 	TPZGeoMesh *gmesh3;
@@ -178,11 +168,7 @@ int main() {
 	// creating a computational elements and the degree of freedom nodes
 	cmesh3->AutoBuild();
 	cmesh3->Print(saida);
-    {
-        std::ofstream out("CMesh3D.vtk");
-        TPZVTKGeoMesh::PrintCMeshVTK(cmesh3, out);
-    }
-
+	
 	saida.close();
 	return 0;
 

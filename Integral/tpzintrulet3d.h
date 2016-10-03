@@ -29,8 +29,6 @@ class TPZIntRuleT3D {
     TPZManVector<long double>	fLocationZeta;
 	/** @brief Weight of the integration point */
     TPZManVector<long double>	fWeight;
-    /// Polynomial order of the integration rule
-    int fOrder;
 	
 	/**
 	 * @brief Constructor of integration rule for tetrahedra.
@@ -40,26 +38,11 @@ class TPZIntRuleT3D {
 	/** @brief Default destructor. It delete the vector of points and weights. */
     ~TPZIntRuleT3D();
 
-    TPZIntRuleT3D(const TPZIntRuleT3D &copy) : fNumInt(copy.fNumInt), fLocationKsi(copy.fLocationKsi), fLocationEta(copy.fLocationEta),
-        fLocationZeta(copy.fLocationZeta), fWeight(copy.fWeight), fOrder(copy.fOrder)
-    {
-        
-    }
-    TPZIntRuleT3D &operator=(const TPZIntRuleT3D &copy)
-    {
-        fNumInt = copy.fNumInt;
-        fLocationKsi = copy.fLocationKsi;
-        fLocationEta = copy.fLocationEta;
-        fLocationZeta = copy.fLocationZeta;
-        fWeight = copy.fWeight;
-        fOrder = copy.fOrder;
-        return *this;
-    }
 	/**
 	 * @brief Computes the cubature rules following the symmetric construction presented at Linbo Zhang article.
 	 * @param order Order of the polinomial will be exactly integrated.
 	 */
-	int ComputingSymmetricCubatureRule(int order);
+	void ComputingSymmetricCubatureRule(int order);
 	
 	/**
 	 * @brief Transform barycentric coordinates of the point in tetrahedra by cartesian coordinates (3 component).
@@ -79,11 +62,6 @@ public:
 	
 	/** @brief Returns weight for the ith point */
 	REAL W(int i) const;
-    
-    int Order()
-    {
-        return fOrder;
-    }
 };
 
 #endif

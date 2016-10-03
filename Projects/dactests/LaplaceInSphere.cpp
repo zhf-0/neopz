@@ -4020,8 +4020,7 @@ void LaplaceInSphere::ChangeExternalOrderConnects(TPZCompMesh *mesh){
                 nshape = co.NShape();
                 if(corder!=cordermin){
                     cordermin = corder-1;
-                    long cindex = cel->ConnectIndex(icon);
-                    co.SetOrder(cordermin,cindex);
+                    co.SetOrder(cordermin);
                     co.SetNShape(nshape-1);
                     mesh->Block().Set(co.SequenceNumber(),nshape-1);
                 }

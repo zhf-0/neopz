@@ -39,7 +39,17 @@ ENABLE_TESTING()
 			# project to save and load a computational mesh
 			add_subdirectory(SaveAndLoad)
 
+			#Using discontinuous approximation functions
+			add_subdirectory(descontinuo)
+
+                	#Testing gradient reconstruction
+			add_subdirectory(Gradient_Reconstruction)
+                	#Testing generating ellipse from a vector of points by least square method
+			add_subdirectory(EllipseGenerator)
+
 			# Tutorial about hp-adaptive techniques
+			add_subdirectory(Poisson_ArcTan)
+			add_subdirectory(Poisson2D_ArcTan_Disc)
 			add_subdirectory(Poisson3D_Fichera)
 			add_subdirectory(Poisson3D_Shock)
 			# the auto adaptive process is working again!!!
@@ -236,8 +246,6 @@ ENABLE_TESTING()
 			# Colaboration with Laurent Stainier
 
 			add_subdirectory(MatLib)
-
-			add_subdirectory(MHM)
 
 			if(USING_MKL)
 				add_subdirectory(PardisoSample)

@@ -441,23 +441,11 @@
  
  \section analysis Analysis: Solving process
  
- \page pg_app_projects Documentation of the application projects
+ \page pg_app_projects DESCRIPTION OF THE APPLICATION PROJECTS
  
- The application projects are projects created by students to support their graduate work. The documentation depends
- on the effort of the student.
+ \page pg_tut_projects DESCRIPTION OF THE TUTORIAL PROJECTS
  
- \page pg_tut_projects Documentation of the tutorial projects
- 
- The tutorial projects demonstrate the functioning of the different modules of the NeoPZ library
- 
- \section tut_testintegration How to create and use integration rules
- 
- NeoPZ includes integration rules of arbitrary order for all element topologies. This program illustrates
- how to create an integration rule for a given topology and validates the rule for a simple integral
- 
- This tutorial also verifies if the objects are able to integrate a polynom of order 500 and prints the number of necessary points
- 
- It is nice introduction in the use c++ classes
+ The tutorial projects describe creation, filling data and description of the process of the methods for classes grouped in modules:
  
  \section tut_testgeom To create geometric mesh
  

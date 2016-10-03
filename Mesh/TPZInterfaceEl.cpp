@@ -921,8 +921,6 @@ void TPZInterfaceElement::InitializeElementMatrix(TPZElementMatrix &ek, TPZEleme
 #endif
 	
     ek.fMesh = Mesh();
-    ek.fType = TPZElementMatrix::EK;
-    ef.fType = TPZElementMatrix::EF;
     ef.fMesh = ek.fMesh;
     TPZMaterial *mat = Material();
 	const int numdof = mat->NStateVariables();
@@ -1030,7 +1028,7 @@ void TPZInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
     if (logger->isDebugEnabled())
 	{
 		std::stringstream sout;
-		sout << "elemento de interface " << Index() << " Indice deste Material--> " <<this->Material()->Id()<< std::endl;
+		sout << "elemento de interface Indice deste Material--> " <<this->Material()->Id()<< std::endl;
 		
 		LOGPZ_DEBUG(logger, sout.str().c_str());
 	}

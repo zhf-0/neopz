@@ -28,30 +28,12 @@ class TPZIntRuleT {
     TPZManVector<long double>	fLocationEta;
 	/** @brief Weight of the integration point */
     TPZManVector<long double>	fWeight;
-    /// the polynomial order this integration rule can integrate
-    int fOrder;
 
 	/**
 	 * @brief Constructor of integration rule for triangle.
 	 * @param order Order of the polinomial will be exactly integrated.
 	 */
 	TPZIntRuleT(int order);
-    
-    TPZIntRuleT(const TPZIntRuleT &copy) : fNumInt(copy.fNumInt), fLocationKsi(copy.fLocationKsi), fLocationEta(copy.fLocationEta),
-        fWeight(copy.fWeight), fOrder(copy.fOrder)
-    {
-        
-    }
-    
-    TPZIntRuleT &operator=(const TPZIntRuleT &copy)
-    {
-        fNumInt = copy.fNumInt;
-        fLocationKsi = copy.fLocationKsi;
-        fLocationEta = copy.fLocationEta;
-        fWeight = copy.fWeight;
-        fOrder = copy.fOrder;
-        return *this;
-    }
 	/** @brief Default destructor. */
 	~TPZIntRuleT();
 
@@ -59,7 +41,7 @@ class TPZIntRuleT {
 	 * @brief Computes the cubature rules following the symmetric construction presented at Linbo Zhang article.
 	 * @param order Order of the polinomial will be exactly integrated.
 	 */
-	int ComputingSymmetricCubatureRule(int order);
+	void ComputingSymmetricCubatureRule(int order);
 
 	/**
 	 * @brief Transforms barycentric coordinates (3 component) of the point in triange in cartesian coordinates (2 component).
@@ -79,12 +61,6 @@ public:
 
 	/** @brief Return weight for the ith point */
     REAL W(int i) const;
-    
-    /// Order associated with the integration rule
-    int Order() const
-    {
-        return fOrder;
-    }
 
 };
 

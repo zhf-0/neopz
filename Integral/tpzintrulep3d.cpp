@@ -16,15 +16,13 @@ using namespace std;
 
 TPZIntRuleP3D::TPZIntRuleP3D(int &order) {
 	if(order < 0)
-    {
 		order = 1;
-    }
 //	if (order > NRULESPYRAMID_ORDER){
 //		PZError << "TPZGaussRule creation precision = " << order << " not available\n";
 //		order = NRULESPYRAMID_ORDER;
 //	}
 	// Computing integration points and weights to cubature rule for pyramid
-	fOrder = ComputingCubatureRuleForPyramid(order);
+	ComputingCubatureRuleForPyramid(order);
 }
 
 TPZIntRuleP3D::~TPZIntRuleP3D(){
@@ -69,7 +67,7 @@ long double TransformM1AndP1ToM1PZAndP1MZ(long double zeta,long double ksi) {
  * Computes the points and weights for Pyramid quadrature rule 
  * order is the degree of the polinomial will be integrated exactly with this cubature rule
  */
-int TPZIntRuleP3D::ComputingCubatureRuleForPyramid(int order) {
+void TPZIntRuleP3D::ComputingCubatureRuleForPyramid(int order) {
 	int i, j, k, l;
 
 	// Cleaning the vectors
@@ -131,11 +129,8 @@ int TPZIntRuleP3D::ComputingCubatureRuleForPyramid(int order) {
 		}
 	}
 	/** Redimension of the weights to take a volume of the pyramid */
-	for(k=0;k<fNumInt;k++)
-    {
+	for(k=0;k<fNumInt;k++) 
 		fWeight[k] *= volume;
-    }
-    return order;
 }
 
 void TPZIntRuleP3D::Print(std::ostream &out) {
