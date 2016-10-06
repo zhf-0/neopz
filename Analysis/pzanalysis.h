@@ -267,7 +267,7 @@ public:
 	 * @brief Compute the local error over all elements and global errors in several norms and print out 
 	 * without calculating the errors of the variables for hdiv spaces.
      */
-    virtual void PostProcessError(TPZVec<REAL> &, std::ostream &out = std::cout);
+    virtual void PostProcessError(TPZVec<REAL> &errvec, std::ostream &out = std::cout);
 	
 	/** @brief Print connect and solution information */
 	void Print( const std::string &name , std::ostream &out );

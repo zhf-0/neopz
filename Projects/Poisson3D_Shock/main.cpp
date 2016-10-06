@@ -441,12 +441,13 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
         ReconstructHDivMesh(cmesh, meshvec, hdivplusplus);
     }
 
-//    long countmax = 3000;
-//    Replay(meshvec[0],"RefSequence.txt",countmax);
+//    long countmax = 696;
+//    cmesh->Reference()->ResetReference();
+//    meshvec[0]->LoadReferences();
+//    Replay(meshvec[0],"RefSequence3.txt",countmax);
 //    ReconstructHDivMesh(cmesh, meshvec, hdivplusplus);
 //    TPZCheckMesh check(meshvec[0],&std::cout);
 //    check.CheckConstraintDimension();
-//    exit(0);
     
 	int countermesh=0;
 	// loop solving iteratively
@@ -491,7 +492,7 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
         if(0)
 		{
             std::ofstream out("Meshes.txt");
-			cmesh->Reference()->Print(out);
+//			cmesh->Reference()->Print(out);
 			cmesh->Print(out);
 		}
 #endif
@@ -525,6 +526,12 @@ bool SolveSymmetricPoissonProblemOnCubeMesh(int itypeel, struct SimulationCase s
 		delete direct;
 		direct = 0;
 				
+//        TPZElementMatrix ek,ef;
+//        TPZCompEl *cel = cmesh->Element(769);
+//        cel->CalcStiff(ek, ef);
+//        cel->Print(std::cout);
+//        ek.fMat.Print("ek");
+//        ef.fMat.Print("ef");
 		out << "\tRefinement: " << nref << " TypeElement: " << typeel << "NEquations " << cmesh->NEquations() << "\n";
 		an.Assemble();
         
@@ -3252,7 +3259,7 @@ void Replay(TPZCompMesh *cmesh, std::string filename, long countmax)
             std::cout << "At count = " << count << " neq " << neq << " neqcheck = " << neqcheck << std::endl;
             once = 1;
         }
-        if (count == countmax-1) {
+        if (0 && count == countmax-1) {
             cmesh->CleanUpUnconnectedNodes();
             cmesh->ExpandSolution();
             std::cout << "last refinement " << el << " pval " << pval << " iref " << iref << std::endl;
@@ -3267,7 +3274,8 @@ void Replay(TPZCompMesh *cmesh, std::string filename, long countmax)
             TPZCompEl * cel = cmesh->Element(el);
             TPZInterpolatedElement *intel = dynamic_cast<TPZInterpolatedElement *>(cel);
             intel->PRefine(pval);
-            if (count == countmax-1) {
+            cmesh->ExpandSolution();
+            if (0 && count == countmax-1) {
                 std::cout << "last refinement " << el << " pval " << pval << " iref " << iref << std::endl;
                 int nc = cmesh->Element(el)->NConnects();
                 for (int ic=0; ic<nc; ic++) {

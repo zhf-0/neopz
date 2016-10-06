@@ -164,6 +164,12 @@ long long TPZPardisoControl<TVar>::MatrixType()
     fParam[27] = ::DataType(toto);
     /// establish that the datastructures are zero based
     fParam[34] = 1;
+    
+    if (fMatrixType == 2) {
+        fParam[4] = 2;
+        fParam[30]=0;
+        fParam[35] = 0;
+    }
 
     if (Error) {
         DebugStop();
@@ -208,6 +214,9 @@ void TPZPardisoControl<TVar>::Decompose()
     long long Error = 0;
     nrhs = 0;
     fPermutation.resize(n);
+    for (long i=0; i<n; i++) {
+        fPermutation[i] = i;
+    }
     perm = &fPermutation[0];
     fParam[34] = 1;
     /// analyse and factor the equations

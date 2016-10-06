@@ -447,6 +447,7 @@ void TPZFrontStructMatrix<front>::AssembleElement(TPZCompEl * el, TPZElementMatr
 #endif
         stiffness.AddKel(ek.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
         rhs.AddFel(ef.fConstrMat,ek.fSourceIndex,ek.fDestinationIndex);
+//        std::cout << " constr " << Norm(ek.fConstrMat) << ":" << Norm(ef.fConstrMat) << std::endl;
 	}
 }
 
