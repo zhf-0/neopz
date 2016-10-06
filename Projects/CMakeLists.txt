@@ -114,6 +114,7 @@ ENABLE_TESTING()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2DLagrange)
+			add_subdirectory(ModalAnalysisH1)
 			
 			#add_subdirectory(HDiv_demo)
 
