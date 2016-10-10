@@ -300,6 +300,8 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
             
         }
         an.LoadSolution( solMat );
+        const REAL ktSquared = iT->first;
+        matAlias->SetKtSquared(ktSquared);
         an.PostProcess(postProcessResolution);
         iT++;
     }

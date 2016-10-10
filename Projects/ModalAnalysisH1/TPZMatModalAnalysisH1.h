@@ -29,7 +29,7 @@ protected:
     REAL fW;
     whichMatrix assembling;
     modeType whichMode;
-    STATE fGammaZ;
+    STATE fKtSquared;
 public:
     
     TPZMatModalAnalysisH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
@@ -48,7 +48,7 @@ public:
     /** @brief Returns the name of the material */
     virtual std::string Name() { return "TPZMatModalAnalysisH1"; }
     
-    virtual void SetGammaZ(const STATE val){ fGammaZ = val; }
+    virtual void SetKtSquared(const STATE val){ fKtSquared = val; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}

@@ -16,7 +16,7 @@ TPZMaterial(id), fUr(ur), fEr(er)
     assembling = NDefined;
     fW = 2.*M_PI*freq;
     whichMode = modeType::NDefined;
-    fGammaZ = -999;
+    fKtSquared = -999;
 }
 
 TPZMatModalAnalysisH1::TPZMatModalAnalysisH1(int id) : TPZMaterial(id), fUr(urDefault),
@@ -25,7 +25,7 @@ fEr(erDefault)
     assembling = NDefined;
     fW = 2.*M_PI*1e+9;
     whichMode = modeType::NDefined;
-    fGammaZ = -999;
+    fKtSquared = -999;
 }
 
 /** @brief Default constructor */
@@ -35,7 +35,7 @@ fEr(erDefault)
     assembling = NDefined;
     fW=2.*M_PI*1e+9;
     whichMode = modeType::NDefined;
-    fGammaZ = -999;
+    fKtSquared = -999;
 }
 
 
@@ -44,7 +44,7 @@ fEr(mat.fEr)
 {
     assembling = NDefined;
     fW = mat.fW;
-    fGammaZ = -999;
+    fKtSquared = -999;
 }
 
 TPZMatModalAnalysisH1::~TPZMatModalAnalysisH1()
@@ -70,7 +70,7 @@ void TPZMatModalAnalysisH1::Contribute(TPZMaterialData &data, REAL weight, TPZFM
         {
             STATE stiffA = 0.;
             stiffA += dphi(0,i)*dphi(0,j)+phi(i,0)*phi(j,0);
-            stiffA -= k0Squared * phi(i,0) * phi(j,0);
+            //stiffA -= k0Squared * phi(i,0) * phi(j,0);
             
             STATE stiffB = phi(i,0) * phi(j,0);
             
@@ -208,21 +208,21 @@ void TPZMatModalAnalysisH1::Solution(TPZMaterialData &data, int var, TPZVec<STAT
     const STATE muR = fUr(data.x);
     const STATE epsilonR = fEr(data.x);
     const REAL k0Squared = fW * fW / ( M_C * M_C );
-    const STATE hSquared = fGammaZ * fGammaZ + k0Squared;
+    const STATE gammaZ = sqrt(k0Squared - fKtSquared);
     
-    gradEz[0] = -fGammaZ/(hSquared) * data.dsol[0](0,0);
-    gradEz[1] = -fGammaZ/(hSquared) * data.dsol[0](1,0);
+    gradEz[0] = -gammaZ/(fKtSquared) * data.dsol[0](0,0);
+    gradEz[1] = -gammaZ/(fKtSquared) * data.dsol[0](1,0);
     
     
     switch (whichMode) {
         case modesTM:
-            curlEz[0] = fW * muR /hSquared * ( 1.) * data.dsol[0](1,0);
-            curlEz[1] = fW * muR /hSquared * (-1.) * data.dsol[0](0,0);
+            curlEz[0] = fW * muR /fKtSquared * ( 1.) * data.dsol[0](1,0);
+            curlEz[1] = fW * muR /fKtSquared * (-1.) * data.dsol[0](0,0);
             break;
         case modesTE:
             
-            curlEz[0] = fW * epsilonR /hSquared * ( 1.) * data.dsol[0](1,0);
-            curlEz[1] = fW * epsilonR /hSquared * (-1.) * data.dsol[0](0,0);
+            curlEz[0] = fW * epsilonR /fKtSquared * ( 1.) * data.dsol[0](1,0);
+            curlEz[1] = fW * epsilonR /fKtSquared * (-1.) * data.dsol[0](0,0);
             break;
         default:
             DebugStop();
