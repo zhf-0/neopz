@@ -14,8 +14,8 @@
 #include "pzfmatrix.h"
 
 //SetSpace
-//#define IsHDivQ
-#define IsH1
+#define IsHDivQ
+//#define IsH1
 //#define IsDGM
 
 
@@ -682,6 +682,7 @@ void TPZDarcyPMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 
                 ef(i+nshapeV,0) += fTheta*factf ;
                 
+                
             }
 
             
@@ -739,7 +740,7 @@ void TPZDarcyPMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 
 void TPZDarcyPMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
    
-    return;
+    
 #ifdef PZDEBUG
     //2 = 1 Vel space + 1 Press space for datavecleft
     int nrefleft =  datavecleft.size();
@@ -1005,28 +1006,43 @@ void TPZDarcyPMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
                 
     }
     
+//    TPZManVector<REAL> n = data.normal;
+    
+
+//    int idmtbc= bc.Id();
+//    std::cout<<idmtbc<<std::endl;
+//    std::cout<<v_2<<std::endl;
+//    std::cout<<normal<<std::endl;
+//    
+//    
+//    std::cout<<"____"<<std::endl;
+//    
+    
     for(int i = 0; i < nshapeP; i++ )
     {
 
-        TPZManVector<REAL> n = datavec[0].normal;
+        TPZManVector<REAL> n = data.normal;
         
-        REAL v_n = n[0] * v_2[0] + n[1] * v_2[1];
-
+        REAL v_t = n[1] * v_2[0] + n[0] * v_2[1];
+        
 #ifdef IsHDivQ
-
-        STATE factf=(-1.) * weight * v_n * phiP(i,0) ;
         
-        ef(i+nshapeV,0) += fTheta*factf ;
+        STATE factf=(-1.) * weight * v_t * phiP(i,0) ;
+        
+        ef(i+nshapeV,0) += fTheta*factf*0. ;
         
 #endif
-        
+
 #ifdef IsDGM
         STATE factf=(-1.) * weight * v_n  * phiP(i,0) ;
         
         ef(i+nshapeV,0) += fTheta*factf ;
-        
+
 #endif
+
+        //ef(i+nshapeV,0) += fTheta*factf ;
         
+        //ef(i+nshapeV,0) += factf ;
         
     }
     
