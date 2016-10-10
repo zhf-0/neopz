@@ -47,7 +47,7 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
 
 void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
-TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0);
+TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0, modeType teortm);
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
 
@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
     
 
     bool filterEquations = true;
-    bool usingFullMtrx = true;
+    bool usingFullMtrx = false;
     bool optimizeBandwidth = false;
     
     const int meshType = createTriangular;
     
-    int nDiv = 10;
+    int nDiv = 20;
     int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
@@ -97,18 +97,18 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     
     CreateGMesh(gmesh, meshType, hDomain, wDomain,  xDiv, zDiv);
     
-    TPZCompMesh *cMesh = CreateCMesh(gmesh, pOrder, ur , er , f0); //funcao para criar a malha computacional
+    TPZCompMesh *cMesh = CreateCMesh(gmesh, pOrder, ur , er , f0, teortm); //funcao para criar a malha computacional
     
     
     
-    TPZAnalysis an(cMesh,optimizeBandwidth);
+    TPZAnalysis an(cMesh,false);
     //configuracoes do objeto de analise
     TPZManVector<long,1000>activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
     
-    int nSolutions = neq >= 10 ? 10 : neq;
+    
+    
     
     TPZAutoPointer<TPZSBandStructMatrix> sbstr;
     
@@ -117,31 +117,43 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     if(usingFullMtrx){
         fmtrx = new TPZFStructMatrix(cMesh);
         fmtrx->SetNumThreads(0);
-        if (filterEquations) {
+        if (filterEquations && teortm == modeType::modesTM) {
+            FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+        }
+        else{
+            neq = neqOriginal = cMesh->NEquations();
+            std::cout<<"nEq: "<<neq<<std::endl;
         }
         an.SetStructuralMatrix(fmtrx);
     }
     else{
         sbstr = new TPZSBandStructMatrix(cMesh);
         sbstr->SetNumThreads(0);
-        if (filterEquations) {
+        if (filterEquations == modeType::modesTM) {
+            FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             sbstr->EquationFilter().SetActiveEquations(activeEquations);
+        }
+        else{
+            neq = neqOriginal = cMesh->NEquations();
+            std::cout<<"nEq: "<<neq<<std::endl;
         }
         an.SetStructuralMatrix(sbstr);
     }
-    
+    int nSolutions = neq >= 10 ? 10 : neq;
     TPZStepSolver<STATE> step;
     step.SetDirect(ECholesky); //caso simetrico
     an.SetSolver(step);
+    if (optimizeBandwidth) {
+        an.OptimizeBandwidth();
+    }
     int matId = 1;
     TPZMatModalAnalysisH1 *matAlias = dynamic_cast<TPZMatModalAnalysisH1 *> (cMesh->FindMaterial( matId ) );
     
     
-    matAlias->SetTEOrTM( teortm);
-    std::cout<<"entrando no assemble matrix A"<<std::endl;
-    matAlias->SetMatrixA();
     
+    matAlias->SetMatrixA();
+    std::cout<<"entrando no assemble matrix A"<<std::endl;
     an.Assemble();
     TPZMatrix<STATE> *  stiffAPtr = NULL , *stiffBPtr = NULL;
     if (usingFullMtrx) {
@@ -265,6 +277,8 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     
     TPZStack<std::string> scalnames, vecnames;
     scalnames.Push("Ez");//setando para imprimir u
+    vecnames.Push("Et");
+    vecnames.Push("Ht");
     std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
     int dim = 2;
     an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
@@ -277,7 +291,13 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
             DebugStop();
         }
         for (int i = 0 ; i < neq; i++) {
-            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
+            if (filterEquations) {
+                solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
+            }
+            else{
+                solMat( i ,0) = (iT->second).GetVal(i, 0);
+            }
+            
         }
         an.LoadSolution( solMat );
         an.PostProcess(postProcessResolution);
@@ -303,7 +323,6 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
             continue;
         }
         if(cel->Reference()->MaterialId() == -1 ){
-            TPZMatModalAnalysisH1 *mat = dynamic_cast<TPZMatModalAnalysisH1*>(cMesh->FindMaterial(1));
             std::set<long> boundConnectsEl;
             std::set<long> depBoundConnectsEl;
             std::set<long> indepBoundConnectsEl;
@@ -339,10 +358,8 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
     std::cout<<"cMesh->NEquations()"<<"\t"<<cMesh->NEquations()<<std::endl;
     neqOriginal = cMesh->NEquations();
     
-    int nHCurlEquations = 0 , nH1Equations = 0;
     std::cout<<"activeEquations"<<std::endl;
     long nEq = 0;
-    TPZMatModalAnalysisH1 *mat = dynamic_cast<TPZMatModalAnalysisH1*>(cMesh->FindMaterial(1));
     for (int iCon = 0; iCon < cMesh->NConnects(); iCon++) {
         if( boundConnects.find( iCon ) == boundConnects.end() ){
             int seqnum = cMesh->ConnectVec()[iCon].SequenceNumber();
@@ -456,7 +473,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     delete gengrid;
 }
 
-TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0)
+TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0,modeType teortm)
 {
     
     const int dim = 2; //dimensao do problema
@@ -480,7 +497,9 @@ TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZV
     ///electrical conductor boundary conditions
     TPZFNMatrix<1,STATE> val1(1,1,0.), val2(1,1,0.);
     
-    TPZMaterial * BCondH1Dir = matH1->CreateBC(matH1, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    int bcType = teortm == modesTM ? dirichlet : neumann;
+    
+    TPZMaterial * BCondH1Dir = matH1->CreateBC(matH1, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
     
     cmeshH1->InsertMaterialObject(BCondH1Dir);//insere material na malha
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha

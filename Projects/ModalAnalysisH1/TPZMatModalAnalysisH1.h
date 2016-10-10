@@ -16,7 +16,7 @@
  * H1 space for the longitudinal component.
  */
 
-enum modeType{ modesTE=0, modesTM=1};
+enum modeType{ NDefined = -1 , modesTE=0, modesTM=1};
 
 class  TPZMatModalAnalysisH1 : public TPZMaterial
 {
@@ -28,7 +28,8 @@ protected:
     STATE (*fEr)( const TPZVec<REAL>&);
     REAL fW;
     whichMatrix assembling;
-    bool fSolvingForTE;
+    modeType whichMode;
+    STATE fGammaZ;
 public:
     
     TPZMatModalAnalysisH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
@@ -47,6 +48,8 @@ public:
     /** @brief Returns the name of the material */
     virtual std::string Name() { return "TPZMatModalAnalysisH1"; }
     
+    virtual void SetGammaZ(const STATE val){ fGammaZ = val; }
+    
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
     
@@ -55,7 +58,6 @@ public:
     
 public:
     
-    virtual void SetTEOrTM( modeType mode){ fSolvingForTE = (bool) 1 - (int)mode;}
     /**
      * @brief Sets Matrix A for assembling
      * @details This material is designed for solving the
@@ -141,7 +143,7 @@ public:
     virtual int NSolutionVariables(int var);
     
 //    /** @brief Returns the solution associated with the var index based on the finite element approximation */
-//    virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+    virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
 };
 
 #endif
