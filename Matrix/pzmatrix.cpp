@@ -1104,6 +1104,36 @@ void TPZMatrix< std::complex<long double> >::SolveIR(long &numiterations, TPZSol
     DebugStop(); // Does not work with complex numbers. To be implemented in the future.
 }
 
+#ifndef USING_LAPACK
+template<class TVar>
+int TPZMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZMatrix < std::complex<double> > &eigenVectors){
+    DebugStop();//eigenvalue solvers are only available in NeoPZ if LAPACK is enabled on CMAKE
+}
+/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ */
+template<class TVar>
+int TPZMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &w){
+    DebugStop();//eigenvalue solvers are only available in NeoPZ if LAPACK is enabled on CMAKE
+}
+
+/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ * @param Stores the correspondent eigenvectors
+ */
+template<class TVar>
+int TPZMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZMatrix < std::complex<double> > &eigenVectors){
+    DebugStop();//eigenvalue solvers are only available in NeoPZ if LAPACK is enabled on CMAKE
+}
+/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ */
+template<class TVar>
+int TPZMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w){
+    DebugStop();//eigenvalue solvers are only available in NeoPZ if LAPACK is enabled on CMAKE
+}
+#endif
+
 
 /*****************/
 /*** Decompose_LU ***/

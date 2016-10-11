@@ -117,7 +117,7 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     if(usingFullMtrx){
         fmtrx = new TPZFStructMatrix(cMesh);
         fmtrx->SetNumThreads(0);
-        if (filterEquations && teortm == modeType::modesTM) {
+        if (filterEquations == true && teortm == modeType::modesTM) {
             FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             fmtrx->EquationFilter().SetActiveEquations(activeEquations);
         }
@@ -130,7 +130,7 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     else{
         sbstr = new TPZSBandStructMatrix(cMesh);
         sbstr->SetNumThreads(0);
-        if (filterEquations == modeType::modesTM) {
+        if (filterEquations ==  true && teortm == modeType::modesTM) {
             FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             sbstr->EquationFilter().SetActiveEquations(activeEquations);
         }
@@ -242,11 +242,12 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     fileName.append(".txt");
     std::ofstream fileEigenValues(fileName.c_str());
     for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
-        std::cout<< iT->first <<std::endl;
+        if(iT->first < 1e-3) continue;
+        fileEigenValues<< iT->first <<std::endl;
         i++;
         if( i >= nSolutions)
-            break;
-        
+            continue;
+        std::cout<< iT->first <<std::endl;
     }
 
     std::cout << "Post Processing..." << std::endl;
@@ -255,7 +256,6 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     {
         std::ofstream fileA("../EV.csv");
         char number[256];
-        std::cout<<eigenValuesRe.begin()->first<<std::endl;
         for (int i = 0; i<eigenValuesRe.begin()->second.Rows(); i++) {
             for(int j = 0 ; j<eigenValuesRe.begin()->second.Cols();j++){
                 sprintf(number, "%32.32Lf",(long double) TPZExtractVal::val(std::real(eigenValuesRe.begin()->second.GetVal(i,j))) );
@@ -276,7 +276,13 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
     
     TPZStack<std::string> scalnames, vecnames;
-    scalnames.Push("Ez");//setando para imprimir u
+    if (teortm == modeType::modesTM) {
+        scalnames.Push("Ez");//setando para imprimir u
+    }
+    else{
+        scalnames.Push("Hz");//setando para imprimir u
+    }
+    
     vecnames.Push("Et");
     vecnames.Push("Ht");
     std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
@@ -287,11 +293,16 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     
     std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
     for (int iSol = 0; iSol < nSolutions; iSol ++) {
+        if(iT->first < 1e-3) {
+            iSol--;
+            iT++;
+            continue;
+        }
         if( iT == eigenValuesRe.end() ){
             DebugStop();
         }
         for (int i = 0 ; i < neq; i++) {
-            if (filterEquations) {
+            if (filterEquations && teortm == modeType::modesTM) {
                 solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
             }
             else{

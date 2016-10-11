@@ -583,7 +583,23 @@ public:
     }
 	/** @brief Retorna o valor mais proximo a "val" (exceto valores no intervalo -tol <= val <= +tol) contido no vetor Vec */
 	static TVar ReturnNearestValue(TVar val, TPZVec<TVar> &Vec, TVar tol);
-	
+#ifndef USING_LAPACK
+    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZMatrix < std::complex<double> > &eigenVectors);
+    /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+     * @param w Stores the eigenvalues
+     */
+    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w);
+    
+    /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+     * @param w Stores the eigenvalues
+     * @param Stores the correspondent eigenvectors
+     */
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZMatrix < std::complex<double> > &eigenVectors);
+    /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+     * @param w Stores the eigenvalues
+     */
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
+#endif
 	/**
 	 * @brief Solves the linear system using LU method\n
 	 * @param B The right hand side of the system and where the solution is stored.
