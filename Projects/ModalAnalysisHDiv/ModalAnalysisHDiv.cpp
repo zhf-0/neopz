@@ -13,7 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "TPZMatModalAnalysisH1.h"
+#include "TPZMatModalAnalysisHDiv.h"
 #include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
@@ -23,11 +23,13 @@
 #include "pzshapetriang.h"
 #include "pzlog.h"
 #include "TPZTimer.h"
+#include "TPZMatHCurlProjection.h"
 #include "pzanalysis.h"
 #include "pzskylstrmatrix.h"
 #include "pzfstrmatrix.h"
 #include "pzstepsolver.h"
 #include "pzsbstrmatrix.h"
+#include "pzbuildmultiphysicsmesh.h"
 #include "pzl2projection.h"
 #include "pzsbndmat.h"
 #include "pzfstrmatrix.h"
@@ -47,12 +49,13 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
 
 void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
-TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0, modeType teortm);
-
+TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0, modeType teortm);
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
 
 int main(int argc, char *argv[])
 {
+    
+    HDivPiola = 1;//use piola mapping
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
@@ -95,8 +98,8 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     
     CreateGMesh(gmesh, meshType, hDomain, wDomain,  xDiv, zDiv);
     
-    TPZCompMesh *cMesh = CreateCMesh(gmesh, pOrder, ur , er , f0, teortm); //funcao para criar a malha computacional
-    
+    TPZVec<TPZCompMesh *> cMeshVec = CreateCMesh(gmesh, pOrder, ur , er , f0, teortm); //funcao para criar a malha computacional
+    TPZCompMesh *cMesh = cMeshVec[0];
     
     
     TPZAnalysis an(cMesh,false);
@@ -146,7 +149,7 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
         an.OptimizeBandwidth();
     }
     int matId = 1;
-    TPZMatModalAnalysisH1 *matAlias = dynamic_cast<TPZMatModalAnalysisH1 *> (cMesh->FindMaterial( matId ) );
+    TPZMatModalAnalysisHDiv *matAlias = dynamic_cast<TPZMatModalAnalysisHDiv *> (cMesh->FindMaterial( matId ) );
     
     
     
@@ -484,7 +487,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     delete gengrid;
 }
 
-TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0,modeType teortm)
+TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0,modeType teortm)
 {
     
     const int dim = 2; //dimensao do problema
@@ -502,7 +505,8 @@ TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZV
     // Inserindo material na malha
     
     TPZVec<STATE> sol;//only for creating material. this material will not be used in reality
-    TPZMatModalAnalysisH1 *matH1 = new TPZMatModalAnalysisH1( matId, f0, ur, er);
+    int nState = 1;
+    TPZL2Projection *matH1 = new TPZL2Projection( matId, dim, nState, sol);
     cmeshH1->InsertMaterialObject(matH1);
     
     ///electrical conductor boundary conditions
@@ -518,5 +522,71 @@ TPZCompMesh *CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZV
     cmeshH1->AutoBuild();
     cmeshH1->CleanUpUnconnectedNodes();
     
-    return cmeshH1;
+    
+    ///criar malha computacional HDiv
+    
+    TPZCompMesh * cmeshHDiv = new TPZCompMesh(gmesh);
+    cmeshHDiv->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
+    cmeshHDiv->SetDimModel(dim);//seta dimensao do modelo
+    // Inserindo material na malha
+    TPZMatHCurlProjection *matHDiv = new TPZMatHCurlProjection(matId);
+    cmeshHDiv->InsertMaterialObject(matHDiv);
+    
+    val1( 0, 0 ) = 0.;
+    val2( 0, 0 ) = 0.;
+    TPZMaterial * BCondHDivDir = matHDiv->CreateBC(matHDiv, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    
+    cmeshHDiv->InsertMaterialObject(BCondHDivDir);//insere material na malha
+    
+    cmeshHDiv->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
+    cmeshHDiv->AutoBuild();
+    
+    
+    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHDiv->ElementVec();
+    
+    cmeshHDiv->CleanUpUnconnectedNodes();
+    
+    TPZMatModalAnalysisHDiv *matMultiPhysics = new TPZMatModalAnalysisHDiv(matId , f0 , ur , er);
+    TPZVec<TPZCompMesh *> meshVec(2);
+    
+    meshVec[ matMultiPhysics->H1Index() ] = cmeshH1;
+    meshVec[ matMultiPhysics->HDivIndex() ] = cmeshHDiv;
+    
+    //  TPZMatHCurl2D *matMultiPhysics = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);
+    
+    
+    TPZCompMesh *cmeshMF = new TPZCompMesh( gmesh );
+    
+    val1( 0, 0 ) = 0.;
+    val2( 0, 0 ) = 0.;
+    TPZMaterial * BCondMFDir = matMultiPhysics->CreateBC(matMultiPhysics, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    
+    
+    cmeshMF->InsertMaterialObject(matMultiPhysics);
+    cmeshMF->InsertMaterialObject(BCondMFDir);//insere material na malha
+    std::set<int> set;
+    set.insert(matId);
+    set.insert(bc0);
+    
+    
+    cmeshMF->SetDimModel(dim);
+    cmeshMF->SetAllCreateFunctionsMultiphysicElem();
+    
+    cmeshMF->AutoBuild(set);
+    cmeshMF->CleanUpUnconnectedNodes();
+    
+    TPZBuildMultiphysicsMesh::AddElements(meshVec, cmeshMF);
+    TPZBuildMultiphysicsMesh::AddConnects(meshVec, cmeshMF);
+    TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, cmeshMF);
+    cmeshMF->CleanUpUnconnectedNodes();
+    
+    TPZVec< TPZCompMesh *>meshVecOut(3);
+    
+    meshVecOut[0] = cmeshMF;
+    meshVecOut[1 + matMultiPhysics->H1Index()] = cmeshH1;
+    meshVecOut[1 + matMultiPhysics->HDivIndex()] = cmeshHDiv;
+    return meshVecOut;
+    
+    
+    
 }
