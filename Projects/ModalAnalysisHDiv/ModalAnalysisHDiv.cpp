@@ -45,9 +45,9 @@ STATE ur( const TPZVec<REAL> & x){
 STATE er( const TPZVec<REAL> & x){
     return 1;
 }
-void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm);
+void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm);
 
-void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
+void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq, int &neqOriginal , const modeType teortm);
 
 TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0, modeType teortm);
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
@@ -63,22 +63,21 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTE;
+    const modeType teortm = modesTM;
     REAL f0 = 15 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
 
-    bool filterEquations = true;
-    bool usingFullMtrx = false;
-    bool optimizeBandwidth = false;
+    bool usingFullMtrx = true;
+    bool optimizeBandwidth = true;
     
     const int meshType = createTriangular;
     
-    int nDiv = 20;
+    int nDiv = 10;
     int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( filterEquations, meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm);
+        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm);
         nDiv += 5;
     }
     
@@ -87,7 +86,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm){
+void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm){
     TPZTimer timer;
     
     timer.start();
@@ -118,27 +117,17 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     if(usingFullMtrx){
         fmtrx = new TPZFStructMatrix(cMesh);
         fmtrx->SetNumThreads(0);
-        if (filterEquations == true && teortm == modeType::modesTM) {
-            FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
-            fmtrx->EquationFilter().SetActiveEquations(activeEquations);
-        }
-        else{
-            neq = neqOriginal = cMesh->NEquations();
-            std::cout<<"nEq: "<<neq<<std::endl;
-        }
+        FilterBoundaryEquations( cMeshVec, activeEquations , neq , neqOriginal, teortm);
+        fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+
         an.SetStructuralMatrix(fmtrx);
     }
     else{
         sbstr = new TPZSBandStructMatrix(cMesh);
         sbstr->SetNumThreads(0);
-        if (filterEquations ==  true && teortm == modeType::modesTM) {
-            FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
-            sbstr->EquationFilter().SetActiveEquations(activeEquations);
-        }
-        else{
-            neq = neqOriginal = cMesh->NEquations();
-            std::cout<<"nEq: "<<neq<<std::endl;
-        }
+        FilterBoundaryEquations( cMeshVec, activeEquations , neq , neqOriginal, teortm);
+        sbstr->EquationFilter().SetActiveEquations(activeEquations);
+        
         an.SetStructuralMatrix(sbstr);
     }
     int nSolutions = neq >= 10 ? 10 : neq;
@@ -291,6 +280,9 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
     int postProcessResolution = 2;//define resolucao do pos processamento
     
+    TPZVec<TPZCompMesh *>temporalMeshVec(2);
+    temporalMeshVec[ matAlias->L2Index() ] = cMeshVec[1 + matAlias->L2Index()];
+    temporalMeshVec[ matAlias->HDivIndex() ] = cMeshVec[1 + matAlias->HDivIndex()];
     
     std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
     for (int iSol = 0; iSol < nSolutions; iSol ++) {
@@ -303,15 +295,10 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
             DebugStop();
         }
         for (int i = 0 ; i < neq; i++) {
-            if (filterEquations && teortm == modeType::modesTM) {
-                solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
-            }
-            else{
-                solMat( i ,0) = (iT->second).GetVal(i, 0);
-            }
-            
+            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
         }
         an.LoadSolution( solMat );
+        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cMesh);
         const REAL ktSquared = iT->first;
         matAlias->SetKtSquared(ktSquared);
         an.PostProcess(postProcessResolution);
@@ -320,15 +307,20 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     std::cout << "FINISHED!" << std::endl;
 }
 
-void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq , int &neqOriginal)
+void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq , int &neqOriginal , const modeType teortm)
 {
+    
+    TPZCompMesh *cmeshMF = meshVec[0];
+    TPZMatModalAnalysisHDiv *mat = dynamic_cast<TPZMatModalAnalysisHDiv*>(cmeshMF->FindMaterial(1));
+    TPZCompMesh *cmeshHDiv = meshVec[1 + mat->HDivIndex()];
+    TPZCompMesh *cmeshL2 = meshVec[1 + mat->L2Index()];
     
     TPZManVector<long,1000> allConnects;
     std::set<long> boundConnects;
-
     
-    for (int iel = 0; iel < cMesh->NElements(); iel++) {
-        TPZCompEl *cel = cMesh->ElementVec()[iel];
+    
+    for (int iel = 0; iel < cmeshMF->NElements(); iel++) {
+        TPZCompEl *cel = cmeshMF->ElementVec()[iel];
         if ( cel == NULL) {
             continue;
         }
@@ -342,21 +334,39 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
             std::set<long> indepBoundConnectsEl;
             cel->BuildConnectList(indepBoundConnectsEl, depBoundConnectsEl);
             cel->BuildConnectList(boundConnectsEl);
+            
             for (std::set<long>::iterator iT = boundConnectsEl.begin(); iT != boundConnectsEl.end(); iT++) {
                 const long val = *iT;
-                if( boundConnects.find(val) == boundConnects.end() ){
-                    boundConnects.insert(val);
+                if( mat->L2Index() == 0 && val < cmeshL2->NConnects() ){
+                    if( boundConnects.find(val) == boundConnects.end() ){
+                        if (teortm == modeType::modesTM) {//connects H1
+                            //boundConnects.insert(val);
+                        }
+                    }
+                }
+                else if( mat->L2Index() == 1 && val >= cmeshHDiv->NConnects() ){
+                    if( boundConnects.find(val) == boundConnects.end() ){
+                        if (teortm == modeType::modesTM) {//connects H1
+                            //boundConnects.insert(val);
+                        }
+                    }
+                }
+                else{
+                    if (teortm == modeType::modesTE) {//connects HDiv
+                        boundConnects.insert(val);
+                    }
                 }
             }
+            
+            
         }
     }
-    for (int iCon = 0; iCon < cMesh->NConnects(); iCon++) {
+    for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
         if( boundConnects.find( iCon ) == boundConnects.end() ){
-            TPZConnect &con = cMesh->ConnectVec()[iCon];
-            if( con.HasDependency() ) continue;
+            TPZConnect &con = cmeshMF->ConnectVec()[iCon];
             int seqnum = con.SequenceNumber();
-            int pos = cMesh->Block().Position(seqnum);
-            int blocksize = cMesh->Block().Size(seqnum);
+            int pos = cmeshMF->Block().Position(seqnum);
+            int blocksize = cmeshMF->Block().Size(seqnum);
             if(blocksize == 0) continue;
             
             int vs = activeEquations.size();
@@ -369,22 +379,39 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
     }
     
     std::cout<<"------\t------\t-------"<<std::endl;
-    std::cout<<"cMesh->NEquations()"<<"\t"<<cMesh->NEquations()<<std::endl;
-    neqOriginal = cMesh->NEquations();
+    std::cout<<"cmeshL2->NEquations()"<<"\t"<<cmeshL2->NEquations()<<std::endl;
+    std::cout<<"cmeshHDiv->NEquations()"<<"\t"<<cmeshHDiv->NEquations()<<std::endl;
+    std::cout<<"cmeshMF->NEquations()"<<"\t"<<cmeshMF->NEquations()<<std::endl;
+    neqOriginal = cmeshMF->NEquations();
     
+    int nHDivEquations = 0 , nL2Equations = 0;
     std::cout<<"activeEquations"<<std::endl;
     long nEq = 0;
-    for (int iCon = 0; iCon < cMesh->NConnects(); iCon++) {
+    for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
+        bool isL2;
         if( boundConnects.find( iCon ) == boundConnects.end() ){
-            int seqnum = cMesh->ConnectVec()[iCon].SequenceNumber();
-            int blocksize = cMesh->Block().Size(seqnum);
+            
+            int seqnum = cmeshMF->ConnectVec()[iCon].SequenceNumber();
+            int blocksize = cmeshMF->Block().Size(seqnum);
+            if( mat->L2Index() == 0 && iCon < cmeshL2->NConnects() ){
+                isL2 = true;
+            }
+            else if( mat->L2Index() == 1 && iCon >= cmeshHDiv->NConnects() ){
+                isL2 = true;
+            }
+            else{
+                isL2 = false;
+            }
             for(int ieq = 0; ieq<blocksize; ieq++)
             {
                 nEq++;
+                isL2 == true ? nL2Equations ++ : nHDivEquations++;
             }
         }
     }
-    std::cout<<"# equations: "<< nEq<<std::endl;
+    std::cout<<"# L2 equations: "<< nL2Equations<<std::endl;
+    std::cout<<"# HDiv equations: "<<nHDivEquations<<std::endl;
+    std::cout<<"# equations: "<<nEq<<std::endl;
     //std::cout<<activeEquations<<std::endl;
     neq = nEq;
     return;
@@ -499,28 +526,28 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     
     ///criar malha computacional H1
     
-    TPZCompMesh * cmeshH1 = new TPZCompMesh(gmesh);
-    cmeshH1->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
-    cmeshH1->SetDimModel(dim);//seta dimensao do modelo
+    TPZCompMesh * cmeshL2 = new TPZCompMesh(gmesh);
+    cmeshL2->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
+    cmeshL2->SetDimModel(dim);//seta dimensao do modelo
     // Inserindo material na malha
     
     TPZVec<STATE> sol;//only for creating material. this material will not be used in reality
     int nState = 1;
-    TPZL2Projection *matH1 = new TPZL2Projection( matId, dim, nState, sol);
-    cmeshH1->InsertMaterialObject(matH1);
+    TPZL2Projection *matL2 = new TPZL2Projection( matId, dim, nState, sol);
+    cmeshL2->InsertMaterialObject(matL2);
     
     ///electrical conductor boundary conditions
     TPZFNMatrix<1,STATE> val1(1,1,0.), val2(1,1,0.);
     
     int bcType = teortm == modesTM ? dirichlet : neumann;
     
-    TPZMaterial * BCondH1Dir = matH1->CreateBC(matH1, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    TPZMaterial * BCondL2Dir = matL2->CreateBC(matL2, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
     
-    cmeshH1->InsertMaterialObject(BCondH1Dir);//insere material na malha
+    cmeshL2->InsertMaterialObject(BCondL2Dir);//insere material na malha
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
-    cmeshH1->SetAllCreateFunctionsContinuous();
-    cmeshH1->AutoBuild();
-    cmeshH1->CleanUpUnconnectedNodes();
+    cmeshL2->SetAllCreateFunctionsDiscontinuous();
+    cmeshL2->AutoBuild();
+    cmeshL2->CleanUpUnconnectedNodes();
     
     
     ///criar malha computacional HDiv
@@ -529,7 +556,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     cmeshHDiv->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmeshHDiv->SetDimModel(dim);//seta dimensao do modelo
     // Inserindo material na malha
-    TPZMatHCurlProjection *matHDiv = new TPZMatHCurlProjection(matId);
+    TPZVecL2 *matHDiv = new TPZVecL2(matId);
     cmeshHDiv->InsertMaterialObject(matHDiv);
     
     val1( 0, 0 ) = 0.;
@@ -549,7 +576,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     TPZMatModalAnalysisHDiv *matMultiPhysics = new TPZMatModalAnalysisHDiv(matId , f0 , ur , er);
     TPZVec<TPZCompMesh *> meshVec(2);
     
-    meshVec[ matMultiPhysics->H1Index() ] = cmeshH1;
+    meshVec[ matMultiPhysics->L2Index() ] = cmeshL2;
     meshVec[ matMultiPhysics->HDivIndex() ] = cmeshHDiv;
     
     //  TPZMatHCurl2D *matMultiPhysics = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);
@@ -583,7 +610,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     TPZVec< TPZCompMesh *>meshVecOut(3);
     
     meshVecOut[0] = cmeshMF;
-    meshVecOut[1 + matMultiPhysics->H1Index()] = cmeshH1;
+    meshVecOut[1 + matMultiPhysics->L2Index()] = cmeshL2;
     meshVecOut[1 + matMultiPhysics->HDivIndex()] = cmeshHDiv;
     return meshVecOut;
     

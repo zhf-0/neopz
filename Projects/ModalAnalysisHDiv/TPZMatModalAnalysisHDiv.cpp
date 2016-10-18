@@ -11,7 +11,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
-TPZMaterial(id), fUr(ur), fEr(er)
+TPZVecL2(id), fUr(ur), fEr(er)
 {
     assembling = NDefined;
     fW = 2.*M_PI*freq;
@@ -19,7 +19,7 @@ TPZMaterial(id), fUr(ur), fEr(er)
     fKtSquared = -999;
 }
 
-TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv(int id) : TPZMaterial(id), fUr(urDefault),
+TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv(int id) : TPZVecL2(id), fUr(urDefault),
 fEr(erDefault)
 {
     assembling = NDefined;
@@ -29,7 +29,7 @@ fEr(erDefault)
 }
 
 /** @brief Default constructor */
-TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv() : TPZMaterial(), fUr(urDefault),
+TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv() : TPZVecL2(), fUr(urDefault),
 fEr(erDefault)
 {
     assembling = NDefined;
@@ -39,7 +39,7 @@ fEr(erDefault)
 }
 
 
-TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv(const TPZMatModalAnalysisHDiv &mat) : TPZMaterial(mat), fUr(mat.fUr),
+TPZMatModalAnalysisHDiv::TPZMatModalAnalysisHDiv(const TPZMatModalAnalysisHDiv &mat) : TPZVecL2(mat), fUr(mat.fUr),
 fEr(mat.fEr)
 {
     assembling = NDefined;
@@ -53,98 +53,220 @@ TPZMatModalAnalysisHDiv::~TPZMatModalAnalysisHDiv()
 }
 
 
-void TPZMatModalAnalysisHDiv::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-    TPZFMatrix< REAL > &phi = data.phi;
     
-    TPZFNMatrix<36,REAL> dphidaxes = data.dphix;
-    TPZFNMatrix<3,REAL> dphi;
-    TPZAxesTools<REAL>::Axes2XYZ(dphidaxes, dphi, data.axes);
+    /*********************CREATE L2 FUNCTIONS****************************/
+    TPZFNMatrix<12,REAL> phiL2 = datavec[ l2index ].phi;
+    TPZFNMatrix<36,REAL> dphiL2daxes = datavec[ l2index ].dphix;
+    TPZFNMatrix<3,REAL> dphiL2;
+    TPZAxesTools<REAL>::Axes2XYZ(dphiL2daxes, dphiL2, datavec[ l2index ].axes);
+    TPZFNMatrix<3,REAL> gradPhiL2(phiL2.Rows() , 3 , 0.);
+    for ( int iFunc = 0 ; iFunc < phiL2.Rows(); iFunc++ ) {
+        
+        gradPhiL2 ( iFunc , 0 ) = dphiL2 ( 0 , iFunc );
+        gradPhiL2 ( iFunc , 1 ) = dphiL2 ( 1 , iFunc );
+    }
     
-    int nshape=phi.Rows();
+    /*********************CREATE HDIV FUNCTIONS****************************/
+    TPZFNMatrix<12,REAL> phiScaHCurl = datavec[ hdivindex ].phi;
+    TPZManVector<REAL,3> x = datavec[ l2index ].x;
+    TPZManVector<REAL,3> xParametric = datavec[ l2index ].xParametric;
     
-    for(int i = 0 ; i<nshape ; i++)
-    {
-        for(int j=0;j<nshape;j++)
-        {
-            STATE stiffA = 0.;
-            stiffA += dphi(0,i)*dphi(0,j);
-            //stiffA -= k0Squared * phi(i,0) * phi(j,0);
+    int phrq = datavec[ hdivindex ].fVecShapeIndex.NElements();
+    //  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
+    
+    TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.) , divPhiVecHDiv(phrq, 1, 0.);
+    TPZFMatrix<REAL> &dphiQdaxes = datavec[ hdivindex ].dphix;
+    TPZFNMatrix<3,REAL> dphiQ;
+    TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, datavec[ hdivindex ].axes);
+    for (int iq = 0 ; iq < phrq ; iq++) {
+        int ivecind = datavec[ hdivindex ].fVecShapeIndex[iq].first;
+        int ishapeind = datavec[ hdivindex ].fVecShapeIndex[iq].second;
+        
+        
+        phiVecHDiv(iq , 0) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(0,ivecind);
+        phiVecHDiv(iq , 1) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(1,ivecind);
+        phiVecHDiv(iq , 2) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(2,ivecind);
+        
+        divPhiVecHDiv(iq , 0) += dphiQ(0,ishapeind) * datavec[ hdivindex ].fNormalVec(0,ivecind);
+        divPhiVecHDiv(iq , 0) += dphiQ(1,ishapeind) * datavec[ hdivindex ].fNormalVec(1,ivecind);
+        divPhiVecHDiv(iq , 0) += dphiQ(2,ishapeind) * datavec[ hdivindex ].fNormalVec(2,ivecind);
+    }
+
+    //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
+    
+    const int nHCurlFunctions  = phrq;
+    const int nL2Functions  = phiL2.Rows();
+    const int firstL2 = l2index * nHCurlFunctions;
+    const int firstHCurl = hdivindex * nL2Functions;
+    
+    for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
+        for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
+            STATE stiffAtt = 0.;
+            STATE stiffBtt = 0.;
             
-            STATE stiffB = phi(i,0) * phi(j,0);
+            STATE phiIdotPhiJ = 0.;
+            phiIdotPhiJ += std::conj( phiVecHDiv(iVec , 0) ) * phiVecHDiv(jVec , 0);
+            phiIdotPhiJ += std::conj( phiVecHDiv(iVec , 1) ) * phiVecHDiv(jVec , 1);
+            phiIdotPhiJ += std::conj( phiVecHDiv(iVec , 2) ) * phiVecHDiv(jVec , 2);
             
-            switch (assembling) {
-                case A:
-                    ek(i,j) += stiffA*weight;
-                    break;
-                case B:
-                    ek(i,j) += stiffB*weight;
-                    break;
-                default:
-                    DebugStop();
-                    break;
+            stiffAtt = phiIdotPhiJ;
+            stiffBtt = 0;
+            
+            if (this->assembling == A) {
+                ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
+            }
+            else if (this->assembling == B){
+                ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffBtt * weight ;
+            }
+            else{
+                DebugStop();
+            }
+            
+        }
+        for (int jSca = 0; jSca < nL2Functions; jSca++) {
+            STATE stiffAzt = 0.;
+            STATE phiDivV = 0.;
+            
+            phiDivV += std::conj( divPhiVecHDiv(iVec , 0) ) * phiL2(jSca , 0);
+            
+            stiffAzt = phiDivV;
+            if (this->assembling == A) {
+                ek( firstHCurl + iVec , firstL2 + jSca ) += stiffAzt * weight ;
+            }
+            else if (this->assembling == B){
+                ek( firstHCurl + iVec , firstL2 + jSca ) += 0.;
+            }
+            else{
+                DebugStop();
+            }
+            //ek( firstHCurl + iVec , firstH1 + jSca ) += stiff * weight ;
+        }
+    }
+    for (int iSca = 0; iSca < nL2Functions; iSca++) {
+        for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
+            
+            STATE phiDivV = 0.;
+            
+            phiDivV += std::conj( phiL2(iSca , 0) ) * divPhiVecHDiv(jVec , 0);
+            
+            STATE stiffAzt = 0.;
+            
+            stiffAzt = phiDivV;
+            if (this->assembling == A) {
+                ek( firstL2 + iSca , firstHCurl +  jVec) += stiffAzt * weight ;
+            }
+            else if (this->assembling == B){
+                ek( firstL2 + iSca , firstHCurl +  jVec ) += 0. ;
+            }
+            else{
+                DebugStop();
+            }
+            
+            //ek( firstH1 + iSca , firstHCurl +  jVec ) += stiff * weight ;
+        }
+        for (int jSca = 0; jSca < nL2Functions; jSca++) {
+            STATE stiffBzz = 0.;
+            
+            stiffBzz =  -1. * std::conj( phiL2( iSca , 0 ) ) * phiL2( jSca , 0 );
+            //ek( firstH1 + iSca , firstH1 + jSca ) += stiff * weight ;
+            //            if( iSca == jSca){
+            //                std::cout<<"stiffBzz "<<iSca<<" "<<jSca<<":"<<stiffBzz<<std::endl;
+            //            }
+            if (this->assembling == A) {
+                ek( firstL2 + iSca , firstL2 + jSca) += 0. ;
+            }
+            else if (this->assembling == B){
+                ek( firstL2 + iSca , firstL2 + jSca) += stiffBzz * weight ;
+            }
+            else{
+                DebugStop();
             }
         }
     }
 }
 
-void TPZMatModalAnalysisHDiv::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
-    TPZFMatrix<REAL> &phi = data.phi;
-    int nshape=phi.Rows();
-    
-    REAL BIG = TPZMaterial::gBigNumber;//sera posto na matriz K
-    STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
+    TPZFMatrix<REAL> &phiHDiv = datavec[hdivindex].phi;
+    TPZFMatrix<REAL> &phiL2 = datavec[l2index].phi;
+    const int nHDivFunctions  = phiHDiv.Rows();
+    const int nL2Functions  = phiL2.Rows();
+    const int firstL2 = l2index * nHDivFunctions;
+    const int firstHDiv = hdivindex * nL2Functions;
     
     if (bc.Type() == 0) {//TM modes have dirichlet boundary conditions
         whichMode = modesTM;
     }else{
         whichMode = modesTE;
     }
-    
+    return;
     if (assembling == whichMatrix::B) {
         return;
     }
-    switch ( bc.Type() ) {
-        case 0: // Dirichlet
-            
-            for(int i = 0 ; i<nshape ; i++)
-            {
-                const STATE rhs = phi(i,0)*BIG*v2;
-                ef(i,0) += rhs*weight;
-                for(int j=0;j<nshape;j++)
+    
+    {
+        
+        int nshape=phiL2.Rows();
+        REAL BIG = TPZMaterial::gBigNumber;
+        
+        //const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
+        const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
+        
+        switch ( bc.Type() )
+        {
+            case 0:
+                for(int i = 0 ; i<nshape ; i++)
                 {
-                    const STATE stiff = phi(i,0)*phi(j,0);
-                    ek(i,j) += stiff*weight*BIG;
+                    const STATE rhs = phiL2(i,0) * BIG  * v2;
+                    ef(firstL2+i,0) += rhs*weight;
+                    for(int j=0;j<nshape;j++)
+                    {
+                        const STATE stiff = phiL2(i,0) * phiL2(j,0) * BIG ;
+                        ek(firstL2+i,firstL2+j) += stiff*weight;
+                    }
                 }
-            }
-            break;
-            
-        case 1: // Neumann
-            
-            for(int i = 0 ; i<nshape ; i++)
-            {
-                const STATE rhs = phi(i,0)*v2;
-                ef(i,0) += rhs*weight;
-            }
-            break;
-            
-        case 2: // Mista
-            DebugStop();
-        default:
-            DebugStop();
-            break;
+                break;
+            case 1:
+                DebugStop();
+                break;
+            case 2:
+                DebugStop();
+                break;
+        }
     }
-}
-
-void TPZMatModalAnalysisHDiv::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
-{
-    DebugStop();
-}
-
-void TPZMatModalAnalysisHDiv::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
-{
-    DebugStop();
+    {
+        
+        int nshape=phiHDiv.Rows();
+        REAL BIG = TPZMaterial::gBigNumber;
+        
+        //const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
+        const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
+        
+        switch ( bc.Type() )
+        {
+            case 0:
+                for(int i = 0 ; i<nshape ; i++)
+                {
+                    const STATE rhs = phiHDiv(i,0) * BIG  * v2;
+                    ef(firstHDiv+i,0) += rhs*weight;
+                    for(int j=0;j<nshape;j++)
+                    {
+                        const STATE stiff = phiHDiv(i,0) * phiHDiv(j,0) * BIG ;
+                        ek(firstHDiv+i,firstHDiv+j) += stiff*weight;
+                    }
+                }
+                break;
+            case 1:
+                DebugStop();
+                break;
+            case 2:
+                DebugStop();
+                break;
+        }
+    }
+    
 }
 
 int TPZMatModalAnalysisHDiv::IntegrationRuleOrder(int elPMaxOrder) const
@@ -186,30 +308,31 @@ int TPZMatModalAnalysisHDiv::NSolutionVariables(int var)
     return 1;
 }
 
-void TPZMatModalAnalysisHDiv::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
+
+
+void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
 {
+
     TPZVec<STATE> axialField(1,0.) , gradAxialField(2,0.) , curlAxialField(2,0.);
-    axialField = data.sol[0];
-    TPZGradSolVec datasol = data.dsol;
-    
-    const STATE muR = fUr(data.x);
-    const STATE epsilonR = fEr(data.x);
+    axialField = datavec[l2index].sol[0];
+    TPZManVector<STATE> datasoldiv = datavec[hdivindex].sol[0];
+    const STATE muR =  fUr(datavec[l2index].x);
+    const STATE epsilonR = fEr(datavec[l2index].x);
     const STATE k0Squared = muR * epsilonR * fW * fW / ( M_C * M_C );
     const STATE betaZ = sqrt(k0Squared - fKtSquared);
     
-    gradAxialField[0] = -betaZ/(fKtSquared) * data.dsol[0](0,0);
-    gradAxialField[1] = -betaZ/(fKtSquared) * data.dsol[0](1,0);
+    gradAxialField[0] = -betaZ/(fKtSquared) * datasoldiv[0];
+    gradAxialField[1] = -betaZ/(fKtSquared) * datasoldiv[1];
     
     
     switch (whichMode) {
         case modesTM:
-            curlAxialField[0] = fW * muR /fKtSquared * ( 1.) * data.dsol[0](1,0);
-            curlAxialField[1] = fW * muR /fKtSquared * (-1.) * data.dsol[0](0,0);
+            curlAxialField[0] = fW * muR /fKtSquared * ( 1.) * datasoldiv[1];
+            curlAxialField[1] = fW * muR /fKtSquared * (-1.) * datasoldiv[0];
             break;
         case modesTE:
-            
-            curlAxialField[0] = fW * epsilonR /fKtSquared * ( 1.) * data.dsol[0](1,0);
-            curlAxialField[1] = fW * epsilonR /fKtSquared * (-1.) * data.dsol[0](0,0);
+            curlAxialField[0] = fW * epsilonR /fKtSquared * ( 1.) * datasoldiv[1];
+            curlAxialField[1] = fW * epsilonR /fKtSquared * (-1.) * datasoldiv[0];
             break;
         default:
             DebugStop();
@@ -245,6 +368,7 @@ void TPZMatModalAnalysisHDiv::Solution(TPZMaterialData &data, int var, TPZVec<ST
             DebugStop();
             break;
     }
+
 }
 
 

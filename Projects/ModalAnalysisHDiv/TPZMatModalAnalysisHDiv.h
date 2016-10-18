@@ -8,6 +8,7 @@
 
 #include "pzaxestools.h"
 #include "pzmaterial.h"
+#include "TPZVecL2.h"
 /**
  * @ingroup material
  * @brief This class implements the weak statement of a waveguide problem as stated in Jin's 
@@ -18,7 +19,7 @@
 
 enum modeType{ NDefined = -1 , modesTE=0, modesTM=1};
 
-class  TPZMatModalAnalysisHDiv : public TPZMaterial
+class  TPZMatModalAnalysisHDiv : public TPZVecL2
 {
     
 protected:
@@ -31,7 +32,7 @@ protected:
     modeType whichMode;
     STATE fKtSquared;
     
-    const int h1index = 0;
+    const int l2index = 0;
     const int hdivindex = 1;
 public:
     
@@ -42,7 +43,7 @@ public:
     /** @brief Default constructor */
     TPZMatModalAnalysisHDiv();
     
-    int H1Index(){ return h1index; }
+    int L2Index(){ return l2index; }
     int HDivIndex(){ return hdivindex; }
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
@@ -79,46 +80,28 @@ public:
      */
     virtual void SetMatrixB(){ assembling = B;};
     
+    
     /**
-     * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
-     * @param data [in] stores all input data
+     * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
+     * @param datavec [in] stores all input data
      * @param weight [in] is the weight of the integration rule
      * @param ek [out] is the stiffness matrix
      * @param ef [out] is the load vector
-     * @since April 16, 2007
      */
-    virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+    virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     
     /**
-     * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
-     * @param data [in] stores all input data
+     * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point
+     * to multiphysics simulation.
+     * @param datavec [in]  stores all input data
      * @param weight [in] is the weight of the integration rule
      * @param ek [out] is the stiffness matrix
      * @param ef [out] is the load vector
      * @param bc [in] is the boundary condition material
-     * @since October 07, 2011
+     * @since October 18, 2011
      */
-    virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
     
-    
-    /**
-     * @brief It computes a contribution to the residual vector at one integration point.
-     * @param data [in] stores all input data
-     * @param weight [in] is the weight of the integration rule
-     * @param ef [out] is the residual vector
-     * @since April 16, 2007
-     */
-    virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef);
-    
-    /**
-     * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
-     * @param data [in] stores all input data
-     * @param weight [in] is the weight of the integration rule
-     * @param ef [out] is the load vector
-     * @param bc [in] is the boundary condition material
-     * @since April 16, 2007
-     */
-    virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
     
     /**
      * @brief This method defines which parameters need to be initialized in order to compute the contribution of an element
@@ -149,7 +132,7 @@ public:
     virtual int NSolutionVariables(int var);
     
 //    /** @brief Returns the solution associated with the var index based on the finite element approximation */
-    virtual void Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout);
+    virtual void Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout);
 };
 
 #endif

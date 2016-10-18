@@ -61,13 +61,13 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     const modeType teortm = modesTE;
-    REAL f0 = 15 * 1e+9;
+    REAL f0 = 20 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
 
     bool filterEquations = true;
     bool usingFullMtrx = false;
-    bool optimizeBandwidth = false;
+    bool optimizeBandwidth = true;
     
     const int meshType = createTriangular;
     
