@@ -104,6 +104,7 @@ void TPZMatModalAnalysisH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZ
     if (assembling == whichMatrix::B) {
         return;
     }
+    
     switch ( bc.Type() ) {
         case 0: // Dirichlet
             
