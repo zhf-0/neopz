@@ -501,10 +501,9 @@ void TPZDarcyPMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
 //    
 //    }
 
-//    std::cout<<ek<<std::endl;
-//
-//    std::cout<<ef<<std::endl;
-//    std::cout<<"____"<<std::endl;
+
+    
+    
     
 
 }
@@ -730,7 +729,6 @@ void TPZDarcyPMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     
 
     
-    
 }
 
 
@@ -925,9 +923,6 @@ void TPZDarcyPMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMat
         
     }
 
-    
-    //std::cout<<ek<<std::endl;
-    //std::cout<<"____"<<std::endl;
     
 }
 
@@ -1146,7 +1141,7 @@ void TPZDarcyPMaterial::FillVecShapeIndex(TPZMaterialData &data)
 
 void TPZDarcyPMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors)
 {
-    
+    //return;
     // @omar:: ate this point just velocity norms
     
     //                             TPZVec<REAL> &x,TPZVec<STATE> &u,

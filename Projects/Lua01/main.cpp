@@ -43,9 +43,10 @@ using namespace std;
 TPZGeoMesh * GetMesh(int nx,int ny);
 void InsertElasticity(TPZCompMesh *cmesh);
 
+const REAL Pi=M_PI;
+
 void Forcing(const TPZVec<REAL> &x, TPZVec<STATE> &f)
 {
-    double Pi=4*atan(1);
     double q=-5.0, E=20000000,v=0.3, h=0.1, lx=5., ly=6.;
     double D=0;
     D=(E*h*h*h)/(12*(1-v*v));
@@ -54,6 +55,42 @@ void Forcing(const TPZVec<REAL> &x, TPZVec<STATE> &f)
     double x2=x[1];
     
     f[2] = (q)*sin(Pi*x1/lx)*sin(Pi*x2/ly);
+}
+
+// definition of v analytic
+
+void w_exact(TPZFMatrix<REAL> &axes, TPZVec<REAL> & x, TPZFMatrix<STATE> &uexact,TPZFMatrix<STATE> &duexact){
+    
+    axes.Resize(3, 3);
+    
+    axes(0,0)=1.0;
+    axes(0,1)=0.0;
+    axes(0,2)=0.0;
+    
+    axes(1,0)=0.0;
+    axes(1,1)=1.0;
+    axes(1,2)=0.0;
+    
+    axes(2,0)=0.0;
+    axes(2,1)=0.0;
+    axes(2,2)=1.0;
+    
+    //uexact.Resize(1,1);
+    
+    STATE xv = x[0];
+    STATE yv = x[1];
+    
+    STATE w_x = (-22113.*sin((Pi*(-2.5 + xv))/5.)*sin((Pi*(-3. + yv))/6.))/(37210.*pow(Pi,4.));
+    
+    uexact(0,0) = w_x; // x direction
+    
+    STATE dw_x =(-22113.*cos((Pi*(-2.5 + xv))/5.)*sin((Pi*(-3. + yv))/6.))/(186050.*pow(Pi,3));
+    STATE dw_y =(-7371.*cos((Pi*(-3. + yv))/6.)*sin((Pi*(-2.5 + xv))/5.))/(74420.*pow(Pi,3));
+
+    //duexact.Resize(2,1);
+    
+    duexact(0,0)=dw_x;
+    duexact(1,0)=dw_y;
 }
 
 /*
@@ -110,13 +147,37 @@ int main(){
     cmesh->Print(cmeshout);
     
     //Assembly and building solution
+    
+    bool optimizeBandwidth = true;
     TPZSkylineStructMatrix skylstruct(cmesh);
     TPZStepSolver<STATE> step;
     step.SetDirect(ECholesky);
-    TPZAnalysis an(cmesh);
+    TPZAnalysis an(cmesh,optimizeBandwidth);
     an.SetStructuralMatrix(skylstruct);
     an.SetSolver(step);
-    an.Run();
+    //an.Run();
+    
+    std::cout << "Assemble matrix with NDoF = " << cmesh->NEquations() << std::endl;
+    
+    an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
+    
+    
+#ifdef PZDEBUG
+    //Imprimir Matriz de rigidez Global:
+    {
+        std::ofstream filestiff("stiffness.txt");
+        an.Solver().Matrix()->Print("K1 = ",filestiff,EMathematicaInput);
+        
+        std::ofstream filerhs("rhs.txt");
+        an.Rhs().Print("R = ",filerhs,EMathematicaInput);
+    }
+#endif
+    
+    std::cout << "Solving Matrix " << std::endl;
+    
+    an.Solve();
+    
+    
     an.Solution().Print("Solucao");
     
     
@@ -126,19 +187,26 @@ int main(){
     //	int nstate = mat->NStateVariables();
     //
     
-    an.SetStep(8);
+    //an.SetStep(8);
     //Defining plot properties
     int dimension = 2, resolution = 1;
     std::string plotfile("placaaf.vtk");
-    TPZVec <std::string> scalnames(3), vecnames(1);
-    vecnames[0] = "Displacement";
-    scalnames[0] = "Mn1";
-    scalnames[1] = "Mn2";
-    scalnames[2] = "Mn1n2";
+    
+    TPZStack<std::string> scalnames, vecnames;
+    scalnames.Push("Deslocz");
+    vecnames.Push("Displacement");
+    scalnames.Push("Mn1");
+    //scalnames.Push("Mn2");
+    scalnames.Push("Mn1n2");
+    
+
+    int postProcessResolution = 0; //  keep low as possible
+    
+    int dim = mesh->Dimension();
+    an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
+    an.PostProcess(postProcessResolution,dim);
     
     
-    an.DefineGraphMesh(dimension, scalnames, vecnames, plotfile);
-    an.PostProcess(resolution);
     
     //
     //	TPZMaterial * mat = cmesh->FindMaterial(1);
@@ -197,7 +265,7 @@ TPZGeoMesh *GetMesh (int nx,int ny){
     //Creates the geometric mesh... The nodes and elements
     //will be inserted into mesh object during initilize process
     TPZGeoMesh *gmesh = new TPZGeoMesh();
-    
+    gmesh->SetDimension(2);
     //Auxiliar vector to store a coordinate
     TPZVec <REAL> coord (3,0.);
     
@@ -388,10 +456,9 @@ void InsertElasticity(TPZCompMesh *mesh)
     /// brincar com execute de minha
     //minha->Execute(xf, TPZVec<double> &f, TPZFMatrix<double> &df);
     
-    
-    
     placa->SetForcingFunction(minha);
     
+    placa->SetExactFunction(w_exact);
     
     TPZMaterial * elastauto(placa);
     //elastauto->SetForcingFunction(minha);

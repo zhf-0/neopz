@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     //Dados do problema:
     
     
-    int h_level = 8;
+    int h_level = 64;
     
     
     double hx=Pi,hy=2.; //Dimensões em x e y do domínio
@@ -195,8 +195,10 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
     cmesh_m->LoadReferences();
     
+    
     AddMultiphysicsInterfaces(*cmesh_m,matSInterface,matIdS);
     AddMultiphysicsInterfaces(*cmesh_m,matDInterface,matIdD);
+    
     
     //AddInterfaceCoupllingDS(gmesh,cmesh_m,matInterfaceDS ,matIdS,matIdD);
     AddInterfaceCoupllingDS(gmesh,cmesh_m,matInterfaceDS ,matIdD,matIdS);
@@ -378,12 +380,22 @@ void fS_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE f_x = (cos(xv)*(Pi*sin(yv) + (1. + 4.*Pi*Pi)*sin(2.*Pi*yv)))/Pi;
-    STATE f_y = -((-1. + 4.*Pi*Pi - 2*Pi*Pi*cos(yv) + (1. + 4.*Pi*Pi)*cos(2.*Pi*yv))*
-                  sin(xv))/(2.*Pi*Pi);
+    if(yv>0.){
+        
+        STATE f_x = (cos(xv)*(Pi*sin(yv) + (1. + 4.*Pi*Pi)*sin(2.*Pi*yv)))/Pi;
+        STATE f_y = -((-1. + 4.*Pi*Pi - 2*Pi*Pi*cos(yv) + (1. + 4.*Pi*Pi)*cos(2.*Pi*yv))*
+                      sin(xv))/(2.*Pi*Pi);
+        
+        f[0] = f_x;
+        f[1] = f_y;
+    }else{
+        
+        f[0] = 0.;
+        f[1] = 0.;
+    }
     
-    f[0] = f_x;
-    f[1] = f_y;
+    
+    
 }
 
 // definition of v analytic
@@ -442,8 +454,8 @@ void solucaoS_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE v_y =  sin(xv)*(-2. + pow(sin(Pi*yv),2)/(Pi*Pi));
     STATE p =  sin(xv)*sin(yv);
     
-    f[0] = -v_x; // x direction
-    f[1] = -v_y; // y direction
+    f[0] = v_x; // x direction
+    f[1] = v_y; // y direction
     f[2] = p; //
 }
 
@@ -565,7 +577,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     //    Ponto 2
     TPZVec<long> pointtopology2(1);
-    pointtopology[0] = nx*ny-1;
+    pointtopology2[0] = nx*ny-1;
     //pointtopology2[0] = nx*((ny+1)/2);
     
     gmesh->CreateGeoElement(EPoint,pointtopology2,matPoint2,id);
@@ -582,7 +594,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     for(i = 0; i < (ny - 1)/2.; i++){
         for(j = 0; j < (nx - 1); j++){
             idD = (i)*(nx - 1)+ (j);
-            connect[0] = (i)*ny + (j);
+            connect[0] = (i)*nx + (j);
             connect[1] = connect[0]+1;
             connect[2] = connect[1]+(nx);
             connect[3] = connect[0]+(nx);
@@ -595,7 +607,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     for(i = (ny - 1)/2.; i < (ny - 1); i++){
         for(j = 0; j < (nx - 1); j++){
             idS = (i)*(nx - 1)+ (j);
-            connect[0] = (i)*ny + (j);
+            connect[0] = (i)*nx + (j);
             connect[1] = connect[0]+1;
             connect[2] = connect[1]+(nx);
             connect[3] = connect[0]+(nx);
@@ -787,8 +799,8 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
                 
             }
             if(i>0&&i<(ny-1)){
-                nodint[0]=j+ny*i;
-                nodint[1]=j+ny*i+1;
+                nodint[0]=j+nx*i;
+                nodint[1]=j+nx*i+1;
                 
                 if(i==(ny-1)/2.){
                     gmesh->CreateGeoElement(EOned, nodint, matInterfaceDS, id); //Criando elemento de interface (GeoElement)
@@ -872,7 +884,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Dimensões do material (para H1 e descontinuo):
     //TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
-    //material->SetMaterial(xkin, xcin, xfin);
+    //materialDarcy->SetMaterial(xkin, xcin, xfin);
     
     //Dimensões do material (para HDiv):
     TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
@@ -899,7 +911,6 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Criando material Stokes:
     
-    
     //Criando material cujo nSTATE = 2 ou seja linear
     
     TPZMat2dLin *materialStokes = new TPZMat2dLin(matIdS); //Criando material que implementa a formulação fraca do problema modelo
@@ -908,7 +919,7 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Dimensões do material (para H1 e descontinuo):
     //TPZFMatrix<STATE> xkin2(2,2,0.), xcin2(2,2,0.), xfin2(2,2,0.);
-    //material->SetMaterial(xkin2, xcin2, xfin2);
+    //materialStokes->SetMaterial(xkin2, xcin2, xfin2);
     
     //Dimensões do material (para HDiv):
     TPZFMatrix<STATE> xkin2(1,1,0.), xcin2(1,1,0.), xfin2(1,1,0.);
@@ -1031,7 +1042,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     
     TPZMaterial * BCPointD = materialDarcy->CreateBC(materialDarcy, matPoint, pointtype, val3, val4); //Cria material que implementa um ponto para a pressao
     cmesh->InsertMaterialObject(BCPointD); //Insere material na malha
-    
+    //
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Criando material Stokes:
     
@@ -1066,12 +1077,12 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     //    cmesh->InsertMaterialObject(BCond3); //Insere material na malha
     
     
-    //    Ponto de pressao:
+        //Ponto de pressao:
     
-    TPZFMatrix<REAL> val5(1,1,0.), val6(1,1,0.);
+        TPZFMatrix<REAL> val5(1,1,0.), val6(1,1,0.);
     
-    TPZMaterial * BCPointS = materialStokes->CreateBC(materialStokes, matPoint2, pointtype, val5, val6); //Cria material que implementa um ponto para a pressao
-    cmesh->InsertMaterialObject(BCPointS); //Insere material na malha
+        TPZMaterial * BCPointS = materialStokes->CreateBC(materialStokes, matPoint2, pointtype, val5, val6); //Cria material que implementa um ponto para a pressao
+        cmesh->InsertMaterialObject(BCPointS); //Insere material na malha
     
     
     
@@ -1102,11 +1113,17 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         
     }
     std::set<int> materialids;
-    materialids.insert(matID);
+    materialids.insert(matIdD);
+    materialids.insert(matIdS);
+    materialids.insert(matInterfaceDS);
+    //materialids.insert(matInterfaceDS);
     cmesh->AutoBuild(materialids);
     cmesh->LoadReferences();
     cmesh->ApproxSpace().CreateDisconnectedElements(false);
-    cmesh->AutoBuild();
+    std::set<int> materialids2;
+    materialids2.insert(matPoint);
+    //materialids2.insert(matpoint2);
+    cmesh->AutoBuild(materialids2);
     
     
     // @omar::
@@ -1117,8 +1134,10 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         newnod.SetLagrangeMultiplier(1);
     }
     
-    //    cmesh->AdjustBoundaryElements();
-    //    cmesh->CleanUpUnconnectedNodes();
+    
+     //   cmesh->AdjustBoundaryElements();
+     //   cmesh->CleanUpUnconnectedNodes();
+    
     
     return cmesh;
     
