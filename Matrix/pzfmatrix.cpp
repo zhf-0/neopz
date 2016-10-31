@@ -1895,7 +1895,7 @@ int TPZFMatrix<double>::Subst_LForward( TPZFMatrix<double>* b ) const
     double B  = 0.;
     int info;
     if (dim == 0 || nrhs == 0) {
-        return;
+        return 0;
     }
     dsytrs_(&uplo, &dim, &nrhs, fElem, &dim, &fPivot[0], b->fElem, &dim, &info);
     return 1;
@@ -2973,7 +2973,7 @@ TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<do
         TPZMatrix<double>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
     }
     
-    char jobvl[] = "None", jobvr[] = "Vectors";
+    char jobvl[] = "N", jobvr[] = "V";
     TPZFMatrix< complex<double> > VL(Rows(),Cols()),VR(Rows(),Cols());
     int dim = Rows();
     float testwork;

@@ -67,10 +67,9 @@ void TPZMatModalAnalysisH1::Contribute(TPZMaterialData &data, REAL weight, TPZFM
     {
         for(int j=0;j<nshape;j++)
         {
-            STATE stiffA = 0.;
-            stiffA += dphi(0,i)*dphi(0,j);
             
-            STATE stiffB = phi(i,0) * phi(j,0);
+            const STATE stiffA = dphi(0,i) * dphi(0,j)+dphi(1,i) * dphi(1,j);
+            const STATE stiffB = phi(i,0) * phi(j,0);
             
             switch (assembling) {
                 case A:

@@ -213,7 +213,8 @@ const std::complex<float>
     if( mustConj == true){
         static std::complex<float> cpVal;
         cpVal = fDiag[ Index(row,col) ];
-        cpVal = std::conj( cpVal );
+        if( fabs( std::imag( cpVal ) ) > 1e-9 )
+            cpVal = std::conj( cpVal );
         return cpVal;
     }
     else{
@@ -240,7 +241,8 @@ const std::complex<double>
     if( mustConj == true){
         static std::complex<double> cpVal;
         cpVal = fDiag[ Index(row,col) ];
-        cpVal = std::conj( cpVal );
+        if( fabs( std::imag( cpVal ) ) > 1e-9 )
+            cpVal = std::conj( cpVal );
         return cpVal;
     }
     else{
