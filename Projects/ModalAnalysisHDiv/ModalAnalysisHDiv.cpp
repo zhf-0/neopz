@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTM;
+    const modeType teortm = modesTE;
     REAL f0 = 15 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
@@ -316,7 +316,7 @@ void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &acti
     TPZCompMesh *cmeshL2 = meshVec[1 + mat->L2Index()];
     
     TPZManVector<long,1000> allConnects;
-    std::set<long> boundConnects;
+    std::set<long> boundaryConnects;
     
     
     for (int iel = 0; iel < cmeshMF->NElements(); iel++) {
@@ -330,31 +330,12 @@ void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &acti
         }
         if(cel->Reference()->MaterialId() == -1 ){
             std::set<long> boundConnectsEl;
-            std::set<long> depBoundConnectsEl;
-            std::set<long> indepBoundConnectsEl;
-            cel->BuildConnectList(indepBoundConnectsEl, depBoundConnectsEl);
             cel->BuildConnectList(boundConnectsEl);
             
             for (std::set<long>::iterator iT = boundConnectsEl.begin(); iT != boundConnectsEl.end(); iT++) {
                 const long val = *iT;
-                if( mat->L2Index() == 0 && val < cmeshL2->NConnects() ){
-                    if( boundConnects.find(val) == boundConnects.end() ){
-                        if (teortm == modeType::modesTM) {//connects H1
-                            //boundConnects.insert(val);
-                        }
-                    }
-                }
-                else if( mat->L2Index() == 1 && val >= cmeshHDiv->NConnects() ){
-                    if( boundConnects.find(val) == boundConnects.end() ){
-                        if (teortm == modeType::modesTM) {//connects H1
-                            //boundConnects.insert(val);
-                        }
-                    }
-                }
-                else{
-                    if (teortm == modeType::modesTE) {//connects HDiv
-                        boundConnects.insert(val);
-                    }
+                if (teortm == modeType::modesTE) {//connects HDiv --- There are no L2 connects
+                    boundaryConnects.insert(val);
                 }
             }
             
@@ -362,7 +343,7 @@ void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &acti
         }
     }
     for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
-        if( boundConnects.find( iCon ) == boundConnects.end() ){
+        if( boundaryConnects.find( iCon ) == boundaryConnects.end() ){
             TPZConnect &con = cmeshMF->ConnectVec()[iCon];
             int seqnum = con.SequenceNumber();
             int pos = cmeshMF->Block().Position(seqnum);
@@ -389,7 +370,7 @@ void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &acti
     long nEq = 0;
     for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
         bool isL2;
-        if( boundConnects.find( iCon ) == boundConnects.end() ){
+        if( boundaryConnects.find( iCon ) == boundaryConnects.end() ){
             
             int seqnum = cmeshMF->ConnectVec()[iCon].SequenceNumber();
             int blocksize = cmeshMF->Block().Size(seqnum);

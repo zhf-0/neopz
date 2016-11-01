@@ -96,13 +96,13 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
 
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
-    const int nHCurlFunctions  = phrq;
+    const int nHDivFunctions  = phrq;
     const int nL2Functions  = phiL2.Rows();
-    const int firstL2 = l2index * nHCurlFunctions;
-    const int firstHCurl = hdivindex * nL2Functions;
+    const int firstL2 = l2index * nHDivFunctions;
+    const int firstHDiv = hdivindex * nL2Functions;
     
-    for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
-        for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
+    for (int iVec = 0; iVec < nHDivFunctions; iVec++) {
+        for (int jVec = 0; jVec < nHDivFunctions; jVec++) {
             STATE stiffAtt = 0.;
             STATE stiffBtt = 0.;
             
@@ -115,10 +115,10 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
             stiffBtt = 0;
             
             if (this->assembling == A) {
-                ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
+                ek( firstHDiv + iVec , firstHDiv + jVec ) += stiffAtt * weight ;
             }
             else if (this->assembling == B){
-                ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffBtt * weight ;
+                ek( firstHDiv + iVec , firstHDiv + jVec ) += stiffBtt * weight ;
             }
             else{
                 DebugStop();
@@ -126,17 +126,17 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
             
         }
         for (int jSca = 0; jSca < nL2Functions; jSca++) {
-            STATE stiffAzt = 0.;
+            STATE stiffAtz = 0.;
             STATE phiDivV = 0.;
             
             phiDivV += std::conj( divPhiVecHDiv(iVec , 0) ) * phiL2(jSca , 0);
             
-            stiffAzt = phiDivV;
+            stiffAtz = phiDivV;
             if (this->assembling == A) {
-                ek( firstHCurl + iVec , firstL2 + jSca ) += stiffAzt * weight ;
+                ek( firstHDiv + iVec , firstL2 + jSca ) += stiffAtz * weight ;
             }
             else if (this->assembling == B){
-                ek( firstHCurl + iVec , firstL2 + jSca ) += 0.;
+                ek( firstHDiv + iVec , firstL2 + jSca ) += 0.;
             }
             else{
                 DebugStop();
@@ -145,7 +145,7 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
         }
     }
     for (int iSca = 0; iSca < nL2Functions; iSca++) {
-        for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
+        for (int jVec = 0; jVec < nHDivFunctions; jVec++) {
             
             STATE phiDivV = 0.;
             
@@ -155,10 +155,10 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
             
             stiffAzt = phiDivV;
             if (this->assembling == A) {
-                ek( firstL2 + iSca , firstHCurl +  jVec) += stiffAzt * weight ;
+                ek( firstL2 + iSca , firstHDiv +  jVec) += stiffAzt * weight ;
             }
             else if (this->assembling == B){
-                ek( firstL2 + iSca , firstHCurl +  jVec ) += 0. ;
+                ek( firstL2 + iSca , firstHDiv +  jVec ) += 0. ;
             }
             else{
                 DebugStop();
@@ -198,10 +198,13 @@ void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REA
     
     if (bc.Type() == 0) {//TM modes have dirichlet boundary conditions
         whichMode = modesTM;
+        return;
     }else{
         whichMode = modesTE;
     }
     return;
+    
+    
     if (assembling == whichMatrix::B) {
         return;
     }
@@ -247,6 +250,9 @@ void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REA
         switch ( bc.Type() )
         {
             case 0:
+                DebugStop();
+                break;
+            case 1:
                 for(int i = 0 ; i<nshape ; i++)
                 {
                     const STATE rhs = phiHDiv(i,0) * BIG  * v2;
@@ -257,9 +263,6 @@ void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REA
                         ek(firstHDiv+i,firstHDiv+j) += stiff*weight;
                     }
                 }
-                break;
-            case 1:
-                DebugStop();
                 break;
             case 2:
                 DebugStop();
