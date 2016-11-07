@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTE;
+    const modeType teortm = modesTM;
     REAL f0 = 15 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     

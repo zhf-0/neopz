@@ -69,9 +69,7 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
     }
     
     /*********************CREATE HDIV FUNCTIONS****************************/
-    TPZFNMatrix<12,REAL> phiScaHCurl = datavec[ hdivindex ].phi;
-    TPZManVector<REAL,3> x = datavec[ l2index ].x;
-    TPZManVector<REAL,3> xParametric = datavec[ l2index ].xParametric;
+    TPZFNMatrix<12,REAL> phiScaHDiv = datavec[ hdivindex ].phi;
     
     int phrq = datavec[ hdivindex ].fVecShapeIndex.NElements();
     //  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
@@ -85,9 +83,9 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
         int ishapeind = datavec[ hdivindex ].fVecShapeIndex[iq].second;
         
         
-        phiVecHDiv(iq , 0) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(0,ivecind);
-        phiVecHDiv(iq , 1) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(1,ivecind);
-        phiVecHDiv(iq , 2) = phiScaHCurl(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(2,ivecind);
+        phiVecHDiv(iq , 0) = phiScaHDiv(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(0,ivecind);
+        phiVecHDiv(iq , 1) = phiScaHDiv(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(1,ivecind);
+        phiVecHDiv(iq , 2) = phiScaHDiv(ishapeind , 0) * datavec[ hdivindex ].fNormalVec(2,ivecind);
         
         divPhiVecHDiv(iq , 0) += dphiQ(0,ishapeind) * datavec[ hdivindex ].fNormalVec(0,ivecind);
         divPhiVecHDiv(iq , 0) += dphiQ(1,ishapeind) * datavec[ hdivindex ].fNormalVec(1,ivecind);
@@ -315,31 +313,26 @@ int TPZMatModalAnalysisHDiv::NSolutionVariables(int var)
 
 void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
 {
-
-    TPZVec<STATE> axialField(1,0.) , gradAxialField(2,0.) , curlAxialField(2,0.);
-    axialField = datavec[l2index].sol[0];
-    TPZManVector<STATE> datasoldiv = datavec[hdivindex].sol[0];
-    const STATE muR =  fUr(datavec[l2index].x);
+    
+    TPZVec<STATE> axialField(3,0.);
+    TPZVec<STATE> tangentialField(1,0.);
+    
+    axialField = datavec[ hdivindex ].sol[0];
+    tangentialField = datavec[ l2index ].sol[0];
+    
+    const STATE muR = fUr(datavec[l2index].x);
     const STATE epsilonR = fEr(datavec[l2index].x);
     const STATE k0Squared = muR * epsilonR * fW * fW / ( M_C * M_C );
     const STATE betaZ = sqrt(k0Squared - fKtSquared);
     
-    gradAxialField[0] = -betaZ/(fKtSquared) * datasoldiv[0];
-    gradAxialField[1] = -betaZ/(fKtSquared) * datasoldiv[1];
+    TPZVec<STATE> gradAxialField(2,0.);
+    TPZGradSolVec datasol = datavec[l2index].dsol;
+    
+    gradAxialField[0] = -betaZ/(fKtSquared) * datavec[l2index].dsol[0](0,0);
+    gradAxialField[1] = -betaZ/(fKtSquared) * datavec[l2index].dsol[0](1,0);
+
     
     
-    switch (whichMode) {
-        case modesTM:
-            curlAxialField[0] = fW * muR /fKtSquared * ( 1.) * datasoldiv[1];
-            curlAxialField[1] = fW * muR /fKtSquared * (-1.) * datasoldiv[0];
-            break;
-        case modesTE:
-            curlAxialField[0] = fW * epsilonR /fKtSquared * ( 1.) * datasoldiv[1];
-            curlAxialField[1] = fW * epsilonR /fKtSquared * (-1.) * datasoldiv[0];
-            break;
-        default:
-            DebugStop();
-    }
     
     switch (var) {
         case 0: //Ez ou Hz
@@ -350,7 +343,7 @@ void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var
         case 1: //Et
         {
             if(whichMode == modeType::modesTE) {
-                Solout = curlAxialField;
+                Solout = tangentialField;
             }
             else{
                 Solout = gradAxialField;
@@ -363,7 +356,7 @@ void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var
                 Solout = gradAxialField;
             }
             else{
-                Solout = curlAxialField;
+                Solout = tangentialField;
             }
         }
             break;
