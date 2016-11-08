@@ -187,87 +187,13 @@ void TPZMatModalAnalysisHDiv::Contribute(TPZVec<TPZMaterialData> &datavec, REAL 
 
 void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
-    TPZFMatrix<REAL> &phiHDiv = datavec[hdivindex].phi;
-    TPZFMatrix<REAL> &phiL2 = datavec[l2index].phi;
-    const int nHDivFunctions  = phiHDiv.Rows();
-    const int nL2Functions  = phiL2.Rows();
-    const int firstL2 = l2index * nHDivFunctions;
-    const int firstHDiv = hdivindex * nL2Functions;
-    
     if (bc.Type() == 0) {//TM modes have dirichlet boundary conditions
         whichMode = modesTM;
         return;
     }else{
         whichMode = modesTE;
     }
-    return;
-    
-    
-    if (assembling == whichMatrix::B) {
-        return;
-    }
-    
-    {
-        
-        int nshape=phiL2.Rows();
-        REAL BIG = TPZMaterial::gBigNumber;
-        
-        //const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
-        const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
-        
-        switch ( bc.Type() )
-        {
-            case 0:
-                for(int i = 0 ; i<nshape ; i++)
-                {
-                    const STATE rhs = phiL2(i,0) * BIG  * v2;
-                    ef(firstL2+i,0) += rhs*weight;
-                    for(int j=0;j<nshape;j++)
-                    {
-                        const STATE stiff = phiL2(i,0) * phiL2(j,0) * BIG ;
-                        ek(firstL2+i,firstL2+j) += stiff*weight;
-                    }
-                }
-                break;
-            case 1:
-                DebugStop();
-                break;
-            case 2:
-                DebugStop();
-                break;
-        }
-    }
-    {
-        
-        int nshape=phiHDiv.Rows();
-        REAL BIG = TPZMaterial::gBigNumber;
-        
-        //const STATE v1 = bc.Val1()(0,0);//sera posto na matriz K no caso de condicao mista
-        const STATE v2 = bc.Val2()(0,0);//sera posto no vetor F
-        
-        switch ( bc.Type() )
-        {
-            case 0:
-                DebugStop();
-                break;
-            case 1:
-                for(int i = 0 ; i<nshape ; i++)
-                {
-                    const STATE rhs = phiHDiv(i,0) * BIG  * v2;
-                    ef(firstHDiv+i,0) += rhs*weight;
-                    for(int j=0;j<nshape;j++)
-                    {
-                        const STATE stiff = phiHDiv(i,0) * phiHDiv(j,0) * BIG ;
-                        ek(firstHDiv+i,firstHDiv+j) += stiff*weight;
-                    }
-                }
-                break;
-            case 2:
-                DebugStop();
-                break;
-        }
-    }
-    
+    return;    
 }
 
 int TPZMatModalAnalysisHDiv::IntegrationRuleOrder(int elPMaxOrder) const
@@ -314,24 +240,30 @@ int TPZMatModalAnalysisHDiv::NSolutionVariables(int var)
 void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
 {
     
-    TPZVec<STATE> axialField(3,0.);
-    TPZVec<STATE> tangentialField(1,0.);
+    TPZVec<STATE> axialField(1,0.);
+    TPZVec<STATE> transversalField(2,0.);
+    TPZVec<STATE> curlAxialField(2,0.);
     
-    axialField = datavec[ hdivindex ].sol[0];
-    tangentialField = datavec[ l2index ].sol[0];
+    axialField = datavec[ l2index ].sol[0];
+    transversalField = datavec[ hdivindex ].sol[0];
     
     const STATE muR = fUr(datavec[l2index].x);
     const STATE epsilonR = fEr(datavec[l2index].x);
     const STATE k0Squared = muR * epsilonR * fW * fW / ( M_C * M_C );
     const STATE betaZ = sqrt(k0Squared - fKtSquared);
     
-    TPZVec<STATE> gradAxialField(2,0.);
-    TPZGradSolVec datasol = datavec[l2index].dsol;
     
-    gradAxialField[0] = -betaZ/(fKtSquared) * datavec[l2index].dsol[0](0,0);
-    gradAxialField[1] = -betaZ/(fKtSquared) * datavec[l2index].dsol[0](1,0);
-
+    transversalField[0] = -1. * imaginary * betaZ / fKtSquared * transversalField[0];
+    transversalField[1] = -1. * imaginary * betaZ / fKtSquared * transversalField[1];
     
+    if (whichMode == modeType::modesTE) {
+        curlAxialField[0] =  1. * transversalField[1] * fW * muR / betaZ;
+        curlAxialField[1] = -1. * transversalField[0] * fW * muR / betaZ;
+    }
+    else{
+        curlAxialField[0] =  1. * transversalField[1] * fW * epsilonR / betaZ;
+        curlAxialField[1] = -1. * transversalField[0] * fW * epsilonR / betaZ;
+    }
     
     
     switch (var) {
@@ -343,20 +275,20 @@ void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var
         case 1: //Et
         {
             if(whichMode == modeType::modesTE) {
-                Solout = tangentialField;
+                Solout = curlAxialField;
             }
             else{
-                Solout = gradAxialField;
+                Solout = transversalField;
             }
         }
             break;
         case 2: //Ht
         {
             if(whichMode == modeType::modesTE) {
-                Solout = gradAxialField;
+                Solout = transversalField;
             }
             else{
-                Solout = tangentialField;
+                Solout = curlAxialField;
             }
         }
             break;

@@ -1,4 +1,4 @@
-/**
+	/**
  * @file
  * @brief Afirst attempt at a multi physics hcurl/h1 formulation
  * @details Adequadte for problems with longitudinal axis symmetry
@@ -45,7 +45,7 @@ STATE ur( const TPZVec<REAL> & x){
 STATE er( const TPZVec<REAL> & x){
     return 1;
 }
-void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm);
+void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm, int nSolutions);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq, int &neqOriginal , const modeType teortm);
 
@@ -63,21 +63,23 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTM;
-    REAL f0 = 15 * 1e+9;
-    int pOrder = 1; //ordem polinomial de aproximacao
+    const modeType teortm = modesTE;
+    REAL f0 = 25 * 1e+9;
+    int nSolutions = 4;
+    const int meshType = createTriangular;
     
-
+    int nDiv = 4;
+    int pOrder = 1; //ordem polinomial de aproximacao
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
     
-    const int meshType = createTriangular;
     
-    int nDiv = 10;
+    
+    
     int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm);
+        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions);
         nDiv += 5;
     }
     
@@ -86,8 +88,38 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm){
+void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm , int nSolutions){
     TPZTimer timer;
+    
+    /*delete previous results*/
+    {
+        if(std::ifstream("../stiffA.csv"))std::remove("../stiffA.csv");
+        if(std::ifstream("../stiffB.csv"))std::remove("../stiffB.csv");
+        if(std::ifstream("../EV.csv"))std::remove("../EV.csv");
+        if(std::ifstream("../gmeshTriangular.txt"))std::remove("../gmeshTriangular.txt");
+        if(std::ifstream("../gmeshTriangular.vtk"))std::remove("../gmeshTriangular.vtk");
+        if(std::ifstream("../gmeshRectangular.txt"))std::remove("../gmeshRectangular.txt");
+        if(std::ifstream("../gmeshRectangular.vtk"))std::remove("../gmeshRectangular.vtk");
+        
+        std::string vtkName("../waveguideModes.scal_vec.");
+        for (int i = 0; ; i++) {
+            std::string testVtk = vtkName;
+            testVtk.append( std::to_string(i) );
+            testVtk.append( ".vtk" );
+            if (std::ifstream( testVtk.c_str() ) ) {
+                std::remove( testVtk.c_str() );
+            }else{
+                break;
+            }
+        }
+        std::string fileName("../ev");
+        fileName.append(std::to_string(nDiv));
+        fileName.append(".txt");
+        if( std::ifstream( fileName.c_str() ) ){
+            std::remove( fileName.c_str() );
+        }
+        
+    }
     
     timer.start();
     
@@ -130,7 +162,7 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
         
         an.SetStructuralMatrix(sbstr);
     }
-    int nSolutions = neq >= 10 ? 10 : neq;
+    nSolutions = neq >= nSolutions ? nSolutions : neq;
     TPZStepSolver<STATE> step;
     step.SetDirect(ECholesky); //caso simetrico
     an.SetSolver(step);
@@ -317,31 +349,28 @@ void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &acti
     
     TPZManVector<long,1000> allConnects;
     std::set<long> boundaryConnects;
-    
-    
-    for (int iel = 0; iel < cmeshMF->NElements(); iel++) {
-        TPZCompEl *cel = cmeshMF->ElementVec()[iel];
-        if ( cel == NULL) {
-            continue;
-        }
-        if ( cel->Reference() == NULL) {
-            
-            continue;
-        }
-        if(cel->Reference()->MaterialId() == -1 ){
-            std::set<long> boundConnectsEl;
-            cel->BuildConnectList(boundConnectsEl);
-            
-            for (std::set<long>::iterator iT = boundConnectsEl.begin(); iT != boundConnectsEl.end(); iT++) {
-                const long val = *iT;
-                if (teortm == modeType::modesTE) {//connects HDiv --- There are no L2 connects
+    if(teortm == modeType::modesTE){
+        for (int iel = 0; iel < cmeshMF->NElements(); iel++) {
+            TPZCompEl *cel = cmeshMF->ElementVec()[iel];
+            if ( cel == NULL) {
+                continue;
+            }
+            if ( cel->Reference() == NULL) {
+                
+                continue;
+            }
+            if(cel->Reference()->MaterialId() == -1 ){
+                std::set<long> boundConnectsEl;
+                cel->BuildConnectList(boundConnectsEl);
+                
+                for (std::set<long>::iterator iT = boundConnectsEl.begin(); iT != boundConnectsEl.end(); iT++) {
+                    const long val = *iT;
                     boundaryConnects.insert(val);
                 }
             }
-            
-            
         }
     }
+    
     for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
         if( boundaryConnects.find( iCon ) == boundaryConnects.end() ){
             TPZConnect &con = cmeshMF->ConnectVec()[iCon];
@@ -505,7 +534,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     // Criando material
     
     
-    ///criar malha computacional H1
+    ///criar malha computacional L2
     
     TPZCompMesh * cmeshL2 = new TPZCompMesh(gmesh);
     cmeshL2->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
@@ -521,10 +550,10 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     TPZFNMatrix<1,STATE> val1(1,1,0.), val2(1,1,0.);
     
     int bcType = teortm == modesTM ? dirichlet : neumann;
-    
-    TPZMaterial * BCondL2Dir = matL2->CreateBC(matL2, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
-    
-    cmeshL2->InsertMaterialObject(BCondL2Dir);//insere material na malha
+    if( teortm == modesTM){
+        TPZMaterial * BCondL2Dir = matL2->CreateBC(matL2, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+        cmeshL2->InsertMaterialObject(BCondL2Dir);//insere material na malha
+    }
     //Cria elementos computacionais que gerenciarao o espaco de aproximacao da malha
     cmeshL2->SetAllCreateFunctionsDiscontinuous();
     cmeshL2->AutoBuild();
@@ -542,17 +571,16 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     
     val1( 0, 0 ) = 0.;
     val2( 0, 0 ) = 0.;
-    TPZMaterial * BCondHDivDir = matHDiv->CreateBC(matHDiv, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    if(teortm == modesTE){
+        TPZMaterial * BCondHDivDir = matHDiv->CreateBC(matHDiv, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
     
-    cmeshHDiv->InsertMaterialObject(BCondHDivDir);//insere material na malha
+        cmeshHDiv->InsertMaterialObject(BCondHDivDir);//insere material na malha
+    }
     
     cmeshHDiv->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
     cmeshHDiv->AutoBuild();
-    
-    
-    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHDiv->ElementVec();
-    
     cmeshHDiv->CleanUpUnconnectedNodes();
+    
     
     TPZMatModalAnalysisHDiv *matMultiPhysics = new TPZMatModalAnalysisHDiv(matId , f0 , ur , er);
     TPZVec<TPZCompMesh *> meshVec(2);
@@ -567,7 +595,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     
     val1( 0, 0 ) = 0.;
     val2( 0, 0 ) = 0.;
-    TPZMaterial * BCondMFDir = matMultiPhysics->CreateBC(matMultiPhysics, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+    TPZMaterial * BCondMFDir = matMultiPhysics->CreateBC(matMultiPhysics, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
     
     
     cmeshMF->InsertMaterialObject(matMultiPhysics);
@@ -593,8 +621,5 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     meshVecOut[0] = cmeshMF;
     meshVecOut[1 + matMultiPhysics->L2Index()] = cmeshL2;
     meshVecOut[1 + matMultiPhysics->HDivIndex()] = cmeshHDiv;
-    return meshVecOut;
-    
-    
-    
+    return meshVecOut;    
 }
