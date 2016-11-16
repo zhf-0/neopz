@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTM;
+    const modeType teortm = modesTE;
     REAL f0 = 25 * 1e+9;
     int nSolutions = 4;
     const int meshType = createTriangular;
@@ -74,10 +74,10 @@ int main(int argc, char *argv[])
     int pOrder = 1; //ordem polinomial de aproximacao
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
-    bool generatingResults = true;
+    bool generatingResults = false;
     
-    int nDiv = 5;
-    int nSim = 5;
+    int nDiv = 10;
+    int nSim = 1;
     
     std::string fileName;
     if(generatingResults){
@@ -281,25 +281,25 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
     std::string pathName;
     if(generatingResults){
         struct stat sb;
-        
-        if (!(stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)))
+        std::string command;
+        pathName = "../resultsQuali";
+        if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
         {
-            std::string command = "mkdir";
+            command = "mkdir";
             command.append(" ../resultsQuali");
             std::system(command.c_str());
-            
-            
-            if (teortm == modesTM) {
-                pathName = " ../resultsQuali/TM";
-            }
-            else{
-                pathName = " ../resultsQuali/TE";
-            }
-            
-            if (!(stat(command.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))){
-                command = "mkdir ";
-                command.append(pathName.c_str());
-            }
+        }
+        if (teortm == modesTM) {
+            pathName = " ../resultsQuali/TM";
+        }
+        else{
+            pathName = " ../resultsQuali/TE";
+        }
+        
+        if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))){
+            command = "mkdir ";
+            command.append(pathName.c_str());
+            std::system(command.c_str());
         }
     }
     else{
@@ -389,7 +389,7 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
         an.PostProcess(postProcessResolution);
         iT++;
     }
-    
+    std::cout << "FINISHED!" << std::endl;
 }
 
 void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq , int &neqOriginal , const modeType teortm)
