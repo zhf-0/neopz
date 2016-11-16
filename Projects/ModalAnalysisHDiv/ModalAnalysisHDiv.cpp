@@ -74,12 +74,37 @@ int main(int argc, char *argv[])
     int pOrder = 1; //ordem polinomial de aproximacao
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
-    bool generatingResults = false;
+    bool generatingResults = true;
     
-    int nDiv = 10;
-    int nSim = 1;
+    int nDiv = 5;
+    int nSim = 5;
     
     std::string fileName;
+    if(generatingResults){
+        if(teortm == modesTM){
+            fileName = "../resultsQuali/TM/ev";
+        }
+        else{
+            fileName = "../resultsQuali/TE/ev";
+        }
+        for(int i = 1 ; i < 100 ; i++){
+            fileName.append(std::to_string(i));
+            fileName.append(".csv");
+            if( std::ifstream( fileName.c_str() ) ){
+                std::remove( fileName.c_str() );
+            }
+        }
+    }
+    
+    std::cout<<"MODOS TE"<<std::endl;
+    for (int i = 0 ; i < nSim; i++) {
+        std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
+        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
+        nDiv += 5;
+    }
+    std::cout<<"MODOS TM"<<std::endl;
+    nDiv = 5;
+    teortm = modesTM;
     if(generatingResults){
         if(teortm == modesTM){
             fileName = "../resultsQuali/TM/ev";
@@ -102,6 +127,7 @@ int main(int argc, char *argv[])
         RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
         nDiv += 5;
     }
+    
     
     
     
