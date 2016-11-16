@@ -34,6 +34,8 @@
 #include "pzsbndmat.h"
 #include "pzfstrmatrix.h"
 #include "pzvisualmatrix.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
@@ -45,7 +47,7 @@ STATE ur( const TPZVec<REAL> & x){
 STATE er( const TPZVec<REAL> & x){
     return 1;
 }
-void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm, int nSolutions);
+void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm, int nSolutions, bool generatingResults);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq, int &neqOriginal , const modeType teortm);
 
@@ -63,23 +65,41 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    const modeType teortm = modesTE;
+    const modeType teortm = modesTM;
     REAL f0 = 25 * 1e+9;
     int nSolutions = 4;
     const int meshType = createTriangular;
     
-    int nDiv = 4;
+    
     int pOrder = 1; //ordem polinomial de aproximacao
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
+    bool generatingResults = true;
+    
+    int nDiv = 5;
+    int nSim = 5;
+    
+    std::string fileName;
+    if(generatingResults){
+        if(teortm == modesTM){
+            fileName = "../resultsQuali/TM/ev";
+        }
+        else{
+            fileName = "../resultsQuali/TE/ev";
+        }
+        for(int i = 1 ; i < 100 ; i++){
+            fileName.append(std::to_string(i));
+            fileName.append(".csv");
+            if( std::ifstream( fileName.c_str() ) ){
+                std::remove( fileName.c_str() );
+            }
+        }
+    }
     
     
-    
-    
-    int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions);
+        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
         nDiv += 5;
     }
     
@@ -88,7 +108,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm , int nSolutions){
+void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm , int nSolutions, bool generatingResults){
     TPZTimer timer;
     
     /*delete previous results*/
@@ -102,22 +122,21 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
         if(std::ifstream("../gmeshRectangular.vtk"))std::remove("../gmeshRectangular.vtk");
         
         std::string vtkName("../waveguideModes.scal_vec.");
-        for (int i = 0; ; i++) {
+        for (int i = 0; i < 100 ; i++) {
             std::string testVtk = vtkName;
             testVtk.append( std::to_string(i) );
             testVtk.append( ".vtk" );
             if (std::ifstream( testVtk.c_str() ) ) {
                 std::remove( testVtk.c_str() );
-            }else{
-                break;
+            }
+            std::string fileName("../ev");
+            fileName.append(std::to_string(nDiv));
+            fileName.append(".csv");
+            if( std::ifstream( fileName.c_str() ) ){
+                std::remove( fileName.c_str() );
             }
         }
-        std::string fileName("../ev");
-        fileName.append(std::to_string(nDiv));
-        fileName.append(".txt");
-        if( std::ifstream( fileName.c_str() ) ){
-            std::remove( fileName.c_str() );
-        }
+        
         
     }
     
@@ -258,20 +277,54 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
         duplet.second = eVector;
         eigenValuesRe.insert(duplet);
     }
+    
+    std::string pathName;
+    if(generatingResults){
+        struct stat sb;
+        
+        if (!(stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)))
+        {
+            std::string command = "mkdir";
+            command.append(" ../resultsQuali");
+            std::system(command.c_str());
+            
+            
+            if (teortm == modesTM) {
+                pathName = " ../resultsQuali/TM";
+            }
+            else{
+                pathName = " ../resultsQuali/TE";
+            }
+            
+            if (!(stat(command.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))){
+                command = "mkdir ";
+                command.append(pathName.c_str());
+            }
+        }
+    }
+    else{
+        pathName = "..";
+    }
+    
     int i = 0;
-    std::string fileName("../ev");
+    
+    std::string fileName = pathName;
+    fileName.append("/ev");
     fileName.append(std::to_string(nDiv));
-    fileName.append(".txt");
+    fileName.append(".csv");
     std::ofstream fileEigenValues(fileName.c_str());
     for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
-        if(iT->first < 1e-3) continue;
         fileEigenValues<< iT->first <<std::endl;
+        if(iT->first < 1e-3) continue;
         i++;
         if( i >= nSolutions)
             continue;
         std::cout<< iT->first <<std::endl;
     }
-
+    if (generatingResults) {
+        std::cout << "FINISHED!" << std::endl;
+        return;
+    }
     std::cout << "Post Processing..." << std::endl;
     
     
@@ -336,7 +389,7 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
         an.PostProcess(postProcessResolution);
         iT++;
     }
-    std::cout << "FINISHED!" << std::endl;
+    
 }
 
 void FilterBoundaryEquations(TPZVec <TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq , int &neqOriginal , const modeType teortm)
