@@ -384,6 +384,8 @@ void TPZMultiphysicsCompEl<TGeometry>::Integrate(int variable, TPZVec<STATE> & v
 }//method
 
 
+#include "mixedpoisson.h"
+
 template<class TGeometry>
 void TPZMultiphysicsCompEl<TGeometry>::Solution(TPZVec<REAL> &qsi, int var,TPZVec<STATE> &sol)
 {
@@ -404,6 +406,37 @@ void TPZMultiphysicsCompEl<TGeometry>::Solution(TPZVec<REAL> &qsi, int var,TPZVe
 	
 	TPZVec<REAL> myqsi;
 	myqsi.resize(qsi.size());
+    
+    
+    // tototototo
+    TPZMixedPoisson *mixed = dynamic_cast<TPZMixedPoisson *>(material);
+    if (mixed) {
+        TPZManVector<REAL,3> xi(2,0.),xco1(3,0.),f(0,0.), xco2(3,0.);
+        TPZFNMatrix<9,STATE> permref(4,2,0.),perm(4,2,0.), permdif;
+        Reference()->CenterPoint(Reference()->NSides()-1,xi);
+        Reference()->X(xi,xco1);
+        for (int i=0; i<xi.size(); i++) {
+            qsi[i] += 0.001*(xi[i]-qsi[i]);
+        }
+        Reference()->X(qsi,xco2);
+        mixed->PermeabilityFunction()->Execute(xco1, f, permref);
+        mixed->PermeabilityFunction()->Execute(xco2, f, perm);
+        permdif = perm -permref;
+        if(Norm(permdif) > 1.e-6)
+        {
+            std::cout << "qsi " << qsi << " xicenter " << xi << std::endl;
+            TPZManVector<REAL,3> xqsi(3),xxi(3);
+            Reference()->X(xi,xxi);
+            Reference()->X(qsi,xxi);
+            mixed->PermeabilityFunction()->Execute(xco1, f, permref);
+            mixed->PermeabilityFunction()->Execute(xco2, f, perm);
+            std::cout << "IsInParametricDomain " << Reference()->IsInParametricDomain(qsi,1.e-10);
+            std::cout << "perm " << perm;
+            std::cout << "permref " << permref;
+            std::cout << "Error in perm computation " << permdif << std::endl;
+        }
+    }
+
 	
 	long nref = fElementVec.size();
 	TPZManVector<TPZMaterialData,2> datavec;
@@ -611,6 +644,9 @@ void TPZMultiphysicsCompEl<TGeometry>::InitMaterialData(TPZVec<TPZMaterialData >
 	
 }
 
+// tototototo
+#include "mixedpoisson.h"
+
 template <class TGeometry>
 void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef)
 {
@@ -670,6 +706,15 @@ void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElemen
         DebugStop();
     }
 	
+    // tototototo
+    TPZManVector<REAL,3> xi(2,0.),xco(3,0.),f(0,0.);
+    TPZFNMatrix<9,STATE> permref(4,2,0.),perm(4,2,0.);
+    Reference()->CenterPoint(Reference()->NSides()-1,xi);
+    Reference()->X(xi,xco);
+    TPZMixedPoisson *mixed = dynamic_cast<TPZMixedPoisson *>(material);
+    if (mixed) {
+        mixed->PermeabilityFunction()->Execute(xco, f, permref);
+    }
 	TPZFMatrix<REAL> jac, axe, jacInv;
 	REAL detJac;
 	for(int int_ind = 0; int_ind < intrulepoints; ++int_ind)
@@ -686,7 +731,15 @@ void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElemen
         }
         
 		this->ComputeRequiredData(intpointtemp,trvec,datavec);
-        
+        // tototototo
+        if(mixed)
+        {
+            mixed->PermeabilityFunction()->Execute(datavec[0].x, f, perm);
+            perm -= permref;
+            if (Norm(perm) > 1.e-6) {
+                perm.Print("perm wrong",std::cout);
+            }
+        }
 		material->Contribute(datavec,weight,ek.fMat,ef.fMat);
 	}//loop over integratin points
 }//CalcStiff
