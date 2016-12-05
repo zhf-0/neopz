@@ -373,6 +373,7 @@ int TPZMatLaplacian::VariableIndex(const std::string &name){
     if(!strcmp("GradFluxX",name.c_str()))       return  19;
     if(!strcmp("GradFluxY",name.c_str()))       return  20;
     if(!strcmp("FluxL2",name.c_str()))            return  21;//Only To calculate l2 error
+    if(!strcmp("Permeability",name.c_str()))    return 22;
 	return TPZMaterial::VariableIndex(name);
 }
 
@@ -397,6 +398,7 @@ int TPZMatLaplacian::NSolutionVariables(int var){
     if (var==19) return 3;
     if (var==20) return 3;
     if (var==21) return fDim;
+    if (var==22) return 1;
     
     
 	return TPZMaterial::NSolutionVariables(var);
@@ -550,6 +552,9 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
                 std::cout<<"Pressao somente em omega2"<<std::endl;
                 Solout[0]=0;//NULL;
             }
+            break;
+        case 22:
+            Solout[0] = perm;
             break;
         default:
             if (data.sol[0].size() == 4) {

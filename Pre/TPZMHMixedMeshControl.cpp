@@ -52,6 +52,8 @@ void TPZMHMixedMeshControl::BuildComputationalMesh(bool usersubstructure)
     
     
     CreateHDivPressureMHMMesh();
+    std::cout << "Total number of equations " << fCMesh->Solution().Rows() << std::endl;
+
     if (usersubstructure) {
         HideTheElements();
     }

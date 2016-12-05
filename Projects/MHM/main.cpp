@@ -178,6 +178,23 @@ TPZFMatrix<REAL> porous(500,100,0.);
 
 int main(int argc, char *argv[])
 {
+    
+    /// computation type :
+    // (0) - reference mesh
+    // (1) - MHM H1
+    // (2) - MHM H(div)
+    int ComputationType = 1;
+    /// numhdiv - number of h-refinements
+    int NumHDivision = 1;
+    /// PolynomialOrder - p-order
+    int PolynomialOrder = 2;
+    
+    if (argc == 4)
+    {
+        ComputationType = atoi(argv[1]);
+        NumHDivision = atoi(argv[2]);
+        PolynomialOrder = atoi(argv[3]);
+    }
     HDivPiola = 1;
 #ifdef LOG4CXX
     InitializePZLOG();
@@ -210,7 +227,7 @@ int main(int argc, char *argv[])
     int nelyref = 50;
     x1[0] = x0[0]+0.01*nelxref;
     x1[1] = x0[1]+0.01*nelyref;
-    if(0)
+    if(ComputationType == 0)
     {
         int nelx = nelxref, nely = nelyref;
         int numref = 1;
@@ -249,6 +266,7 @@ int main(int argc, char *argv[])
         delete meshvec[0];
         delete meshvec[1];
         delete gmesh;
+        exit(0);
     }
     {
         TPZBFileStream meshfile;
@@ -310,7 +328,6 @@ int main(int argc, char *argv[])
             an.PostProcess(resolution,cmesh->Dimension());
         }
     }
-    exit(0);
     std::string quad = "QuadByTriangles";
     std::string triangle = "TriangleBy9Triangles";
     TPZAutoPointer<TPZRefPattern> refpatquad = DivideQuadbyTriangles(quad);
@@ -322,74 +339,142 @@ int main(int argc, char *argv[])
     int nelx = 15;
     int nely = 5;
     TPZVec<long> coarseindices;
-    int ndiv = 1;
+    int ndiv = NumHDivision;
     TPZGeoMesh *gmesh = MalhaGeomFred(nelx, nely, x0, x1, quad, triangle, coarseindices, ndiv);
     
     TPZAutoPointer<TPZGeoMesh> gmeshauto(gmesh);
     
-    TPZMHMeshControl meshcontrol(gmeshauto, coarseindices);
-    
-    meshcontrol.SetLagrangeAveragePressure(true);
-    
-    InsertMaterialObjects(meshcontrol);
+    TPZCompMesh *ComputationalMesh = 0;
+    TPZManVector<TPZCompMesh *,5> cmeshes;
+    TPZAutoPointer<TPZMHMeshControl> MHM;
+    TPZAutoPointer<TPZMHMixedMeshControl> MHMixed;
 
-    meshcontrol.SetInternalPOrder(1);
-    meshcontrol.SetSkeletonPOrder(1);
-    
-    if(1)
+    if (ComputationType == 1)
     {
+        TPZMHMeshControl *mhm = new TPZMHMeshControl(gmeshauto,coarseindices);
+        MHM = mhm;
+        TPZMHMeshControl &meshcontrol = *mhm;
+        
+        meshcontrol.SetLagrangeAveragePressure(true);
+        
+        InsertMaterialObjects(meshcontrol);
+
+        meshcontrol.SetInternalPOrder(PolynomialOrder);
+        meshcontrol.SetSkeletonPOrder(1);
+        
         int matskeleton = 2;
         meshcontrol.CreateSkeletonElements(matskeleton);
         meshcontrol.DivideSkeletonElements(1);
         
 
         meshcontrol.BuildComputationalMesh(true);
-    }
-//    REAL Lx = 1.,Ly = 1., Lz = 0.5;
-//    int nref = 2;
-//    TPZManVector<int> nblocks(2,1);
-//    nblocks[1] = 3;
-//    TPZGeoMesh * gmesh = MalhaGeomBig(Lx, Ly, Lz, nblocks, nref, coarseindices);
-
 #ifdef PZDEBUG
-    {
-        std::ofstream file("GMeshControl.vtk");
-        TPZVTKGeoMesh::PrintGMeshVTK(meshcontrol.GMesh().operator->(), file);
-    }
+        if(0)
+        {
+            std::ofstream file("GMeshControl.vtk");
+            TPZVTKGeoMesh::PrintGMeshVTK(meshcontrol.GMesh().operator->(), file);
+        }
 #endif
 #ifdef PZDEBUG
-    {
-        std::ofstream out("MixedMeshControl.txt");
-        meshcontrol.Print(out);
-    }
+        if(0)
+        {
+            std::ofstream out("MHMMeshControl.txt");
+            meshcontrol.Print(out);
+        }
 #endif
-//    int porder = 1;
-//    std::cout << "Geometric mesh created\n";
-//    TPZManVector<TPZCompMesh *,2 > cmeshes(2);
-//    cmeshes[0] = CreateHDivMHMMesh(gmesh, porder);
-//    DuplicateNeighbouringConnects(cmeshes[0]);
-//    cmeshes[1] = CreatePressureMHMMesh(gmesh, porder,dimension);
+    //    int porder = 1;
+    //    std::cout << "Geometric mesh created\n";
+    //    TPZManVector<TPZCompMesh *,2 > cmeshes(2);
+    //    cmeshes[0] = CreateHDivMHMMesh(gmesh, porder);
+    //    DuplicateNeighbouringConnects(cmeshes[0]);
+    //    cmeshes[1] = CreatePressureMHMMesh(gmesh, porder,dimension);
 
-    std::cout << "Computational meshes created\n";
+        std::cout << "Computational meshes created\n";
 #ifdef PZDEBUG
-    {
-        std::ofstream gfile("geometry.txt");
-        gmesh->Print(gfile);
+        if(0)
+        {
+            std::ofstream gfile("geometry.txt");
+            gmesh->Print(gfile);
 
-        std::ofstream out_mhm("MHM_hdiv.txt");
-        meshcontrol.CMesh()->Print(out_mhm);
+            std::ofstream out_mhm("MHM_hdiv.txt");
+            meshcontrol.CMesh()->Print(out_mhm);
 
-    }
+        }
 #endif
+        
+        TPZCompMesh * CHDivPressureMesh = meshcontrol.CMesh().operator->();
+        ComputationalMesh = CHDivPressureMesh;
+        meshcontrol.GetMeshVec(cmeshes);
+    }
+    else if(ComputationType == 2)
+    {
+        TPZMHMixedMeshControl *mhm = new TPZMHMixedMeshControl(gmeshauto,coarseindices);
+        MHMixed = mhm;
+        TPZMHMixedMeshControl &meshcontrol = *mhm;
+        
+        meshcontrol.SetLagrangeAveragePressure(true);
+        
+        InsertMaterialObjects(meshcontrol);
+        
+        meshcontrol.SetInternalPOrder(PolynomialOrder);
+        meshcontrol.SetSkeletonPOrder(1);
+        
+        int matskeleton = 2;
+        meshcontrol.CreateSkeletonElements(matskeleton);
+        meshcontrol.DivideSkeletonElements(1);
+        
+        
+        meshcontrol.BuildComputationalMesh(true);
+#ifdef PZDEBUG
+        if(0)
+        {
+            std::ofstream file("GMeshControl.vtk");
+            TPZVTKGeoMesh::PrintGMeshVTK(meshcontrol.GMesh().operator->(), file);
+        }
+#endif
+#ifdef PZDEBUG
+        if(0)
+        {
+            std::ofstream out("MixedMeshControl.txt");
+            meshcontrol.Print(out);
+        }
+#endif
+        //    int porder = 1;
+        //    std::cout << "Geometric mesh created\n";
+        //    TPZManVector<TPZCompMesh *,2 > cmeshes(2);
+        //    cmeshes[0] = CreateHDivMHMMesh(gmesh, porder);
+        //    DuplicateNeighbouringConnects(cmeshes[0]);
+        //    cmeshes[1] = CreatePressureMHMMesh(gmesh, porder,dimension);
+        
+        std::cout << "Computational meshes created\n";
+#ifdef PZDEBUG
+        if(0)
+        {
+            std::ofstream gfile("geometry.txt");
+            gmesh->Print(gfile);
+            
+            std::ofstream out_mhm("MHM_hdiv.txt");
+            meshcontrol.CMesh()->Print(out_mhm);
+            
+        }
+#endif
+        
+        TPZCompMesh * CHDivPressureMesh = meshcontrol.CMesh().operator->();
+        ComputationalMesh = CHDivPressureMesh;
+        meshcontrol.GetMeshVec(cmeshes);
+        
+    }
+    else
+    {
+        DebugStop();
+    }
+    std::cout << "Number of equations " << ComputationalMesh->NEquations() << std::endl;
     
-    TPZCompMesh * CHDivPressureMesh = meshcontrol.CMesh().operator->();
-
-    std::cout << "Number of equations " << CHDivPressureMesh->NEquations() << std::endl;
-    
 #ifdef PZDEBUG
+    if(0)
     {
         std::ofstream out("MeshBeforeHide.txt");
-        CHDivPressureMesh->Print(out);
+        ComputationalMesh->Print(out);
     }
 #endif
     
@@ -397,18 +482,18 @@ int main(int argc, char *argv[])
 //    int level = 1;
 //    HideTheElements(CHDivPressureMesh,KeepOneLagrangian, coarseindices);
 
-    std::cout << "Reduced number of equations " << CHDivPressureMesh->NEquations() << std::endl;
+    std::cout << "Reduced number of equations " << ComputationalMesh->NEquations() << std::endl;
 #ifdef PZDEBUG
     {
         std::ofstream out("MeshWithSol.txt");
-        CHDivPressureMesh->Print(out);
+        ComputationalMesh->Print(out);
     }
 #endif
     
     //calculo solution
-    TPZAnalysis an(CHDivPressureMesh);
+    TPZAnalysis an(ComputationalMesh);
 #ifdef USING_MKL
-    TPZSymetricSpStructMatrix strmat(CHDivPressureMesh);
+    TPZSymetricSpStructMatrix strmat(ComputationalMesh);
     strmat.SetNumThreads(16);
     an.SetStructuralMatrix(strmat);
     
@@ -439,14 +524,12 @@ int main(int argc, char *argv[])
 #ifdef PZDEBUG
     {
         std::ofstream out("MeshWithSol.txt");
-        CHDivPressureMesh->Print(out);
+        ComputationalMesh->Print(out);
     }
 #endif
     an.LoadSolution(); // compute internal dofs
 //    an.Solution().Print("sol = ");
     
-    TPZManVector<TPZCompMesh *,5> cmeshes;
-    meshcontrol.GetMeshVec(cmeshes);
     TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(cmeshes, an.Mesh());
 //    TPZBuildMultiphysicsMesh::TransferFromMeshes(cmeshes, an.Mesh());
 //    for (int i=0; i<cmeshes.size(); i++) {
@@ -454,25 +537,44 @@ int main(int argc, char *argv[])
 //    }
 //    cmeshes[0]->Solution().Print("solq = ");
 //    cmeshes[1]->Solution().Print("solp = ");
-    std::string plotfile("mixed_solution.vtk");
+    std::stringstream sout;
+    if (ComputationType == 2)
+    {
+        sout << "H1Approx-";
+    }
+    else
+    {
+        sout << "HdivApprox-";
+    }
+    sout << "H" << NumHDivision << "-P" << PolynomialOrder << ".vtk";
+    std::string plotfile = "MHM_solution" + sout.str();
+    std::cout << "plotfile " << plotfile.c_str() << std::endl;
     TPZStack<std::string> scalnames,vecnames;
     scalnames.Push("Pressure");
     scalnames.Push("Permeability");
     vecnames.Push("Derivative");
     vecnames.Push("Flux");
-    an.DefineGraphMesh(CHDivPressureMesh->Dimension(), scalnames, vecnames, plotfile);
+    an.DefineGraphMesh(ComputationalMesh->Dimension(), scalnames, vecnames, plotfile);
     int resolution = 0;
-    an.PostProcess(resolution,CHDivPressureMesh->Dimension());
+    an.PostProcess(resolution,ComputationalMesh->Dimension());
 
     TPZManVector<STATE,10> square_errors(3,0.);
-    CHDivPressureMesh->Reference()->ResetReference();
-    CHDivPressureMesh->LoadReferences();
-    TPZCompMeshTools::ComputeDifferenceNorm(ReferenceCMesh, CHDivPressureMesh, square_errors);
+    ComputationalMesh->Reference()->ResetReference();
+    ComputationalMesh->LoadReferences();
+    TPZCompMeshTools::ComputeDifferenceNorm(ReferenceCMesh, ComputationalMesh, square_errors);
     
     for (int i=0; i<square_errors.size(); i++) {
         square_errors[i] = sqrt(square_errors[i]);
     }
-    std::cout << "The error norms of the differences are " << square_errors << std::endl;
+    if (ComputationType == 1) {
+        std::cout << "MHM with H1 mesh\n";
+    }
+    else
+    {
+        std::cout << "MHM with H(div) mesh\n";
+    }
+    std::cout << "Number_of_h_refinements " << NumHDivision << " polynomial_order " << PolynomialOrder << std::endl;
+    std::cout << "The_error_norms_of_the_differences_are " << square_errors << std::endl;
     return 0;
 }
 
@@ -2094,7 +2196,7 @@ TPZGeoMesh *MalhaGeomFred(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1
         }
     }
     TPZCheckGeom geom(gmesh);
-    geom.UniformRefine(1);
+    geom.UniformRefine(ndiv);
 //    InsertInterfaceElements(gmesh,1,2);
 
 #ifdef LOG4CXX

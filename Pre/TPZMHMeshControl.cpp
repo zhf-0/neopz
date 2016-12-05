@@ -331,6 +331,7 @@ void TPZMHMeshControl::BuildComputationalMesh(bool usersubstructure)
     }
 #endif
 
+    std::cout << "Total number of equations " << fCMesh->Solution().Rows() << std::endl;
     if(usersubstructure==true){
         this->SubStructure();
     }

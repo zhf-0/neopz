@@ -419,22 +419,22 @@ void TPZMultiphysicsCompEl<TGeometry>::Solution(TPZVec<REAL> &qsi, int var,TPZVe
             qsi[i] += 0.001*(xi[i]-qsi[i]);
         }
         Reference()->X(qsi,xco2);
-        mixed->PermeabilityFunction()->Execute(xco1, f, permref);
+//        mixed->PermeabilityFunction()->Execute(xco1, f, permref);
         mixed->PermeabilityFunction()->Execute(xco2, f, perm);
-        permdif = perm -permref;
-        if(Norm(permdif) > 1.e-6)
-        {
-            std::cout << "qsi " << qsi << " xicenter " << xi << std::endl;
-            TPZManVector<REAL,3> xqsi(3),xxi(3);
-            Reference()->X(xi,xxi);
-            Reference()->X(qsi,xxi);
-            mixed->PermeabilityFunction()->Execute(xco1, f, permref);
-            mixed->PermeabilityFunction()->Execute(xco2, f, perm);
-            std::cout << "IsInParametricDomain " << Reference()->IsInParametricDomain(qsi,1.e-10);
-            std::cout << "perm " << perm;
-            std::cout << "permref " << permref;
-            std::cout << "Error in perm computation " << permdif << std::endl;
-        }
+//        permdif = perm -permref;
+//        if(Norm(permdif) > 1.e-6)
+//        {
+//            std::cout << "qsi " << qsi << " xicenter " << xi << std::endl;
+//            TPZManVector<REAL,3> xqsi(3),xxi(3);
+//            Reference()->X(xi,xxi);
+//            Reference()->X(qsi,xxi);
+//            mixed->PermeabilityFunction()->Execute(xco1, f, permref);
+//            mixed->PermeabilityFunction()->Execute(xco2, f, perm);
+//            std::cout << "IsInParametricDomain " << Reference()->IsInParametricDomain(qsi,1.e-10);
+//            std::cout << "perm " << perm;
+//            std::cout << "permref " << permref;
+//            std::cout << "Error in perm computation " << permdif << std::endl;
+//        }
     }
 
 	
@@ -732,14 +732,14 @@ void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElemen
         
 		this->ComputeRequiredData(intpointtemp,trvec,datavec);
         // tototototo
-        if(mixed)
-        {
-            mixed->PermeabilityFunction()->Execute(datavec[0].x, f, perm);
-            perm -= permref;
-            if (Norm(perm) > 1.e-6) {
-                perm.Print("perm wrong",std::cout);
-            }
-        }
+//        if(mixed)
+//        {
+//            mixed->PermeabilityFunction()->Execute(datavec[0].x, f, perm);
+//            perm -= permref;
+//            if (Norm(perm) > 1.e-6) {
+//                perm.Print("perm wrong",std::cout);
+//            }
+//        }
 		material->Contribute(datavec,weight,ek.fMat,ef.fMat);
 	}//loop over integratin points
 }//CalcStiff
