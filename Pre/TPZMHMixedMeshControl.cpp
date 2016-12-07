@@ -224,6 +224,27 @@ void TPZMHMixedMeshControl::HideTheElements()
             }
             ElementGroups[iel].insert(gel->Reference()->Index());
         }
+        int nsides = gel->NSides();
+        for (int is=0; is<nsides-1; is++) {
+            if (gel->SideDimension(is) != dim-1) {
+                continue;
+            }
+            TPZGeoElSide gelside(gel,is);
+            TPZStack<TPZCompElSide> highlevel;
+            gelside.EqualorHigherCompElementList3(highlevel, 0, 0);
+            long nelst = highlevel.size();
+            for (long elst=0; elst<nelst; elst++) {
+                if (highlevel[elst].Reference().Dimension() != dim-1 || highlevel[elst].Element()->Reference()->Dimension() != dim-1) {
+                    continue;
+                }
+                int matid = highlevel[elst].Element()->Reference()->MaterialId();
+                if(matid != fSkeletonMatId)
+                {
+                    ElementGroups[iel].insert(highlevel[elst].Element()->Index());
+                }
+            }
+
+        }
     }
     if (ElementGroups.size() <= 100)
     {
@@ -234,7 +255,7 @@ void TPZMHMixedMeshControl::HideTheElements()
             std::cout << " elements ";
             std::set<long>::iterator its;
             for (its = it->second.begin(); its != it->second.end(); its++) {
-                std::cout << *its << " ";
+                std::cout << *its << "|" << fCMesh->Element(*its)->Reference()->Index() << " ";
             }
             std::cout << std::endl;
         }

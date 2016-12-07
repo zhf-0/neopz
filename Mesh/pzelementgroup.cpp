@@ -293,3 +293,14 @@ void TPZElementGroup::EvaluateError(void (*fp)(const TPZVec<REAL> &loc,TPZVec<ST
         }
     }
 }
+
+/** @brief Loads the geometric element referece */
+void TPZElementGroup::LoadElementReference()
+{
+    int nel = fElGroup.size();
+    for (int el=0; el<nel; el++) {
+        fElGroup[el]->LoadElementReference();
+    }
+}
+
+

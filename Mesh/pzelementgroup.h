@@ -199,7 +199,10 @@ public:
 	 */
 	virtual void CalcResidual(TPZElementMatrix &ef);
 
+    /** @brief Loads the geometric element referece */
+    virtual void LoadElementReference();
     
+
 protected:
     
     /// Initialize the datastructure of ek and ef based on the connect information

@@ -69,6 +69,17 @@ void TPZMeshSolution::Execute(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatri
     fMesh->Reference()->FindElement(xcopy, fLastLoc, fGeoElIndex, fDimension);
     TPZGeoEl *gel = fMesh->Reference()->Element(fGeoElIndex);
     TPZCompEl *cel = gel->Reference();
+    if(!cel)
+    {
+        {
+            std::ofstream out("Quebrou.txt");
+            out << "gel with index " << gel->Index() << " has no computacional element\n";
+            fMesh->Reference()->Print(out);
+            std::ofstream outcomp("QuebrouComp.txt");
+            fMesh->Print(outcomp);
+        }
+        DebugStop();
+    }
     TPZManVector<STATE> sol(1), dsol(3);
     cel->Solution(fLastLoc,fSolutionVarindex,sol);
     cel->Solution(fLastLoc,fGradVarindex,dsol);

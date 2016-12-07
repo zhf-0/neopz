@@ -496,14 +496,14 @@ void TPZSubCompMesh::Print(std::ostream &out) const {
 	
 	out << "Sub Mesh" << (void *) this;
 	TPZCompEl::Print(out);
-	TPZCompMesh::Print(out);
+    TPZCompMesh::Print(out);
 	out.flush();
 	long i;
-	for (i=0; i<fConnectVec.NElements(); i++){
-		out << "Node[" << i <<"]\t" << fExternalLocIndex[i];
-		if (fExternalLocIndex[i] != -1) out << " Index in father mesh:\t" << fConnectIndex[fExternalLocIndex[i]];
-		out << std::endl;
-	}
+//	for (i=0; i<fConnectVec.NElements(); i++){
+//		out << "Node[" << i <<"]\t" << fExternalLocIndex[i];
+//		if (fExternalLocIndex[i] != -1) out << " Index in father mesh:\t" << fConnectIndex[fExternalLocIndex[i]];
+//		out << std::endl;
+//	}
 	std::map<long,long>::const_iterator it;
 	out << "Global to Local map ";
 	for (it=fFatherToLocal.begin(); it!=fFatherToLocal.end(); it++) {

@@ -77,6 +77,7 @@ using namespace std;
 TPZGeoMesh *MalhaGeom2(REAL Lx, REAL Ly);
 
 TPZGeoMesh *MalhaGeomFred(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1, const std::string quad, const std::string triangle, TPZVec<long> &coarseindices, int ndiv);
+TPZGeoMesh *MalhaGeomFredQuadrada(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1, TPZVec<long> &coarseindices, int ndiv);
 
 TPZAutoPointer<TPZRefPattern> DivideQuadbyTriangles(const std::string refpatname);
 
@@ -183,11 +184,11 @@ int main(int argc, char *argv[])
     // (0) - reference mesh
     // (1) - MHM H1
     // (2) - MHM H(div)
-    int ComputationType = 1;
+    int ComputationType = 2;
     /// numhdiv - number of h-refinements
-    int NumHDivision = 1;
+    int NumHDivision = 0;
     /// PolynomialOrder - p-order
-    int PolynomialOrder = 2;
+    int PolynomialOrder = 1;
     
     if (argc == 4)
     {
@@ -223,8 +224,8 @@ int main(int argc, char *argv[])
     gRefDBase.InitializeRefPatterns();
     TPZManVector<REAL,3> x0(2,0.),x1(2,0.);
     x0[0] = 1.;
-    int nelxref = 250;
-    int nelyref = 50;
+    int nelxref = 264;
+    int nelyref = 64;
     x1[0] = x0[0]+0.01*nelxref;
     x1[1] = x0[1]+0.01*nelyref;
     if(ComputationType == 0)
@@ -335,13 +336,22 @@ int main(int argc, char *argv[])
     
     
     TPZAutoPointer<TPZRefPattern> refpattriangle = DivideTriangleby9Triangles(triangle);
-    
-    int nelx = 15;
-    int nely = 5;
+    TPZGeoMesh *gmesh = 0;
     TPZVec<long> coarseindices;
-    int ndiv = NumHDivision;
-    TPZGeoMesh *gmesh = MalhaGeomFred(nelx, nely, x0, x1, quad, triangle, coarseindices, ndiv);
-    
+    if(0)
+    {
+        int nelx = 15;
+        int nely = 5;
+        int ndiv = NumHDivision;
+        gmesh = MalhaGeomFred(nelx, nely, x0, x1, quad, triangle, coarseindices, ndiv);
+    }
+    else
+    {
+        int nelx = 16;
+        int nely = 4;
+        int ndiv = NumHDivision;
+        gmesh = MalhaGeomFredQuadrada(nelx, nely, x0, x1, coarseindices, ndiv);
+    }
     TPZAutoPointer<TPZGeoMesh> gmeshauto(gmesh);
     
     TPZCompMesh *ComputationalMesh = 0;
@@ -396,7 +406,7 @@ int main(int argc, char *argv[])
             std::ofstream gfile("geometry.txt");
             gmesh->Print(gfile);
 
-            std::ofstream out_mhm("MHM_hdiv.txt");
+            std::ofstream out_mhm("MHM_h1.txt");
             meshcontrol.CMesh()->Print(out_mhm);
 
         }
@@ -423,8 +433,8 @@ int main(int argc, char *argv[])
         meshcontrol.CreateSkeletonElements(matskeleton);
         meshcontrol.DivideSkeletonElements(1);
         
-        
-        meshcontrol.BuildComputationalMesh(true);
+        bool substructure = true;
+        meshcontrol.BuildComputationalMesh(substructure);
 #ifdef PZDEBUG
         if(0)
         {
@@ -452,7 +462,7 @@ int main(int argc, char *argv[])
         {
             std::ofstream gfile("geometry.txt");
             gmesh->Print(gfile);
-            
+            meshcontrol.CMesh()->ComputeNodElCon();
             std::ofstream out_mhm("MHM_hdiv.txt");
             meshcontrol.CMesh()->Print(out_mhm);
             
@@ -538,7 +548,7 @@ int main(int argc, char *argv[])
 //    cmeshes[0]->Solution().Print("solq = ");
 //    cmeshes[1]->Solution().Print("solp = ");
     std::stringstream sout;
-    if (ComputationType == 2)
+    if (ComputationType == 1)
     {
         sout << "H1Approx-";
     }
@@ -2216,6 +2226,84 @@ TPZGeoMesh *MalhaGeomFred(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1
     
     return gmesh;
 }
+
+TPZGeoMesh *MalhaGeomFredQuadrada(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1, TPZVec<long> &coarseindices, int ndiv)
+{
+    TPZGeoMesh *gmesh = new TPZGeoMesh;
+    int dimension = 2;
+    gmesh->SetDimension(dimension);
+    TPZManVector<int,2> nx(2,3);
+    nx[0] = nelx;
+    nx[1] = nely;
+    TPZGenGrid gengrid(nx, x0, x1);
+    gengrid.SetRefpatternElements(true);
+    gengrid.Read(gmesh, 1);
+    gengrid.SetBC(gmesh, 4, -1);
+    gengrid.SetBC(gmesh, 5, -2);
+    gengrid.SetBC(gmesh, 6, -1);
+    gengrid.SetBC(gmesh, 7, -2);
+    
+    long nel = gmesh->NElements();
+    
+    coarseindices.resize(nel);
+    long elcount = 0;
+    for (long el=0; el<nel; el++) {
+        TPZGeoEl *gel = gmesh->Element(el);
+        if (gel->HasSubElement() ||  gel->Dimension() != dimension) {
+            continue;
+        }
+        coarseindices[elcount] = el;
+        elcount++;
+    }
+    coarseindices.resize(elcount);
+    
+    if(1)
+    {
+        
+        for (long el=0; el<nel; el++) {
+            TPZGeoEl *gel = gmesh->Element(el);
+            if (!gel->HasSubElement() &&  gel->Type() == EQuadrilateral) {
+                TPZManVector<TPZGeoEl *,12> subs;
+                gel->Divide(subs);
+            }
+        }
+        nel = gmesh->NElements();
+        
+        for (long el=0; el<nel; el++) {
+            TPZGeoEl *gel = gmesh->Element(el);
+            if (!gel->HasSubElement() &&  gel->Type() == EOned) {
+                TPZAutoPointer<TPZRefPattern> refpat = TPZRefPatternTools::PerfectMatchRefPattern(gel);
+                if (!refpat) {
+                    DebugStop();
+                }
+                gel->SetRefPattern(refpat);
+                TPZManVector<TPZGeoEl *,12> subs;
+                gel->Divide(subs);
+            }
+        }
+    }
+    TPZCheckGeom geom(gmesh);
+    geom.UniformRefine(ndiv);
+    //    InsertInterfaceElements(gmesh,1,2);
+    
+#ifdef LOG4CXX
+    if (logger->isDebugEnabled()) {
+        std::stringstream sout;
+        gmesh->Print(sout);
+        LOGPZ_DEBUG(logger, sout.str())
+    }
+#endif
+    
+#ifdef PZDEBUG
+    {
+        std::ofstream file("GMeshFred.vtk");
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh, file);
+    }
+#endif
+    
+    return gmesh;
+}
+
 
 /// Create a reference geometric mesh starting with nelx by nely domains
 TPZGeoMesh *CreateReferenceGMesh(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<REAL> &x1, int numref)
