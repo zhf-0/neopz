@@ -418,7 +418,7 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
     if(fPermeabilityFunction)
     {
         TPZManVector<STATE,3> f;
-        TPZFNMatrix<9,STATE> df(6,3);
+        TPZFNMatrix<18,STATE> df(6,3);
         fPermeabilityFunction->Execute(data.x, f, df);
         perm = df(0,0);
     }
@@ -643,6 +643,20 @@ void TPZMatLaplacian::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TP
 	Solution(data,21,dsol);//fluxo
 	Solution(data,14,div);//divergente
     
+    TPZFNMatrix<18,STATE> perm(2*fDim,fDim);
+    if (fPermeabilityFunction) {
+        TPZManVector<STATE,3> dumf(3,0.);
+        fPermeabilityFunction->Execute(data.x, dumf, perm);
+    }
+    else
+    {
+        for (int i=0; i<fDim; i++) {
+            perm(i,i) = fK;
+            perm(i+fDim,i) = 1./fK;
+        }
+    }
+    
+
 #ifdef LOG4CXX
     {
 		std::stringstream sout;

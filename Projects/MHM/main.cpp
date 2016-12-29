@@ -126,7 +126,7 @@ TPZCompMesh *CreateReferenceCMesh(TPZGeoMesh *gmesh, TPZVec<TPZCompMesh *> &mesh
 
 void UnwrapMesh(TPZCompMesh *cmesh);
 
-void Porosity(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatrix<STATE> &diff);
+void Permeability(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatrix<STATE> &diff);
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.mainskeleton"));
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     // (0) - reference mesh
     // (1) - MHM H1
     // (2) - MHM H(div)
-    int ComputationType = 2;
+    int ComputationType = 1;
     /// numhdiv - number of h-refinements
     int NumHDivision = 0;
     /// PolynomialOrder - p-order
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
     gRefDBase.InitializeRefPatterns();
     TPZManVector<REAL,3> x0(2,0.),x1(2,0.);
     x0[0] = 1.;
-    int nelxref = 264;
+    int nelxref = 256;
     int nelyref = 64;
     x1[0] = x0[0]+0.01*nelxref;
     x1[1] = x0[1]+0.01*nelyref;
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
                 if (!mixed) {
                     DebugStop();
                 }
-                TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Porosity);
+                TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Permeability);
                 dummy->SetPolynomialOrder(0);
                 TPZAutoPointer<TPZFunction<STATE> > func(dummy);
                 mixed->SetPermeabilityFunction(func);
@@ -920,7 +920,7 @@ void InsertMaterialObjects(TPZMHMeshControl &control)
     TPZMatLaplacianLagrange *material1 = new TPZMatLaplacianLagrange(matInterno,dim);
     
     material1->SetParameters(10., 0.);
-    TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Porosity);
+    TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Permeability);
     dummy->SetPolynomialOrder(0);
     TPZAutoPointer<TPZFunction<STATE> > func(dummy);
     material1->SetPermeabilityFunction(func);
@@ -994,7 +994,7 @@ void InsertMaterialObjects(TPZMHMixedMeshControl &control)
     TPZMixedPoisson * mat = new TPZMixedPoisson(1,dim);
     mat->SetSymmetric();
     mat->SetPermeability(10.);
-    TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Porosity);
+    TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Permeability);
     dummy->SetPolynomialOrder(0);
     TPZAutoPointer<TPZFunction<STATE> > func(dummy);
     mat->SetPermeabilityFunction(func);
@@ -2368,7 +2368,7 @@ TPZGeoMesh *CreateReferenceGMesh(int nelx, int nely, TPZVec<REAL> &x0, TPZVec<RE
     return result;
 }
 
-void Porosity(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatrix<STATE> &diff)
+void Permeability(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatrix<STATE> &diff)
 {
     long ix = x[0]*100;
     long iy = x[1]*100;
@@ -2467,7 +2467,7 @@ TPZCompMesh *CreateReferenceCMesh(TPZGeoMesh *gmesh, TPZVec<TPZCompMesh *> &mesh
             if (!mixed) {
                 DebugStop();
             }
-            TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Porosity);
+            TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Permeability);
             dummy->SetPolynomialOrder(0);
             TPZAutoPointer<TPZFunction<STATE> > func(dummy);
             mixed->SetPermeabilityFunction(func);

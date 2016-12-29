@@ -770,6 +770,19 @@ void TPZMixedPoisson::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exa
     this->Solution(data,VariableIndex("Derivative"), deriv);
     this->Solution(data,VariableIndex("Pressure"), pressure);
     
+    TPZFNMatrix<18,STATE> perm(2*fDim,fDim);
+    if (fPermeabilityFunction) {
+        TPZManVector<STATE,3> dumf(3,0.);
+        fPermeabilityFunction->Execute(data[0].x, dumf, perm);
+    }
+    else
+    {
+        for (int i=0; i<fDim; i++) {
+            perm(i,i) = fK;
+            perm(i+fDim,i) = 1./fK;
+        }
+    }
+    
 #ifdef LOG4CXX
     if(logerror->isDebugEnabled())
     {
@@ -778,6 +791,9 @@ void TPZMixedPoisson::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exa
         sout << "x " << data[0].x << std::endl;
         sout << "u_exact " << u_exact << std::endl;
         du_exact.Print("du_exact",sout);
+        if (fPermeabilityFunction) {
+            perm.Print("permeability",sout);
+        }
         sout << "deriv " << deriv << std::endl;
         sout << "pressure " << pressure << std::endl;
         LOGPZ_DEBUG(logerror, sout.str())
@@ -789,12 +805,13 @@ void TPZMixedPoisson::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exa
     errors[1]  = diff*diff;
     //values[2] : erro em semi norma H1
     errors[2] = 0.;
+    errors[0] = 0.;
     for(id=0; id<fDim; id++) {
         diff = deriv[id] - du_exact(id,0);
-        errors[2]  += fK*diff*diff;
+        errors[2]  += perm(id,id)*diff*diff;
+        errors[0] += diff*diff;
     }
     //values[0] : erro em norma H1 <=> norma Energia
-    errors[0]  = errors[1]+errors[2];
 }
 
 
