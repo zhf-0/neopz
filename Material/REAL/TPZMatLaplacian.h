@@ -35,7 +35,7 @@ class TPZMatLaplacian : public TPZDiscontinuousGalerkin {
 	 * Symmetrical formulation - Global element method - has coefficient = -1. \n
 	 * Non-symmetrical formulation - Baumann's formulation - has coefficient = +1.
 	 */
-	REAL fSymmetry;
+	int fSymmetry;
 	
 	/** @brief Enumerate for penalty term definitions */
 	enum EPenaltyType {ENoPenalty = 0, EFluxPenalty = 1, ESolutionPenalty, EBoth};
@@ -78,18 +78,19 @@ public:
 
 	/** @brief Set material elliptic term as the global element method, i.e. the symmetrical formulation */
 	void SetSymmetric(){
-		this->fSymmetry = -1.0;
+		this->fSymmetry = -1;
 	}
 
 	/** @brief Set material elliptic term as the Baumann's formulation, i.e. the non-symmetrical formulation */
 	void SetNonSymmetric() {
-		this->fSymmetry = +1.0;
+		this->fSymmetry = +1;
 	}
 
 	bool IsSymetric(){
-		if (fSymmetry == -1.0) return true;
-		if (fSymmetry == +1.0) return false;
+		if (fSymmetry == -1) return true;
+		if (fSymmetry == +1) return false;
 		PZError << __PRETTY_FUNCTION__ << "\n Comparacao de numeros reais da errado\n";
+        DebugStop();
 		return false;
 	}
 

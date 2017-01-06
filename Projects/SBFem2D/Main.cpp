@@ -18,6 +18,7 @@
 
 #include "pzgengrid.h"
 #include "TPZMatElasticity2D.h"
+#include "TPZMatLaplacian.h"
 #include "tpzautopointer.h"
 #include "pzbndcond.h"
 #include "TPZLagrangeMultiplier.h"
@@ -48,7 +49,7 @@
 
 #include <cmath>
 #include <set>
-#include <Accelerate/Accelerate.h>
+//#include <Accelerate/Accelerate.h>
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.sbfem"));
@@ -338,9 +339,9 @@ int main(int argc, char *argv[])
                 }
                 sbfemgr->AddElement(sbfem);
                 sbfem->SetElementGroupIndex(celgroupindex);
-                TPZElementMatrix E0,E1,E2;
+                TPZElementMatrix E0,E1,E2,M0;
 
-                sbfem->ComputeKMatrices(E0, E1, E2);
+                sbfem->ComputeKMatrices(E0, E1, E2,M0);
 
                 E0.fMat.Print("E0");
                 E1.fMat.Print("E1");
@@ -348,6 +349,12 @@ int main(int argc, char *argv[])
             }
         }
         
+        int nrow = mphysics->NEquations();
+        mphysics->Solution()(1,0) = 1.;
+        mphysics->Solution()(2,0) = 1.;
+//        for (int i=2; i<nrow-2; i+=2) {
+//            mphysics->Solution()(i,0) = 1.;
+//        }
         std::map<long,long>::iterator it;
         for(it = geltogroup.begin(); it != geltogroup.end(); it++)
         {
@@ -355,12 +362,35 @@ int main(int argc, char *argv[])
             TPZCompEl *cel = mphysics->Element(celindex);
             TPZElementMatrix ek,ef;
             cel->CalcStiff(ek, ef);
+            cel->LoadSolution();
         }
 
 //        pyr->SetElasticity(100., 0.);
 //        pyr->SetReferenceGeometric(gel2D->Index());
-//        
-        
+//
+        // return the state variable
+        int var = 0;
+        TPZManVector<STATE,3> solout;
+        for(it = geltogroup.begin(); it != geltogroup.end() && false; it++)
+        {
+            long celindex = it->second;
+            TPZCompEl *cel = mphysics->Element(celindex);
+            TPZElementGroup *elgr = dynamic_cast<TPZElementGroup *>(cel);
+            if (elgr)
+            {
+                TPZStack<TPZCompEl *, 5> els = elgr->GetElGroup();
+                int nel = els.size();
+                for (int el=0; el<nel; el++) {
+                    TPZCompEl *cel = els[el];
+                    TPZManVector<REAL,3> qsi(2,0.);
+                    cel->Solution(qsi, var, solout);
+                    TPZManVector<REAL,3> x(3);
+                    cel->Reference()->X(qsi, x);
+                    std::cout << "Solution at x " << x << " is " << solout << std::endl;
+                }
+            }
+        }
+
         if(1)
         {
             std::ofstream out("../CompMultiphysicsbefore.txt");
@@ -370,8 +400,18 @@ int main(int argc, char *argv[])
         
         
         // Visualization of computational meshes
-        bool mustOptimizeBandwidth = true;
+        bool mustOptimizeBandwidth = false;
         TPZAnalysis * ElasticAnalysis = new TPZAnalysis(mphysics,mustOptimizeBandwidth);
+        
+        TPZStack<std::string> vecnames,scalname;
+        scalname.Push("State");
+//        scalname.Push("SigmaX");
+//        scalname.Push("SigmaY");
+//        scalname.Push("TauXY");
+
+        ElasticAnalysis->DefineGraphMesh(2, scalname, vecnames, "../SBFem.vtk");
+        int resolution = 0;
+        ElasticAnalysis->PostProcess(resolution, 2);
         
         std::cout << "neq = " << mphysics->NEquations() << std::endl;
         SolveSist(ElasticAnalysis, mphysics);
@@ -710,43 +750,56 @@ TPZCompMesh * ComputationalSkeletonMesh(TPZAutoPointer<TPZGeoMesh> & gmesh,int p
     int dim = 2;
     int matId1 = 1;
     
-    TPZMatElasticity2D *material;
-    material = new TPZMatElasticity2D(matId1);
-    
-    
-    // Setting up paremeters
-    material->SetfPlaneProblem(planestress);
-    REAL lamelambda = 0.0e9,lamemu = 0.5e3, fx= 0, fy = 0;
-    material->SetParameters(lamelambda,lamemu, fx, fy);
-    //material->SetElasticParameters(40.0,0.0);
-    REAL Sigmaxx = 0.0, Sigmayx = 0.0, Sigmayy = 0.0, Sigmazz = 0.0;
-    material->SetPreStress(Sigmaxx,Sigmayx,Sigmayy,Sigmazz);
-    REAL Alpha = 1.0;
+    TPZMaterial *material;
+    int nstate = 1;
+    bool elasticity = false;
+    if (elasticity)
+    {
+        TPZMatElasticity2D *matloc = new TPZMatElasticity2D(matId1);
+        material = matloc;
+        nstate = 2;
+        // Setting up paremeters
+        matloc->SetfPlaneProblem(planestress);
+        REAL lamelambda = 1.0e9,lamemu = 0.5e3, fx= 0, fy = 0;
+        matloc->SetParameters(lamelambda,lamemu, fx, fy);
+        //material->SetElasticParameters(40.0,0.0);
+        REAL Sigmaxx = 0.0, Sigmayx = 0.0, Sigmayy = 0.0, Sigmazz = 0.0;
+        matloc->SetPreStress(Sigmaxx,Sigmayx,Sigmayy,Sigmazz);
+        REAL Alpha = 1.0;
+    }
+    else
+    {
+        TPZMatLaplacian *matloc = new TPZMatLaplacian(matId1);
+        matloc->SetDimension(2);
+        matloc->SetSymmetric();
+        material = matloc;
+        nstate = 1;
+    }
     //material->SetBiotAlpha(Alpha);cade o metodo?
     
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder);
     cmesh->SetDimModel(dim);
     
-    TPZFMatrix<STATE> val1(2,2,0.), val2(2,1,0.);
+    TPZFMatrix<STATE> val1(nstate,nstate,0.), val2(nstate,1,0.);
     val2(0,0) = 0.0;
-    val2(1,0) = 0.0;
+    //    val2(1,0) = 0.0;
     TPZMaterial * BCond2 = material->CreateBC(material,Ebc1,1, val1, val2);
     
     val2(0,0) = 1.0*1000.0;
-    val2(1,0) = 0.0;
+    //    val2(1,0) = 0.0;
     TPZMaterial * BCond3 = material->CreateBC(material,Ebc2,1, val1, val2);
     
     val2(0,0) = 0.0;
-    val2(1,0) = 0.0;
+    //    val2(1,0) = 0.0;
     TPZMaterial * BCond4 = material->CreateBC(material,Ebc3,1, val1, val2);
     
     val2(0,0) = -1.0*1000.0;
-    val2(1,0) = 0.0;
+    //    val2(1,0) = 0.0;
     TPZMaterial * BCond5 = material->CreateBC(material,Ebc4,1, val1, val2);
     
     val2(0,0) = 0.0;
-    val2(1,0) = 0.0;
+    //    val2(1,0) = 0.0;
     TPZMaterial * BSkeleton = material->CreateBC(material,ESkeleton,1, val1, val2);
     
     
@@ -757,9 +810,9 @@ TPZCompMesh * ComputationalSkeletonMesh(TPZAutoPointer<TPZGeoMesh> & gmesh,int p
     cmesh->InsertMaterialObject(BCond5);
     cmesh->InsertMaterialObject(BSkeleton);
     // the other material
-    material = dynamic_cast<TPZMatElasticity2D *>( material->NewMaterial());
+    material =  material->NewMaterial();
     material->SetId(Emat2);
-    material->SetElasticity(10., 0.);
+    //    material->SetElasticity(10., 0.);
     cmesh->InsertMaterialObject(material);
     cmesh->AutoBuild();
     return cmesh;

@@ -149,6 +149,15 @@ void TPZMatrix<TVar>::PrepareZ(const TPZFMatrix<TVar> &y, TPZFMatrix<TVar> &z,co
 		}
 	}
 }
+/**
+ * @brief It computes z = beta * y + alpha * opt(this)*x but z and x can not overlap in memory.
+ * @param x Is x on the above operation
+ * @param y Is y on the above operation
+ * @param z Is z on the above operation
+ * @param alpha Is alpha on the above operation
+ * @param beta Is beta on the above operation
+ * @param opt Indicates if is Transpose or not
+ */
 
 template<class TVar>
 void TPZMatrix<TVar>::MultAdd(const TPZFMatrix<TVar> &x,const TPZFMatrix<TVar> &y, TPZFMatrix<TVar> &z, const TVar alpha,const TVar beta,const int opt) const {

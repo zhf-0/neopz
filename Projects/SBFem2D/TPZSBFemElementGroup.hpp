@@ -26,6 +26,14 @@ class TPZSBFemElementGroup : public TPZElementGroup
     /// Vector of eigenvalues of the SBFem analyis
     TPZManVector<STATE> fEigenvalues;
     
+    /// Multiplying coefficients of each eigenvector
+    TPZFMatrix<STATE> fCoef;
+    
+    TPZFMatrix<STATE> fMassMatrix;
+    
+    /// Compute the mass matrix based on the value of M0 and the eigenvectors
+    void ComputeMassMatrix(TPZElementMatrix &M0);
+    
 public:
     
     TPZSBFemElementGroup() : TPZElementGroup()
@@ -40,7 +48,8 @@ public:
     }
     
     /// Compute the SBFem matrices
-    void ComputeMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1, TPZElementMatrix &E2);
+    /// method to assemble E0, E1, E2
+    void ComputeMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1, TPZElementMatrix &E2, TPZElementMatrix &M0);
     
     /**
      * @brief Computes the element stifness matrix and right hand side
@@ -49,6 +58,31 @@ public:
      */
     virtual void CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef);
     
+    /**
+     * @brief Prints element data
+     * @param out Indicates the device where the data will be printed
+     */
+    virtual void Print(std::ostream &out = std::cout) const
+    {
+        out << __PRETTY_FUNCTION__ << std::endl;
+        TPZCompEl::Print(out);
+        out << "EigenVectors for displacement\n";
+        fPhi.Print("Phi = ",out,EMathematicaInput);
+        out << "Inverse EigenVectors\n";
+        fPhiInverse.Print("PhiInv = ",out,EMathematicaInput);
+        out << "EigenValues " << fEigenvalues << std::endl;
+        out << "Mass Matrix\n";
+        fMassMatrix.Print("Mass = ",out);
+        out << "Solution Coeficients\n";
+        fCoef.Print("Coef ",out);
+        int nel = fElGroup.size();
+        for (int el=0; el<nel; el++) {
+            fElGroup[el]->Print(out);
+        }
+        out << "End of " << __PRETTY_FUNCTION__ << std::endl;
+    }
+    
+
     
     /**
      * @brief Computes the element right hand side
@@ -61,7 +95,13 @@ public:
     }
     
 
-    /// method to assemble E0, E1, E2
+    /** @brief Loads the solution within the internal data structure of the element */
+    /**
+     * Is used to initialize the solution of connect objects with dependency. \n
+     * Is also used to load the solution within SuperElements
+     */
+    virtual void LoadSolution();
+
 
     /// method to compute the stiffness
     /// method to compute the solution

@@ -1007,7 +1007,6 @@ int TPZMatElasticity2D::VariableIndex(const std::string &name)
     if(!strcmp("SigmaZ",name.c_str()))						return	5;
     if(!strcmp("TauXY",name.c_str()))						return	6;
     PZError << "TPZMatElasticity2D::VariableIndex Error name : " << name << " not found\n";
-    return -1;
     
     return TPZMaterial::VariableIndex(name);
 }
@@ -1161,7 +1160,7 @@ void TPZMatElasticity2D::Solution(TPZMaterialData &data, int var, TPZVec<STATE> 
         Solout[0] = Tau + fPreStressXY;
         return;
     }
-    
+    TPZMaterial::Solution(data, var, Solout);
 }
 
 void TPZMatElasticity2D::Solution(TPZVec<TPZMaterialData> &data, int var, TPZVec<STATE> &Solout)

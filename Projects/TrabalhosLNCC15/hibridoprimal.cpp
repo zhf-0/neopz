@@ -2635,10 +2635,6 @@ void ChangeInternalConnectOrder(TPZCompMesh *mesh){
             nshape = conel.NShape();
             long cindex = cel->ConnectIndex(ncon-1);
             int neworder = corder + 1;
-<<<<<<< HEAD
-=======
-            long cindex = cel->ConnectIndex(ncon-1);
->>>>>>> master
             conel.SetOrder(neworder,cindex);
             
             if(fTriang){

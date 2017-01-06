@@ -124,8 +124,8 @@ void TPZGraphEl::DrawSolution(TPZGraphNode *n,TPZVec<int> &solind,TPZDrawStyle s
 	imax = 1 << res;
 	int np = NPoints(n);
 	int point=0;
-	TPZManVector<REAL> qsi(3,0.),x(4,0.);
-	TPZManVector<STATE> sol(6,0.);
+	TPZManVector<REAL,4> qsi(3,0.),x(4,0.);
+	TPZManVector<STATE,6> sol(6,0.);
 	long ip = n->FirstPoint();
 	while(point < np) 
 	{

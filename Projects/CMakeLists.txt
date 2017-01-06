@@ -16,12 +16,6 @@
 
 			#set(pztutorial ${pztutorial} ${pzcurso} ${pztutorshape} ${pztutorgeom} ${pztutormat} ${visualmatrix})
 
-<<<<<<< HEAD
-                	#Testing gradient reconstruction
-			add_subdirectory(Gradient_Reconstruction)
-                	#Testing generating ellipse from a vector of points by least square method
-			add_subdirectory(EllipseGenerator)
-=======
 			#add_custom_target(PZTutorial SOURCES ${pztutorial})
 			#add_subdirectory(Finite3DElasticity)
 
@@ -74,11 +68,8 @@
 			add_subdirectory(proDG)
 			
 
->>>>>>> master
 		endif(BUILD_COMPLEX_PROJECTS)
 	endif(BUILD_TUTORIAL)
-<<<<<<< HEAD
-=======
 
 	if(BUILD_BROKEN)
 		if(BUILD_COMPLEX_PROJECTS)
@@ -89,11 +80,9 @@
 			add_subdirectory(Gradient_Reconstruction)
 			#exercise on gradient reconstruction, but the results are wrong!
 			add_subdirectory(Poisson2D_ArcTan_Disc)
-
 			
 		endif(BUILD_COMPLEX_PROJECTS)
 	endif(BUILD_BROKEN)
->>>>>>> master
 	
 	if(BUILD_PROJECTS)
 		
