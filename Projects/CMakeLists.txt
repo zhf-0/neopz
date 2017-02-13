@@ -26,13 +26,13 @@ ENABLE_TESTING()
 			add_subdirectory(CursoPZ)
 
 			#Example to reading and using geometric mesh
-			add_subdirectory(testgeom)
+			#add_subdirectory(testgeom)
 
 			#Testing and using shape functions
-			add_subdirectory(testshape)
+			#add_subdirectory(testshape)
             
 			#Generic Example 2D with elasticity and 2D linear problem showing an example call to Contribute
-			add_subdirectory(testmat)
+			#add_subdirectory(testmat)
 
 			#Using visual matrix of the DX
 			add_subdirectory(visualmatrix)
@@ -138,13 +138,13 @@ ENABLE_TESTING()
 			add_subdirectory(EllipseGenerator)
 
 			#Adaptivity based on mesh cloning (Edimar Cesar thesis)
-			add_subdirectory(Poisson_ArcTan)
+			#add_subdirectory(Poisson_ArcTan)
 
 			#projeto Diogo
 			add_subdirectory(Plasticity)
 
 			#add_subdirectory(projteste)
-			
+		
 			# MHM project
 			add_subdirectory(MHM)
 
@@ -180,7 +180,7 @@ ENABLE_TESTING()
 			
 			#projeto agnaldo 09-09-2011
 			add_subdirectory(DoubleProjection)
-                        add_subdirectory(artigoPira)
+            add_subdirectory(artigoPira)
 			add_subdirectory(TrabalhosLNCC15)
 			#projeto omar duran 16-12-2012
 			add_subdirectory(PoroElasticAnalysis)
@@ -195,10 +195,10 @@ ENABLE_TESTING()
 			add_subdirectory(iRMS)
 
 
-			add_subdirectory(Elasticity2D)
+			add_subdirectory(Elasticity2D)			
 			add_subdirectory(Gridgeneration)
 			#add_subdirectory(Poisson2DLabyrinth)
-			add_subdirectory(Andrade)
+			#add_subdirectory(Andrade)
 			add_subdirectory(MatrixMarket)
 			add_subdirectory(Frac1DHdiv)
 			add_subdirectory(SubStruct)

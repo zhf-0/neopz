@@ -1478,15 +1478,12 @@ TPZCompMesh *LaplaceInSolidSphere::CMeshPressure(TPZGeoMesh *gmesh, int pOrder, 
 TPZCompMesh *LaplaceInSolidSphere::CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCompMesh *> meshvec)
 {
 
-    int intorder = 0;
-    
-//#ifdef Solution4
-//    int intorder = 10;
-//#endif
-//#ifdef Solution5
-//    int intorder = 10;
-//#endif
-    
+#ifdef Solution4
+    int intorder = 5;
+#endif
+#ifdef Solution5
+    int intorder = 8;
+#endif
     //Creating computational mesh for multiphysic elements
     gmesh->ResetReference();
     TPZCompMesh *mphysics = new TPZCompMesh(gmesh);

@@ -733,11 +733,11 @@ void TPZRefPattern::CreateMidSideNodes(TPZGeoEl * gel, int side, TPZVec<long> &n
 				mindifindex = i;
 			}
 		}
-		if (mindif < 1e-6 && sideindices.NElements() != 0)
+		if (mindif < 1e-2 && sideindices.NElements() != 0)
 		{
 			newnodeindexes[index] = sideindices[mindifindex];
 		}
-		if (mindif >= 1.e-6 && sideindices.NElements() != 0)
+		if (mindif >= 1.e-2 && sideindices.NElements() != 0)
 		{
 #ifdef LOG4CXX
 			{
@@ -1158,7 +1158,7 @@ void TPZRefPattern::SetRefPatternMeshToMasterDomain()
 {
 	//Levando a fRefPatternMesh para o espaço parametrico do elemento mestre
 	int nnodes = fRefPatternMesh.NodeVec().NElements();
-	TPZManVector< TPZManVector<REAL,3>,8 > nodecoords_inQSI(nnodes);
+	TPZManVector< TPZManVector<REAL,3> ,20> nodecoords_inQSI(nnodes);
 	TPZManVector<REAL,3> nodecoords_inX;
 	TPZGeoEl * gel = fRefPatternMesh.ElementVec()[0];
 	

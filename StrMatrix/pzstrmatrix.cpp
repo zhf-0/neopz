@@ -22,9 +22,13 @@
 #include "TPZTimer.h"
 #include "TPZThreadTools.h"
 
+<<<<<<< HEAD
 #include "TPZMultiphysicsInterfaceEl.h"
 
 
+=======
+#include "pzcheckmesh.h"
+>>>>>>> origin/HDiv-curved
 #include "pzcheckconsistency.h"
 #include "pzmaterial.h"
 #include "run_stats_table.h"
@@ -52,11 +56,25 @@ static TPZCheckConsistency stiffconsist("ElementStiff");
 TPZStructMatrixOR::TPZStructMatrixOR(TPZCompMesh *mesh) : fMesh(mesh), fEquationFilter(mesh->NEquations()) {
     fMesh = mesh;
     this->SetNumThreads(0);
+#ifdef PZDEBUG
+    TPZCheckMesh checkmesh(fMesh,&std::cout);
+    if(checkmesh.CheckConnectSeqNumberConsistency() != 0)
+    {
+        DebugStop();
+    }
+#endif
 }
 
 TPZStructMatrixOR::TPZStructMatrixOR(TPZAutoPointer<TPZCompMesh> cmesh) : fCompMesh(cmesh), fEquationFilter(cmesh->NEquations()) {
     fMesh = cmesh.operator->();
     this->SetNumThreads(0);
+#ifdef PZDEBUG
+    TPZCheckMesh checkmesh(fMesh,&std::cout);
+    if(checkmesh.CheckConnectSeqNumberConsistency() != 0)
+    {
+        DebugStop();
+    }
+#endif
 }
 
 TPZStructMatrixOR::TPZStructMatrixOR(const TPZStructMatrixOR &copy) : fMesh(copy.fMesh), fEquationFilter(copy.fEquationFilter)
@@ -230,7 +248,6 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
         ek.Reset();
         ef.Reset();
         el->CalcStiff(ek,ef);
-        
         if(guiInterface) if(guiInterface->AmIKilled()){
             return;
         }
@@ -295,6 +312,13 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
 //                stiffness.Print("EKB = ",out,EMathematicaInput);
 //            }
             stiffness.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
+#ifdef PZDEBUG
+            STATE rhsnorm = Norm(ef.fMat);
+            if(isnan(rhsnorm))
+            {
+                std::cout << "element " << iel << " has norm " << rhsnorm << std::endl;
+            }
+#endif
             rhs.AddFel(ef.fMat,ek.fSourceIndex,ek.fDestinationIndex);
 //            if (mfint)
 //            {

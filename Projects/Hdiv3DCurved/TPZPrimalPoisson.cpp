@@ -113,10 +113,12 @@ void TPZPrimalPoisson::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<S
         this->fForcingFunction->Execute(data.x, f, df);
     }
    
+    int dim = this->Dimension();
+    
     for (int ip = 0; ip < nphi_p; ip++) {
         
         STATE dp_dot_dphi_i = 0.0;
-        for (int i = 0; i < this->Dimension(); i++) {
+        for (int i = 0; i < dim; i++) {
             dp_dot_dphi_i += dpdx[i]*dphix(i,ip);
         }
         
@@ -177,8 +179,8 @@ void TPZPrimalPoisson::ContributeBC(TPZMaterialData &data,REAL weight,TPZFMatrix
     
     TPZManVector<STATE,1> bc_data(1,0.0);
     bc_data[0] = bc.Val2()(0,0);
-    if (this->HasffBCForcingFunction()) {
-        this->fBCForcingFunction->Execute(data.x, bc_data);
+    if (bc.HasBCForcingFunction()) {
+        bc.BCForcingFunction()->Execute(data.x, bc_data);
     }
     
     
@@ -217,8 +219,8 @@ void TPZPrimalPoisson::ContributeBC(TPZMaterialData &data,REAL weight,TPZFMatrix
 
     TPZManVector<STATE,1> bc_data(1,0.0);
     bc_data[0] = bc.Val2()(0,0);
-    if (this->HasffBCForcingFunction()) {
-        this->fBCForcingFunction->Execute(data.x, bc_data);
+    if (bc.HasBCForcingFunction()) {
+        bc.BCForcingFunction()->Execute(data.x, bc_data);
     }
 
     
@@ -335,7 +337,7 @@ void TPZPrimalPoisson::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &S
     if(var == 3){
         TPZManVector<STATE,1> f(1,0.0);
         TPZFNMatrix<4,STATE> df(4,1,0.0);
-        if (this->HasfForcingFunctionExact()) {
+        if (this->HasForcingFunctionExact()) {
             this->fForcingFunctionExact->Execute(data.x, f, df);
         }
         
@@ -349,7 +351,7 @@ void TPZPrimalPoisson::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &S
     if(var == 4){
         TPZManVector<STATE,1> f(1,0.0);
         TPZFNMatrix<4,STATE> df(4,1,0.0);
-        if (this->HasfForcingFunctionExact()) {
+        if (this->HasForcingFunctionExact()) {
             this->fForcingFunctionExact->Execute(data.x, f, df);
         }
         Solout[0] = f[0];
@@ -359,7 +361,7 @@ void TPZPrimalPoisson::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &S
     if(var == 5){
         TPZManVector<STATE,1> f(1,0.0);
         TPZFNMatrix<4,STATE> df(4,1,0.0);
-        if (this->HasfForcingFunctionExact()) {
+        if (this->HasForcingFunctionExact()) {
             this->fForcingFunctionExact->Execute(data.x, f, df);
         }
         Solout[0] = df(3,0);
@@ -393,10 +395,6 @@ void TPZPrimalPoisson::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,TPZFMatrix<STATE>
     error[2]= error[0]+error[1];
     
 }
-
-
-//        /** @brief Compute errors, no comments!!! */
-//        void TPZPrimalPoisson::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);
 
 
 /** @} */

@@ -1763,11 +1763,24 @@ void LaplaceInCube::ChangeExternalOrderConnects(TPZCompMesh *mesh){
                 nshape = co.NShape();
                 if(corder!=cordermin){
                     cordermin = corder-1;
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                    co.SetOrder(cordermin,1);
+                    
+                    TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *>(cel);
+                    nshape = intel->NConnectShapeF(icon,co.Order());
+=======
+>>>>>>> origin/HDiv-curved
                     long cindex = cel->ConnectIndex(icon);
                     co.SetOrder(cordermin,cindex);
                     
                     TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *>(cel);
                     nshape = intel->NConnectShapeF(icon,cordermin);
+<<<<<<< HEAD
+=======
+>>>>>>> iRMS_MHM
+>>>>>>> origin/HDiv-curved
                     
                     co.SetNShape(nshape);
                     mesh->Block().Set(co.SequenceNumber(),nshape);

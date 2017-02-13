@@ -639,7 +639,7 @@ REAL TPZGeoEl::SmallerEdge()
 bool TPZGeoEl::ComputeXInverse(TPZVec<REAL> &XD, TPZVec<REAL> &qsi, REAL Tol) {
 	REAL error = 10.;
 	int iter = 0;
-	const int nMaxIter = 1000;
+	const int nMaxIter = 10000;
 	REAL radius = CharacteristicSize();
 	int dim = Dimension();
 	TPZManVector<REAL,3> X0(3);
@@ -756,9 +756,9 @@ bool TPZGeoEl::ComputeXInverse(TPZVec<REAL> &XD, TPZVec<REAL> &qsi, REAL Tol) {
             NodePtr(i)->Print();
         }
         
-        #ifdef LOG4CXX
+#ifdef LOG4CXX
 		LOGPZ_ERROR(logger,sout.str().c_str());
-        #endif
+#endif
 	}
 #endif
 	
@@ -1575,6 +1575,7 @@ void TPZGeoEl::JacobianXYZ(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,
 /** Defines the refinement pattern. It's used only in TPZGeoElRefPattern objects. */
 void TPZGeoEl::SetRefPattern(TPZAutoPointer<TPZRefPattern> ){
 	PZError << "TPZGeoEl::SetRefPattern ERROR : Should not be called in TPZGeoEl" << endl;
+    DebugStop();
 }
 
 void TPZGeoEl::Read(TPZStream &buf, void *context) {
@@ -2218,7 +2219,7 @@ void TPZGeoEl::ComputeNormals(TPZFMatrix<REAL> &normals, TPZVec<int> &vectorside
 	int is;
 	// Compute the number of normals we need to compute
 	int nsides = NSides();
-	numbernormals = nsides*2;
+	numbernormals = nsides*3; // @omar:: why two???
 	normals.Redim(3, numbernormals);
 	vectorsides.Resize(numbernormals);
 	vectorsides.Fill(0);
@@ -2326,25 +2327,17 @@ int TPZGeoEl::NormalOrientation(int side)
 	{
 		return 1;
 	}
-    
+    fatherside = neighbour.Father2();
     // look for a neighbour of equal dimension
-    while (neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) {
+    while ((neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) || (fatherside && fatherside.Dimension() == dimside)) {
         neighbour = neighbour.Neighbour();
+        fatherside = neighbour.Father2();
     }
     if (neighbour == thisside) {
         return 1;
     }
 	
-//	fatherside = thisside.Neighbour();
-    neighbour = thisside.Neighbour();
-    // Considerando elementos hibridos, o elemento pode ter um vizinho de dimensao menor
-    while (neighbour.Element()->Dimension() != Dimension() && neighbour != thisside) {
-        neighbour = neighbour.Neighbour();
-    }
-//	while (fatherside.Exists()&& fatherside.Dimension() == dimside) {//eu inclui agora a segunda condicao
-//		neighbour = fatherside;
-//		fatherside = fatherside.Father2();
-//	}
+#ifdef PZDEBUG
 	if(!thisside.NeighbourExists(neighbour))//inclui agora esta verificacao
 	{
 		std::stringstream sout;
@@ -2354,11 +2347,14 @@ int TPZGeoEl::NormalOrientation(int side)
 		DebugStop();
 		
 	}
+#endif
 #ifdef LOG4CXX
     if (loggerorient->isDebugEnabled())
     {
         std::stringstream sout;
-        sout << "neighbour index " << neighbour.Element()->Index() << " id = " << neighbour.Element()->Index() << std::endl;
+        sout << "Element index " << Index() << std::endl;
+        sout << "neighbour index " << neighbour.Element()->Index() << " id = " << neighbour.Element()->Id() << " side " << neighbour.Side() <<  std::endl;
+        sout << "thisside index " << thisside.Element()->Index() << " id = " << thisside.Element()->Id() << " side " << thisside.Side() << std::endl;
         if(thisside.Element()->Id() < neighbour.Element()->Id())
         {
             sout << "returning 1\n";

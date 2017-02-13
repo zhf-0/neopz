@@ -27,6 +27,8 @@
 #include "pzsloan.h"
 #include "pzmaterial.h"
 #include "pzbndcond.h"
+
+#include "TPZLagrangeMultiplier.h"
 #include "pzstrmatrix.h"
 
 #include "tpznodesetcompute.h"
@@ -268,6 +270,7 @@ void TPZAnalysis::AssembleResidual(){
     }
 	long sz = this->Mesh()->NEquations();
 	this->Rhs().Redim(sz,numloadcases);
+    long othersz = fStructMatrix->Mesh()->NEquations();
 	fStructMatrix->Assemble(this->Rhs(),fGuiInterface);
 }//void
 
@@ -745,7 +748,8 @@ void TPZAnalysis::PostProcess(int resolution, int dimension){
 	for(matit = fCompMesh->MaterialVec().begin(); matit != fCompMesh->MaterialVec().end(); matit++)
 	{
 		TPZBndCond *bc = dynamic_cast<TPZBndCond *>(matit->second);
-		if(matit->second && !bc && matit->second->Dimension() == dimension) break;
+        TPZLagrangeMultiplier *lag = dynamic_cast<TPZLagrangeMultiplier *>(matit->second);
+		if(matit->second && !bc && !lag && matit->second->Dimension() == dimension) break;
 	}
 	if(matit == fCompMesh->MaterialVec().end()) return;
 	fGraphMesh[dim1]->SetCompMesh(fCompMesh,matit->second);

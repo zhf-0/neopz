@@ -304,8 +304,16 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
         while(il<cap) {//SideOrder(int side)
 			equal = dynamic_cast<TPZInterpolatedElement *> (elvecequal[il].Element());
 			equalside = elvecequal[il].Side();
+            TPZConnect connect = equal->Connect(equal->MidSideConnectLocId(equalside));
+            
             long equalindex = equal->ConnectIndex(equal->MidSideConnectLocId(equalside));
             if (equalindex != connectindex) {
+                
+                if(connect.LagrangeMultiplier() == 1){
+                    il++;
+                    continue;
+                }
+                
                 DebugStop();
             }
 			il++;
@@ -367,8 +375,7 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
                 }
             }
         }
-		
-		
+
 		for(long il=0; il<highdim.size(); il++) {
 			
 			// verify if the higher dimension element/side is restrained.
