@@ -66,6 +66,9 @@ class TPZElasticityAxiMaterial : public TPZDiscontinuousGalerkin {
 	void SetOrigin(TPZManVector<REAL> &Orig, TPZManVector<REAL> &AxisZ, TPZManVector<REAL> &AxisR);
 	
 	REAL ComputeR(TPZVec<REAL> &x);
+    
+    
+    
 	
 	void SetMohrCoulomb(double c, double phi)
 	{

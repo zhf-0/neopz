@@ -31,12 +31,34 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 	 * @param fy forcing function \f$ -y = fy \f$
 	 * @param plainstress \f$ plainstress = 1 \f$ indicates use of plainstress
 	 */
-	TPZElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1);
+	TPZElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1, int fDimension=1);
+    
+    /// dimension of the material
     
     TPZElasticityMaterial(int id);
 	
 	/** @brief Copies the data of one TPZElasticityMaterial object to another */
 	TPZElasticityMaterial(const TPZElasticityMaterial &copy);
+    
+    
+    int VariableIndex(const std::string &name);
+    
+    
+    int NSolutionVariables(int var);
+    
+
+    /** index of Stress */
+    int SIndex(){ return 0; }
+    
+    /** index of Displacement */
+    int UIndex(){ return 1; }
+    
+    /** index of Rotation */
+    int PIndex(){ return 2; }
+    
+    
+    void ComputeDivergenceOnDeformed(TPZVec<TPZMaterialData> &datavec, TPZFMatrix<STATE> &DivergenceofPhi);
+    
 	
 	/** @brief Creates a new material from the current object   ??*/
 	virtual TPZMaterial * NewMaterial() { return new TPZElasticityMaterial(*this);}
@@ -106,6 +128,7 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 //        DebugStop();
 //    }
     
+    
     void ContributeVecShape(TPZMaterialData &data,REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
 	
 	/** @brief Calculates the element stiffness matrix */
@@ -149,16 +172,6 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 	virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 		PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	}
-	
-	/** @} */
-	
-	/** @brief Returns the variable index associated with the name */
-	virtual int VariableIndex(const std::string &name);
-	
-	/** 
-	 * @brief Returns the number of variables associated with the variable indexed by var.
-	 */
-	virtual int NSolutionVariables(int var);
     
     STATE GetLambda() const
     {
@@ -172,6 +185,30 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
         return mu;
     }
 	
+    
+    /** inner product of two tensors. See Gurtin (2003), p. 5. */
+    STATE Inner(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
+    
+    /** inner product of two vectors. See Gurtin (2003), p. 5. */
+    STATE InnerVec(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
+    
+    /** trace of the tensor GradU = Div(U)*/
+    STATE Tr(TPZFMatrix<REAL> &GradU );
+    
+    /** transpose of the tensor GradU = Div(U)*/
+    STATE Transpose(TPZFMatrix<REAL> &GradU );
+    
+    /** Fill the vector of gradient for each phi */
+    void FillGradPhi(TPZMaterialData &dataV, TPZVec< TPZFMatrix<STATE> > &GradPhi);
+    
+    /// transform a H1 data structure to a vector data structure
+    void FillVecShapeIndex(TPZMaterialData &data);
+    
+    
+    
+    
+    
+    
 public:
 
     /** @brief Returns the solution associated with the var index based on the finite element approximation */
@@ -241,6 +278,9 @@ protected:
 	
 	/** @brief Uses plain stress */
 	int fPlaneStress;
+    
+    /// dimension of the material
+    int fDimension;
     
 };
 

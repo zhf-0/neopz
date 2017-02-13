@@ -630,7 +630,9 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 v_2(1,0) = vbc[1];
                 p_D = vbc[2];
             }
-            
+    
+
+ 
 #ifdef IsHDivQ
             
             for(int i = 0; i < nshapeV; i++ )
@@ -1854,47 +1856,47 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
             
         }
         
-        REAL vh_t = v_h[1];
+//        REAL vh_t = v_h[1];
+//        
+//        REAL v_t = t[0] * v_2[0] + t[1] * v_2[1];
+//        
+//        TPZManVector<REAL> v_tt(2);
+//        v_tt[0]=v_t*t[0];
+//        v_tt[1]=v_t*t[1];
+//        
+//        TPZManVector<REAL> vh_tt(2);
+//        vh_tt[0]=vh_t*t[0];
+//        vh_tt[1]=vh_t*t[1];
+//        
+//        TPZFNMatrix<9> diffvt(fDimension,1,0.);
+//        diffvt(0,0)=v_tt[0];
+//        diffvt(1,0)=v_tt[1];
+//        
         
-        REAL v_t = t[0] * v_2[0] + t[1] * v_2[1];
-        
-        TPZManVector<REAL> v_tt(2);
-        v_tt[0]=v_t*t[0];
-        v_tt[1]=v_t*t[1];
-        
-        TPZManVector<REAL> vh_tt(2);
-        vh_tt[0]=vh_t*t[0];
-        vh_tt[1]=vh_t*t[1];
-        
-        TPZFNMatrix<9> diffvt(fDimension,1,0.);
-        diffvt(0,0)=v_tt[0];
-        diffvt(1,0)=v_tt[1];
-        
-        
-        STATE factft= -2. * weight * fViscosity * InnerVec(diffvt, Duni) ;
+        STATE factft= -2. * weight * fViscosity * InnerVec(v_2, Duni) ;
         
         ef(i,0) += fTheta*factft ;
         
-        REAL vh_n = v_h[0];
-        
-        REAL v_n = n[0] * v_2[0] + n[1] * v_2[1];
-        
-        TPZManVector<REAL> v_nn(2);
-        v_nn[0]=v_n*n[0];
-        v_nn[1]=v_n*n[1];
-        
-        TPZManVector<REAL> vh_nn(2);
-        vh_nn[0]=vh_n*n[0];
-        vh_nn[1]=vh_n*n[1];
-        
-        TPZFNMatrix<9> diffvn(fDimension,1,0.);
-        diffvn(0,0)=v_nn[0];
-        diffvn(1,0)=v_nn[1];
-        
-        
-        STATE factfn= 2. *10000.* weight * fViscosity * InnerVec(diffvn, Duni) ;
-        
-        ef(i,0) += fTheta*factfn ;
+//        REAL vh_n = v_h[0];
+//        
+//        REAL v_n = n[0] * v_2[0] + n[1] * v_2[1];
+//        
+//        TPZManVector<REAL> v_nn(2);
+//        v_nn[0]=v_n*n[0];
+//        v_nn[1]=v_n*n[1];
+//        
+//        TPZManVector<REAL> vh_nn(2);
+//        vh_nn[0]=vh_n*n[0];
+//        vh_nn[1]=vh_n*n[1];
+//        
+//        TPZFNMatrix<9> diffvn(fDimension,1,0.);
+//        diffvn(0,0)=v_nn[0];
+//        diffvn(1,0)=v_nn[1];
+//        
+//        
+//        STATE factfn= 2 * weight * fViscosity * InnerVec(diffvn, Duni) ;
+//        
+//        ef(i,0) += fTheta*factfn ;
         
         
         for(int j = 0; j < nshapeV; j++){
@@ -1903,6 +1905,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
             
             TPZFNMatrix<9> GradVnj(fDimension,1,0.);
             TPZFNMatrix<4> GradVj(fDimension,fDimension,0.),GradVjt(fDimension,fDimension,0.),Duj(fDimension,fDimension,0.),Dunj(fDimension,1,0.);
+            
             
             for (int e=0; e<fDimension; e++) {
                 
@@ -1938,18 +1941,18 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
             
             
             
-            STATE fact1=(-2.) * weight * fViscosity * InnerVec(phiVtit, Dunj) ;
+            STATE fact1=(-2.) * weight * fViscosity * InnerVec(phiVi, Dunj) ;
             
             
             ek(i,j) += fact1 ;
             ek(j,i) += fTheta*fact1;
             
             
-            STATE fact2=(2.) *10000.* weight * fViscosity * InnerVec(phiVnin, Dunj) ;
-            
-            
-            ek(i,j) += fact2 ;
-            ek(j,i) += fTheta*fact2;
+//            STATE fact2=(-2.) * weight * fViscosity * InnerVec(phiVj, Duni) ;
+//            
+//            
+//            ek(i,j) += fact2 ;
+//            ek(j,i) += fTheta*fact2;
             
             
             //std::cout<<ek<<std::endl;

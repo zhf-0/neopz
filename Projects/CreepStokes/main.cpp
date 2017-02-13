@@ -133,12 +133,12 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     
-    int h_level = 64;
+    int h_level = 32;
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 2; //Ordem polinomial de aproximação
+    int pOrder = 3; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
