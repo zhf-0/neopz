@@ -59,6 +59,9 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
     
     void ComputeDivergenceOnDeformed(TPZVec<TPZMaterialData> &datavec, TPZFMatrix<STATE> &DivergenceofPhi);
     
+    void ComputeDeformationVector(TPZFMatrix<STATE> &PhiStress,TPZFMatrix<STATE> &APhiStress);
+    
+    void ElasticityModulusTensor(TPZFMatrix<STATE> &MatrixElast);
 	
 	/** @brief Creates a new material from the current object   ??*/
 	virtual TPZMaterial * NewMaterial() { return new TPZElasticityMaterial(*this);}
@@ -66,6 +69,18 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 	/** @brief Default destructor */
 	virtual ~TPZElasticityMaterial();
 	
+    /**
+     * @brief Set parameters of elastic material:
+     * @param First  Lame Parameter Lambda
+     * @param Second Lame Parameter Mu -> G
+     * @param fx forcing function \f$ -x = 0 \f$
+     * @param fy forcing function \f$ -y = 0 \f$
+     */
+    void SetElasticParameters(REAL Eyoung, REAL nu)
+    {
+        this->SetElasticity(Eyoung,nu);
+    }
+    
     /** @brief Set elasticity parameters */
     void SetElasticity(REAL E, REAL nu)
     {
@@ -73,8 +88,23 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
         fnu	= nu;   // poisson coefficient
         fEover1MinNu2 = E/(1-fnu*fnu);  //G = E/2(1-nu);
         fEover21PlusNu = E/(2.*(1+fnu));//E/(1-nu)
+        flambda = (E*nu)/((1+nu)*(1-2*nu));
+        fmu = E/(2*(1+nu));
 
     }
+    
+    /** @brief Set elasticity parameters */
+    void SetParameters(REAL Lambda, REAL mu, REAL fx, REAL fy)
+    {
+        fE = (mu*(3.0*Lambda+2.0*mu))/(Lambda+mu);
+        fnu = (Lambda)/(2*(Lambda+mu));
+        
+        flambda = Lambda;
+        fmu = mu;
+        ff[0] = fx;
+        ff[1] = fy;
+    }
+    
     
     /// Set the material configuration to plane strain
     void SetPlaneStrain()
@@ -137,6 +167,11 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 		TPZDiscontinuousGalerkin::Contribute(data,weight,ef);
 	}
 	
+    
+    /** @brief Applies the element boundary conditions Mixed */
+    virtual void ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
+    
+    
 	/** @brief Applies the element boundary conditions */
 	virtual void ContributeBC(TPZMaterialData &data,REAL weight,
 							  TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
@@ -153,6 +188,8 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
     
     //virtual void FillDataRequirements(TPZMaterialData &data);
      virtual void FillDataRequirements(TPZMaterialData &data);
+    virtual void FillDataRequirements(TPZVec<TPZMaterialData > &datavec);
+
     virtual void FillBoundaryConditionDataRequirement(int type, TPZMaterialData &data);
         
      
@@ -255,6 +292,12 @@ protected:
 	/** @brief Poison coeficient */
 	REAL fnu;
 	
+    /** @brief first Lame Parameter */
+    REAL flambda;
+    
+    /** @brief Second Lame Parameter */
+    REAL fmu;
+    
 	/** @brief Forcing vector */
 	REAL ff[3];
 	
@@ -281,6 +324,10 @@ protected:
     
     /// dimension of the material
     int fDimension;
+    
+    // Matrix A
+    TPZFMatrix<STATE> fMatrixA;
+    
     
 };
 

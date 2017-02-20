@@ -22,13 +22,13 @@
 #include "TPZTimer.h"
 #include "TPZThreadTools.h"
 
-<<<<<<< HEAD
-#include "TPZMultiphysicsInterfaceEl.h"
+//<<<<<<< HEAD
+//#include "TPZMultiphysicsInterfaceEl.h"
 
 
-=======
+//=======
 #include "pzcheckmesh.h"
->>>>>>> origin/HDiv-curved
+//>>>>>>> origin/HDiv-curved
 #include "pzcheckconsistency.h"
 #include "pzmaterial.h"
 #include "run_stats_table.h"

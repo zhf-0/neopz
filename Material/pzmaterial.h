@@ -386,8 +386,8 @@ public:
 	{
 		fForcingFunctionExact = fp;
 	}
-<<<<<<< HEAD
-
+//<<<<<<< HEAD
+//
     /**
      * @brief Sets a procedure as exact solution for the problem
      * @param fp pointer of exact solution function
@@ -397,15 +397,9 @@ public:
         fForcingFunctionExactPressure = fp;
     }
     
-=======
+//=======
     
-    /** @brief Returns a procedure as source function for the material */
-    TPZAutoPointer<TPZFunction<STATE> > &ForcingFunctionExact() {
-        return fForcingFunctionExact;
-    }
-	
->>>>>>> origin/HDiv-curved
-    /** 
+    /**
 	 * @brief Sets a procedure as source function for the material.
 	 * @param fp pointer of the forces function
 	 * @note Parameter loc corresponds to the coordinate of the point where the source function is applied
@@ -465,17 +459,17 @@ public:
         
     
     virtual int HasForcingFunction() {return (fForcingFunction != 0);}
-<<<<<<< HEAD
+//<<<<<<< HEAD
 	virtual int HasfForcingFunctionExact() {return (fForcingFunctionExact != 0);}
     virtual int HasfForcingFunctionExactPressure() {return (fForcingFunctionExactPressure != 0);}
     virtual int HasffBCForcingFunction() {return (fBCForcingFunction != 0);}
-    virtual int HasfTimedependentBCForcingFunction() {return (fTimedependentBCForcingFunction != 0);}    
-=======
+    virtual int HasfTimedependentBCForcingFunction() {return (fTimedependentBCForcingFunction != 0);}
+//=======
 	virtual int HasForcingFunctionExact() {return (fForcingFunctionExact != 0);}
     virtual int HasBCForcingFunction() {return (fBCForcingFunction != 0);}
     virtual int HasTimedependentForcingFunction() {return (fTimeDependentForcingFunction != 0);}
     virtual int HasTimedependentBCForcingFunction() {return (fTimedependentBCForcingFunction != 0);}
->>>>>>> origin/HDiv-curved
+//>>>>>>> origin/HDiv-curved
     
     /** @brief Gets the order of the integration rule necessary to integrate an element with polinomial order p */
     virtual int IntegrationRuleOrder(int elPMaxOrder) const;

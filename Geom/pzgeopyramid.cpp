@@ -25,9 +25,7 @@ using namespace std;
 namespace pzgeom {
 	
 	const double tol = pzgeom_TPZNodeRep_tol;
-	
-<<<<<<< HEAD
-=======
+ 
 //    void TPZGeoPyramid::Shape(TPZVec<REAL> &pt,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi) {
 //        if(fabs(pt[0])<1.e-10 && fabs(pt[1])<1.e-10 && pt[2]==1.) {
 //            //para testes com transforma�es geometricas-->>Que  o que faz o RefPattern!!
@@ -93,7 +91,6 @@ namespace pzgeom {
 //        dphi(2,4) =  1.0;
 //    }
     
->>>>>>> origin/HDiv-curved
 	
 	TPZGeoEl *TPZGeoPyramid::CreateBCGeoEl(TPZGeoEl *orig,int side,int bc) {
 		if(side<0 || side>18) {

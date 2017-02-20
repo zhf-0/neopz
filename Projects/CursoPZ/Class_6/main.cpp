@@ -171,7 +171,7 @@ TPZCompMesh *CreateMesh(TPZGeoMesh *gmesh) {
 	//val1(1,1) = 0.;
 	val2(1,0) = 10000000.;
     bcRight = mat->CreateBC(mat,-4,1,val1,val2);
-
+    
     cmesh->InsertMaterialObject(mat);
 	// Inserting boundary conditions into computational mesh
 	cmesh->InsertMaterialObject(bcBottom);

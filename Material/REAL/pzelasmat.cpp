@@ -29,7 +29,8 @@ TPZElasticityMaterial::TPZElasticityMaterial() : TPZDiscontinuousGalerkin(0) {
 	ff[2] = 0.; // Z component of the body force - not used for this class
 	fEover1MinNu2 = -1.;  //G = E/2(1-nu);
 	fEover21PlusNu = -1.;//E/(1-nu)
-    
+    flambda = 0.;
+    fmu = 0.;
 	
 	//Added by Cesar 2001/03/16
 	fPreStressXX = 0.;  //Prestress in the x direction
@@ -40,6 +41,9 @@ TPZElasticityMaterial::TPZElasticityMaterial() : TPZDiscontinuousGalerkin(0) {
     
     // Added by Philippe 2012
     fPostProcIndex = 0;
+    
+    fMatrixA=0.;
+    
 }
 
 TPZElasticityMaterial::TPZElasticityMaterial(int id) : TPZDiscontinuousGalerkin(id) {
@@ -50,8 +54,10 @@ TPZElasticityMaterial::TPZElasticityMaterial(int id) : TPZDiscontinuousGalerkin(
 	ff[2] = 0.; // Z component of the body force - not used for this class
 	fEover1MinNu2 = -1.;  //G = E/2(1-nu);
 	fEover21PlusNu = -1.;//E/(1-nu)
+    flambda = 0.;
+	fmu = 0.;
     
-	
+    
 	//Added by Cesar 2001/03/16
 	fPreStressXX = 0.;  //Prestress in the x direction
 	fPreStressYY = 0.;  //Prestress in the y direction
@@ -61,12 +67,16 @@ TPZElasticityMaterial::TPZElasticityMaterial(int id) : TPZDiscontinuousGalerkin(
     
     // Added by Philippe 2012
     fPostProcIndex = 0;
+    
+    fMatrixA=0.;
 }
 
 TPZElasticityMaterial::TPZElasticityMaterial(int num, REAL E, REAL nu, REAL fx, REAL fy, int plainstress, int fdimension) : TPZDiscontinuousGalerkin(num),fDimension(fdimension) {
 	
 	fE	= E;  // Young modulus
 	fnu	= nu;   // poisson coefficient
+    flambda = (E*nu)/((1+nu)*(1-2*nu)); // Lambda
+    fmu = E/(2*(1+nu));
 	ff[0]	= fx; // X component of the body force
 	ff[1]	= fy; // Y component of the body force
 	ff[2] = 0.; // Z component of the body force - not used for this class
@@ -81,10 +91,26 @@ TPZElasticityMaterial::TPZElasticityMaterial(int num, REAL E, REAL nu, REAL fx, 
 	fPlaneStress = plainstress;
     // Added by Philippe 2012
     fPostProcIndex = 0;
+    
+    
 }
 
 TPZElasticityMaterial::~TPZElasticityMaterial() {
 }
+
+void TPZElasticityMaterial::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
+{
+    int nref = datavec.size();
+    for(int i = 0; i<nref; i++ )
+    {
+        datavec[i].SetAllRequirements(false);
+        datavec[i].fNeedsNeighborSol = false;
+        datavec[i].fNeedsNeighborCenter = false;
+        datavec[i].fNeedsNormal = false;
+    }
+    
+}
+
 
 int TPZElasticityMaterial::NStateVariables() {
 	return 2;
@@ -168,6 +194,38 @@ void TPZElasticityMaterial::ComputeDivergenceOnDeformed(TPZVec<TPZMaterialData> 
     
 }
 
+void TPZElasticityMaterial::ElasticityModulusTensor(TPZFMatrix<STATE> &MatrixElast){
+    
+    
+    //Matrix modulus Voigt notation:
+    MatrixElast.Resize(4, 4);
+    MatrixElast(0,0)=1./(2.*fmu)-flambda/(2.*fmu*(3.*flambda+2.*fmu));
+    MatrixElast(0,1)=-flambda/(2.*fmu*(3.*flambda+2.*fmu));
+    MatrixElast(1,0)=MatrixElast(0,1);
+    MatrixElast(1,1)=MatrixElast(0,0);
+    MatrixElast(2,2)=1./(2.*fmu);
+    MatrixElast(3,3)=MatrixElast(2,2);
+
+
+    
+}
+
+
+void TPZElasticityMaterial::ComputeDeformationVector(TPZFMatrix<STATE> &PhiStress,TPZFMatrix<STATE> &APhiStress){
+
+    
+    TPZFMatrix<STATE> MatrixElast(4,4,0.);
+    ElasticityModulusTensor(MatrixElast);
+    
+    for (int iq=0; iq<4; iq++) {
+        for (int jq=0; jq<4; jq++) {
+            APhiStress(iq,0) += MatrixElast(iq,jq) * PhiStress(jq,0);
+        }
+    }
+    
+
+}
+
 void TPZElasticityMaterial::Print(std::ostream &out) {
 	out << "name of material : " << Name() << "\n";
 	out << "properties : \n";
@@ -211,6 +269,8 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     if (datavec[0].fVecShapeIndex.size() == 0) {
         FillVecShapeIndex(datavec[0]);
     }
+    
+    
     // Setting forcing function
     /*STATE force = 0.;
      if(this->fForcingFunction) {
@@ -247,105 +307,154 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     
     int nshapeS, nshapeU, nshapeP;
     nshapeS = datavec[0].fVecShapeIndex.NElements();
-    nshapeU = datavec[1].fVecShapeIndex.NElements();
-    nshapeP = datavec[2].fVecShapeIndex.NElements();
+    nshapeU = datavec[1].phi.Rows();
+    nshapeP = datavec[2].phi.Rows();
     
-    TPZVec<double> f;
-    TPZFMatrix<STATE> phiSi(fDimension,1,0.0),phiSj(fDimension,1,0.0);
-    TPZFMatrix<STATE> phiUi(fDimension,1,0.0),phiUj(fDimension,1,0.0);
-    TPZFMatrix<STATE> phiPi(fDimension,1,0.0),phiPj(fDimension,1,0.0);
-    
+    TPZVec<double> f(2,0.);
+    TPZFMatrix<STATE> phiSi(fDimension,1,0.),phiSj(fDimension,1,0.),phiSi1x(4,1,0.0),phiSj1x(4,1,0.0),phiSi1y(4,1,0.0),phiSj1y(4,1,0.0),divSi1x(2,1,0.),divSi1y(2,1,0.);
+    TPZFMatrix<STATE> phiUi(fDimension,1,0.0),phiUj(fDimension,1,0.0),phiUj1x(2,1,0.0),phiUj1y(2,1,0.0);
+    TPZFMatrix<STATE> phiPi(fDimension,1,0.0),phiPj(fDimension,1,0.0),phiPj1x(4,1,0.0),phiPj1y(4,1,0.0);
+    TPZFNMatrix<3,REAL> ivecS(fDimension,1,0.);
     
     for(int i = 0; i < nshapeS; i++ )
     {
         int iphi = datavec[0].fVecShapeIndex[i].second;
         int ivec = datavec[0].fVecShapeIndex[i].first;
         TPZFNMatrix<4> GradSi(fDimension,fDimension);
+        
+        REAL divSi = 0.;
+        
         for (int e=0; e<fDimension; e++) {
-            phiSi(e,0) = phiS(iphi,0)*datavec[0].fNormalVec(e,ivec);
-            for (int f=0; f<fDimension; f++) {
-                GradSi(e,f) = datavec[0].fNormalVec(e,ivec)*dphiSx(f,iphi);
-                
-            }
+            
+            ivecS(e,0) = datavec[0].fNormalVec(e,ivec);
+            phiSi(e,0) = phiS(iphi,0)*ivecS(e,0);
+
+        }
+            TPZFNMatrix<3,REAL> axesvec(fDimension,1,0.);
+            datavec[0].axes.Multiply(ivecS,axesvec,1);
+            
+        //calculando div(Si)
+        for(int f=0; f<fDimension; f++)
+        {
+            divSi += axesvec(f,0)*dphiS(f,iphi);
+        }
+ 
+        
+        phiSi1x(0,0)=phiSi(0,0);
+        phiSi1x(2,0)=phiSi(1,0);
+        
+        phiSi1y(1,0)=phiSi(0,0);
+        phiSi1y(3,0)=phiSi(1,0);
+        
+
+        divSi1x(0,0)=divSi;
+        
+        divSi1y(1,0)=divSi;
+
+        
+        if(this->HasForcingFunction()){
+            this->ForcingFunction()->Execute(datavec[0].x, f);
         }
         
-//        TPZFNMatrix<3,REAL> ivecS(fDimension,1,0.);
-//        for(int e=0; e<fDimension; e++){
-//            ivecS(e,0) = datavec[0].fNormalVec(e,ivec);
-//        }
-//        REAL divSi = 0.;
-//        TPZFNMatrix<3,REAL> axesvec(fDimension,1,0.);
-//        datavec[0].axes.Multiply(ivecS,axesvec);
-//        //calculando div(qj)
-//        for(int iloc=0; iloc<fDimension; iloc++)
-//        {
-//            divSi += axesvec(iloc,0)*dphiS(iloc,iphi);
-//        }
         
-        
-        
-        // matrix A - (Matrix A * stress tensor) x test-funtion stress tensor
+        // matrix K11 - (Matrix A * stress tensor) x test-funtion stress tensor
         for(int j = 0; j < nshapeS; j++){
             int jphi = datavec[0].fVecShapeIndex[j].second;
             int jvec = datavec[0].fVecShapeIndex[j].first;
-            
-            TPZFNMatrix<4> GradVj(fDimension,fDimension);
+        
             for (int e=0; e<fDimension; e++) {
                 phiSj(e,0) = phiS(jphi,0)*datavec[0].fNormalVec(e,jvec);
-                
             }
             
-            STATE val = InnerVec(phiSi, phiSj);
-            ek(i,j) += weight * val ;
+            
+            phiSj1x(0,0)=phiSj(0,0);
+            phiSj1x(2,0)=phiSj(1,0);
+            
+            phiSj1y(1,0)=phiSj(0,0);
+            phiSj1y(3,0)=phiSj(1,0);
+
+
+            
+            //Multiply by Lamé parameters
+            TPZFMatrix<STATE> AphiSi1x(4,1,0.0),AphiSi1y(4,1,0.0);
+            
+            ComputeDeformationVector(phiSi1x,AphiSi1x);
+            ComputeDeformationVector(phiSi1y,AphiSi1y);
+            
+            STATE valxx = InnerVec(AphiSi1x, phiSj1x);
+            STATE valxy = InnerVec(AphiSi1x, phiSj1y);
+            STATE valyx = InnerVec(AphiSi1y, phiSj1x);
+            STATE valyy = InnerVec(AphiSi1y, phiSj1y);
+            
+            //Matrix K11
+            
+            ek(2*i,2*j) += weight * valxx ;
+            
+            ek(2*i,2*j+1) += weight * valxy ;
+            
+            ek(2*i+1,2*j) += weight * valyx ;
+            
+            ek(2*i+1,2*j+1) += weight * valyy ;
             
         }
         
         
         
-        // matrix B and Bt - divergent of test-function stress tensor * displacement vector
+        // matrix K21 and K12 - divergent of test-function stress tensor * displacement vector
         for (int j = 0; j < nshapeU; j++) {
             
+            
+            phiUj1x(0,0)=phiU(j,0);
+            
+            phiUj1y(1,0)=phiU(j,0);
+            
+            
+            STATE valx = weight * InnerVec(divSi1x, phiUj1x);
+            STATE valy = weight * InnerVec(divSi1y, phiUj1y);
+            
+            //Posição K21
+            ek(2*j+nshapeS*2, 2*i) += valx;
+            ek(2*j+1+nshapeS*2, 2*i+1) += valy;
+            
+            //Posição K12
+            ek(2*i,2*j+nshapeS*2) += valx;
+            ek(2*i+1,2*j+1+nshapeS*2) += valy;
+            
+            
 
-            STATE fact = weight * phiU(j,0) * Tr( GradSi ); //método 1
-            
-            //STATE fact = weight * phiU(j,0) * divSi; //método 2
-            
-            
-            // colocar vectoriais vezes pressao
-            // Matrix B
-            ek(i, nshapeS+j) += fact;
-            
-            // colocar pressao vezes vectoriais
-            // Matrix B^T
-            ek(nshapeS+j,i) += fact;
+            //Vetor de carga f:
+            STATE factfx = weight *phiUj1x(0,0)*f[0];
+            STATE factfy = weight *phiUj1y(1,0)*f[1];
+            ef(nshapeS*2+2*j,0) += factfx;
+            ef(nshapeS*2+2*j+1,0) += factfy;
             
             
         }
         
         
-        // matrix C and Ct - test-function stress tensor x rotation tensor p
+        // matrix K31 and K13 - test-function stress tensor x rotation tensor p
         for (int j = 0; j < nshapeP; j++) {
             
-            int jphi = datavec[2].fVecShapeIndex[j].second;
-            int jvec = datavec[2].fVecShapeIndex[j].first;
-        
-            for (int e=0; e<fDimension; e++) {
-                phiPj(e,0) = phiP(jphi,0)*datavec[2].fNormalVec(e,jvec);
-                
-            }
+            phiPj1x(2,0)=phiP(j,0);
+            phiPj1x(3,0)=-phiP(j,0);
+            
+            STATE valxx = InnerVec(phiSi1x, phiPj1x);
+            STATE valxy = InnerVec(phiSi1y, phiPj1x);
+
+            
+            //Matrix K31
+            
+            ek(j+nshapeS*2+nshapeU*2,2*i) += weight * valxx ;
+            
+            ek(j+nshapeS*2+nshapeU*2,2*i+1) += weight * valxy ;
             
             
-            STATE fact = weight * Inner(phiSi, phiPj);
+            //Matrix K13
+
+            ek(2*i,j+nshapeS*2+nshapeU*2) += weight * valxx ;
             
-            
-            // colocar vectoriais vezes pressao
-            // Matrix B
-            ek(i, nshapeS+nshapeU+j) += fact;
-            
-            // colocar pressao vezes vectoriais
-            // Matrix B^T
-            ek(nshapeS+nshapeU+j,i) += fact;
-            
+            ek(2*i+1,j+nshapeS*2+nshapeU*2) += weight * valxy ;
+
             
         }
         
@@ -353,22 +462,10 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
         
     }
     
+    std::ofstream filestiff("ek.txt");
+    ek.Print("K1 = ",filestiff,EMathematicaInput);
 
-    
-    if(this->HasForcingFunction()){
-        this->ForcingFunction()->Execute(datavec[0].x, f);
-    }
-    
-    for (int i = 0; i < nshapeU; i++) {
-        
-        STATE factf= weight * phiU(i,0)*f[0];
-        ef(nshapeS+i,0) += factf;
-        
-    }
-    
 
-    
-    
 }
 
 
@@ -736,6 +833,156 @@ void TPZElasticityMaterial::ContributeVecShape(TPZMaterialData &data,REAL weight
 		}
 	}
 }
+
+void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+    
+    if (datavec[0].fVecShapeIndex.size() == 0) {
+        FillVecShapeIndex(datavec[0]);
+    }
+    
+    
+    // Setting forcing function
+    /*STATE force = 0.;
+     if(this->fForcingFunction) {
+     TPZManVector<STATE> res(1);
+     fForcingFunction->Execute(datavec[pindex].x,res);
+     force = res[0];
+     }*/
+    
+    //Gravity
+    STATE rhoi = 900.; //itapopo
+    STATE g = 9.81; //itapopo
+    STATE force = rhoi*g;
+    
+    // Setting the phis
+    // E
+    TPZFMatrix<REAL> &phiS = datavec[0].phi;
+    TPZFMatrix<REAL> &dphiS = datavec[0].dphix;
+    // U
+    TPZFMatrix<REAL> &phiU = datavec[1].phi;
+    TPZFMatrix<REAL> &dphiU = datavec[1].dphix;
+    // P
+    TPZFMatrix<REAL> &phiP = datavec[2].phi;
+    TPZFMatrix<REAL> &dphiP = datavec[2].dphix;
+    
+    //
+    TPZFNMatrix<220,REAL> dphiSx(fDimension,dphiS.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiS, dphiSx, datavec[0].axes);
+    
+    TPZFNMatrix<220,REAL> dphiUx(fDimension,phiU.Cols());
+    TPZAxesTools<REAL>::Axes2XYZ(dphiU, dphiUx, datavec[1].axes);
+    
+//    TPZFNMatrix<220,REAL> dphiPx(fDimension,phiP.Cols());
+//    TPZAxesTools<REAL>::Axes2XYZ(dphiU, dphiPx, datavec[2].axes);
+    
+    int nshapeS, nshapeU, nshapeP;
+    nshapeS = datavec[0].fVecShapeIndex.NElements();
+    nshapeU = datavec[1].phi.Rows();
+    nshapeP = datavec[2].phi.Rows();
+    
+    TPZVec<double> f;
+    TPZFMatrix<STATE> phiSi(fDimension,1,0.),phiSj(fDimension,1,0.),phiSi1x(4,1,0.0),phiSj1x(4,1,0.0),phiSi1y(4,1,0.0),phiSj1y(4,1,0.0),divSi1x(2,1,0.),divSi1y(2,1,0.);
+    TPZFMatrix<STATE> phiUi(fDimension,1,0.0),phiUj(fDimension,1,0.0),phiUj1x(2,1,0.0),phiUj1y(2,1,0.0);
+    TPZFMatrix<STATE> phiPi(fDimension,1,0.0),phiPj(fDimension,1,0.0),phiPj1x(4,1,0.0),phiPj1y(4,1,0.0);
+    TPZFNMatrix<3,REAL> ivecS(fDimension,1,0.);
+    
+    
+//    TPZMaterialData::MShapeFunctionType shapetype = data.fShapeType;
+//    if(shapetype==data.EVecShape){
+//        ContributeVecShapeBC(data,weight,ek, ef,bc);
+//        return;
+//    }
+    
+
+    TPZFMatrix<STATE> v_2=bc.Val2();
+    TPZFMatrix<STATE> v_1=bc.Val1();
+    STATE p_D = bc.Val1()(0,0);
+    
+    switch (bc.Type()) {
+            
+        case 0 :			// Dirichlet condition
+        {
+            
+            if(bc.HasForcingFunction())
+            {
+                TPZManVector<STATE> vbc(3);
+                bc.ForcingFunction()->Execute(datavec[0].x,vbc);
+                v_2(0,0) = vbc[0];
+                v_2(1,0) = vbc[1];
+                p_D = vbc[2];
+            }
+            
+            
+            for(int iq = 0 ; iq < nshapeS; iq++) {
+                
+                int iphi = datavec[0].fVecShapeIndex[iq].second;
+                int ivec = datavec[0].fVecShapeIndex[iq].first;
+    
+                
+                for (int e=0; e<fDimension; e++) {
+                    phiSi(e,0) = phiS(iphi,0)*datavec[0].fNormalVec(e,ivec);
+                    
+                }
+                
+                ef(2*iq,0)   += gBigNumber * v_2(0,0) * phiSi(0,0) * weight;        // forced v2 displacement
+                ef(2*iq+1,0) += gBigNumber * v_2(1,0) * phiSi(1,0) * weight;        // forced v2 displacement
+                
+                
+                for(int jq = 0; jq < nshapeS; jq++){
+                    int jphi = datavec[0].fVecShapeIndex[jq].second;
+                    int jvec = datavec[0].fVecShapeIndex[jq].first;
+                        
+                    for (int e=0; e<fDimension; e++) {
+                        phiSj(e,0) = phiS(jphi,0)*datavec[0].fNormalVec(e,jvec);
+                            
+                    }
+                        
+                    ek(2*iq,2*jq)     += gBigNumber * phiSi(0,0) *phiSj(0,0) * weight;
+                    ek(2*iq+1,2*jq+1) += gBigNumber * phiSi(1,0) *phiSj(1,0) * weight;
+                }
+            }
+        }
+            break;
+            
+        case 1 :		// Neumann condition
+        {
+            
+            if(bc.HasForcingFunction())
+            {
+                TPZManVector<STATE> vbc(3);
+                bc.ForcingFunction()->Execute(datavec[0].x,vbc);
+                v_2(0,0) = vbc[0];
+                v_2(1,0) = vbc[1];
+                p_D = vbc[2];
+            }
+            
+            for (int iq = 0; iq < nshapeU; iq++)
+            {
+                
+                for (int jq = 0; jq < nshapeS; jq++){
+                
+                    int jphi = datavec[0].fVecShapeIndex[iq].second;
+                    int jvec = datavec[0].fVecShapeIndex[iq].first;
+                
+                    for (int e=0; e<fDimension; e++) {
+                        phiSj(e,0) = phiS(jphi,0)*datavec[0].fNormalVec(e,jvec);
+                    
+                    }
+                    
+                }
+                    ef(nshapeS+2*iq,0) += v_2(0,0) * phiSj(0,0) * weight;        // normal stress in x direction
+                    ef(nshapeS+2*iq+1,0) +=  v_2(1,0) * phiSj(1,0) * weight;      // normal stress in y direction
+            }
+        }
+            break;
+            
+
+            
+              // �nulo introduzindo o BIGNUMBER pelos valores da condi�o
+    } // 1 Val1 : a leitura �00 01 10 11
+}
+
+
 
 
 void TPZElasticityMaterial::ContributeBC(TPZMaterialData &data,REAL weight,

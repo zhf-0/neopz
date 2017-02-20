@@ -25,11 +25,11 @@ static LoggerPtr logger(Logger::getLogger("pz.material"));
 TPZVec< void(*) (const TPZVec<REAL> &, TPZVec<STATE>& ) > GFORCINGVEC;
 
 using namespace std;
-<<<<<<< HEAD
-REAL TPZMaterial::gBigNumber = 1.e8;
-=======
+//<<<<<<< HEAD
+//REAL TPZMaterial::gBigNumber = 1.e8;
+//=======
 REAL TPZMaterial::gBigNumber = 1.e12;
->>>>>>> origin/HDiv-curved
+//>>>>>>> origin/HDiv-curved
 
 
 TPZMaterial::TPZMaterial() : fNumLoadCases(1), fPostProcIndex(0) {
