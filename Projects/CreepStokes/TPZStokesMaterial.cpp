@@ -397,7 +397,12 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
     
-    TPZVec<double> f;
+    TPZVec<double> f(fDimension);
+    for (int e=0; e<fDimension; e++) {
+        f[e] = 0.;
+    }
+    
+    
     TPZFMatrix<STATE> phiVi(fDimension,1,0.0);
     
     
@@ -1735,7 +1740,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
         
 #ifdef IsHDivQ
         
-        REAL vh_t = v_h[1];
+        //REAL vh_t = v_h[1];
         
         REAL v_t = t[0] * v_2[0] + t[1] * v_2[1];
         
@@ -1744,8 +1749,8 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
         v_tt[1]=v_t*t[1];
         
         TPZManVector<REAL> vh_tt(2);
-        vh_tt[0]=vh_t*t[0];
-        vh_tt[1]=vh_t*t[1];
+        //vh_tt[0]=vh_t*t[0];
+        //vh_tt[1]=vh_t*t[1];
         
         TPZFNMatrix<9> diffvt(fDimension,1,0.);
         diffvt(0,0)=v_tt[0];

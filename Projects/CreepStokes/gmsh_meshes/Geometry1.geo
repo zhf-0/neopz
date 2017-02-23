@@ -5,6 +5,9 @@
   Point(3) = {8, 4, 0, 1e+22};
   Point(4) = {0, 4, 0, 1e+22};
 
+  //Point(5) = {4, 0, 0, 1e+22};
+  //Point(6) = {4, 4, 0, 1e+22};
+
 // Pontos - Furos - Linha 1
 
   Point(15) = {4.5, 0.5, 0, 1.0};
@@ -115,6 +118,14 @@
   Line(2) = {2, 3};
   Line(3) = {3, 4};
   Line(4) = {4, 1};  
+
+  //Line(5) = {5,2};
+  //Line(6) = {2,3};
+  //Line(7) = {3,6};
+  //Line(8) = {6,5};
+
+  //Transfinite Line{5,7} = 60;
+  //Transfinite Line{6,8} = 40;
 
 // Círculos - Furos - Linha 1
 
@@ -243,9 +254,10 @@
 
   Physical Surface("Omega") = {110};
   Physical Line("bottom") = {1};
-  Physical Line("left") = {4};
   Physical Line("top") = {3};
+  Physical Line("left") = {4};
   Physical Line("right") = {2};
+  
   Physical Line("holes") = {holes[]};  
   //Physical Surface("interface") = {23};
 

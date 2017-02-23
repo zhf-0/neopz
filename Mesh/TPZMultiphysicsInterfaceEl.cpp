@@ -231,7 +231,10 @@ void TPZMultiphysicsInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElement
     for(int id = 0; id<nmesh; id++){
         datavecleft[id].fNeedsNormal=true;
         TPZInterpolationSpace *msp  = dynamic_cast <TPZInterpolationSpace *>(leftel->Element(id));
-        datavecleft[id].p =msp->MaxOrder();
+        if(msp)
+        {
+            datavecleft[id].p =msp->MaxOrder();
+        }
     }
     data.fNeedsHSize=true;
     
