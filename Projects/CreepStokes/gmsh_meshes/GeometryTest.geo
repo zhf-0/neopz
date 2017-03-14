@@ -1,0 +1,15 @@
+lc = 0.2;
+Point(4) = {0, 1, 0, lc};
+Point(5) = {0, 0, 0, lc};
+Point(6) = {-1, 0, 0, lc};
+Point(7) = {-2, 0, 0, lc};
+Point(8) = {0, 2, 0, lc};
+Line (7) = {8, 4};
+Line (8) = {6, 7};
+Circle (9) = {7, 5, 8};
+Circle (10) = {4, 5, 6};
+Line Loop(11) = {7, 10, 8, 9};
+Plane Surface(12) = {11};
+Transfinite Line{7:10} = 6;
+Transfinite Surface{12} = {7, 6, 4, 8};
+Recombine Surface {12};

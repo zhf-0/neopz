@@ -651,7 +651,7 @@ TPZCompMesh *CMesh_S(TPZGeoMesh *gmesh, int pOrder)
     //Criando material cujo nSTATE = 2:
     
     REAL E = 1.; //* @param E elasticity modulus
-    REAL nu=0.2; //* @param nu poisson coefficient
+    REAL nu=0.; //* @param nu poisson coefficient
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress
@@ -722,7 +722,7 @@ TPZCompMesh *CMesh_U(TPZGeoMesh *gmesh, int pOrder)
     //Criando material cujo nSTATE = 2:
     
     REAL E = 1.; //* @param E elasticity modulus
-    REAL nu=0.2; //* @param nu poisson coefficient
+    REAL nu=0.; //* @param nu poisson coefficient
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress
@@ -906,7 +906,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     // Criando material:
 
     REAL E = 1.; //* @param E elasticity modulus
-    REAL nu=0.2; //* @param nu poisson coefficient
+    REAL nu=0.; //* @param nu poisson coefficient
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress

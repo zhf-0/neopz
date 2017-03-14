@@ -1,5 +1,9 @@
   IsquadQ = 0;
  
+Mesh.ElementOrder = 2;
+Mesh.SecondOrderLinear = 0;
+
+
   Point(1) = {0, 0, 0, 1e+22};
   Point(2) = {8, 0, 0, 1e+22};
   Point(3) = {8, 4, 0, 1e+22};
