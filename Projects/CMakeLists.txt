@@ -114,9 +114,10 @@ ENABLE_TESTING()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2DLagrange)
+			add_subdirectory(InhomogeneousModalAnalysisH1)
 			add_subdirectory(ModalAnalysisH1)
 			add_subdirectory(ModalAnalysisHDiv)
-			
+
 			#add_subdirectory(HDiv_demo)
 
 			#Examples used as tutorial for FEEC group (Prof Hugo)
@@ -151,7 +152,7 @@ ENABLE_TESTING()
 			#add_subdirectory(Poisson_ArcTan)
 
 			#add_subdirectory(projteste)
-			
+
 			# MHM project
 			add_subdirectory(MHM)
 
@@ -159,11 +160,11 @@ ENABLE_TESTING()
 			add_subdirectory(MultipleLoad)
 
 			# add_subdirectory(adaptivity_refactor)
-						
+
 			add_subdirectory(Cubo_do_Nathan)
 
 			add_subdirectory(PyramidHdivTests)
-			
+
 			add_subdirectory(HyperElasticityFAD)
 
 			#Increment singular shape function: SingularShapeFunction
@@ -184,7 +185,7 @@ ENABLE_TESTING()
 			add_subdirectory(Descontinuo2)
 
 			add_subdirectory(SteamInjection)
-			
+
 			#projeto agnaldo 09-09-2011
 			add_subdirectory(DoubleProjection)
                         add_subdirectory(artigoPira)
@@ -253,7 +254,7 @@ ENABLE_TESTING()
 				add_subdirectory(PardisoSample)
 			endif(USING_MKL)
 
-                        add_subdirectory(artigoPira)
+            add_subdirectory(artigoPira)
 
 		endif(BUILD_COMPLEX_PROJECTS)
 	endif(BUILD_PROJECTS)
