@@ -407,7 +407,7 @@ int TPZMatLaplacian::NSolutionVariables(int var){
     if (var==19) return 3;
     if (var==20) return 3;
     if (var==21) return fDim;
-    if (var==22) return 1;
+    if (var==22) return 1; // number of permeabilities
     
     
 	return TPZMaterial::NSolutionVariables(var);
@@ -563,6 +563,7 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
             }
             break;
         case 22:
+            // output the permeability
             Solout[0] = perm;
             break;
         default:
