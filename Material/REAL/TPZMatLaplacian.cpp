@@ -382,7 +382,7 @@ int TPZMatLaplacian::VariableIndex(const std::string &name){
     if(!strcmp("GradFluxX",name.c_str()))       return  19;
     if(!strcmp("GradFluxY",name.c_str()))       return  20;
     if(!strcmp("FluxL2",name.c_str()))            return  21;//Only To calculate l2 error
-    if(!strcmp("Permeability",name.c_str()))    return 22;
+    if(!strcmp("Permeability",name.c_str()))    return 22; // output the permeability
 	return TPZMaterial::VariableIndex(name);
 }
 
