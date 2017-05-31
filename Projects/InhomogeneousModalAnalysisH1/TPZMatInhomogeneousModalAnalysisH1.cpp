@@ -10,12 +10,12 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 
-TPZMatInhomogeneousModalAnalysisH1::TPZMatInhomogeneousModalAnalysisH1(int id, REAL kzOverk0, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
+TPZMatInhomogeneousModalAnalysisH1::TPZMatInhomogeneousModalAnalysisH1(int id, REAL kzOverk02, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
 TPZMaterial(id), fUr(ur), fEr(er)
 {
     fIsTesting = false;
     fAssembling = NDefined;
-    fKzOverK0 = kzOverk0;
+    fKzOverK02 = kzOverk02;
 }
 
 
@@ -141,7 +141,7 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
     TPZFNMatrix<36,REAL> dphiHzdaxes = datavec[ fHzIndex ].dphix;
     TPZFNMatrix<3,REAL> dphiHz;
     TPZAxesTools<REAL>::Axes2XYZ(dphiHzdaxes, dphiHz, datavec[ fHzIndex ].axes);
-    TPZFNMatrix<3,REAL> gradPhiHz(phiHz.Rows() , 3 , 0.);
+    TPZFNMatrix<2,REAL> gradPhiHz(phiHz.Rows() , 2 , 0.);
     
     for ( int iFunc = 0 ; iFunc < phiHz.Rows(); iFunc++ ) {
         
@@ -154,7 +154,7 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
     TPZFNMatrix<36,REAL> dphiEzdaxes = datavec[ fEzIndex ].dphix;
     TPZFNMatrix<3,REAL> dphiEz;
     TPZAxesTools<REAL>::Axes2XYZ(dphiEzdaxes, dphiEz, datavec[ fEzIndex ].axes);
-    TPZFNMatrix<3,REAL> gradPhiEz(phiEz.Rows() , 3 , 0.);
+    TPZFNMatrix<2,REAL> gradPhiEz(phiEz.Rows() , 2 , 0.);
     
     for ( int iFunc = 0 ; iFunc < phiEz.Rows(); iFunc++ ) {
         
@@ -179,11 +179,11 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
                 STATE gradPhiScaDotGradPhiSca = 0.;
                 gradPhiScaDotGradPhiSca += gradPhiEz( iEz , 0) * gradPhiEz( jEz , 0);
                 gradPhiScaDotGradPhiSca += gradPhiEz( iEz , 1) * gradPhiEz( jEz , 1);
-                const STATE cte = (epsilonR*M_EZERO)/(muR*epsilonR-fKzOverK0*fKzOverK0);
+                const STATE cte = (epsilonR*M_EZERO)/(muR*epsilonR-fKzOverK02)/sqrt(M_UZERO*M_EZERO);
                 ek( firstEz + iEz , firstEz + jEz) += cte*gradPhiScaDotGradPhiSca * weight ;
             }
             else {
-                const STATE cte = epsilonR*M_EZERO;
+                const STATE cte = epsilonR*M_EZERO/sqrt(M_UZERO*M_EZERO);
                 ek( firstEz + iEz , firstEz + jEz) += cte * phiEz( iEz , 0 ) * phiEz( jEz , 0 ) * weight ;
             }
         }
@@ -193,7 +193,7 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
                 gradPhiScaVecGradPhiSca += gradPhiEz( iEz , 0) * gradPhiHz( jHz , 1);
                 gradPhiScaVecGradPhiSca -= gradPhiEz( iEz , 1) * gradPhiHz( jHz , 0);
                 
-                const STATE cte = (fKzOverK0 * (sqrt(muR*epsilonR))/(M_C))/(muR*epsilonR-fKzOverK0*fKzOverK0);
+                const STATE cte = (sqrt(fKzOverK02) / M_C)/(muR*epsilonR-fKzOverK02)/sqrt(M_UZERO*M_EZERO);
                 ek( firstEz + iEz , firstHz + jHz) += cte * gradPhiScaVecGradPhiSca * weight ;
             }
         }
@@ -207,11 +207,11 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
                 gradPhiScaDotGradPhiSca += gradPhiHz(iHz , 0) * gradPhiHz(jHz , 0);
                 gradPhiScaDotGradPhiSca += gradPhiHz(iHz , 1) * gradPhiHz(jHz , 1);
                 
-                const STATE cte = (muR*M_UZERO)/(muR*epsilonR-fKzOverK0*fKzOverK0);
+                const STATE cte = (muR*M_UZERO)/(muR*epsilonR-fKzOverK02) / (sqrt(M_UZERO*M_EZERO));
                 ek( firstHz + iHz , firstHz + jHz) += cte*gradPhiScaDotGradPhiSca * weight ;
             }
             else {
-                const STATE cte = muR*M_UZERO;
+                const STATE cte = muR*M_UZERO / (sqrt(M_UZERO*M_EZERO));
                 ek( firstHz + iHz , firstHz + jHz) += cte * phiHz( iHz , 0 ) * phiHz( jHz , 0 ) * weight ;
             }
         }
@@ -221,7 +221,7 @@ void TPZMatInhomogeneousModalAnalysisH1::Contribute(TPZVec<TPZMaterialData> &dat
                 gradPhiScaVecGradPhiSca += gradPhiHz( iHz , 0) * gradPhiEz( jEz , 1);
                 gradPhiScaVecGradPhiSca -= gradPhiHz( iHz , 1) * gradPhiEz( jEz , 0);
                 
-                const STATE cte = (fKzOverK0 * (sqrt(muR*epsilonR))/(M_C))/(muR*epsilonR-fKzOverK0*fKzOverK0);
+                const STATE cte = (sqrt(fKzOverK02) / M_C)/(muR*epsilonR-fKzOverK02)/(sqrt(M_UZERO*M_EZERO));
                 ek( firstHz + iHz , firstEz + jEz) += cte * gradPhiScaVecGradPhiSca * weight ;
             }
         }
@@ -262,8 +262,10 @@ int TPZMatInhomogeneousModalAnalysisH1::IntegrationRuleOrder(int elPMaxOrder) co
 
 int TPZMatInhomogeneousModalAnalysisH1::VariableIndex(const std::string &name)
 {
-    if( strcmp(name.c_str(), "Hz") == 0) return 0;
-    if( strcmp(name.c_str(), "Ez") == 0) return 1;
+    if( strcmp(name.c_str(), "Ez") == 0) return 0;
+    if( strcmp(name.c_str(), "Hz") == 0) return 1;
+    if( strcmp(name.c_str(), "Et") == 0) return 2;
+    if( strcmp(name.c_str(), "Ht") == 0) return 3;
     DebugStop();
     return 1;
 }
@@ -274,17 +276,26 @@ int TPZMatInhomogeneousModalAnalysisH1::VariableIndex(const std::string &name)
  */
 int TPZMatInhomogeneousModalAnalysisH1::NSolutionVariables(int var)
 {
+    
     switch (var) {
-        case 0: //Hz
+        case 0: //Ez
             return 1;
             break;
-        case 1://Ez
+        case 1: //Hz
             return 1;
+            break;
+        case 2: //Et
+            return 2;
+            break;
+        case 3: //Ht
+            return 2;
+            break;
         default:
             DebugStop();
             break;
     }
     return 1;
+    
 }
 
 /** @brief Returns the solution associated with the var index based on the finite element approximation */
@@ -304,15 +315,21 @@ void TPZMatInhomogeneousModalAnalysisH1::Solution(TPZVec<TPZMaterialData> &datav
     
     ez = datavec[ fEzIndex ].sol[0];
     hz = datavec[ fHzIndex ].sol[0];
+    
+    const STATE muR = fUr(datavec[0].x);
+    const STATE epsilonR = fEr(datavec[0].x);
+//    const STATE k0Squared = muR * epsilonR * fW * fW / ( M_C * M_C );
+//    const STATE betaZ = sqrt(k0Squared - fKtSquared);
+    
     switch (var) {
-        case 0: //Hz
-        {
-            Solout = hz;
-        }
-            break;
-        case 1://Ez
+        case 0: //Ez
         {
             Solout = ez;
+        }
+            break;
+        case 1://Hz
+        {
+            Solout = hz;
         }
             break;
         default:

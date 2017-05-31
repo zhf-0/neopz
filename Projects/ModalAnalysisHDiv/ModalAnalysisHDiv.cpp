@@ -65,28 +65,35 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
+    hDomain /= wDomain;
+    wDomain = 1;
     modeType teortm = modesTE;
     REAL f0 = 25 * 1e+9;
     int nSolutions = 4;
-    const int meshType = createTriangular;
+    const int meshType = createRectangular;
     
     
-    int pOrder = 1; //ordem polinomial de aproximacao
+    int pOrder = 5; //ordem polinomial de aproximacao
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
-    bool generatingResults = true;
+    bool generatingResults = false;
     
-    int nDiv = 5;
-    int nSim = 5;
+    int nDiv = 1;
+    int nSim = 1;
     
     std::string fileName;
-    if(generatingResults){
-        if(teortm == modesTM){
-            fileName = "../resultsQuali/TM/ev";
+    if(!generatingResults){
+        for (int i = 0 ; i < nSim; i++) {
+            std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
+            RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
+            nDiv += 5;
         }
-        else{
-            fileName = "../resultsQuali/TE/ev";
-        }
+    }
+    else{
+        nDiv = 5;
+        nSim = 5;
+        teortm = modesTE;
+        fileName = "../resultsQuali/TE/ev";
         for(int i = 1 ; i < 100 ; i++){
             fileName.append(std::to_string(i));
             fileName.append(".csv");
@@ -94,24 +101,14 @@ int main(int argc, char *argv[])
                 std::remove( fileName.c_str() );
             }
         }
-    }
-    
-    std::cout<<"MODOS TE"<<std::endl;
-    for (int i = 0 ; i < nSim; i++) {
-        std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
-        nDiv += 5;
-    }
-    std::cout<<"MODOS TM"<<std::endl;
-    nDiv = 5;
-    teortm = modesTM;
-    if(generatingResults){
-        if(teortm == modesTM){
-            fileName = "../resultsQuali/TM/ev";
+        std::cout<<"MODOS TE"<<std::endl;
+        for (int i = 0 ; i < nSim; i++) {
+            std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
+            RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
+            nDiv += 5;
         }
-        else{
-            fileName = "../resultsQuali/TE/ev";
-        }
+        
+        fileName = "../resultsQuali/TM/ev";
         for(int i = 1 ; i < 100 ; i++){
             fileName.append(std::to_string(i));
             fileName.append(".csv");
@@ -119,17 +116,17 @@ int main(int argc, char *argv[])
                 std::remove( fileName.c_str() );
             }
         }
+        nDiv = 5;
+        nSim = 5;
+        teortm = modesTM;
+        std::cout<<"MODOS TM"<<std::endl;
+        for (int i = 0 ; i < nSim; i++) {
+            std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
+            RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
+            nDiv += 5;
+        }
+        
     }
-    
-    
-    for (int i = 0 ; i < nSim; i++) {
-        std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm , nSolutions, generatingResults);
-        nDiv += 5;
-    }
-    
-    
-    
     
     return 0;
 }
@@ -397,11 +394,11 @@ void RunSimulation( const int meshType ,bool usingFullMtrx, bool optimizeBandwid
     
     std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
     for (int iSol = 0; iSol < nSolutions; iSol ++) {
-        if(iT->first < 1e-3) {
-            iSol--;
-            iT++;
-            continue;
-        }
+//        if(iT->first < 1e-3) {
+//            iSol--;
+//            iT++;
+//            continue;
+//        }
         if( iT == eigenValuesRe.end() ){
             DebugStop();
         }
@@ -651,7 +648,7 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     val1( 0, 0 ) = 0.;
     val2( 0, 0 ) = 0.;
     if(teortm == modesTE){
-        TPZMaterial * BCondHDivDir = matHDiv->CreateBC(matHDiv, bc0, bcType, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+        TPZMaterial * BCondHDivDir = matHDiv->CreateBC(matHDiv, bc0, bcType, val1, val2);
     
         cmeshHDiv->InsertMaterialObject(BCondHDivDir);//insere material na malha
     }

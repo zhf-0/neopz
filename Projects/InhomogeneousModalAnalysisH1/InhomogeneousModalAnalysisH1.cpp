@@ -10,6 +10,8 @@
 #include "TPZTimer.h"//TPZTimer
 #include "pzanalysis.h"//TPZAnalysis
 #include "pzfstrmatrix.h"//TPZFStructMatrix
+#include "pzsbstrmatrix.h"//TPZSBandStructMatrix
+#include "pzsbndmat.h"//TPZSBMatrix
 #include "pzstepsolver.h"//TPZStepSolver
 #include "pzextractval.h"//TPZExtractVal
 #include "pzbuildmultiphysicsmesh.h"//TPZBuildMultiphysicsMesh
@@ -24,13 +26,16 @@ STATE ur( const TPZVec<REAL> & x){
     return 1.;
 }
 STATE er( const TPZVec<REAL> & x){
-    return 1;
+    if( x[1] > 0 )
+        return 1.;
+    else
+        return 4.;
 }
-void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL kzOverk0);
+void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL kzOverk02);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
-TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL kzOverk0);
+TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL kzOverk02);
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int nDiv);
 
@@ -42,19 +47,20 @@ int main(int argc, char *argv[])
 #endif
     
     //PARAMETROS FISICOS DO PROBLEMA
-    REAL hDomain = 4 * 2.54 * 1e-3;
-    REAL wDomain = 9 * 2.54 * 1e-3;
     
+    REAL wDomain = 1;
+    REAL hDomain = wDomain/2;
+    //wDomain = 0.5; //plane of simmetry as an electric wall
     
     const int meshType = createTriangular;
     int pOrder = 1; //ordem polinomial de aproximacao
-    REAL kzOverk0 = 0.5;
-    int nDiv = 20;
-    int nSim = 1;
+    REAL kzOverk02 = 0.0;
+    int nDiv = 15;
+    int nSim = 10;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( meshType, pOrder, nDiv, hDomain, wDomain, kzOverk0);
-        nDiv += 5;
+        RunSimulation( meshType, pOrder, nDiv, hDomain, wDomain, kzOverk02);
+        kzOverk02+=0.1;
     }
     
     
@@ -62,7 +68,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL kzOverk0){
+void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL kzOverk02){
     TPZTimer timer;
     
     timer.start();
@@ -71,14 +77,14 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     
     CreateGMesh(gmesh, meshType, hDomain, wDomain,  nDiv);
     
-    TPZVec<TPZCompMesh *>meshVec = CreateCMesh(gmesh, pOrder, ur , er , kzOverk0); //funcao para criar a malha computacional
+    TPZVec<TPZCompMesh *>meshVec = CreateCMesh(gmesh, pOrder, ur , er , kzOverk02); //funcao para criar a malha computacional
     TPZCompMesh *cmeshMF = meshVec[0];
     TPZMatInhomogeneousModalAnalysisH1 *matPointer = dynamic_cast<TPZMatInhomogeneousModalAnalysisH1 * >( cmeshMF->MaterialVec()[1]);
     TPZVec<TPZCompMesh *>temporalMeshVec(2);
     temporalMeshVec[ matPointer->EzIndex() ] = meshVec[1 + matPointer->EzIndex()];
     temporalMeshVec[ matPointer->HzIndex() ] = meshVec[1 + matPointer->HzIndex()];
     
-    bool optimizeBandwidth = false;
+    bool optimizeBandwidth = true;
     TPZAnalysis an(cmeshMF,optimizeBandwidth);
     //configuracoes do objeto de analise
     TPZManVector<long,1000>activeEquations;
@@ -88,16 +94,14 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     
     int nSolutions = neq >= 10 ? 10 : neq;
     
+//    TPZAutoPointer<TPZSBandStructMatrix> strMtrx;
+//    strMtrx = new TPZSBandStructMatrix(cmeshMF);
     TPZAutoPointer<TPZFStructMatrix> strMtrx;
-    
     strMtrx = new TPZFStructMatrix(cmeshMF);
-    strMtrx->SetNumThreads(0);
+    
     strMtrx->EquationFilter().SetActiveEquations(activeEquations);
     an.SetStructuralMatrix(strMtrx);
-    
-    TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky); //caso simetrico
-    an.SetSolver(step);
+  
     const int matId = 1;
     TPZMatInhomogeneousModalAnalysisH1 *matAlias = dynamic_cast<TPZMatInhomogeneousModalAnalysisH1 *> (cmeshMF->FindMaterial( matId ) );
     
@@ -105,6 +109,14 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     matAlias->SetMatrixA();
     
     an.Assemble();
+    
+//    TPZSBMatrix<STATE> *stiffAPtr = NULL , *stiffBPtr = NULL;
+//    
+//    stiffAPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+//    matAlias->SetMatrixB();
+//    std::cout<<"entrando no assemble matrix B"<<std::endl;
+//    an.Assemble();
+//    stiffBPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
     TPZFMatrix<STATE> *stiffAPtr = NULL , *stiffBPtr = NULL;
     
     stiffAPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
@@ -112,6 +124,7 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     std::cout<<"entrando no assemble matrix B"<<std::endl;
     an.Assemble();
     stiffBPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+    
     std::cout<<"saindo do assemble"<<std::endl;
     
 #ifdef PZDEBUG
@@ -148,7 +161,7 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     fileA.close();
     fileB.close();
 #endif
-
+    
     
     TPZVec<STATE> eValues;
     TPZFMatrix< STATE > eVectors;
@@ -179,41 +192,47 @@ void RunSimulation( const int meshType , int pOrder, int nDiv, REAL hDomain, REA
     fileName.append(".csv");
     
     std::ofstream fileEigenValues(fileName.c_str());
+    fileName = pathName;
+    fileName.append("/k0a");
+    fileName.append(std::to_string(kzOverk02));
+    fileName.append(".csv");
+    std::ofstream filek0a(fileName.c_str());
     int i = 0;
     for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenSolutions.begin(); iT != eigenSolutions.end(); iT++) {
         fileEigenValues<<iT->first<<std::endl;
-        i++;
-        if( i >= nSolutions)
-            continue;
-        std::cout<< iT->first <<std::endl;
-    }
-    std::cout << "Post Processing..." << std::endl;
-    
-    
-    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
-    
-    TPZStack<std::string> scalnames, vecnames;
-    scalnames.Push("Ez");
-    scalnames.Push("Hz");
-    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
-    int dim = 2;
-    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
-    int postProcessResolution = 2;//define resolucao do pos processamento
-    
-    
-    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenSolutions.begin();
-    for (int iSol = 0; iSol < nSolutions; iSol ++) {
-        if( iT == eigenSolutions.end() ){
-            DebugStop();
+        if(iT->first > 0.01 && i <= nSolutions){
+            filek0a<<sqrt(iT->first)*wDomain<<std::endl;
+            std::cout<<sqrt(iT->first)*wDomain<<std::endl;
+            i++;
         }
-        for (int i = 0 ; i < neq; i++) {
-            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
-        }
-        an.LoadSolution( solMat );
-        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
-        an.PostProcess(postProcessResolution);
-        iT++;
     }
+//    std::cout << "Post Processing..." << std::endl;
+//    
+//    
+//    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
+//    
+//    TPZStack<std::string> scalnames, vecnames;
+//    scalnames.Push("Ez");
+//    scalnames.Push("Hz");
+//    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
+//    int dim = 2;
+//    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
+//    int postProcessResolution = 0;//define resolucao do pos processamento
+//    
+//    
+//    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenSolutions.begin();
+//    for (int iSol = 0; iSol < nSolutions; iSol ++) {
+//        if( iT == eigenSolutions.end() ){
+//            DebugStop();
+//        }
+//        for (int i = 0 ; i < neq; i++) {
+//            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
+//        }
+//        an.LoadSolution( solMat );
+//        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
+//        an.PostProcess(postProcessResolution);
+//        iT++;
+//    }
     std::cout << "FINISHED!" << std::endl;
 }
 
@@ -414,7 +433,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     delete gengrid;
 }
 
-TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL kzOverk0)
+TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL kzOverk02)
 {
     
     const int dim = 2; //dimensao do problema
@@ -460,9 +479,9 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     cmeshEz->AutoBuild();
     cmeshEz->CleanUpUnconnectedNodes();
     
-    TPZMatInhomogeneousModalAnalysisH1 *matMultiPhysics = new TPZMatInhomogeneousModalAnalysisH1(matId , kzOverk0 , ur , er);
+    TPZMatInhomogeneousModalAnalysisH1 *matMultiPhysics = new TPZMatInhomogeneousModalAnalysisH1(matId , kzOverk02 , ur , er);
     TPZVec<TPZCompMesh *> meshVec(2);
-
+    
     meshVec[ matMultiPhysics->HzIndex() ] = cmeshHz;
     meshVec[ matMultiPhysics->EzIndex() ] = cmeshEz;
     
@@ -494,12 +513,12 @@ TPZVec<TPZCompMesh *>CreateCMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( co
     cmeshMF->CleanUpUnconnectedNodes();
     cmeshMF->ComputeNodElCon();
     cmeshMF->CleanUpUnconnectedNodes();
-//    std::ofstream fileH1("../cmeshH1.txt");
-//    cmeshHz->Print(fileH1);
-//    std::ofstream fileHCurl("../cmeshHCurl.txt");
-//    cmeshEz->Print(fileHCurl);
-//    std::ofstream fileMF("../cmeshMFHCurl.txt");
-//    cmeshMF->Print(fileMF);
+    std::ofstream fileHz("../cmeshHz.txt");
+    cmeshHz->Print(fileHz);
+    std::ofstream fileEz("../cmeshEz.txt");
+    cmeshEz->Print(fileEz);
+    std::ofstream fileMF("../cmeshMFHCurl.txt");
+    cmeshMF->Print(fileMF);
     
     TPZVec< TPZCompMesh *>meshVecOut(3);
     

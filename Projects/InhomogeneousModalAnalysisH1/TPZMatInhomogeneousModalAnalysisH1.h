@@ -21,7 +21,7 @@ protected:
     enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);
-    REAL fKzOverK0;
+    REAL fKzOverK02;
     whichMatrix fAssembling;
     const int fEzIndex = 0;
     const int fHzIndex = 1;
@@ -29,7 +29,7 @@ protected:
 
 public:
 
-    TPZMatInhomogeneousModalAnalysisH1(int id, REAL kzOverk0, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatInhomogeneousModalAnalysisH1(int id, REAL kzOverk02, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
 
 
     /** @brief Default constructor */

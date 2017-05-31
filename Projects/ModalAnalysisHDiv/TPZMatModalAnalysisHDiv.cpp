@@ -189,7 +189,6 @@ void TPZMatModalAnalysisHDiv::ContributeBC(TPZVec<TPZMaterialData> &datavec, REA
 {
     if (bc.Type() == 0) {//TM modes have dirichlet boundary conditions
         whichMode = modesTM;
-        return;
     }else{
         whichMode = modesTE;
     }
@@ -252,9 +251,8 @@ void TPZMatModalAnalysisHDiv::Solution(TPZVec<TPZMaterialData> &datavec, int var
     const STATE k0Squared = muR * epsilonR * fW * fW / ( M_C * M_C );
     const STATE betaZ = sqrt(k0Squared - fKtSquared);
     
-    
-    transversalField[0] = -1. * imaginary * betaZ / fKtSquared * transversalField[0];
-    transversalField[1] = -1. * imaginary * betaZ / fKtSquared * transversalField[1];
+    transversalField[0] = -1. * betaZ / fKtSquared * transversalField[0];
+    transversalField[1] = -1. * betaZ / fKtSquared * transversalField[1];
     
     if (whichMode == modeType::modesTE) {
         curlAxialField[0] =  1. * transversalField[1] * fW * muR / betaZ;
