@@ -600,8 +600,6 @@ void TPZGradientReconstruction::TPZGradientData::InitializeGradData(TPZCompEl *c
 #ifdef USING_LAPACK
 #ifdef MACOSX
 #include <Accelerate/Accelerate.h>
-#elif USING_MKL
-#include <mkl.h>
 #else
 #include <clapack.h>
 #endif
@@ -610,8 +608,6 @@ void TPZGradientReconstruction::TPZGradientData::InitializeGradData(TPZCompEl *c
 #ifdef USING_BLAS
 #ifdef MACOSX
 #include <Accelerate/Accelerate.h>
-#elif USING_MKL
-#include <mkl.h>
 #else
 #include <cblas.h>
 #endif

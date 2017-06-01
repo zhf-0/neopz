@@ -25,7 +25,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material"));
 TPZVec< void(*) (const TPZVec<REAL> &, TPZVec<STATE>& ) > GFORCINGVEC;
 
 using namespace std;
-REAL TPZMaterial::gBigNumber = 1.e12;
+REAL TPZMaterial::gBigNumber = 1.e16;
 
 
 TPZMaterial::TPZMaterial() : fNumLoadCases(1), fPostProcIndex(0) {
@@ -121,7 +121,6 @@ int TPZMaterial::VariableIndex(const std::string &name) {
 	if(!strcmp(name.c_str(),"state")) return 0;
 	if(!strcmp(name.c_str(),"State")) return 0;
 	if(!strcmp(name.c_str(),"Solution")) return 0;
-    if(!strcmp(name.c_str(),"GradState")) return 1;
 	if(!strcmp(name.c_str(),"POrder")) return 99;
 	if(!strcmp(name.c_str(),"Error")) return 100;
 	if(!strcmp(name.c_str(),"TrueError")) return 101;
@@ -199,7 +198,7 @@ void TPZMaterial::Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &datal
 	this->Solution(data,dataleftvec,datarightvec, var, Solout, left, ritgh);
 }
 
-void TPZMaterial::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,
+void TPZMaterial::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &/*DSol*/,TPZFMatrix<REAL> &/*axes*/,int var,
 						   TPZVec<STATE> &Solout){
     if(var == 98){
         Solout[0] = this->Id();
@@ -224,24 +223,7 @@ void TPZMaterial::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix
     else if(var == 99 || var == 100 || var == 101 || var == 102) {
     PZError << "TPZMaterial var = "<< var << " the element should treat this case\n";
         Solout[0] = Sol[0]; // = 0.;
-    } else if(var == 1)
-    {
-        Solout.resize(Sol.size()*3);
-        long nsol = Sol.size();
-        Solout.Fill(0.);
-        long dim = axes.Rows();
-        for (long is=0; is<nsol; is++) {
-            for (long d=0; d<dim; d++) {
-                for (long jco=0; jco<3; jco++) {
-                    Solout[jco+3*is] += axes(d,jco)*DSol(d,is);
-                }
-            }
-        }
-    } else
-    {
-        DebugStop();
-        Solout.Resize(0);
-    }
+    } else Solout.Resize(0);
 #endif
 }
 
@@ -366,9 +348,6 @@ void TPZMaterial::Write(TPZStream &buf, int withclassid)
     buf.Write(&fNumLoadCases);
     int linearcontext = fLinearContext;
     buf.Write(&linearcontext);
-    
-    int checksum = 99999;
-    buf.Write(&checksum);
     /*
 	 int forcingIdx = -1;
 	 if (fForcingFunction)
@@ -415,13 +394,6 @@ void TPZMaterial::Read(TPZStream &buf, void *context)
     else {
         fLinearContext = false;
     }
-    int checksum = 99999;
-    buf.Read(&checksum);
-    if(checksum != 99999)
-    {
-        DebugStop();
-    }
-
     /*
 	 int forcingIdx = -1;
 	 buf.Read( &forcingIdx,1 );

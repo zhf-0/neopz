@@ -38,7 +38,7 @@
 
 #include <string>
 
-extern int gDebug;
+static bool gDebug = false;
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.mesh.tpzcompclonemesh"));

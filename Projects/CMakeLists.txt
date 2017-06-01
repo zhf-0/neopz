@@ -9,33 +9,6 @@ ENABLE_TESTING()
 			#add_subdirectory(PDElinear2D)
 		else(BUILD_COMPLEX_PROJECTS)
 
-			source_group(CursoPZ FILES ${pzcurso})
-			#source_group(Shape FILES ${pztutorshape})
-			#source_group(Geometry FILES ${pztutorgeom})
-			#source_group(Matrix FILES ${pztutormat})
-			#source_group(VisualMatrixDX FILES ${visualmatrix})
-
-			#set(pztutorial ${pztutorial} ${pzcurso} ${pztutorshape} ${pztutorgeom} ${pztutormat} ${visualmatrix})
-
-			#add_custom_target(PZTutorial SOURCES ${pztutorial})
-			#add_subdirectory(Finite3DElasticity)
-
-			#Curso PZ:
-			add_subdirectory(CursoPZ)
-
-			#Example to reading and using geometric mesh
-			#add_subdirectory(testgeom)
-
-			#Testing and using shape functions
-			#add_subdirectory(testshape)
-
-			#Generic Example 2D with elasticity and 2D linear problem showing an example call to Contribute
-			#add_subdirectory(testmat)
-
-			#Using visual matrix of the DX
-			add_subdirectory(visualmatrix)
-
-
 			# project to save and load a computational mesh
 			add_subdirectory(SaveAndLoad)
 
@@ -72,6 +45,35 @@ ENABLE_TESTING()
 			#Example of the  convection problem
 			add_subdirectory(Problema_Transporte)
 
+			#Testes Douglas
+			add_subdirectory(dactests)
+
+
+			#Example to reading and using geometric mesh
+			add_subdirectory(testgeom)
+
+			#Testing and using shape functions
+			add_subdirectory(testshape)
+
+			#Generic Example 2D with elasticity, using matrices phi, phi, etc
+			add_subdirectory(testmat)
+
+			#Using visual matrix of the DX
+			add_subdirectory(visualmatrix)
+
+			source_group(CursoPZ FILES ${pzcurso})
+			#source_group(Shape FILES ${pztutorshape})
+			#source_group(Geometry FILES ${pztutorgeom})
+			#source_group(Matrix FILES ${pztutormat})
+			#source_group(VisualMatrixDX FILES ${visualmatrix})
+
+			#set(pztutorial ${pztutorial} ${pzcurso} ${pztutorshape} ${pztutorgeom} ${pztutormat} ${visualmatrix})
+
+			#add_custom_target(PZTutorial SOURCES ${pztutorial})
+			#add_subdirectory(Finite3DElasticity)
+
+			#Curso PZ:
+			add_subdirectory(CursoPZ)
 
 			# Simple project to test rational function defined by Cedric on pyramids
 			add_subdirectory(RationalFunctionPyramid)
@@ -82,20 +84,6 @@ ENABLE_TESTING()
 
 
 	endif(BUILD_TUTORIAL)
-
-	if(BUILD_BROKEN)
-		if(BUILD_COMPLEX_PROJECTS)
-			#add_subdirectory(PDElinear1D)
-			#add_subdirectory(PDElinear2D)
-		else(BUILD_COMPLEX_PROJECTS)
-                	#Testing gradient reconstruction
-			add_subdirectory(Gradient_Reconstruction)
-			#exercise on gradient reconstruction, but the results are wrong!
-			add_subdirectory(Poisson2D_ArcTan_Disc)
-
-
-		endif(BUILD_COMPLEX_PROJECTS)
-	endif(BUILD_BROKEN)
 
 	if(BUILD_PROJECTS)
 
@@ -108,8 +96,6 @@ ENABLE_TESTING()
 			#Example to work with scalar as complex
 			#add_subdirectory(Helmholtz1D)
 			add_subdirectory(TesteComplexo1D)
-			add_subdirectory(StriplineFran)
-			add_subdirectory(HCurl2D)
 			add_subdirectory(MFHCurlH1)
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
@@ -138,18 +124,9 @@ ENABLE_TESTING()
 				#add_subdirectory(HydraulicFracturePropagation)
 			endif()
 			##########################
-			#Testes Douglas
-			add_subdirectory(dactests)
 
-			#Using discontinuous approximation functions - masters thesis of Erick Slis
-			add_subdirectory(descontinuo)
-
-
-			#Testing generating ellipse from a vector of points by least square method
-			add_subdirectory(EllipseGenerator)
-
-			#Adaptivity based on mesh cloning (Edimar Cesar thesis)
-			#add_subdirectory(Poisson_ArcTan)
+			#projeto Diogo
+			add_subdirectory(Plasticity)
 
 			#add_subdirectory(projteste)
 
@@ -204,7 +181,7 @@ ENABLE_TESTING()
 			add_subdirectory(Elasticity2D)
 			add_subdirectory(Gridgeneration)
 			#add_subdirectory(Poisson2DLabyrinth)
-			#add_subdirectory(Andrade)
+			add_subdirectory(Andrade)
 			add_subdirectory(MatrixMarket)
 			add_subdirectory(Frac1DHdiv)
 			add_subdirectory(SubStruct)
@@ -222,7 +199,7 @@ ENABLE_TESTING()
 			#Projeto Denise
 			#add_subdirectory(HdivPressureTeste)
 			add_subdirectory(HpAdaptivity)
-			add_subdirectory(Hdiv3DCurved)
+			add_subdirectory(HDiv)
 			add_subdirectory(Hdiv3D)
 			add_subdirectory(AcoplamentoH1Hdiv)
 			add_subdirectory(Validacao)
@@ -239,9 +216,6 @@ ENABLE_TESTING()
 			#Projetos de Thiago Dias dos Santos
 			#add_subdirectory(SantosProjects)
 
-			#GPU project
-			add_subdirectory(GPU)
-
 			add_subdirectory(Bima1)
 #			add_subdirectory(EstabSUPG)
 #			add_subdirectory(MetodosEstab)
@@ -254,7 +228,12 @@ ENABLE_TESTING()
 				add_subdirectory(PardisoSample)
 			endif(USING_MKL)
 
+<<<<<<< HEAD
             add_subdirectory(artigoPira)
+=======
+>>>>>>> Revert "Merge branch 'master' into hcurl-tests-and-experimentations"
 
 		endif(BUILD_COMPLEX_PROJECTS)
+
+
 	endif(BUILD_PROJECTS)

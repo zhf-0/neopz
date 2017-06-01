@@ -13,7 +13,6 @@
 
 #include "TPZMHMeshControl.h"
 
-/// class for creating TPZMHMM with Mixed Meshes
 class TPZMHMixedMeshControl : public TPZMHMeshControl
 {
     
@@ -58,9 +57,6 @@ public:
     /// Set the flag for creating Lagrange Dofs for the average pressure
     void SetLagrangeAveragePressure(bool flag)
     {
-        if (flag == true) {
-            DebugStop();
-        }
     }
     
 
@@ -72,16 +68,6 @@ public:
         meshvec[1] = fPressureFineMesh.operator->();
     }
 
-    TPZVec<TPZAutoPointer<TPZCompMesh> > GetMeshes()
-    {
-        TPZManVector<TPZAutoPointer<TPZCompMesh>,3> result(2);
-        result[0] = fFluxMesh;
-        result[1] = fPressureFineMesh;
-        return result;
-    }
-    
-
-    
     /// print the data structure
     void Print(std::ostream &out);
 
@@ -91,24 +77,11 @@ protected:
     
     TPZCompMesh * CreatePressureMHMMesh();
     
-    // create the elements domain per domain with approximation spaces disconnected from each other
-    void CreateInternalElements();
-    
-    // create the approximation space associated with the skeleton and restrain the connects
-    void CreateSkeleton();
-    
     void DuplicateNeighbouringConnects();
 
     TPZCompMesh * CreateHDivPressureMHMMesh();
 
     void HideTheElements();
-
-    // create primal variable interface between the macro elements
-    void Hybridize();
-    
-    /// switch the elements pointed to by the interface by lower dimensional elements
-    void OptimizeInterfaceElements();
-    
 
 };
 

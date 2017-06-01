@@ -148,9 +148,7 @@ void TPZStructMatrixOR::Assemble(TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiIn
 
 
 void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<STATE> & rhs, TPZAutoPointer<TPZGuiInterface> guiInterface ){
-#ifdef PZDEBUG
-    TExceptionManager activateExceptions;
-#endif
+    
     if(!fMesh){
         LOGPZ_ERROR(logger,"Serial_Assemble called without mesh")
         DebugStop();
@@ -277,13 +275,6 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
             //			TPZFMatrix<STATE> test2(stiffness.Rows(),stiffness.Cols(),0.);
             //			stiffness.Print("before assembly",std::cout,EMathematicaInput);
             stiffness.AddKel(ek.fMat,ek.fSourceIndex,ek.fDestinationIndex);
-#ifdef PZDEBUG
-            REAL rhsnorm = Norm(ef.fMat);
-            if(isnan(rhsnorm))
-            {
-                std::cout << "element " << iel << " has norm " << rhsnorm << std::endl;
-            }
-#endif
             rhs.AddFel(ef.fMat,ek.fSourceIndex,ek.fDestinationIndex);
             //			stiffness.Print("stiffness after assembly STK = ",std::cout,EMathematicaInput);
             //			rhs.Print("rhs after assembly Rhs = ",std::cout,EMathematicaInput);
@@ -311,7 +302,7 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
                     sout << "Stiffness for geometric element " << gel->Index() << " center " << xcenter << std::endl;
                 }
                 else {
-                    sout << "Stiffness for computational element without associated geometric element index " << el->Index() << "\n";
+                    sout << "Stiffness for computational element without associated geometric element\n";
                 }
                 ek.Print(sout);
                 ef.Print(sout);
@@ -333,7 +324,7 @@ void TPZStructMatrixOR::Serial_Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix
 //            GF.AddFel(ef.fConstrMat, ek.fSourceIndex,ek.fDestinationIndex);
 
 #ifdef LOG4CXX
-            if(loggerel->isDebugEnabled())
+            if(loggerel->isDebugEnabled() && ! dynamic_cast<TPZSubCompMesh *>(fMesh))
             {
                 std::stringstream sout;
                 TPZGeoEl *gel = el->Reference();
@@ -703,9 +694,6 @@ TPZStructMatrixOR::ThreadData::~ThreadData()
 
 void *TPZStructMatrixOR::ThreadData::ThreadWork(void *datavoid)
 {
-#ifdef PZDEBUG
-    TExceptionManager activateExceptions;
-#endif
     ThreadData *data = (ThreadData *) datavoid;
     // compute the next element (this method is threadsafe)
     long iel = data->NextElement();

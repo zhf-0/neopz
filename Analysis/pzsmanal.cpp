@@ -20,37 +20,15 @@ using namespace std;
 
 // Construction/Destruction
 
-TPZSubMeshAnalysis::TPZSubMeshAnalysis(TPZSubCompMesh *mesh) : TPZAnalysis(mesh,true), fReducableStiff(0){
+TPZSubMeshAnalysis::TPZSubMeshAnalysis(TPZSubCompMesh *mesh) : TPZAnalysis(mesh), fReducableStiff(0){
 	fMesh = mesh;
-    if (fMesh)
-    {
-        fReferenceSolution.Redim(fCompMesh->NEquations(),1);
-    }
+    fReferenceSolution.Redim(fCompMesh->NEquations(),1);
 }
 
 TPZSubMeshAnalysis::~TPZSubMeshAnalysis()
 {
 	
 }
-
-/** @brief Set the computational mesh of the analysis. */
-void TPZSubMeshAnalysis::SetCompMesh(TPZCompMesh * mesh, bool mustOptimizeBandwidth)
-{
-    TPZSubCompMesh *submesh = dynamic_cast<TPZSubCompMesh *>(mesh);
-    if (submesh) {
-        fMesh = submesh;
-    }
-    else
-    {
-        DebugStop();
-    }
-    TPZAnalysis::SetCompMesh(mesh, mustOptimizeBandwidth);
-    if (fCompMesh) {
-        fReferenceSolution.Redim(fCompMesh->NEquations(), 1);
-    }
-}
-
-
 
 void TPZSubMeshAnalysis::Assemble(){
 	

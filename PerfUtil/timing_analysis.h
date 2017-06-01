@@ -14,7 +14,7 @@
 
 #else
 
-#pragma message ( "warning: PERF_ANALYSIS is defined..." )
+#warning "PERF_ANALYSIS is defined..."
 /* Sanity checking */
 
 #ifndef NDEBUG

@@ -16,7 +16,6 @@
 
 #ifdef LOG4CXX
 static LoggerPtr logdata(Logger::getLogger("pz.mixedpoisson.data"));
-static LoggerPtr logerror(Logger::getLogger("pz.mixedpoisson.error"));
 #endif
 
 TPZMixedPoisson::TPZMixedPoisson(): TPZMatPoisson3d(), fDim(1) {
@@ -123,9 +122,9 @@ void TPZMixedPoisson::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     TPZFNMatrix<9,REAL> InvPermTensor = fInvK;
     //int rtens = 2*fDim;
     if(fPermeabilityFunction){
-        PermTensor.Zero();
-        InvPermTensor.Zero();
-        TPZFNMatrix<18,STATE> resultMat(2*fDim,fDim,0.);
+        PermTensor.Redim(fDim,fDim);
+        InvPermTensor.Redim(fDim,fDim);
+        TPZFNMatrix<3,STATE> resultMat;
         TPZManVector<STATE> res;
         fPermeabilityFunction->Execute(datavec[1].x,res,resultMat);
         
@@ -574,44 +573,34 @@ void TPZMixedPoisson::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight
 
 /** Returns the variable index associated with the name */
 int TPZMixedPoisson::VariableIndex(const std::string &name){
-	if(!strcmp("Flux",name.c_str()))        return  31;
-	if(!strcmp("Pressure",name.c_str()))    return  32;
-    if(!strcmp("GradFluxX",name.c_str()))   return  33;
-    if(!strcmp("GradFluxY",name.c_str()))   return  34;
-    if(!strcmp("DivFlux",name.c_str()))   return  35;
+	if(!strcmp("Flux",name.c_str()))        return  1;
+	if(!strcmp("Pressure",name.c_str()))    return  2;
+    if(!strcmp("GradFluxX",name.c_str()))   return  3;
+    if(!strcmp("GradFluxY",name.c_str()))   return  4;
+    if(!strcmp("DivFlux",name.c_str()))   return  5;
     
-    if(!strcmp("ExactPressure",name.c_str()))  return 36;
-    if(!strcmp("ExactFlux",name.c_str()))  return 37;
+    if(!strcmp("ExactPressure",name.c_str()))  return 6;
+    if(!strcmp("ExactFlux",name.c_str()))  return 7;
     
-    if(!strcmp("POrder",name.c_str()))        return  38;
-    if(!strcmp("GradPressure",name.c_str()))        return  39;
-    if(!strcmp("Divergence",name.c_str()))      return  40;
-    if(!strcmp("ExactDiv",name.c_str()))        return  41;
-    if (!strcmp("Derivative",name.c_str())) {
-        return 42;
-    }
-    if (!strcmp("Permeability",name.c_str())) {
-        return 43;
-    }
+    if(!strcmp("POrder",name.c_str()))        return  8;
+    if(!strcmp("GradPressure",name.c_str()))        return  9;
+    if(!strcmp("Divergence",name.c_str()))      return  10;
+    if(!strcmp("ExactDiv",name.c_str()))        return  11;
 	
-    DebugStop();
-    return -1;
+	return TPZMatPoisson3d::VariableIndex(name);
 }
 
 int TPZMixedPoisson::NSolutionVariables(int var){
-	if(var == 31) return fDim;
-	if(var == 32 || var==8) return 1;
-    if(var == 33) return 3;
-    if(var == 34) return 3;
-    if(var == 35) return 1;
-    if(var == 36) return 1;
-    if(var == 37) return fDim;
-    if(var == 39) return fDim;
-    if(var == 40 || var == 41) return 1;
-    if(var == 42) return 3;
-    if(var == 43) return 1;
-    DebugStop();
-    return -1;
+	if(var == 1) return fDim;
+	if(var == 2 || var==8) return 1;
+    if(var == 3) return 3;
+    if(var == 4) return 3;
+    if(var == 5) return 1;
+    if(var == 6) return 1;
+    if(var == 7) return fDim;
+    if(var == 9) return fDim;
+    if(var == 10 || var == 11) return 1;
+	return TPZMatPoisson3d::NSolutionVariables(var);
 }
 
 void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
@@ -620,30 +609,10 @@ void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
 	
 	TPZVec<STATE> SolP, SolQ;
     
-    TPZFNMatrix<9,REAL> PermTensor = fTensorK;
-    TPZFNMatrix<9,REAL> InvPermTensor = fInvK;
-    //int rtens = 2*fDim;
-    if(fPermeabilityFunction){
-        PermTensor.Redim(fDim,fDim);
-        InvPermTensor.Redim(fDim,fDim);
-        TPZFNMatrix<18,STATE> resultMat(2*fDim,fDim);
-        TPZManVector<STATE> res;
-        fPermeabilityFunction->Execute(datavec[1].x,res,resultMat);
-        
-        for(int id=0; id<fDim; id++){
-            for(int jd=0; jd<fDim; jd++){
-                
-                PermTensor(id,jd) = resultMat(id,jd);
-                InvPermTensor(id,jd) = resultMat(id+fDim,jd);
-            }
-        }
-    }
-
-    
    // SolQ = datavec[0].sol[0];
     SolP = datavec[1].sol[0];
     
-    if(var == 31){ //function (state variable Q)
+    if(var == 1){ //function (state variable Q)
         for (int i=0; i<fDim; i++)
         {
             Solout[i] = datavec[0].sol[0][i];
@@ -651,26 +620,26 @@ void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
 		return;
 	}
     
-    if(var == 32){
+    if(var == 2){
 		Solout[0] = SolP[0];//function (state variable p)
 		return;
 	}
     
-    if(var==33){
+    if(var==3){
         Solout[0]=datavec[0].dsol[0](0,0);
         Solout[1]=datavec[0].dsol[0](1,0);
         Solout[2]=datavec[0].dsol[0](2,0);
         return;
     }
 
-    if(var==34){
+    if(var==4){
         Solout[0]=datavec[0].dsol[0](0,1);
         Solout[1]=datavec[0].dsol[0](1,1);
         Solout[2]=datavec[0].dsol[0](2,1);
         return;
     }
     
-    if(var==35){
+    if(var==5){
         Solout[0]=datavec[0].dsol[0](0,0)+datavec[0].dsol[0](1,1);
         return;
     }
@@ -680,25 +649,25 @@ void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
 	TPZFMatrix<STATE> flux(fDim+1,1);
     
     //Exact soluion
-	if(var == 36){
+	if(var == 6){
 		fForcingFunctionExact->Execute(datavec[0].x, solExata,flux);
 		Solout[0] = solExata[0];
 		return;
 	}//var6
     
-    if(var == 37){
+    if(var == 7){
 		fForcingFunctionExact->Execute(datavec[0].x, solExata,flux);
 		Solout[0] = flux(0,0);
         Solout[1] = flux(1,0);
 		return;
 	}//var7
 
-    if(var==38){
+    if(var==8){
         Solout[0] = datavec[1].p;
         return;
     }
     
-    if(var==39){
+    if(var==9){
         TPZFNMatrix<3,REAL> dsoldx;
         TPZFMatrix<REAL> dsoldaxes(fDim,1);
         dsoldaxes(0,0) = datavec[1].dsol[0][0];
@@ -709,35 +678,16 @@ void TPZMixedPoisson::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
         return;
     }
     
-    if(var==40){
+    if(var==10){
         Solout[0]=datavec[0].dsol[0](0,0)+datavec[0].dsol[0](1,1);
         return;
     }
     
-    if(var==41){
+    if(var==11){
         fForcingFunctionExact->Execute(datavec[0].x,solExata,flux);
         Solout[0]=flux(2,0);
         return;
     }
-    if(var == 42)
-    {
-        for(int i=0; i<3; i++)
-        {
-            Solout[i] = 0.;
-        }
-        for (int i=0; i<fDim; i++) {
-            for (int j=0; j<fDim; j++) {
-                Solout[i] -= InvPermTensor(i,j)*datavec[0].sol[0][i];
-            }
-        }
-        return;
-    }
-    if(var ==43)
-    {
-        Solout[0] = PermTensor(0,0);
-        return;
-    }
-    DebugStop();
 }
 
 
@@ -766,23 +716,11 @@ void TPZMixedPoisson::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exa
     
     errors.Resize(NEvalErrors());
     errors.Fill(0.0);
-    TPZManVector<STATE,3> deriv(3,0.), pressure(1,0.);
-    this->Solution(data,VariableIndex("Derivative"), deriv);
+    TPZManVector<STATE,3> flux(3,0.), pressure(1,0.);
+    this->Solution(data,VariableIndex("Flux"), flux);
     this->Solution(data,VariableIndex("Pressure"), pressure);
     
-#ifdef LOG4CXX
-    if(logerror->isDebugEnabled())
-    {
-        std::stringstream sout;
-        sout.precision(14);
-        sout << "x " << data[0].x << std::endl;
-        sout << "u_exact " << u_exact << std::endl;
-        du_exact.Print("du_exact",sout);
-        sout << "deriv " << deriv << std::endl;
-        sout << "pressure " << pressure << std::endl;
-        LOGPZ_DEBUG(logerror, sout.str())
-    }
-#endif
+    
     int id;
     //values[1] : eror em norma L2
     STATE diff = pressure[0] - u_exact[0];
@@ -790,7 +728,7 @@ void TPZMixedPoisson::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exa
     //values[2] : erro em semi norma H1
     errors[2] = 0.;
     for(id=0; id<fDim; id++) {
-        diff = deriv[id] - du_exact(id,0);
+        diff = flux[id]/fK + du_exact(id,0);
         errors[2]  += fK*diff*diff;
     }
     //values[0] : erro em norma H1 <=> norma Energia

@@ -887,8 +887,7 @@ TPZGeoMesh *LaplaceInCube::CreateOneCubo(int nref)
 
 TPZGeoMesh *LaplaceInCube::CreateOneQuadraticCube(int nref)
 {
-    DebugStop();
-    return NULL;
+    
 }
 
 void LaplaceInCube::SolExata(const TPZVec<REAL> &pt, TPZVec<STATE> &solp, TPZFMatrix<STATE> &flux){

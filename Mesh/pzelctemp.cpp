@@ -95,7 +95,7 @@ TPZIntelGen<TSHAPE>::~TPZIntelGen(){
     TPZGeoEl *gel = Reference();
 	TPZCompEl *cel = gel->Reference();
 	if(gel) {
-		if(cel == this) {
+		if(cel) {
 			RemoveSideRestraintsII(EDelete);
 		}
 		Reference()->ResetReference();

@@ -66,7 +66,6 @@ void DebugStop()
 	
 }
 
-#if !defined(__cplusplus) || __cplusplus < 201103L // If we aren't using C++11.
 /**
  * Function erf (Error function) implemented in 
  * http://www.johndcook.com/cpp_erf.html
@@ -89,4 +88,3 @@ REAL erf(REAL arg) {
 
 	return sign*y;
 }
-#endif // not C++11

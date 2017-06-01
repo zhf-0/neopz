@@ -13,8 +13,6 @@
 
 #include <iostream>
 
-namespace pzgeom
-{
 /**
  * @author Paulo Cesar de Alvarenga Lucci (Caju)
  * @since 2011
@@ -115,5 +113,4 @@ public:
 	TPZGeoEl *CreateBCGeoEl(TPZGeoEl *orig,int side,int bc);	
 };
 
-};
 #endif

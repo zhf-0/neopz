@@ -37,8 +37,7 @@ TPZMatLaplacian::TPZMatLaplacian():TPZDiscontinuousGalerkin(), fXf(0.), fDim(1){
 	this->SetNoPenalty();
 }
 
-TPZMatLaplacian::TPZMatLaplacian(const TPZMatLaplacian &copy):TPZDiscontinuousGalerkin(copy)
-{
+TPZMatLaplacian::TPZMatLaplacian(const TPZMatLaplacian &copy):TPZDiscontinuousGalerkin(copy){
 	this->operator =(copy);
 }
 
@@ -50,7 +49,6 @@ TPZMatLaplacian & TPZMatLaplacian::operator=(const TPZMatLaplacian &copy){
 	fSymmetry = copy.fSymmetry;
 	fPenaltyConstant = copy.fPenaltyConstant;
 	this->fPenaltyType = copy.fPenaltyType;
-    this->fPermeabilityFunction = copy.fPermeabilityFunction;
 	return *this;
 }
 
@@ -59,10 +57,10 @@ void TPZMatLaplacian::SetParameters(STATE diff, STATE f) {
     fXf = f;
 }
 
-//void TPZMatLaplacian::GetParameters(STATE &diff, STATE &f) {
-//	diff = fK;
-//    f = fXf;
-//}
+void TPZMatLaplacian::GetParameters(STATE &diff, STATE &f) {
+	diff = fK;
+    f = fXf;
+}
 
 TPZMatLaplacian::~TPZMatLaplacian() {
 }
@@ -108,15 +106,6 @@ void TPZMatLaplacian::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<ST
         fXfLoc = res[0];
     }
     
-    STATE KPerm = fK;
-    if (fPermeabilityFunction) {
-        TPZFNMatrix<9,STATE> perm, invperm;
-        TPZManVector<STATE,3> func;
-        TPZFNMatrix<18,STATE> dfunc(6,3,0.);
-        fPermeabilityFunction->Execute(x, func, dfunc);
-        KPerm = dfunc(0,0);
-    }
-
     //Equacao de Poisson
     for( int in = 0; in < phr; in++ ) {
         int kd;
@@ -124,7 +113,7 @@ void TPZMatLaplacian::Contribute(TPZMaterialData &data,REAL weight,TPZFMatrix<ST
         for( int jn = 0; jn < phr; jn++ ) {
             //ek(in,jn) += (STATE)weight*((STATE)(phi(in,0)*phi(jn,0)));
             for(kd=0; kd<fDim; kd++) {
-                ek(in,jn) += (STATE)weight*(KPerm*(STATE)(dphi(kd,in)*dphi(kd,jn)));
+                ek(in,jn) += (STATE)weight*(fK*(STATE)(dphi(kd,in)*dphi(kd,jn)));
             }
         }
     }
@@ -382,13 +371,12 @@ int TPZMatLaplacian::VariableIndex(const std::string &name){
     if(!strcmp("GradFluxX",name.c_str()))       return  19;
     if(!strcmp("GradFluxY",name.c_str()))       return  20;
     if(!strcmp("FluxL2",name.c_str()))            return  21;//Only To calculate l2 error
-    if(!strcmp("Permeability",name.c_str()))    return 22; // output the permeability
 	return TPZMaterial::VariableIndex(name);
 }
 
 int TPZMatLaplacian::NSolutionVariables(int var){
 	if(var == 1) return 1;
-	if(var == 2) return 3;//arrumar o fluxo de hdiv para ser fdim tbem enquanto isso faco isso
+	if(var == 2) return fDim;//arrumar o fluxo de hdiv para ser fdim tbem enquanto isso faco isso
 	if ((var == 3) || (var == 4) || (var == 5) || (var == 6)) return 1;
 	if (var == 7) return fDim;
 	if (var == 8) return 1;
@@ -407,7 +395,6 @@ int TPZMatLaplacian::NSolutionVariables(int var){
     if (var==19) return 3;
     if (var==20) return 3;
     if (var==21) return fDim;
-    if (var==22) return 1; // number of permeabilities
     
     
 	return TPZMaterial::NSolutionVariables(var);
@@ -422,14 +409,6 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
     int numbersol = data.sol.size();
     if (numbersol != 1) {
         DebugStop();
-    }
-    STATE perm = fK;
-    if(fPermeabilityFunction)
-    {
-        TPZManVector<STATE,3> f;
-        TPZFNMatrix<18,STATE> df(6,3);
-        fPermeabilityFunction->Execute(data.x, f, df);
-        perm = df(0,0);
     }
     
 #ifndef STATE_COMPLEX
@@ -460,11 +439,7 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
                 
 			}
 			else {
-                TPZFNMatrix<3,STATE> dsolxy(3,0);
-                TPZAxesTools<STATE>::Axes2XYZ(data.dsol[0], dsolxy, data.axes);
-                for (int i=0; i<fDim; i++) {
-                    Solout[i] = -perm*dsolxy(i,0);
-                }
+				this->Solution(data.sol[0], data.dsol[0], data.axes, 2, Solout);
 			}
             
 			break;
@@ -562,10 +537,6 @@ void TPZMatLaplacian::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
                 Solout[0]=0;//NULL;
             }
             break;
-        case 22:
-            // output the permeability
-            Solout[0] = perm;
-            break;
         default:
             if (data.sol[0].size() == 4) {
                 data.sol[0][0] = data.sol[0][2];
@@ -590,7 +561,7 @@ void TPZMatLaplacian::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 		int id;
         TPZFNMatrix<50,STATE> dsoldx;
         TPZAxesTools<STATE>::Axes2XYZ(DSol, dsoldx, axes);
-		for(id=0 ; id<3; id++) {
+		for(id=0 ; id<fDim; id++) {
 			Solout[id] = dsoldx(id,0);//derivate
 		}
 		return;
@@ -653,20 +624,6 @@ void TPZMatLaplacian::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TP
 	Solution(data,21,dsol);//fluxo
 	Solution(data,14,div);//divergente
     
-    TPZFNMatrix<18,STATE> perm(2*fDim,fDim);
-    if (fPermeabilityFunction) {
-        TPZManVector<STATE,3> dumf(3,0.);
-        fPermeabilityFunction->Execute(data.x, dumf, perm);
-    }
-    else
-    {
-        for (int i=0; i<fDim; i++) {
-            perm(i,i) = fK;
-            perm(i+fDim,i) = 1./fK;
-        }
-    }
-    
-
 #ifdef LOG4CXX
     {
 		std::stringstream sout;
@@ -724,7 +681,7 @@ void TPZMatLaplacian::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
     values.Resize(3);
     values.Fill(0.0);
 
-    TPZFNMatrix<3,STATE> dudx(3,1,0.);
+    TPZFMatrix<STATE> dudx(dudxaxes);
     TPZAxesTools<STATE>::Axes2XYZ(dudxaxes, dudx, axes);
     
 	///L2 norm
@@ -732,7 +689,7 @@ void TPZMatLaplacian::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
 	
 	///semi norma de H1
 	values[2] = 0.;
-	for(int i = 0; i < 3; i++){
+	for(int i = 0; i < this->fDim; i++){
 		values[2] += (dudx(i,0) - du_exact(i,0))*(dudx(i,0) - du_exact(i,0));
 	}
 	

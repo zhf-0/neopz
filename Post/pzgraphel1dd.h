@@ -39,12 +39,6 @@ public:
 	
 	virtual int NNodes();
 	
-    /** @brief the parametric dimension of the element */
-    virtual int Dimension()
-    {
-        return 1;
-    }
-
 	
 protected:
 	
