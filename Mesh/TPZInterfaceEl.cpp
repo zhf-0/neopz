@@ -63,7 +63,15 @@ void TPZInterfaceElement::SetLeftRightElements(TPZCompElSide & left, TPZCompElSi
 		PZError << __PRETTY_FUNCTION__ << " - Right element is null.\n";
 		DebugStop();
 	}
-	this->ComputeCenterNormal(fCenterNormal);
+    TPZGeoEl *gel = Reference();
+    if (gel->Dimension() != left.Element()->Dimension() || gel->Dimension() != right.Element()->Dimension()) {
+        this->ComputeCenterNormal(fCenterNormal);
+    }
+    else
+    {
+        fCenterNormal.Resize(3, 0.);
+    }
+
 	
 	this->IncrementElConnected();
 }//method
@@ -109,6 +117,9 @@ TPZInterfaceElement::TPZInterfaceElement(TPZCompMesh &mesh,TPZGeoEl *geo,long &i
 	geo->SetReference(this);
 	geo->IncrementNumInterfaces();
 	
+    if (!left.Element() || !right.Element()) {
+        PZError << "Error at " << __PRETTY_FUNCTION__ << " left or right null elements\n";
+    }
 	if (left.Side() == -1 || right.Side() == -1){
 		PZError << "Error at " << __PRETTY_FUNCTION__ << " at line " << __LINE__ << " Side should not be -1\n";
 		DebugStop();
@@ -330,7 +341,7 @@ void TPZInterfaceElement::CalcResidual(TPZElementMatrix &ef){
 	const int npoints = intrule->NPoints();
 	
 	//integration points in left and right elements: making transformations to neighbour elements
-	TPZTransform<> TransfLeft, TransfRight;
+	TPZTransform TransfLeft, TransfRight;
 	this->ComputeSideTransform(this->LeftElementSide(), TransfLeft);
 	this->ComputeSideTransform(this->RightElementSide(), TransfRight);
 	
@@ -910,6 +921,8 @@ void TPZInterfaceElement::InitializeElementMatrix(TPZElementMatrix &ek, TPZEleme
 #endif
 	
     ek.fMesh = Mesh();
+    ek.fType = TPZElementMatrix::EK;
+    ef.fType = TPZElementMatrix::EF;
     ef.fMesh = ek.fMesh;
     TPZMaterial *mat = Material();
 	const int numdof = mat->NStateVariables();
@@ -1017,7 +1030,7 @@ void TPZInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
     if (logger->isDebugEnabled())
 	{
 		std::stringstream sout;
-		sout << "elemento de interface Indice deste Material--> " <<this->Material()->Id()<< std::endl;
+		sout << "elemento de interface " << Index() << " Indice deste Material--> " <<this->Material()->Id()<< std::endl;
 		
 		LOGPZ_DEBUG(logger, sout.str().c_str());
 	}
@@ -1149,7 +1162,7 @@ void TPZInterfaceElement::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
 	const int npoints = intrule->NPoints();
 	
 	//integration points in left and right elements: making transformations to neighbour elements
-	TPZTransform<> TransfLeft, TransfRight;
+	TPZTransform TransfLeft, TransfRight;
 	this->ComputeSideTransform(this->LeftElementSide(), TransfLeft);
 	this->ComputeSideTransform(this->RightElementSide(), TransfRight);
 	
@@ -1365,7 +1378,7 @@ void TPZInterfaceElement::ComputeErrorFace(int errorid,
 	const int npoints = intrule->NPoints();
 	
 	//integration points in left and right elements: making transformations to neighbour elements
-	TPZTransform<> TransfLeft, TransfRight;
+	TPZTransform TransfLeft, TransfRight;
 	this->ComputeSideTransform(this->LeftElementSide(), TransfLeft);
 	this->ComputeSideTransform(this->RightElementSide(), TransfRight);
 	
@@ -1487,10 +1500,10 @@ void TPZInterfaceElement::IntegrateInterface(int variable, TPZVec<REAL> & value)
 	
 }//method
 
-void TPZInterfaceElement::ComputeSideTransform(TPZCompElSide &Neighbor, TPZTransform<> &transf){
+void TPZInterfaceElement::ComputeSideTransform(TPZCompElSide &Neighbor, TPZTransform &transf){
 	TPZGeoEl * neighel = Neighbor.Element()->Reference();
 	const int dim = this->Dimension();
-	TPZTransform<> LocalTransf(dim);
+	TPZTransform LocalTransf(dim);
 	TPZGeoElSide thisgeoside(this->Reference(), this->Reference()->NSides()-1);
 	TPZGeoElSide neighgeoside(neighel, Neighbor.Side());
 #ifdef LOG4CXX
@@ -1511,7 +1524,7 @@ void TPZInterfaceElement::ComputeSideTransform(TPZCompElSide &Neighbor, TPZTrans
 }//ComputeSideTransform
 
 void TPZInterfaceElement::MapQsi(TPZCompElSide &Neighbor, TPZVec<REAL> &qsi, TPZVec<REAL> &NeighIntPoint){
-	TPZTransform<> Transf;
+	TPZTransform Transf;
 	this->ComputeSideTransform(Neighbor, Transf);
 	Transf.Apply( qsi, NeighIntPoint );
 #ifdef PZDEBUG

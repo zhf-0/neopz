@@ -77,7 +77,7 @@ public:
   
   void ComputeRequiredData(TPZMaterialData &data, TPZVec<REAL> &qsi);
   
-  virtual void ComputeRequiredData(TPZVec<REAL> &intpointtemp, TPZVec<TPZTransform<> > &trvec, TPZVec<TPZMaterialData> &datavec);
+  virtual void ComputeRequiredData(TPZVec<REAL> &intpointtemp, TPZVec<TPZTransform> &trvec, TPZVec<TPZMaterialData> &datavec);
   
   long GetGlobalIntegrationPointIndex(TPZMaterialData &data);
   
@@ -104,7 +104,7 @@ public:
   void GetMemoryIndices(TPZVec<long> &indices) const;
   
   /// Modify the maximum order an integration rule can integrate
-  void SetIntegrationRule(int ord);
+  virtual void SetIntegrationRule(int ord);
   
   /** @brief Saves the element data to a stream */
   virtual void Write(TPZStream &buf, int withclassid);
@@ -338,7 +338,7 @@ inline void TPZCompElWithMem<TBASE>::ComputeRequiredData(TPZMaterialData &data,
 }
 
 template <class TBASE>
-inline void TPZCompElWithMem<TBASE>::ComputeRequiredData(TPZVec<REAL> &intpointtemp, TPZVec<TPZTransform<> > &trvec, TPZVec<TPZMaterialData> &datavec)
+inline void TPZCompElWithMem<TBASE>::ComputeRequiredData(TPZVec<REAL> &intpointtemp, TPZVec<TPZTransform> &trvec, TPZVec<TPZMaterialData> &datavec)
 {
   TBASE::ComputeRequiredData(intpointtemp,trvec,datavec);
   

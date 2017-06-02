@@ -9,7 +9,6 @@
 #include "pzstack.h"
 class TPZGeoEl;
 class TPZGeoElSide;
-template<class T>
 class TPZTransform;
 
 namespace pzrefine {
@@ -30,7 +29,7 @@ namespace pzrefine {
 		static void GetSubElements(const TPZGeoEl *father,int side, TPZStack<TPZGeoElSide> &subel);
 		static int NSideSubElements(int side);
 
-		static TPZTransform<REAL> GetTransform(int side,int son);
+		static TPZTransform GetTransform(int side,int son);
 		static int FatherSide(int side,int son);
 	};
 	

@@ -45,7 +45,6 @@ class TPZStack;
 class TPZGraphMesh;
 class TPZIntPoints;
 
-template<class T>
 class TPZTransform;
 
 #include "pzeltype.h"
@@ -548,7 +547,11 @@ protected:
     
 public:
     /// Method to set a dynamically allocated integration rule
-    void SetIntegrationRule(TPZIntPoints *intrule);
+    virtual void SetIntegrationRule(TPZIntPoints *intrule);
+    
+    virtual void SetIntegrationRule(int order) {
+        std::cout << "TPZCompEl::SetIntegrationRule should not be called\n";
+    }
     
 
 

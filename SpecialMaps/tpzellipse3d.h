@@ -65,8 +65,7 @@ namespace pzgeom
 		void SetAxes(TPZVec<REAL> Origin, TPZVec<REAL> SemiAxeX, TPZVec<REAL> SemiAxeY);
 		
 		/* brief compute the coordinate of a point given in parameter space */
-        template<class T>
-        void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &result) const
+        void X(const TPZGeoEl &gel,TPZVec<REAL> &loc,TPZVec<REAL> &result) const
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
@@ -92,8 +91,7 @@ namespace pzgeom
 		 * para o arco de elipse definido pelos nohs inicial e final, os quais devem pertencer ao lugar geometrico da elipse,
 		 * ========> SEGUINDO A REGRA DA MAO DIREITA (sentido anti-horario em relacao ao sistema local definido pelos vetores dos semi-eixos X e Y).
 		 */
-        template<class T>
-		void X(TPZFMatrix<REAL> &nodeCoord,TPZVec<T> &qsi,TPZVec<T> &x) const;
+		void X(TPZFMatrix<REAL> &nodeCoord,TPZVec<REAL> &qsi,TPZVec<REAL> &x) const;
 		
 		/** @brief Computes the jacobian matrix to X mapping */
 		void Jacobian(TPZFMatrix<REAL> &nodeCoord, TPZVec<REAL> &qsi, TPZFMatrix<REAL> &jac, TPZFMatrix<REAL> &axes, REAL &detjac, TPZFMatrix<REAL> &jacinv) const;
@@ -142,15 +140,13 @@ namespace pzgeom
 		 * Este metodo retorna o angulo[ang(vini),ang(vfin)] que corresponde a um qsi[-1,1]
 		 * @brief Returns the angle corresponding to qsi
 		 */
-        template<class T>
-		T Angle(T qsi, TPZFMatrix<T> &vini, TPZFMatrix<T> &vfin) const;
+		double Angle(double qsi, TPZFMatrix<REAL> &vini, TPZFMatrix<REAL> &vfin) const;
 		
 		/** @brief Returns the derivate of the angle with respect to qsi */
 		double DAngleDqsi(TPZFMatrix<REAL> &vini, TPZFMatrix<REAL> &vfin) const;
 		
 		/** @brief Compute de equation of the elipse as function of the angle */
-        template<class T>
-		TPZFMatrix<T> EllipseR2equation(T ang) const;
+		TPZFMatrix<REAL> EllipseR2equation(double ang) const;
 		
 		/**
 		 * Derivada da equacao em R2 da elipse em funcao com respeito ao angulo

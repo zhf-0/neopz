@@ -69,6 +69,7 @@ TPZCompElHDiv<TSHAPE>(mesh,gel,index) {
 		//		}
 		
 #ifdef LOG4CXX
+    if(logger->isDebugEnabled())
 		{
 				std::stringstream sout;
 				sout << "After creating last pressure connect " << newnodeindex << std::endl;
@@ -163,6 +164,7 @@ void TPZCompElHDivPressure<TSHAPE>::SetConnectIndex(int i, long connectindex){
 #endif
 		this-> fConnectIndexes[i] = connectindex;
 #ifdef LOG4CXX
+    if(logger->isDebugEnabled())
 		{
 				std::stringstream sout;
 				sout << endl<<"Setting Connect : " << i << " to connectindex " << connectindex<<std::endl;
@@ -525,7 +527,7 @@ void TPZCompElHDivPressure<TSHAPE>::Shape(TPZVec<REAL> &pt, TPZFMatrix<REAL> &ph
 }
 
 template<class TSHAPE>
-TPZTransform<> TPZCompElHDivPressure<TSHAPE>::TransformSideToElement(int side){
+TPZTransform TPZCompElHDivPressure<TSHAPE>::TransformSideToElement(int side){
 		return TSHAPE::TransformSideToElement(side);
 }
 

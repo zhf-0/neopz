@@ -27,6 +27,12 @@ TPZMaterialData::TPZMaterialData() : fShapeType(EScalarShape), numberdualfunctio
     this->sol.Resize(1);
     this->dsol.Resize(1);
     this->gelElId = -1;
+    this->fShapeType = EScalarShape;
+    this->HSize = 0.;
+    this->detjac = 0.;
+    this->numberdualfunctions = 0;
+    this->gelElId = -1;
+
 }
 
 TPZMaterialData::TPZMaterialData( const TPZMaterialData &cp ) : fShapeType(cp.fShapeType) {
@@ -48,7 +54,6 @@ TPZMaterialData & TPZMaterialData::operator= (const TPZMaterialData &cp ){
     this->jacinv = cp.jacinv;
     this->normal = cp.normal;
     this->x = cp.x;
-    this->xParametric = cp.xParametric;
     this->p = cp.p;
     this->sol = cp.sol;
     this->dsol = cp.dsol;
@@ -147,7 +152,6 @@ void TPZMaterialData::Print(std::ostream &out) const
     jacinv.Print("jacinv",out);
     out << "normal " << normal << std::endl;
     out << "x " << x << std::endl;
-    out << "xParametric " << xParametric << std::endl;
     out << "p " << p << std::endl;
     out << "sol " << sol << std::endl;
     int nsol = dsol.size();
@@ -176,7 +180,6 @@ void TPZMaterialData::PrintMathematica(std::ostream &out) const
     jacinv.Print("jacinv = ",out,EMathematicaInput);
     out << "normal = {" << normal << "};" << std::endl;
     out << "x = {" << x << "};" << std::endl;
-    out << "xParametric = {" << xParametric << "};" << std::endl;
     out << "p = " << p << ";" << std::endl;
     out << "sol = { " << sol << "};" << std::endl;
     int nsol=dsol.size();
@@ -208,7 +211,6 @@ void TPZMaterialData::Write(TPZStream &buf, int withclassid)
     jacinv.Write(buf,0);
     buf.Write(normal.begin(),normal.size());
     buf.Write(x.begin(),x.size());
-    buf.Write(xParametric.begin(),xParametric.size());
     buf.Write(&p,1);
     int nsol = sol.size();
     buf.Write(&nsol);
@@ -245,7 +247,6 @@ void TPZMaterialData::Read(TPZStream &buf, void *context)
     jacinv.Read(buf,0);
     TPZSaveable::ReadObjects(buf,normal);
     TPZSaveable::ReadObjects(buf,x);
-    TPZSaveable::ReadObjects(buf,xParametric);
     buf.Read(&p,1);
     int nsol;
     buf.Read(&nsol,1);

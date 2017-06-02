@@ -16,10 +16,6 @@
 
 #include "pznumeric.h"
 
-#ifdef _AUTODIFF
-#include "fad.h"
-#endif
-
 #include "pzlog.h"
 
 #ifdef LOG4CXX
@@ -147,7 +143,6 @@ namespace pztopology {
     static int vectorsideorder [18] = {0,1,4,1,2,5,2,3,6,3,0,7,4,5,6,7,8,8};
     
     static int bilinearounao [18] =   {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
-	//static int bilinearounao [18] =   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     static int direcaoksioueta [18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
     
     static int permutationsQ [8][9] =
@@ -225,14 +220,14 @@ namespace pztopology {
 	}
 	
 	
-	TPZTransform<> TPZQuadrilateral::TransformElementToSide(int side){
+	TPZTransform TPZQuadrilateral::TransformElementToSide(int side){
 		
 		if(side<0 || side>8){
 			PZError << "TPZShapeQuad::TransformElementToSide called with side error\n";
-			return TPZTransform<>(0,0);
+			return TPZTransform(0,0);
 		}
 		
-		TPZTransform<> t(sidedimension[side],2);//t(dimto,2)
+		TPZTransform t(sidedimension[side],2);//t(dimto,2)
 		t.Mult().Zero();
 		t.Sum().Zero();
 		
@@ -259,7 +254,7 @@ namespace pztopology {
 				t.Mult()(1,1) = 1.0;
 				return t;
 		}
-		return TPZTransform<>(0,0);
+		return TPZTransform(0,0);
 	}
 	
 	bool TPZQuadrilateral::IsInParametricDomain(TPZVec<REAL> &pt, REAL tol){
@@ -273,11 +268,9 @@ namespace pztopology {
 		}  
 	}//method
     
-    template<class T>
-    bool TPZQuadrilateral::MapToSide(int side, TPZVec<T> &InternalPar, TPZVec<T> &SidePar, TPZFMatrix<T> &JacToSide) {
+    bool TPZQuadrilateral::MapToSide(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide) {
 		bool regularmap = true;
-        TPZTransform<T> Transf;
-        Transf.CopyFrom(pztopology::TPZQuadrilateral::SideToSideTransform(NSides - 1, side));
+		TPZTransform Transf = pztopology::TPZQuadrilateral::SideToSideTransform(NSides - 1, side);
 		SidePar.Resize(SideDimension(side));
 		Transf.Apply(InternalPar,SidePar);
 		
@@ -357,15 +350,15 @@ namespace pztopology {
 		}
 	}
 	
-	TPZTransform<> TPZQuadrilateral::SideToSideTransform(int sidefrom, int sideto)
+	TPZTransform TPZQuadrilateral::SideToSideTransform(int sidefrom, int sideto)
 	{
 		if(sidefrom <0 || sidefrom >= NSides || sideto <0 || sideto >= NSides) {
 			PZError << "TPZShapeQuad::SideToSideTransform sidefrom "<< sidefrom << 
 			' ' << sideto << endl;
-			return TPZTransform<>(0);
+			return TPZTransform(0);
 		}
 		if(sidefrom == sideto) {
-			return TPZTransform<>(sidedimension[sidefrom]);
+			return TPZTransform(sidedimension[sidefrom]);
 		}
 		if(sidefrom == NSides-1) {
 			return TransformElementToSide(sideto);
@@ -376,7 +369,7 @@ namespace pztopology {
 			if(highsides[sidefrom][is] == sideto) {
 				int dfr = sidedimension[sidefrom];
 				int dto = sidedimension[sideto];
-				TPZTransform<> trans(dto,dfr);
+				TPZTransform trans(dto,dfr);
 				int i,j;
 				for(i=0; i<dto; i++) {
 					for(j=0; j<dfr; j++) {
@@ -389,7 +382,7 @@ namespace pztopology {
 		}
 		PZError << "TPZShapeQuad::SideToSideTransform highside not found sidefrom "
 		<< sidefrom << ' ' << sideto << ".\n";
-		return TPZTransform<>(0);
+		return TPZTransform(0);
 	}
 	
 	
@@ -448,13 +441,13 @@ namespace pztopology {
 	}
 	
 	
-	TPZTransform<> TPZQuadrilateral::TransformSideToElement(int side){
+	TPZTransform TPZQuadrilateral::TransformSideToElement(int side){
 		
 		if(side<0 || side>8){
 			PZError << "TPZShapeQuad::TransformSideToElement side out range\n";
-			return TPZTransform<>(0,0);
+			return TPZTransform(0,0);
 		}
-		TPZTransform<> t(2,sidedimension[side]);
+		TPZTransform t(2,sidedimension[side]);
 		t.Mult().Zero();
 		t.Sum().Zero();
 		
@@ -496,7 +489,7 @@ namespace pztopology {
 				t.Mult()(1,1) =  1.0;
 				return t;
 		}
-		return TPZTransform<>(0,0);
+		return TPZTransform(0,0);
 	}
 	
 	
@@ -1082,11 +1075,3 @@ namespace pztopology {
         }
     }
 }
-
-template
-bool pztopology::TPZQuadrilateral::MapToSide<REAL>(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide);
-
-#ifdef _AUTODIFF
-template
-bool pztopology::TPZQuadrilateral::MapToSide<Fad<REAL> >(int side, TPZVec<Fad<REAL> > &InternalPar, TPZVec<Fad<REAL> > &SidePar, TPZFMatrix<Fad<REAL> > &JacToSide);
-#endif

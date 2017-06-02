@@ -7,10 +7,6 @@
 #include "pzquad.h"
 #include "pzeltype.h"
 
-#ifdef _AUTODIFF
-#include "fad.h"
-#endif
-
 #include "pzcreateapproxspace.h"
 
 namespace pztopology {
@@ -39,32 +35,15 @@ namespace pztopology {
     int TPZPoint::NBilinearSides()
     {return 0;}
     
-    template<class T>
-    bool TPZPoint::MapToSide(int side, TPZVec<T> &InternalPar, TPZVec<T> &SidePar, TPZFMatrix<T> &JacToSide) {
+    bool TPZPoint::MapToSide(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide) {
 		SidePar.Resize(0); JacToSide.Resize(0,0);
 		return true;
 	}
     
     void TPZPoint::ParametricDomainNodeCoord(int node, TPZVec<REAL> &nodeCoord)
     {
-
-        if(node > NCornerNodes)
-        {
-            DebugStop();
-        }
-        nodeCoord.Resize(Dimension, 0.);
-        switch (node) {
-            case (0):
-            {
-                return;
-                break;
-            }
-            default:
-            {
-                DebugStop();
-                break;
-            }
-        }
+        //It doesnt make any sense ask node coordinate of 0D element
+        DebugStop();
     }
 	
 	/**
@@ -108,11 +87,3 @@ namespace pztopology {
     }
 	
 }
-
-template
-bool pztopology::TPZPoint::MapToSide<REAL>(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide);
-
-#ifdef _AUTODIFF
-template
-bool pztopology::TPZPoint::MapToSide<Fad<REAL> >(int side, TPZVec<Fad<REAL> > &InternalPar, TPZVec<Fad<REAL> > &SidePar, TPZFMatrix<Fad<REAL> > &JacToSide);
-#endif

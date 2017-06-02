@@ -361,7 +361,7 @@ void TPZCompMesh::InitializeBlock() {
 }
 
 void TPZCompMesh::ExpandSolution() {
-  fBlock.Resequence();
+	fBlock.Resequence();
 	long ibl,nblocks = fBlock.NBlocks();
 	
 	//TPZFMatrix<REAL> OldSolution(fSolution);
@@ -549,7 +549,21 @@ void TPZCompMesh::CleanUpUnconnectedNodes() {
     {
 		std::stringstream sout;
 		sout << "permute to put the free connects to the back\n";
-		if(nblocks < 50) for (i=0;i<nblocks;i++) sout << permute[i] << ' ';
+        if(nblocks < 50)
+        {
+            sout << "original sequence numbers|nelconected\n";
+            long nel = fConnectVec.NElements();
+            for (long el=0; el<nel; el++) {
+                TPZConnect &c = fConnectVec[el];
+                long seqnum = c.SequenceNumber();
+                sout << seqnum << '|' << c.NElConnected() << " ";
+            }
+            sout << std::endl;
+        }
+        if(nblocks < 50) {
+            for (i=0;i<nblocks;i++) sout << permute[i] << ' ';
+            sout << std::endl;
+        }
 		sout << "need = " << need << endl;
 		LOGPZ_DEBUG(logger,sout.str());
     }
@@ -567,6 +581,50 @@ void TPZCompMesh::CleanUpUnconnectedNodes() {
 		}
 #endif
 		Permute(permute);
+        
+#ifdef LOG4CXX
+        if (logger->isDebugEnabled() && nblocks < 50)
+        {
+            if(nblocks < 50)
+            {
+                std::stringstream sout;
+                sout << "after permute sequence numbers|nelconected\n";
+                long nel = fConnectVec.NElements();
+                for (long el=0; el<nel; el++) {
+                    TPZConnect &c = fConnectVec[el];
+                    long seqnum = c.SequenceNumber();
+                    sout << seqnum << '|' << c.NElConnected() << " ";
+                }
+                LOGPZ_DEBUG(logger, sout.str())
+            }
+            
+        }
+#endif
+        long nel = fConnectVec.NElements();
+        for (long i=0;i<nel;i++) {
+            TPZConnect &no = fConnectVec[i];
+            if (no.NElConnected() == 0 && no.SequenceNumber() >= nblocks-nremoved) {
+                no.Reset();
+                fConnectVec.SetFree(i);
+            }
+            else if(no.NElConnected() == 0 && no.SequenceNumber() != -1)
+            {
+                DebugStop();
+            }
+        }
+#ifdef PZDEBUG
+        {
+            long nel = fConnectVec.NElements();
+            for (long el=0; el<nel; el++) {
+                TPZConnect &c = fConnectVec[el];
+                long seqnum = c.SequenceNumber();
+                if (seqnum > nblocks-nremoved) {
+                    DebugStop();
+                }
+            }
+        }
+#endif
+
 		fBlock.SetNBlocks(nblocks-nremoved);
 	}
 }
@@ -707,7 +765,8 @@ void TPZCompMesh::Skyline(TPZVec<long> &skyline) {
       depConInd[oldSize] = i;
 			continue;
     }
-    if (connectVec[i].SequenceNumber() > maxSequenceNumberIndependentConnect ) {
+    if (connectVec[i].SequenceNumber() > maxSequenceNumberIndependentConnect && !connectVec[i].IsCondensed())
+    {
       maxSequenceNumberIndependentConnect  = connectVec[i].SequenceNumber();
     }
   }
@@ -837,7 +896,7 @@ void TPZCompMesh::BuildTransferMatrix(TPZCompMesh &coarsemesh, TPZTransfer<STATE
 			" between superelements\n";
 			continue;
 		}
-		TPZTransform<> t(coarsel->Dimension());
+		TPZTransform t(coarsel->Dimension());
 		t=finegel->BuildTransform2(finegel->NSides()-1,coarsegel,t);
 		finecel->BuildTransferMatrix(*coarsel,t,transfer);
 	}
