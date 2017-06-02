@@ -887,7 +887,8 @@ TPZGeoMesh *LaplaceInCube::CreateOneCubo(int nref)
 
 TPZGeoMesh *LaplaceInCube::CreateOneQuadraticCube(int nref)
 {
-    
+    DebugStop();
+    return NULL;
 }
 
 void LaplaceInCube::SolExata(const TPZVec<REAL> &pt, TPZVec<STATE> &solp, TPZFMatrix<STATE> &flux){
@@ -1763,10 +1764,11 @@ void LaplaceInCube::ChangeExternalOrderConnects(TPZCompMesh *mesh){
                 nshape = co.NShape();
                 if(corder!=cordermin){
                     cordermin = corder-1;
-                    co.SetOrder(cordermin);
+                    long cindex = cel->ConnectIndex(icon);
+                    co.SetOrder(cordermin,cindex);
                     
                     TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *>(cel);
-                    nshape = intel->NConnectShapeF(icon);
+                    nshape = intel->NConnectShapeF(icon,cordermin);
                     
                     co.SetNShape(nshape);
                     mesh->Block().Set(co.SequenceNumber(),nshape);

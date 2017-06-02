@@ -22,7 +22,6 @@
 #include "pzstepsolver.h"
 
 #include "pzgengrid.h"
-#include "pzfunction.h"
 
 #include "pzlog.h"
 
@@ -48,8 +47,8 @@ static void SolExataSteklov(const TPZVec<REAL> &loc, TPZVec<STATE> &u, TPZFMatri
 static void NeumannEsquerda(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
     REAL normal[2] = {-1,0};
     
-    TPZManVector<REAL> u(1);
-    TPZFNMatrix<10> du(2,1);
+    TPZManVector<STATE> u(1);
+    TPZFNMatrix<10,STATE> du(2,1);
     SolExataSteklov(loc,u,du);
     
     result.Resize(1);
@@ -59,8 +58,8 @@ static void NeumannEsquerda(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
 static void NeumannDireita(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
     REAL normal[2] = {+1,0};
     
-    TPZManVector<REAL> u(1);
-    TPZFNMatrix<10> du(2,1);
+    TPZManVector<STATE> u(1);
+    TPZFNMatrix<10,STATE> du(2,1);
     SolExataSteklov(loc,u,du);
     
     result.Resize(1);
@@ -70,8 +69,8 @@ static void NeumannDireita(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
 static void NeumannAcima(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
     REAL normal[2] = {0,+1};
     
-    TPZManVector<REAL> u(1);
-    TPZFNMatrix<10> du(2,1);
+    TPZManVector<STATE> u(1);
+    TPZFNMatrix<10,STATE> du(2,1);
     SolExataSteklov(loc,u,du);
     
     result.Resize(1);
@@ -176,6 +175,8 @@ int mainEx1(int argc, char *argv[])
 		mat->SetNonSymmetric();
 	}
   cmesh->InsertMaterialObject(mat);
+  
+	const int pOrder = 2;
 	
   ///Condições de contorno
 	TPZFMatrix<STATE> val1(1,1,0.), val2(1,1,0.);
@@ -186,18 +187,18 @@ int mainEx1(int argc, char *argv[])
   cmesh->InsertMaterialObject(BCondNeumannZero);
 	
   TPZMaterial * BCondNeumannEsq = mat->CreateBC(mat, -5, 1, val1, val2);//1 = Neumann
-	BCondNeumannEsq->SetForcingFunction(NeumannEsquerda,4);
+	BCondNeumannEsq->SetForcingFunction(NeumannEsquerda,pOrder);
   cmesh->InsertMaterialObject(BCondNeumannEsq);
 	
   TPZMaterial * BCondNeumannDir = mat->CreateBC(mat, -4, 1, val1, val2);//1 = Neumann
-	BCondNeumannDir->SetForcingFunction(NeumannDireita,4);
+	BCondNeumannDir->SetForcingFunction(NeumannDireita,pOrder);
   cmesh->InsertMaterialObject(BCondNeumannDir);
 	
   TPZMaterial * BCondNeumannAcima = mat->CreateBC(mat, -6, 1, val1, val2);//1 = Neumann
-	BCondNeumannAcima->SetForcingFunction(NeumannAcima,4);
+	BCondNeumannAcima->SetForcingFunction(NeumannAcima,pOrder);
   cmesh->InsertMaterialObject(BCondNeumannAcima);
     
-	const int pOrder = 2;
+
 	cmesh->SetDefaultOrder(pOrder);
   cmesh->SetDimModel(dim);//dim = 2
 	

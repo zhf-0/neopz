@@ -10,7 +10,6 @@
 class TPZInterpolatedElement;
 template<class TVar>
 class TPZTransfer;
-template<class T>
 class TPZTransform;
 template<class T, class V>
 class TPZAvlMap;

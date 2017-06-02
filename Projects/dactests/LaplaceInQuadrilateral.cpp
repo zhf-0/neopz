@@ -1331,7 +1331,6 @@ TPZCompMesh *LaplaceInQuadrilateral::CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCo
     
     //solucao exata
 //     TPZAutoPointer<TPZFunction<STATE> > solexata;
-//     
 //     solexata = new TPZDummyFunction<STATE>(SolExata);
 //     material->SetForcingFunctionExact(solexata);
     
@@ -1877,7 +1876,8 @@ void LaplaceInQuadrilateral::ChangeExternalOrderConnects(TPZCompMesh *mesh){
                 nshape = co.NShape();
                 if(corder!=cordermin){
                     cordermin = corder-1;
-                    co.SetOrder(cordermin);
+                    long cindex = cel->ConnectIndex(icon);
+                    co.SetOrder(cordermin,cindex);
                     co.SetNShape(nshape-1);
                     mesh->Block().Set(co.SequenceNumber(),nshape-1);
                 }
