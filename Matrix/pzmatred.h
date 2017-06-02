@@ -115,10 +115,7 @@ public:
 	{
 		return fK10;
 	}
-    TPZFMatrix<TVar> &K11()
-    {
-        return fK11;
-    }
+    
     long Dim0()
     {
         return fDim0;
@@ -222,7 +219,7 @@ private:
 	TPZAutoPointer<TPZMatrixSolver<TVar> > fSolver;
 	
 	/** @brief Full Stiffnes matrix */
-	TPZFMatrix<TVar> fK11;
+	TSideMatrix fK11;
 	TSideMatrix fK01, fK10;
 	
 	/** @brief Right hand side or force matrix */

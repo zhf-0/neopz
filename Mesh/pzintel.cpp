@@ -298,7 +298,7 @@ void TPZInterpolatedElement::IdentifySideOrder(int side)
             orderchanged = 1;
             SetSideOrder(side, neworder);
         }
-#ifdef PZDEBUG
+#ifdef PZDEBUG2
         long cap = elvecequal.NElements();
         long il = 0;
         while(il<cap) {//SideOrder(int side)
@@ -450,7 +450,7 @@ void TPZInterpolatedElement::UpdateNeighbourSideOrder(int side, TPZVec<TPZCompEl
 	}
 }
 
-void TPZInterpolatedElement::BuildTransferMatrix(TPZInterpolatedElement &coarsel, TPZTransform<> &t, TPZTransfer<STATE> &transfer){
+void TPZInterpolatedElement::BuildTransferMatrix(TPZInterpolatedElement &coarsel, TPZTransform &t, TPZTransfer<STATE> &transfer){
 	// accumulates the transfer coefficients between the current element and the
 	// coarse element into the transfer matrix, using the transformation t
 	TPZGeoEl *ref = Reference();
@@ -850,32 +850,13 @@ long TPZInterpolatedElement::CreateMidSideConnect(int side) {
 
 void TPZInterpolatedElement::RestrainSide(int side, TPZInterpolatedElement *large, int neighbourside) {
 	TPZCompElSide thisside(this,side);
-	TPZCompElSide locallarge = thisside.LowerLevelElementList(1);
 	TPZCompElSide largecompside(large,neighbourside);
-	TPZGeoElSide locallargeref = locallarge.Reference();
 	TPZGeoElSide largecompsideref = largecompside.Reference();
-	if(!locallarge.Exists() || !locallargeref.NeighbourExists(largecompsideref)) {
-		LOGPZ_ERROR(logger, "Exiting RestrainSide called for a wrong large element");
-		return;
-	}
 	TPZInterpolatedElement *cel = 0;
-	if(locallarge.Exists()) cel = dynamic_cast<TPZInterpolatedElement *> (locallarge.Element());
+	if(largecompside.Exists()) cel = dynamic_cast<TPZInterpolatedElement *> (largecompside.Element());
 	if(!cel) {
-		LOGPZ_INFO(logger, "Exiting RestrainSide - null computational element.");
+		LOGPZ_ERROR(logger, "Exiting RestrainSide - null computational element.");
 		return;
-		/*  } else if(cel->Reference()->Level() < large->Reference()->Level()) {
-		 cout << "TPZInterpolatedElement::RestrainSide, I don't understand cel is larger\n";
-		 cout << "my level " << Reference()->Level() << " cel level " << cel->Reference()->Level()
-		 << " large level " << large->Reference()->Level() << endl;
-		 cout << "my id " << Reference()->Id() << " cel id " << cel->Reference()->Id()
-		 << " large id " << large->Reference()->Id() << endl;
-		 return;
-		 
-		 } else if(cel->Reference()->Level() > large->Reference()->Level()) {
-		 cout << "TPZInterpolatedElement::RestrainSide no restriction between " << Reference()->Id()
-		 << " and " << large->Reference()->Id() << " because of " << cel->Reference()->Id() << endl;
-		 return;
-		 */
 	}
     int locind = MidSideConnectLocId(side);
     if (locind < 0) {
@@ -886,23 +867,23 @@ void TPZInterpolatedElement::RestrainSide(int side, TPZInterpolatedElement *larg
         /// no shape functions to restrain
         return;
     }
-	if(myconnect.HasDependency() && locallargeref.Dimension() > 0) {
+	if(myconnect.HasDependency() && largecompsideref.Dimension() > 0) {
 		LOGPZ_WARN(logger, "RestrainSide - unnecessary call to restrainside");
         DebugStop();
 	}
-	if (cel->ConnectIndex(cel->MidSideConnectLocId(locallarge.Side())) == -1){
+	if (cel->ConnectIndex(cel->MidSideConnectLocId(largecompside.Side())) == -1){
 		LOGPZ_ERROR(logger, "Exiting RestrainSide - Side of large element not initialized");
         DebugStop();
 		return;
 	}
-	if(locallargeref.Dimension() == 0) {
+	if(largecompsideref.Dimension() == 0) {
 		LOGPZ_ERROR(logger, "Exiting RestrainSide - dimension of large element is 0");
         DebugStop();
 		return;
 	}
 	TPZGeoElSide thisgeoside(Reference(),side);
 	TPZGeoElSide largeside = largecompside.Reference();
-	TPZTransform<> t(thisgeoside.Dimension());
+	TPZTransform t(thisgeoside.Dimension());
 	thisgeoside.SideTransform3(largeside,t);
     int nsideconnects = NSideConnects(side);
     int maxord=1;
@@ -928,8 +909,8 @@ void TPZInterpolatedElement::RestrainSide(int side, TPZInterpolatedElement *larg
     int largesidedimension = largeside.Dimension();
 	int numshapel = large->NSideShapeF(neighbourside);
 	TPZFNMatrix<100,REAL> phis(numshape,1),dphis(2,numshape),phil(numshapel,1),dphil(2,numshapel);
-	TPZFNMatrix<1000,STATE> MSL(numshape,numshapel,0.);
-	TPZFNMatrix<1000,STATE> *M = new TPZFNMatrix<1000,STATE>(numshape,numshape,0.);
+	TPZFNMatrix<1000,REAL> MSL(numshape,numshapel,0.);
+	TPZFNMatrix<1000,REAL> *M = new TPZFNMatrix<1000,REAL>(numshape,numshape,0.);
     TPZManVector<REAL,3> par(sidedimension),pointl(largesidedimension);//,point(3);
 	long in,jn;
 	REAL weight;
@@ -954,7 +935,7 @@ void TPZInterpolatedElement::RestrainSide(int side, TPZInterpolatedElement *larg
         LOGPZ_DEBUG(logger, sout.str())
     }
 #endif
-	TPZStepSolver<STATE> MSolve(M);
+	TPZStepSolver<REAL> MSolve(M);
 	MSolve.SetDirect(ELU);
     
 	MSolve.Solve(MSL,MSL);
@@ -1166,7 +1147,7 @@ int TPZInterpolatedElement::CheckElementConsistency(){
 				TPZFMatrix<REAL> dphil(idim,nshapel);
 				int npts = sirule->NPoints();
 				int ipt;
-				TPZTransform<> transform (Reference()->SideToSideTransform(iside,sidel));
+				TPZTransform transform (Reference()->SideToSideTransform(iside,sidel));
 				for (ipt = 0; ipt<npts; ipt++){
 					TPZVec <REAL> pts(dimsmall);
 					TPZVec <REAL> ptl(idim);
@@ -1189,7 +1170,7 @@ int TPZInterpolatedElement::CheckElementConsistency(){
 	return 1;
 }
 
-int TPZInterpolatedElement::CompareShapeF(int sides, int sidel, TPZFMatrix<REAL> &phis, TPZFMatrix<REAL> &dphis, TPZFMatrix<REAL> &phil, TPZFMatrix<REAL> &dphil, TPZTransform<> &transform){
+int TPZInterpolatedElement::CompareShapeF(int sides, int sidel, TPZFMatrix<REAL> &phis, TPZFMatrix<REAL> &dphis, TPZFMatrix<REAL> &phil, TPZFMatrix<REAL> &dphil, TPZTransform &transform){
 	int ncons = NSideConnects(sides);
 	int nconl = NSideConnects(sidel);
 	TPZVec<int> posl(nconl+1), poss(ncons+1);

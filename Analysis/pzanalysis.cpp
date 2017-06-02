@@ -88,7 +88,7 @@ fGeoMesh(0), fCompMesh(0), fRhs(), fSolution(), fSolver(0), fStep(0), fTime(0.),
 	fGraphMesh[0] = 0;
 	fGraphMesh[1] = 0;
 	fGraphMesh[2] = 0;
-	this->SetCompMesh(mesh, mustOptimizeBandwidth);
+    this->SetCompMesh(mesh, mustOptimizeBandwidth);
 }
 
 TPZAnalysis::TPZAnalysis(TPZAutoPointer<TPZCompMesh> mesh, bool mustOptimizeBandwidth, std::ostream &out) :
@@ -142,7 +142,8 @@ void TPZAnalysis::SetCompMesh(TPZCompMesh * mesh, bool mustOptimizeBandwidth) {
         this->SetSolver(defaultSolver);
       
     }
-    if(!this->fStructMatrix){
+    if(!this->fStructMatrix && mesh)
+    {
         //seta default do StructMatrix como Full Matrix
         TPZSkylineNSymStructMatrix  defaultMatrix(mesh);
         this->SetStructuralMatrix(defaultMatrix);
@@ -702,14 +703,14 @@ void TPZAnalysis::DefineGraphMesh(int dim, const TPZVec<std::string> &scalnames,
 	int pospos = plotfile.rfind(".pos");
 	int posvtk = plotfile.rfind(".vtk");
 	long filelength = plotfile.size();
-	if(filelength-posplot == 4 && posplot != -1)	{
+	if(filelength-posplot == 3)	{
 		fGraphMesh[dim1] = new TPZV3DGraphMesh(fCompMesh,dim,matit->second) ;
-	}else if(filelength-posdx == 3 && posdx != -1) {
+	}else if(filelength-posdx == 3) {
 		fGraphMesh[dim1] = new TPZDXGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames) ;
-	}else if(filelength-pospos == 4 && pospos != -1) {
+	}else if(filelength-pospos == 3) {
 		fGraphMesh[dim1] = new TPZMVGraphMesh(fCompMesh,dim,matit->second);
 	}
-	else if(filelength-posvtk == 4 && posvtk != -1) {
+	else if(filelength-posvtk == 4) {
 		fGraphMesh[dim1] = new TPZVTKGraphMesh(fCompMesh,dim,matit->second,scalnames,vecnames);
 	} else {
 		cout << "grafgrid was not created\n";

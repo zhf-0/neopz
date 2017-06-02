@@ -8,7 +8,7 @@ if(BUILD_UNITTESTING)
 
 	include (CTestTestFile.cmake)
 
-	set(pztestgeometry ${headers} ${sources} PARENT_SCOPE )
+	set(pztestintegnum ${headers} ${sources} PARENT_SCOPE )
 
 	add_executable(TestGeometry ${headers} ${sources})
 

@@ -6,8 +6,6 @@
 
 #include "tpzmatredstructmatrix.h"
 #include "pzskylstrmatrix.h"
-#include "pzsbstrmatrix.h"
-#include "pzsbndmat.h"
 #include "tpzverysparsematrix.h"
 #include "pzsubcmesh.h"
 #include "pzmatred.h"
@@ -15,10 +13,6 @@
 template< class TStructMatrix, class TSparseMatrix>
 TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(TPZSubCompMesh *mesh) : TPZStructMatrix(mesh)
 {
-    if(!mesh)
-    {
-        DebugStop();
-    }
 	fInternalEqs = mesh->NumInternalEquations();
 }
 
@@ -53,6 +47,3 @@ TPZMatrix<STATE> *TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::Create()
 
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZVerySparseMatrix<STATE> >;
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZFMatrix<STATE> >;
-template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZVerySparseMatrix<STATE> >;
-template class TPZMatRedStructMatrix<TPZSBandStructMatrix,TPZFMatrix<STATE> >;
-

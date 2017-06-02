@@ -8,22 +8,14 @@
 
 /*******       TPZGeoElSide       *******/
 
-template<class T>
-class TPZTransform;
-class TPZCompElSide;
-template<class TVar>
-class TPZFMatrix;
-
 #include "pzvec.h"
 #include "pzstack.h"
 #include "pzgmesh.h"
-#include "pztrnsform.h"
-
-#ifdef _AUTODIFF
-#include "fadType.h"
-#endif
-
+#include "pzfmatrix.h"
 #include <set>
+
+class TPZTransform;
+class TPZCompElSide;
 
 class TPZGeoElSide;
 
@@ -110,19 +102,8 @@ public:
 	
     /** @brief X coordinate of a point loc of the side */
 	void X(TPZVec< REAL > &loc, TPZVec< REAL > &result) const;
-    
-    /** @brief X coordinate of a point loc of the side */
-    void GradX(TPZVec<REAL> &loc, TPZFMatrix<REAL> &gradx) const;
 	
-#ifdef _AUTODIFF
-    /** @brief X coordinate of a point loc of the side */
-    void X(TPZVec< Fad<REAL> > &loc, TPZVec< Fad<REAL> > &result) const;
-    
-    /** @brief X coordinate of a point loc of the side */
-    void GradX(TPZVec< Fad<REAL> > &loc, TPZFMatrix< Fad<REAL> > &gradx) const;
-#endif
-
-    /** @brief Jacobian associated with the side of the element */
+	/** @brief Jacobian associated with the side of the element */
 	void Jacobian(TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const;
     
     /** @brief Area associated with the side */
@@ -214,7 +195,7 @@ public:
 	
 	/** @brief Accumulates the transformations from the current element/side to the neighbour/side
 	 * @note Third improved version */
-	void SideTransform3(TPZGeoElSide neighbour,TPZTransform<> &t);
+	void SideTransform3(TPZGeoElSide neighbour,TPZTransform &t);
 	
 	void SetConnectivity(const TPZGeoElSide &neighbour) const;
     
@@ -229,13 +210,13 @@ public:
 	/** @brief Fill in the data structure for the neighbouring information*/
 	void SetNeighbour(const TPZGeoElSide &neighbour) const;
 	
-	TPZTransform<REAL> NeighbourSideTransform(TPZGeoElSide &neighbour);
+	TPZTransform NeighbourSideTransform(TPZGeoElSide &neighbour);
 	
 	/** 
 	 * @brief Compute the transformation between the master element space of one side
 	 * of an element to the master element space of a higher dimension side
 	 */
-	TPZTransform<REAL> SideToSideTransform(TPZGeoElSide &higherdimensionside);
+	TPZTransform SideToSideTransform(TPZGeoElSide &higherdimensionside);
     
     TPZGeoElSide LowestFatherSide();
     

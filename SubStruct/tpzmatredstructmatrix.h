@@ -15,10 +15,10 @@
 
 /**
  * @ingroup substructure
- * @brief .. . \ref substructure " Structure"
+ * @brief .. . \ref substructure "Sub Structure"
  */
 template<class TStructMatrix, class TSparseMatrix>
-class TPZMatRedStructMatrix : public TPZStructMatrix
+class TPZMatRedStructMatrix : TPZStructMatrix
 {
 public:
 	/** @brief Constructor */

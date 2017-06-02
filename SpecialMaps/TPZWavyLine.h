@@ -68,8 +68,7 @@ namespace pzgeom {
 		static std::string TypeName() { return "Wavy";}
 		
 		/* @brief Computes the coordinate of a point given in parameter space */
-        template<class T>
-        void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &result) const
+        void X(const TPZGeoEl &gel,TPZVec<REAL> &loc,TPZVec<REAL> &result) const
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
@@ -79,14 +78,7 @@ namespace pzgeom {
         template<class T>
         void GradX(const TPZGeoEl &gel, TPZVec<T> &par, TPZFMatrix<T> &gradx) const
         {
-            gradx.Resize(3,1);
-            gradx.Zero();
-            TPZFNMatrix<3*NNodes> coord(3,NNodes);
-            CornerCoordinates(gel, coord);
-            T cosval = cos(fNumWaves*M_PI*par[0]);
-            for (int i=0; i<3; i++) {
-                gradx(i) = (coord(i,1)-coord(i,0))/2. + fNumWaves*M_PI*cosval*fWaveDir[i];
-            }
+            DebugStop();
         }
 		
         /* @brief Computes the jacobian of the map between the master element and deformed element */
@@ -113,16 +105,18 @@ namespace pzgeom {
             }
         }
         
-        template<class T>
-        void X(const TPZFMatrix<REAL> &nodes,TPZVec<T> &loc,TPZVec<T> &result) const
+	void X(const TPZFMatrix<REAL> &nodes,TPZVec<REAL> &loc,TPZVec<REAL> &result) const
         {
             TPZGeoLinear::X(nodes,loc,result);
-            T sinval = sin(this->fNumWaves*M_PI*loc[0]);
+            REAL sinval = sin(this->fNumWaves*M_PI*loc[0]);
 
             for (int i=0; i<3; i++) {
                 result[i] += this->fWaveDir[i]*sinval;
             }
-
+/*	    std::cout << "loc " << loc << std::endl;
+	    std::cout << "sinval " << sinval << std::endl;
+	    std::cout << "this->fNumWaves*M_PI*loc[0] " << this->fNumWaves*M_PI*loc[0] << std::endl;	    
+	    std::cout << "result " << result << std::endl;*/	    
         }
 		
 		

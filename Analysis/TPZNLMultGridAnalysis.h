@@ -9,7 +9,6 @@
 #include "pzanalysis.h"
 
 class TPZInterpolatedElement;
-template<class T>
 class TPZTransform;
 
 template <class TVar>

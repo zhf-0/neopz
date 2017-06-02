@@ -14,16 +14,15 @@ TPZStructMatrix * TPZSBandStructMatrix::Clone(){
 
 TPZMatrix<STATE> * TPZSBandStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
 	TPZMatrix<STATE> *mat = Create();
-	//rhs.Redim(mat->Rows(),1);
-    rhs.Redim(fMesh->NEquations(),1);//size of the original system (no filter)
+	rhs.Redim(mat->Rows(),1);
 	Assemble(*mat,rhs,guiInterface);
     return mat;
 }
 
 TPZMatrix<STATE> * TPZSBandStructMatrix::Create(){
-//    if (fEquationFilter.IsActive()) {
-//        DebugStop();
-//    }
+    if (fEquationFilter.IsActive()) {
+        DebugStop();
+    }
 	long neq = fEquationFilter.NActiveEquations();
 	
 	long band = fMesh->BandWidth();
