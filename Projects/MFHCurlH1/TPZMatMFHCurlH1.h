@@ -9,9 +9,8 @@
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "../HCurl2D/TPZMatHCurl2D.h"
+#include "TPZMatHCurlProjection.h"
 
-enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
 /**
  * @ingroup material
  * @brief This class implements the weak statement of a waveguide problem as stated in Jin's 
@@ -23,7 +22,7 @@ class  TPZMatMFHCurlH1 : public TPZVecL2
 {
     
 protected:
-    
+    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
     //COM CERTEZA
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);

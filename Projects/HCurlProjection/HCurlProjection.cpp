@@ -149,7 +149,6 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl , TPZVec<long> &activeEquat
             continue;
         }
         if(cel->Reference()->MaterialId() == -1 ){
-            TPZMatHCurlProjection *mat = dynamic_cast<TPZMatHCurlProjection*>(cmeshHCurl->FindMaterial(1));
             std::set<long> boundConnectsEl;
             std::set<long> depBoundConnectsEl;
             std::set<long> indepBoundConnectsEl;

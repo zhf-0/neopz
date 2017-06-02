@@ -41,6 +41,9 @@
 #include "pzbuildmultiphysicsmesh.h"
 #include "pzvisualmatrix.h"
 #include "pzcondensedcompel.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
@@ -52,7 +55,7 @@ STATE ur( const TPZVec<REAL> & x){
 STATE er( const TPZVec<REAL> & x){
     return 1;
 }
-void RunSimulation( bool isCutOff, bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0);
+void RunSimulation( bool isCutOff, bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, int nSolutions, bool generatingResults);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
@@ -71,7 +74,7 @@ int main(int argc, char *argv[])
     //PARAMETROS FISICOS DO PROBLEMA
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
-    REAL f0 = 15 * 1e+9;
+    REAL f0 = 25 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
     
@@ -79,14 +82,31 @@ int main(int argc, char *argv[])
     bool filterEquations = true;
     bool usingFullMtrx = true;
     bool optimizeBandwidth = false;
-    
-    const int meshType = createRectangular;
-    
-    int nDiv = 10;
+	
+    const int meshType = createTriangular;
+    bool generatingResults = false;
+	
+	if(generatingResults){
+		struct stat sb;
+		if (stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)){
+			std::string fileName("../resultsQuali/ev");
+			for (int i = 0; i < 100; i++) {
+				std::string testName = fileName;
+				testName.append( std::to_string(i) );
+				testName.append( ".csv" );
+				if (std::ifstream( testName.c_str() ) ) {
+					std::remove( testName.c_str() );
+				}
+			}
+		}
+	}
+    int nDiv = 2;
     int nSim = 1;
+    int nSolutions = 10;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( isCutOff, filterEquations, meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0);
+        std::cout<<"nDiv = "<<nDiv<<std::endl;
+        RunSimulation( isCutOff, filterEquations, meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , nSolutions, generatingResults);
         nDiv += 5;
     }
     
@@ -95,7 +115,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0){
+void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0 , int nSolutions, bool generatingResults){
     TPZTimer timer;
     
     timer.start();
@@ -133,9 +153,7 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
         std::cout<<"cmeshMF->NEquations()"<<"\t"<<cmeshMF->NEquations()<<std::endl;
     }
     
-    
-    int nSolutions = neq >= 10 ? 10 : neq;
-    
+    nSolutions = nSolutions > neq ? neq : nSolutions;
     TPZAutoPointer<TPZSBandStructMatrix> sbstr;
     
     TPZAutoPointer<TPZFStructMatrix> fmtrx;
@@ -167,24 +185,23 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
     matAlias->SetMatrixA();
     
     an.Assemble();
-    TPZFMatrix<STATE> *  stiffAFPtr = NULL , *stiffBFPtr = NULL;
-    TPZSBMatrix<STATE> * stiffABPtr = NULL , *stiffBBPtr = NULL;
+    TPZMatrix<STATE> *  stiffAPtr = NULL , *stiffBPtr = NULL;
     if (usingFullMtrx) {
-        stiffAFPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+        stiffAPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
         matAlias->SetMatrixB();
         std::cout<<"entrando no assemble matrix B"<<std::endl;
         an.Assemble();
-        stiffBFPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+        stiffBPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
         std::cout<<"saindo do assemble"<<std::endl;
         
         
     }
     else{
-        stiffABPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+        stiffAPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
         matAlias->SetMatrixB();
         std::cout<<"entrando no assemble matrix B"<<std::endl;
         an.Assemble();
-        stiffBBPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
+        stiffBPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
         std::cout<<"saindo do assemble"<<std::endl;
     }
     
@@ -192,27 +209,27 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
     std::ofstream fileA("../stiffA.csv");
     std::ofstream fileB("../stiffB.csv");
     char number[256];
-    for (int i = 0; i<stiffAFPtr->Rows(); i++) {
-        for(int j = 0 ; j<stiffAFPtr->Rows();j++){
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffAFPtr->GetVal(i,j))) );
+    for (int i = 0; i<stiffAPtr->Rows(); i++) {
+        for(int j = 0 ; j<stiffAPtr->Rows();j++){
+            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffAPtr->GetVal(i,j))) );
             fileA<<number;
             
             fileA<<" + I * ";
             
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffAFPtr->GetVal(i,j))) );
+            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffAPtr->GetVal(i,j))) );
             fileA<<number;
-            if( j != stiffAFPtr->Rows() - 1){
+            if( j != stiffAPtr->Rows() - 1){
                 fileA<<" , ";
             }
             
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffBFPtr->GetVal(i,j))) );
+            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffBPtr->GetVal(i,j))) );
             fileB<<number;
             
             fileB<<" + I * ";
             
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffBFPtr->GetVal(i,j))) );
+            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffBPtr->GetVal(i,j))) );
             fileB<<number;
-            if( j != stiffAFPtr->Rows() - 1){
+            if( j != stiffAPtr->Rows() - 1){
                 fileB<<" , ";
             }
         }
@@ -226,13 +243,13 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
     TPZFMatrix< STATE > eVectors;
     std::cout<<"entrando no calculo dos autovalores"<<std::endl;
     if (usingFullMtrx) {
-        TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAFPtr);
-        TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBFPtr);
+        TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
+        TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
         stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
     }
     else{
-        TPZSBMatrix<STATE> *stiffA = dynamic_cast<TPZSBMatrix<STATE> *>(stiffABPtr);
-        TPZSBMatrix<STATE> *stiffB = dynamic_cast<TPZSBMatrix<STATE> *>(stiffBBPtr);
+        TPZSBMatrix<STATE> *stiffA = dynamic_cast<TPZSBMatrix<STATE> *>(stiffAPtr);
+        TPZSBMatrix<STATE> *stiffB = dynamic_cast<TPZSBMatrix<STATE> *>(stiffBPtr);
         stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
     }
     
@@ -250,10 +267,29 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
         eigenValuesRe.insert(duplet);
     }
     int i = 0;
-    std::string fileName("../ev");
-    fileName.append(std::to_string(nDiv));
-    fileName.append(".txt");
+	std::string pathName;
+	if(generatingResults){
+		struct stat sb;
+		std::string command;
+		pathName = "../resultsQuali";
+		if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
+		{
+			command = "mkdir";
+			command.append(" ../resultsQuali");
+			std::system(command.c_str());
+		}
+	}
+	else{
+		pathName = "..";
+	}
+	
+	std::string fileName = pathName;
+	fileName.append("/ev");
+	fileName.append(std::to_string(nDiv));
+	fileName.append(".csv");
+
     std::ofstream fileEigenValues(fileName.c_str());
+	
     for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
         if(isCutOff){
             if(std::abs(iT->first) < 1e-2 ) continue;
@@ -269,17 +305,32 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
         else
         {
             
-            std::cout<< iT->first <<std::endl;
-            
-            //std::cout<< "eigvec "<<iT->second <<std::endl;
+            fileEigenValues<<iT->first<<std::endl;
             i++;
-//            if( i >= nSolutions)
-//                break;
+            if( i >= nSolutions)
+                continue;
+            if( i > 50)
+                break;
+            std::cout<< iT->first <<std::endl;
         }
     }
-    if (isCutOff) {
+    if (isCutOff||generatingResults) {
         return;
     }
+    std::string fileNameEVec("../evec");
+    fileNameEVec.append(std::to_string(nDiv));
+    fileNameEVec.append(".txt");
+    std::ofstream fileEigenVectors(fileNameEVec.c_str());
+    for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
+        fileEigenVectors<<iT->second<<std::endl;
+        //std::cout<< "eigvec "<<iT->second <<std::endl;
+        i++;
+        if( i >= nSolutions)
+            continue;
+        if( i > 50)
+            break;
+    }
+    
     std::cout << "Post Processing..." << std::endl;
     
     
@@ -589,41 +640,14 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     
     
     TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        el->SetSideOrient(4,  1);
-        el->SetSideOrient(5,  1);
-        el->SetSideOrient(6, -1);
-        el->SetSideOrient(7, -1);
-    }
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        if ( i % 2 == 1) {
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4, -1);
-            el->SetSideOrient(5, -1);
-        }
-        else{
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4,  1);
-            el->SetSideOrient(5, -1);
-        }
-    }
+	
     cmeshHCurl->CleanUpUnconnectedNodes();
     
     
     ///creates lagrange multiplier mesh
     
     TPZCompMesh * cmeshLag = new TPZCompMesh(gmesh);
-    cmeshLag->SetDefaultOrder(pOrder+1);//seta ordem polimonial de aproximacao
+    cmeshLag->SetDefaultOrder(pOrder);//seta ordem polimonial de aproximacao
     cmeshLag->SetDimModel(dim);//seta dimensao do modelo
     // Inserindo material na malha
     

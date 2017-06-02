@@ -10,9 +10,23 @@
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
 
+
+const REAL M_C  (299792458); //velocidade da luz no vacuo
+const REAL M_UZERO  (4*M_PI*1e-7);//permeabilidade do meio livre
+const REAL M_EZERO  (1./(M_UZERO * M_C * M_C));//permissividade do meio livre
+#ifdef STATE_COMPLEX
+const STATE imaginary(0.,1.);//unidade imaginaria
+#endif
+inline STATE urDefault( const TPZVec<REAL> & x){
+    return 1.;
+}
+inline STATE erDefault( const TPZVec<REAL> & x){
+    return 4.6;//based on FR4 Specs
+}
+
 /**
  * @ingroup material
- * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
+ * @brief This class implements an L2 projection for HCurl basis functions  
  */
 class  TPZMatHCurlProjection : public TPZVecL2
 {

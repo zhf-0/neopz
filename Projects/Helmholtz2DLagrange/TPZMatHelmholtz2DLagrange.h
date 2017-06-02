@@ -9,7 +9,7 @@
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "../HCurl2D/TPZMatHCurl2D.h"
+#include "TPZMatHCurlProjection.h"
 
 /**
  * @ingroup material

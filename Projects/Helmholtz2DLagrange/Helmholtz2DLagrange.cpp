@@ -15,7 +15,6 @@
 #include <string>
 #include "TPZMatHelmholtz2DLagrange.h"
 #include "pzextractval.h"
-#include "TPZMatHCurlProjection.h"
 #include "pzl2projection.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"

@@ -1,4 +1,4 @@
-# @file neopz/Projects/CMakeList.txt  -- First CMake file for Projects directory
+# @file neopz/Projects/CMakeList.txt  -- First CMake file for Projects directory 
 
 ENABLE_TESTING()
 
@@ -41,26 +41,26 @@ ENABLE_TESTING()
 
 			#Example of the hybrid mesh
 			add_subdirectory(HybridMesh)
-
+			
 			#Example of the  convection problem
 			add_subdirectory(Problema_Transporte)
 
 			#Testes Douglas
 			add_subdirectory(dactests)
-
-
+ 
+	
 			#Example to reading and using geometric mesh
 			add_subdirectory(testgeom)
 
 			#Testing and using shape functions
 			add_subdirectory(testshape)
-
+            
 			#Generic Example 2D with elasticity, using matrices phi, phi, etc
 			add_subdirectory(testmat)
 
 			#Using visual matrix of the DX
 			add_subdirectory(visualmatrix)
-
+			
 			source_group(CursoPZ FILES ${pzcurso})
 			#source_group(Shape FILES ${pztutorshape})
 			#source_group(Geometry FILES ${pztutorgeom})
@@ -79,6 +79,7 @@ ENABLE_TESTING()
 			add_subdirectory(RationalFunctionPyramid)
 
 			add_subdirectory(proDG)
+			
 
 		endif(BUILD_COMPLEX_PROJECTS)
 
@@ -86,7 +87,7 @@ ENABLE_TESTING()
 	endif(BUILD_TUTORIAL)
 
 	if(BUILD_PROJECTS)
-
+		
 		#
 		# COMPLEX NUMBER PROJECTS
 		#
@@ -100,10 +101,9 @@ ENABLE_TESTING()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2DLagrange)
-			add_subdirectory(InhomogeneousModalAnalysisH1)
 			add_subdirectory(ModalAnalysisH1)
 			add_subdirectory(ModalAnalysisHDiv)
-
+			
 			#add_subdirectory(HDiv_demo)
 
 			#Examples used as tutorial for FEEC group (Prof Hugo)
@@ -129,7 +129,7 @@ ENABLE_TESTING()
 			add_subdirectory(Plasticity)
 
 			#add_subdirectory(projteste)
-
+			
 			# MHM project
 			add_subdirectory(MHM)
 
@@ -137,11 +137,11 @@ ENABLE_TESTING()
 			add_subdirectory(MultipleLoad)
 
 			# add_subdirectory(adaptivity_refactor)
-
+						
 			add_subdirectory(Cubo_do_Nathan)
 
 			add_subdirectory(PyramidHdivTests)
-
+			
 			add_subdirectory(HyperElasticityFAD)
 
 			#Increment singular shape function: SingularShapeFunction
@@ -162,7 +162,7 @@ ENABLE_TESTING()
 			add_subdirectory(Descontinuo2)
 
 			add_subdirectory(SteamInjection)
-
+			
 			#projeto agnaldo 09-09-2011
 			add_subdirectory(DoubleProjection)
                         add_subdirectory(artigoPira)
@@ -187,7 +187,7 @@ ENABLE_TESTING()
 			add_subdirectory(SubStruct)
 			add_subdirectory(MultiphysicsSimulation)
 			add_subdirectory(ProblemGirkmann)
-
+			
 			add_subdirectory(multplaca)
 
 			#Projeto Lua 2012
@@ -221,19 +221,15 @@ ENABLE_TESTING()
 #			add_subdirectory(MetodosEstab)
 			#
 			# Colaboration with Laurent Stainier
-
+			
 			add_subdirectory(MatLib)
 
 			if(USING_MKL)
 				add_subdirectory(PardisoSample)
 			endif(USING_MKL)
-
-<<<<<<< HEAD
-            add_subdirectory(artigoPira)
-=======
->>>>>>> Revert "Merge branch 'master' into hcurl-tests-and-experimentations"
+			
 
 		endif(BUILD_COMPLEX_PROJECTS)
-
-
+		
+		
 	endif(BUILD_PROJECTS)

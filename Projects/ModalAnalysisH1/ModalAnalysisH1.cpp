@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include "TPZMatModalAnalysisH1.h"
 #include "pzextractval.h"
 #include "pzgengrid.h"
@@ -32,7 +33,8 @@
 #include "pzsbndmat.h"
 #include "pzfstrmatrix.h"
 #include "pzvisualmatrix.h"
-
+#include <sys/types.h>
+#include <sys/stat.h>
 
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
 
@@ -41,9 +43,11 @@ STATE ur( const TPZVec<REAL> & x){
     return 1.;
 }
 STATE er( const TPZVec<REAL> & x){
-    return 1;
+    return 1.;
 }
-void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm);
+void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm, bool generatingResults);
+
+void CheckEigenValues(TPZMatrix<STATE> *stiffA , TPZMatrix<STATE> *stiffB , TPZVec<std::pair<STATE,TPZFMatrix<STATE> > > &eigenValuesComplex , bool usingFullMtrx);
 
 void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
@@ -61,21 +65,40 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     const modeType teortm = modesTE;
-    REAL f0 = 20 * 1e+9;
+    REAL f0 = 25 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
-    
 
-    bool filterEquations = true;
     bool usingFullMtrx = false;
-    bool optimizeBandwidth = true;
-    
+    bool optimizeBandwidth = false;
+    bool generatingResults = true;
     const int meshType = createTriangular;
     
-    int nDiv = 20;
-    int nSim = 1;
+    int nDiv = 5;
+    int nSim = 5;
+    
+    
+    
+    if(generatingResults){
+        std::string fileName;
+        if(teortm == modesTM){
+            fileName = "../resultsQuali/TM/ev";
+        }
+        else{
+            fileName = "../resultsQuali/TE/ev";
+        }
+        for(int i = 1 ; i < 100 ; i++){
+            fileName.append(std::to_string(i));
+            fileName.append(".csv");
+            if( std::ifstream( fileName.c_str() ) ){
+                std::remove( fileName.c_str() );
+            }
+        }
+    }
+
+    
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
-        RunSimulation( filterEquations, meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm);
+        RunSimulation(meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , teortm, generatingResults);
         nDiv += 5;
     }
     
@@ -84,8 +107,39 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm){
+void RunSimulation(const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, modeType teortm, bool generatingResults){
     TPZTimer timer;
+    
+    /*delete previous results*/
+    {
+        if(std::ifstream("../stiffA.csv"))std::remove("../stiffA.csv");
+        if(std::ifstream("../stiffB.csv"))std::remove("../stiffB.csv");
+        if(std::ifstream("../EV.csv"))std::remove("../EV.csv");
+        if(std::ifstream("../gmeshTriangular.txt"))std::remove("../gmeshTriangular.txt");
+        if(std::ifstream("../gmeshTriangular.vtk"))std::remove("../gmeshTriangular.vtk");
+        if(std::ifstream("../gmeshRectangular.txt"))std::remove("../gmeshRectangular.txt");
+        if(std::ifstream("../gmeshRectangular.vtk"))std::remove("../gmeshRectangular.vtk");
+        
+        std::string vtkName("../waveguideModes.scal_vec.");
+        for (int i = 0; ; i++) {
+            std::string testVtk = vtkName;
+            testVtk.append( std::to_string(i) );
+            testVtk.append( ".vtk" );
+            if (std::ifstream( testVtk.c_str() ) ) {
+                std::remove( testVtk.c_str() );
+            }else{
+                break;
+            }
+        }
+        std::string fileName("../ev");
+        fileName.append(std::to_string(nDiv));
+        fileName.append(".txt");
+        if( std::ifstream( fileName.c_str() ) ){
+            std::remove( fileName.c_str() );
+        }
+        
+    }
+
     
     timer.start();
     
@@ -115,9 +169,15 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     if(usingFullMtrx){
         fmtrx = new TPZFStructMatrix(cMesh);
         fmtrx->SetNumThreads(0);
-        if (filterEquations == true && teortm == modeType::modesTM) {
+        if (teortm == modeType::modesTM) {
             FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+            if( nDiv < 8) {
+                std::cout<<"activeEquations"<<std::endl;
+                for (int i = 0; i< activeEquations.size(); i++) {
+                    std::cout<<activeEquations[i]<<std::endl;
+                }
+            }
         }
         else{
             neq = neqOriginal = cMesh->NEquations();
@@ -128,9 +188,15 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     else{
         sbstr = new TPZSBandStructMatrix(cMesh);
         sbstr->SetNumThreads(0);
-        if (filterEquations ==  true && teortm == modeType::modesTM) {
+        if (teortm == modeType::modesTM) {
             FilterBoundaryEquations( cMesh, activeEquations , neq , neqOriginal);
             sbstr->EquationFilter().SetActiveEquations(activeEquations);
+            if( nDiv < 8) {
+                std::cout<<"activeEquations"<<std::endl;
+                for (int i = 0; i< activeEquations.size(); i++) {
+                    std::cout<<activeEquations[i]<<std::endl;
+                }
+            }
         }
         else{
             neq = neqOriginal = cMesh->NEquations();
@@ -228,26 +294,75 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     TPZFMatrix<STATE> eVector( eVectors.Rows() , 1);
     std::pair<REAL,TPZFMatrix<STATE> > duplet;
     
+    
+    TPZVec<std::pair<STATE,TPZFMatrix<STATE> > > eigenValuesComplex( stiffAPtr->Rows() );
+    std::pair<STATE,TPZFMatrix<STATE> > dupletComplex;
+    
     for(int i = 0 ; i< eValues.size();i++){
         eVectors.GetSub(0, i, eVectors.Rows(), 1 , eVector);
         duplet.first = eValues[i].real();
         duplet.second = eVector;
         eigenValuesRe.insert(duplet);
+        
+        dupletComplex.first = eValues[i];
+        dupletComplex.second = eVector;
+        eigenValuesComplex[i] = dupletComplex;
+        
     }
     int i = 0;
-    std::string fileName("../ev");
+//    std::string command = "mkdir";
+//    command.append(" ../test");
+//    std::system(command.c_str());
+
+    std::string pathName;
+    if(generatingResults){
+        struct stat sb;
+        std::string command;
+        pathName = "../resultsQuali";
+        if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
+        {
+            command = "mkdir";
+            command.append(" ../resultsQuali");
+            std::system(command.c_str());
+        }
+        if (teortm == modesTM) {
+            pathName = " ../resultsQuali/TM";
+        }
+        else{
+            pathName = " ../resultsQuali/TE";
+        }
+        
+        if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))){
+            command = "mkdir ";
+            command.append(pathName.c_str());
+            std::system(command.c_str());
+        }
+    }
+    else{
+        pathName = "..";
+    }
+
+    std::string fileName = pathName;
+    fileName.append("/ev");
     fileName.append(std::to_string(nDiv));
-    fileName.append(".txt");
+    fileName.append(".csv");
     std::ofstream fileEigenValues(fileName.c_str());
+
     for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
-        if(iT->first < 1e-3) continue;
+        
         fileEigenValues<< iT->first <<std::endl;
+        if(iT->first < 1e-3) continue;
         i++;
         if( i >= nSolutions)
             continue;
         std::cout<< iT->first <<std::endl;
     }
-
+//    std::cout << "Checking eigenvalues" << std::endl;
+//    CheckEigenValues(stiffAPtr , stiffBPtr , eigenValuesComplex, usingFullMtrx);
+    if (generatingResults) {
+        std::cout << "FINISHED!" << std::endl;
+        return;
+    }
     std::cout << "Post Processing..." << std::endl;
     
     
@@ -286,21 +401,22 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
     int dim = 2;
     an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
-    int postProcessResolution = 2;//define resolucao do pos processamento
+    int postProcessResolution = 1;//define resolucao do pos processamento
     
     
     std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
     for (int iSol = 0; iSol < nSolutions; iSol ++) {
-        if(iT->first < 1e-3) {
-            iSol--;
-            iT++;
-            continue;
-        }
+        if( nDiv > 10)
+            if(iT->first < 1e-3) {
+                iSol--;
+                iT++;
+                continue;
+            }
         if( iT == eigenValuesRe.end() ){
             DebugStop();
         }
         for (int i = 0 ; i < neq; i++) {
-            if (filterEquations && teortm == modeType::modesTM) {
+            if (teortm == modeType::modesTM) {
                 solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
             }
             else{
@@ -316,12 +432,59 @@ void RunSimulation( bool filterEquations, const int meshType ,bool usingFullMtrx
     }
     std::cout << "FINISHED!" << std::endl;
 }
+void CheckEigenValues(TPZMatrix<STATE> *stiffA , TPZMatrix<STATE> *stiffB , TPZVec<std::pair<STATE,TPZFMatrix<STATE> > > &eigenValuesComplex , bool usingFullMtrx)
+{
+
+    
+    const int dim = stiffA->Rows();
+    
+    int nWrong = 0;
+    TPZManVector<STATE> res(dim,0.);
+    
+    for(int i = 0 ; i < 10 ; i++){
+        for(int j = 0; j < 10; j++){
+            std::cout<<std::real(stiffA->GetVal(i, j))<<"\t";
+        }
+        std::cout<<std::endl;
+    }
+    
+    
+    for(int i = 0 ; i < 10 ; i++){
+        for(int j = 0; j < 10; j++){
+            std::cout<<std::real(stiffB->GetVal(i, j))<<"\t";
+        }
+        std::cout<<std::endl;
+    }
+    
+    for (int iEigen = 0; iEigen < dim; iEigen++) {
+        STATE lambda = eigenValuesComplex[iEigen].first;
+        TPZFMatrix<STATE> v = eigenValuesComplex[iEigen].second;
+        if(std::norm(lambda) < 1e-3) continue;
+        STATE maxVal = 0.;
+        for(int i = 0 ; i < dim ; i++){
+            STATE ax = 0.;
+            STATE bx = 0.;
+            for(int j = 0; j < dim; j++){
+                ax += stiffA->GetVal(i, j)*v(j,0);
+                bx += stiffB->GetVal(i, j)*v(j,0);
+            }
+            res[i] = ax - lambda * bx;
+            if ( std::norm(res[i]) > std::norm(maxVal) ) {
+                maxVal = res[i];
+            }
+        }
+        if( std::norm(maxVal) > 1e-1){
+            nWrong++;
+        }
+    }
+    std::cout<<"# of wrong (lambda, v) pairs: "<< nWrong<<std::endl;
+}
 
 void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations , int &neq , int &neqOriginal)
 {
     
     TPZManVector<long,1000> allConnects;
-    std::set<long> boundConnects;
+    std::set<long> boundaryConnects;
 
     
     for (int iel = 0; iel < cMesh->NElements(); iel++) {
@@ -330,27 +493,23 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
             continue;
         }
         if ( cel->Reference() == NULL) {
-            
-            continue;
+            DebugStop();
         }
         if(cel->Reference()->MaterialId() == -1 ){
-            std::set<long> boundConnectsEl;
-            std::set<long> depBoundConnectsEl;
-            std::set<long> indepBoundConnectsEl;
-            cel->BuildConnectList(indepBoundConnectsEl, depBoundConnectsEl);
-            cel->BuildConnectList(boundConnectsEl);
-            for (std::set<long>::iterator iT = boundConnectsEl.begin(); iT != boundConnectsEl.end(); iT++) {
+            std::set<long> connectsEl;
+            cel->BuildConnectList(connectsEl);
+            for (std::set<long>::iterator iT = connectsEl.begin(); iT != connectsEl.end(); iT++) {
                 const long val = *iT;
-                if( boundConnects.find(val) == boundConnects.end() ){
-                    boundConnects.insert(val);
+                if( boundaryConnects.find(val) == boundaryConnects.end() ){
+                    boundaryConnects.insert(val);
                 }
             }
         }
     }
     for (int iCon = 0; iCon < cMesh->NConnects(); iCon++) {
-        if( boundConnects.find( iCon ) == boundConnects.end() ){
+        if( boundaryConnects.find( iCon ) == boundaryConnects.end() ){
             TPZConnect &con = cMesh->ConnectVec()[iCon];
-            if( con.HasDependency() ) continue;
+            
             int seqnum = con.SequenceNumber();
             int pos = cMesh->Block().Position(seqnum);
             int blocksize = cMesh->Block().Size(seqnum);
@@ -372,7 +531,7 @@ void FilterBoundaryEquations(TPZCompMesh * cMesh , TPZVec<long> &activeEquations
     std::cout<<"activeEquations"<<std::endl;
     long nEq = 0;
     for (int iCon = 0; iCon < cMesh->NConnects(); iCon++) {
-        if( boundConnects.find( iCon ) == boundConnects.end() ){
+        if( boundaryConnects.find( iCon ) == boundaryConnects.end() ){
             int seqnum = cMesh->ConnectVec()[iCon].SequenceNumber();
             int blocksize = cMesh->Block().Size(seqnum);
             for(int ieq = 0; ieq<blocksize; ieq++)
@@ -392,17 +551,17 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     
     TPZManVector<int,3> nx(3,0);
     TPZManVector<REAL,3> llCoord(3,0.) , ulCoord(3,0.) , urCoord(3,0.) , lrCoord(3,0.);
-    llCoord[0] = -wDomain/2;
-    llCoord[1] = -hDomain/2;
+    llCoord[0] = 0;
+    llCoord[1] = 0;
     
-    ulCoord[0] = -wDomain/2;
-    ulCoord[1] = hDomain/2;
+    ulCoord[0] = 0;
+    ulCoord[1] = hDomain;
     
-    urCoord[0] = wDomain/2;
-    urCoord[1] = hDomain/2;
+    urCoord[0] = wDomain;
+    urCoord[1] = hDomain;
     
-    lrCoord[0] = wDomain/2;
-    lrCoord[1] = -hDomain/2;
+    lrCoord[0] = wDomain;
+    lrCoord[1] = 0;
     
     nx[0]=xDiv;
     nx[1]=yDiv;
