@@ -1124,7 +1124,7 @@ void TPZDarcyPMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
 #endif
 
 #ifdef IsDGM
-        STATE factf=(-1.) * weight * v_n  * phiP(i,0) ;
+        STATE factf=(-1.) * weight * v_t  * phiP(i,0) ;
         
         ef(i+nshapeV,0) += fTheta*factf ;
 
