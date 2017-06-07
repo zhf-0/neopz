@@ -404,7 +404,6 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activ
             continue;
         }
         if(cel->Reference()->MaterialId() == -1 ){
-            TPZMatMFHCurlH1Lag *mat = dynamic_cast<TPZMatMFHCurlH1Lag*>(cmeshMF->FindMaterial(1));
             std::set<long> connectsEl;
             cel->BuildConnectList(connectsEl);
             //            std::cout<<"# connects "<<cel->NConnects()<<std::endl;

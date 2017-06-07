@@ -538,7 +538,6 @@ void TPZMatMFHCurlH1Lag::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL wei
     TPZFMatrix<REAL> &phiLag = datavec[lagrangemeshindex].phi;
     const int nHCurlFunctions  = phiHCurl.Rows();
     const int nH1Functions  = phiH1.Rows();
-    const int nLagFunctions  = phiLag.Rows();
     const int firstH1 = h1meshindex * nHCurlFunctions;
     const int firstHCurl = hcurlmeshindex * nH1Functions;
     const int firstLag = nHCurlFunctions + nH1Functions;
