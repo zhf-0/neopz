@@ -507,7 +507,11 @@ public:
         fCreate.SetAllCreateFunctionsHDivFull(Dimension());
     }
 	
-
+    void SetAllCreateFunctionsHCurl()
+    {
+        fCreate.SetAllCreateFunctionsHCurl(Dimension());
+    }
+    
 #ifndef STATE_COMPLEX
     void SetAllCreateFunctionsHDivPressure()
     {

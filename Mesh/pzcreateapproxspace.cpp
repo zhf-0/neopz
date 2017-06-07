@@ -451,6 +451,32 @@ void TPZCreateApproximationSpace::SetAllCreateFunctionsHDivFull(int dimension){
     
 }
 
+#include "TPZHCurlNedFTriEl.h"
+
+void TPZCreateApproximationSpace::SetAllCreateFunctionsHCurl(int dimension){
+    
+    switch (dimension) {
+        case 1:
+            DebugStop();
+            break;
+        case 2:
+            fp[EPoint] = CreateNoElement;
+            fp[EOned] = CreateHCurlNedFLinEl;
+            fp[ETriangle] = CreateHCurlNedFTriEl;
+            fp[EQuadrilateral] = CreateNoElement;
+            fp[ETetraedro] = CreateNoElement;
+            fp[EPiramide] = CreateNoElement;
+            fp[EPrisma] = CreateNoElement;
+            fp[ECube] = CreateNoElement;
+            break;
+        case 3:
+            DebugStop();
+            break;
+        default:
+            DebugStop();
+            break;
+    }
+}
 
 
 #ifndef STATE_COMPLEX
