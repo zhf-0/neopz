@@ -32,7 +32,13 @@ fSideOrient(TPZShapeTriang::NFaces, 1){
     }
     
     AdjustIntegrationRule();
-}//TODO: TRANSFER TO LINEAR EL
+    
+    int firstside = TPZShapeTriang::NSides-TPZShapeTriang::NFaces-1;
+    for(int side = firstside ; side < TPZShapeTriang::NSides-1; side++ )
+    {
+        fSideOrient[side-firstside] = this->Reference()->NormalOrientation(side);
+    }
+}
 
 TPZHCurlNedFTriEl::TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy) :
 TPZInterpolatedElement(mesh,copy), fConnectIndexes(copy.fConnectIndexes),
@@ -72,7 +78,7 @@ TPZHCurlNedFTriEl  * TPZHCurlNedFTriEl::ClonePatchEl(TPZCompMesh &mesh, std::map
 }
 
 int TPZHCurlNedFTriEl::Dimension() const{
-    return TPZShapeTriang::Dimension; //TODO: TRANSFER TO LINEAR EL
+    return TPZShapeTriang::Dimension;
 }
 
 int TPZHCurlNedFTriEl::NCornerConnects() const{
@@ -130,7 +136,7 @@ int TPZHCurlNedFTriEl::SideConnectLocId(int iCon,int iSide) const{
     }
 #endif
     return iSide - (TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1);
-}// TODO:TRANSFER TO LINEAR EL
+}
 
 int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
     int side = icon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
@@ -139,22 +145,38 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
         return (this->fPreferredOrder *(this->fPreferredOrder - 1));
     }
     return -1;
-}// TODO:TRANSFER TO LINEAR EL
+}
 
 void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphidxi){
-    DebugStop();
+    DebugStop();    
 }
 
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi){
     DebugStop();
 }
 
+void TPZHCurlNedFTriEl::SetIntegrationRule(int ord){
+    TPZManVector<int,3> order(TPZShapeTriang::Dimension,ord);
+    fIntRule.SetOrder(order);
+}
 const TPZIntPoints &TPZHCurlNedFTriEl::GetIntegrationRule() const{
-    DebugStop();
+    if (this->fIntegrationRule) {
+        return *fIntegrationRule;
+    }
+    else
+    {
+        return fIntRule;
+    }
 }
 
 TPZIntPoints &TPZHCurlNedFTriEl::GetIntegrationRule(){
-    DebugStop();
+    if (fIntegrationRule) {
+        return *fIntegrationRule;
+    }
+    else
+    {
+        return fIntRule;
+    }
 }
 
 void TPZHCurlNedFTriEl::SetPreferredOrder(int order){
@@ -184,7 +206,7 @@ int TPZHCurlNedFTriEl::PreferredSideOrder(int side){
     }
     if(connect < NConnects()) {
         int order =this->fPreferredOrder;
-        return order;//this->AdjustPreferredSideOrder(side,order);
+        return order;
     }
     PZError << "TPZHCurlNedFTriEl::PreferredSideOrder called for connect = " << connect << "\n";
     return 0;
@@ -200,6 +222,7 @@ int TPZHCurlNedFTriEl::ConnectOrder(int connect) const{
             LOGPZ_DEBUG(logger,sout.str())
         }
 #endif
+        DebugStop();
         return -1;
     }
     
@@ -212,10 +235,11 @@ int TPZHCurlNedFTriEl::ConnectOrder(int connect) const{
 #else
         std::cout << sout.str() << std::endl;
 #endif
+        DebugStop();
         return 0;
     }
     
-    TPZConnect &c = this-> Connect(connect);
+    TPZConnect &c = this->Connect(connect);
     return c.Order();
 }
 
@@ -240,6 +264,7 @@ void TPZHCurlNedFTriEl::SetSideOrder(int side, int order){
         sout << __PRETTY_FUNCTION__ << " Bad side or order " << side << " order " << order;
         LOGPZ_DEBUG(logger,sout.str())
 #endif
+        DebugStop();
         return;
     }
     TPZConnect &c = this->Connect(connectaux);
@@ -259,7 +284,7 @@ TPZTransform TPZHCurlNedFTriEl::TransformSideToElement(int side){
 }
 
 TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
-    DebugStop(); //TODO:IMPLEMENT LINEAR ELEMENT
+    DebugStop();
     return new TPZHCurlNedFTriEl(mesh,gel,index);
 }
 

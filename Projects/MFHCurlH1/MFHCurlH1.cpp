@@ -71,11 +71,11 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 1; //ordem polinomial de aproximacao
+    int pOrder = 3; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
-    bool isRT = true;
+    bool isRT = false;
     
     const int meshType = createTriangular;
     
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 5;
+    int nDiv = 1;
     int nSim = 5;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;

@@ -80,6 +80,8 @@ public:
     
     virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi);
     
+    virtual void SetIntegrationRule(int ord);
+    
     virtual const TPZIntPoints &GetIntegrationRule() const;
     
     virtual TPZIntPoints &GetIntegrationRule();
@@ -103,6 +105,8 @@ protected:
     TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
     
     TPZManVector<int, pzshape::TPZShapeTriang::NFaces> fSideOrient;//TODO: TRANSFER TO LINEAR EL
+    
+    pzshape::TPZShapeTriang::IntruleType fIntRule;
 	
 };
 
