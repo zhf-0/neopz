@@ -76,9 +76,15 @@ public:
     
     virtual int NConnectShapeF(int icon, int order) const;
     
-    virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphidxi);
+    void CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef);
     
-    virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi);
+    void CreateShapeF( const int maxOrder );
+    
+    void EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
+    
+    virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
+    
+    virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat);
     
     virtual void SetIntegrationRule(int ord);
     
@@ -102,6 +108,7 @@ public:
     
 protected:
     
+    TPZManVector<TPZManVector<REAL,31>,255 > *fPhiVecDofs;
     TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
     
     TPZManVector<int, pzshape::TPZShapeTriang::NFaces> fSideOrient;//TODO: TRANSFER TO LINEAR EL

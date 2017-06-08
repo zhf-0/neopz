@@ -18,10 +18,11 @@ TPZInterpolatedElement(mesh,geoEl,index),
 fConnectIndexes(TPZShapeTriang::NFaces + 1, -1),
 fSideOrient(TPZShapeTriang::NFaces, 1){
     
+    fPhiVecDofs = NULL;
     geoEl->SetReference(this);
     
     TPZStack<int> facesides;
-    std::cout<<TPZShapeTriang::NSides-1<<std::endl;
+    
     TPZShapeTriang::LowerDimensionSides(TPZShapeTriang::NSides-1,facesides,TPZShapeTriang::Dimension-1);//inserts 3 edges
     facesides.Push(TPZShapeTriang::NSides-1);//inserts triangle face
     for(int i=0;i< fConnectIndexes.size() ;i++) {
@@ -43,7 +44,8 @@ fSideOrient(TPZShapeTriang::NFaces, 1){
 TPZHCurlNedFTriEl::TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy) :
 TPZInterpolatedElement(mesh,copy), fConnectIndexes(copy.fConnectIndexes),
 fSideOrient(copy.fSideOrient){
-    
+    fPhiVecDofs = NULL;
+    fIntRule = copy.fIntRule;
     fPreferredOrder = copy.fPreferredOrder;
 }
 
@@ -54,6 +56,9 @@ TPZInterpolatedElement(mesh,copy,gl2lcElMap),
 fConnectIndexes(copy.fConnectIndexes),
 fSideOrient(copy.fSideOrient)
 {
+    fPhiVecDofs = NULL;
+    fIntRule = copy.fIntRule;
+    fPreferredOrder = copy.fPreferredOrder;
 }
 
 
@@ -139,7 +144,12 @@ int TPZHCurlNedFTriEl::SideConnectLocId(int iCon,int iSide) const{
 }
 
 int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
-    int side = icon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
+    const int side = icon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
+#ifdef PZDEBUG
+    if(side <= TPZShapeTriang::NumSides(Dimension()) - 2 || side >= TPZShapeTriang::NSides){
+        DebugStop();
+    }
+#endif
     if(TPZShapeTriang::SideDimension(side) == Dimension()-1) return EffectiveSideOrder(side);
     if(TPZShapeTriang::SideDimension(side) == Dimension()){
         return (this->fPreferredOrder *(this->fPreferredOrder - 1));
@@ -147,8 +157,86 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
     return -1;
 }
 
-void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphidxi){
-    DebugStop();    
+void TPZHCurlNedFTriEl::CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef){
+    
+    int nFunc = 0 , maxOrder = -1;
+    fPhiVecDofs = new TPZManVector<TPZManVector<REAL,31>,255 >(0, TPZManVector<REAL>(1,0));
+    
+    TPZManVector<TPZManVector<REAL,31>,255 > &phiVecRef = *fPhiVecDofs;
+    
+    for (int iCon = 0; iCon < NConnects(); iCon++) {
+        const int currentFunc = phiVecRef.size();
+        const int connectOrder = ConnectOrder( iCon );
+        const int side = iCon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
+        const bool isInternal = (TPZShapeTriang::SideDimension(side) == Dimension());
+        const int nConnectShapeF = NConnectShapeF( iCon  , ConnectOrder( iCon ));
+        nFunc += nConnectShapeF;
+        
+        phiVecRef.Expand(phiVecRef.size() + nConnectShapeF);
+        for (int iFunc = 0; iFunc < nConnectShapeF; iFunc++) {
+            const int kPoly = iFunc+1 -(int)isInternal;
+            phiVecRef[ currentFunc + iFunc ].Expand( 2*kPoly + 1);//number of dofs to define shape function
+        }
+        
+        if( ConnectOrder( iCon ) > maxOrder ) maxOrder = ConnectOrder( iCon );
+    }
+    
+    for(int iFunc = 0; iFunc < phiVecRef.size(); iFunc++) std::cout<<"phi "<<iFunc<<" nDof = "<<fPhiVecDofs[iFunc].size()<<std::endl;
+    
+    CreateShapeF( maxOrder );
+    
+    TPZCompEl::CalcStiff(ek, ef);
+    delete fPhiVecDofs;
+    fPhiVecDofs = NULL;
+}
+
+void TPZHCurlNedFTriEl::CreateShapeF(const int maxOrder){
+    
+}
+
+
+/**
+ Method to get shape functions evaluated at reference element coordinates qsi.
+ Shape functions are NOT calculated in this method.
+ They were already calculated in TPZHCurlNedFTriEl::CreateShapeF().
+
+ @param qsi [in] coordinates in reference element
+ @param phi [out] shape function vec
+ @param dphidxi [out] shape function derivatives vec
+ */
+void TPZHCurlNedFTriEl::EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat){
+    
+    TPZManVector<TPZManVector<REAL,31>,255 > &phiVecRef = *fPhiVecDofs;
+    const int nFunc = phiVecRef.size();
+    phi.Resize(nFunc , 3);
+    curlPhiHat.Resize(nFunc , 3);
+    
+    for (int iFunc = 0; iFunc < nFunc; iFunc++ ) {
+        for (int iDof = 0 ; iDof < fPhiVecDofs[ iFunc ].size(); iDof++) {
+            TPZFMatrix<REAL> funcValueAtQsi(3,1);
+            TPZFMatrix<REAL> funcCurlValueAtQsi(3,1);
+            phi(iFunc,0) = funcValueAtQsi(0,0) * phiVecRef[iFunc][iDof];
+            phi(iFunc,1) = funcValueAtQsi(1,0) * phiVecRef[iFunc][iDof];
+            phi(iFunc,2) = funcValueAtQsi(2,0) * phiVecRef[iFunc][iDof];
+            
+            curlPhiHat(iFunc,0) = funcCurlValueAtQsi(0,0) * phiVecRef[iFunc][iDof];
+            curlPhiHat(iFunc,1) = funcCurlValueAtQsi(1,0) * phiVecRef[iFunc][iDof];
+            curlPhiHat(iFunc,2) = funcCurlValueAtQsi(2,0) * phiVecRef[iFunc][iDof];
+        }//for iDof
+    }//for iFunc
+}
+/**
+ Method to get shape functions values transferred to TPZCompEl::CalcStiff variables.
+ Shape functions are NOT calculated in this method.
+ They were already calculated in TPZHCurlNedFTriEl::CreateShapeF().
+
+ @param qsi [in] coordinates in reference element
+ @param phi [out] shape function vec
+ @param dphidxi [out] shape function derivatives vec
+ */
+void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat){
+    
+    EvaluateShapeF(qsi, phi, curlPhiHat);
 }
 
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi){
@@ -246,10 +334,10 @@ int TPZHCurlNedFTriEl::ConnectOrder(int connect) const{
 int TPZHCurlNedFTriEl::EffectiveSideOrder(int side) const{
     
     if(!NSideConnects(side)) return -1;
-    int firstElCon = SideConnectLocId(0, side);
-    int maxorder = 0;
-    int conectaux;
-    if(firstElCon >= 0 || firstElCon <= NConnects()) return ConnectOrder(firstElCon);
+    int firstSideCon = SideConnectLocId(0, side);
+    int connectOrder = ConnectOrder(firstSideCon);
+    
+    if( firstSideCon>=0 || firstSideCon <= NConnects() ) return connectOrder;
     
     DebugStop();
     return -1;

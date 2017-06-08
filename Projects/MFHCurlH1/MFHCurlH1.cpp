@@ -22,6 +22,7 @@
 #include "TPZVTKGeoMesh.h"
 #include "pzbndcond.h"
 #include "pzelchdiv.h"
+#include "TPZHCurlNedFTriEl.h"
 #include "pzshapequad.h"
 #include "pzshapetriang.h"
 #include "pzlog.h"
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 3; //ordem polinomial de aproximacao
+    int pOrder = 1; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
@@ -584,40 +585,41 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     TPZMaterial * BCondHCurlDir = matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
     
     //cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
-    
     cmeshHCurl->SetAllCreateFunctionsHCurl();//define espaco de aproximacao
     cmeshHCurl->AutoBuild();
     
+    TPZHCurlNedFTriEl * el2 = dynamic_cast<TPZHCurlNedFTriEl *> (cmeshHCurl->ElementVec()[0]);
+    el2->PRefine(2);
     
-    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        el->SetSideOrient(4,  1);
-        el->SetSideOrient(5,  1);
-        el->SetSideOrient(6, -1);
-        el->SetSideOrient(7, -1);
-    }
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        if ( i % 2 == 1) {
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4, -1);
-            el->SetSideOrient(5, -1);
-        }
-        else{
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4,  1);
-            el->SetSideOrient(5, -1);
-        }
-    }
+//    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
+//    
+//    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
+//        TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
+//        if ( el == NULL) {
+//            continue;
+//        }
+//        el->SetSideOrient(4,  1);
+//        el->SetSideOrient(5,  1);
+//        el->SetSideOrient(6, -1);
+//        el->SetSideOrient(7, -1);
+//    }
+//    
+//    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
+//        TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
+//        if ( el == NULL) {
+//            continue;
+//        }
+//        if ( i % 2 == 1) {
+//            el->SetSideOrient(3,  1);
+//            el->SetSideOrient(4, -1);
+//            el->SetSideOrient(5, -1);
+//        }
+//        else{
+//            el->SetSideOrient(3,  1);
+//            el->SetSideOrient(4,  1);
+//            el->SetSideOrient(5, -1);
+//        }
+//    }
     if (isRT) {
         TPZCreateApproximationSpace::MakeRaviartThomas(*cmeshHCurl);
     }
