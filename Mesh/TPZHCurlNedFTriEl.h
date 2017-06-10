@@ -76,9 +76,7 @@ public:
     
     virtual int NConnectShapeF(int icon, int order) const;
     
-    void CalcStiff(TPZElementMatrix &ek, TPZElementMatrix &ef);
-    
-    void CreateShapeF( const int maxOrder );
+    void CreateDofVec();
     
     void EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     
@@ -107,7 +105,9 @@ public:
     virtual TPZTransform TransformSideToElement(int side);
     
 protected:
-    
+	
+	static bool fHaveShapeFBeenCreated;
+	bool fHaveDofVecBeenCreated;
     TPZManVector<TPZManVector<REAL,31>,255 > *fPhiVecDofs;
     TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
     

@@ -217,6 +217,7 @@ void TPZMatMFHCurlH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<
 
 void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
+	return;
     isTesting = false;
     if( isTesting == true ){
         ContributeValidateFunctions(datavec, weight, ek, ef);
