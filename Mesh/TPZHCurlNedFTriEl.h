@@ -74,6 +74,8 @@ public:
     
     virtual int SideConnectLocId(int icon,int is) const;
     
+    virtual int NConnectShapeF(int icon) const;
+    
     virtual int NConnectShapeF(int icon, int order) const;
     
     void CreateDofVec();
@@ -108,7 +110,7 @@ protected:
 	
 	static bool fHaveShapeFBeenCreated;
 	bool fHaveDofVecBeenCreated;
-    TPZManVector<TPZManVector<REAL,31>,255 > *fPhiVecDofs;
+    TPZManVector< TPZManVector<TPZManVector<REAL,31>,255 >, 4> *fPhiVecDofs;
     TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
     
     TPZManVector<int, pzshape::TPZShapeTriang::NFaces> fSideOrient;//TODO: TRANSFER TO LINEAR EL
