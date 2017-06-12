@@ -155,42 +155,49 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
         DebugStop();
     }
 #endif
-    if(TPZShapeTriang::SideDimension(side) == Dimension()-1) return EffectiveSideOrder(side);
+    if(TPZShapeTriang::SideDimension(side) == Dimension()-1){
+        if( order > EffectiveSideOrder(side) || order == 0 ) return 0;
+        return 1;
+    }
     if(TPZShapeTriang::SideDimension(side) == Dimension()){
-        return (this->fPreferredOrder *(this->fPreferredOrder - 1));
+        if( order < 2 ) return 0;
+        
+        return 2 * order + 1 - 3;
     }
     return -1;
 }
 
-void TPZHCurlNedFTriEl::CreateDofVec(){
-	int nFunc = 0 , maxOrder = -1;
-	fPhiVecDofs = new TPZManVector<TPZManVector<REAL,31>,255 >(0, TPZManVector<REAL>(1,0));
-	
-	TPZManVector<TPZManVector<REAL,31>,255 > &phiVecRef = *fPhiVecDofs;
-	
-	for (int iCon = 0; iCon < NConnects(); iCon++) {
-		const int currentFunc = phiVecRef.size();
-		const int connectOrder = ConnectOrder( iCon );
-		const int side = iCon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
-		const bool isInternal = (TPZShapeTriang::SideDimension(side) == Dimension());
-		const int nConnectShapeF = NConnectShapeF( iCon  , ConnectOrder( iCon ));
-		nFunc += nConnectShapeF;
+int TPZHCurlNedFTriEl::NConnectShapeF(int iCon) const{
+    int nConnectShapeF = 0;
+    for(int iOrder = 0; iOrder <= ConnectOrder( iCon ); iOrder++){
+        nConnectShapeF+=NConnectShapeF( iCon  , iOrder);
+    }
+    return nConnectShapeF;
+}
 
-		phiVecRef.Resize(phiVecRef.size() + nConnectShapeF);
-		for (int iFunc = 0; iFunc < nConnectShapeF*(1 -(int)isInternal); iFunc++) {
-			const int kPoly = iFunc + 1;
-			phiVecRef[ currentFunc + iFunc ].Resize( 2*kPoly + 1);//number of dofs to define shape function
-		}
-		
-		for (int iFunc = 0; iFunc < nConnectShapeF*((int)isInternal); iFunc++) {
-			const int kPoly = connectOrder;
-			phiVecRef[ currentFunc + iFunc ].Resize( 2*kPoly + 1);//number of dofs to define shape function
-		}
-		
-		if( ConnectOrder( iCon ) > maxOrder ) maxOrder = ConnectOrder( iCon );
-	}
+void TPZHCurlNedFTriEl::CreateDofVec(){
+	//fPhiVecDofs = new TPZManVector<TPZManVector<REAL,31>,255 >(0, TPZManVector<REAL>(1,0));
+    fPhiVecDofs = new TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4>(4, 0);
 	
-	for(int iFunc = 0; iFunc < phiVecRef.size(); iFunc++) std::cout<<"phi "<<iFunc<<" nDof = "<<phiVecRef[iFunc].size()<<std::endl;
+    TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4> &phiVecRef = *fPhiVecDofs;
+    phiVecRef.Resize(NConnects());
+	for (int iCon = 0; iCon < NConnects(); iCon++) {
+        const int nConnectShapeF = NConnectShapeF( iCon );
+
+		phiVecRef[iCon].Resize(phiVecRef[iCon].size() + nConnectShapeF);
+        
+        int lastFuncPos = 0;
+        const int connectOrder = ConnectOrder( iCon );
+        for (int iOrder = 0; iOrder <= connectOrder ; iOrder++ ) {
+            for (int iFunc = 0; iFunc < NConnectShapeF( iCon , iOrder ); iFunc++) {
+                phiVecRef[iCon][ lastFuncPos ].Resize( 2 * iOrder + 1);//number of dofs to define shape function
+                lastFuncPos++;
+            }
+        }
+		
+        std::cout<<"iCon = "<<iCon<<" nPhi = "<<phiVecRef[iCon].size()<<std::endl;
+        for(int iFunc = 0; iFunc < phiVecRef[iCon].size(); iFunc++) std::cout<<"\tphi "<<iFunc<<" nDof = "<<phiVecRef[iCon][iFunc].size()<<std::endl;
+	}
 
 }
 
@@ -206,7 +213,6 @@ void TPZHCurlNedFTriEl::CreateDofVec(){
  */
 void TPZHCurlNedFTriEl::EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat){
 	
-	
 	if( fHaveDofVecBeenCreated == false ){
 		fHaveDofVecBeenCreated = true;
 		CreateDofVec();
@@ -217,22 +223,25 @@ void TPZHCurlNedFTriEl::EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL>
 //		CreateShapeF();
 //	}//TODO: THINK ON SHAPE F STRUCTURE
 	
-    TPZManVector<TPZManVector<REAL,31>,255 > &phiVecRef = *fPhiVecDofs;
-    const int nFunc = phiVecRef.size();
-    phi.Resize(nFunc , Dimension());
-    curlPhiHat.Resize(Dimension() , nFunc);
+    TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4> &phiVecRef = *fPhiVecDofs;
     
-    for (int iFunc = 0; iFunc < nFunc; iFunc++ ) {
-        for (int iDof = 0 ; iDof < phiVecRef[ iFunc ].size(); iDof++) {
-            TPZFMatrix<REAL> funcValueAtQsi(Dimension(),1);
-            TPZFMatrix<REAL> funcCurlValueAtQsi(Dimension(),1);
-            phi(iFunc,0) = funcValueAtQsi(0,0) * phiVecRef[iFunc][iDof];
-            phi(iFunc,1) = funcValueAtQsi(1,0) * phiVecRef[iFunc][iDof];
-            
-            curlPhiHat(0,iFunc) = funcCurlValueAtQsi(0,0) * phiVecRef[iFunc][iDof];
-            curlPhiHat(1,iFunc) = funcCurlValueAtQsi(1,0) * phiVecRef[iFunc][iDof];
-        }//for iDof
-    }//for iFunc
+    
+    for (int iCon = 0; iCon < NConnects(); iCon++){
+        const int nFunc = phiVecRef[iCon].size();
+        phi.Resize(phi.Rows() + nFunc , Dimension());
+        curlPhiHat.Resize(Dimension() , curlPhiHat.Rows() + nFunc);
+        for (int iFunc = 0; iFunc < nFunc; iFunc++ ) {
+            for (int iDof = 0 ; iDof < phiVecRef[iCon][ iFunc ].size(); iDof++) {
+                TPZFMatrix<REAL> funcValueAtQsi(Dimension(),1);//TODO:Evaluate basis for shape functions
+                TPZFMatrix<REAL> funcCurlValueAtQsi(Dimension(),1);//TODO:Evaluate basis for shape functions
+                phi(iFunc,0) = funcValueAtQsi(0,0) * phiVecRef[iCon][iFunc][iDof];
+                phi(iFunc,1) = funcValueAtQsi(1,0) * phiVecRef[iCon][iFunc][iDof];
+                
+                curlPhiHat(0,iFunc) = funcCurlValueAtQsi(0,0) * phiVecRef[iCon][iFunc][iDof];
+                curlPhiHat(1,iFunc) = funcCurlValueAtQsi(1,0) * phiVecRef[iCon][iFunc][iDof];
+            }//for iDof
+        }//for iFunc
+    }//iCon
 }
 /**
  Method to get shape functions values transferred to TPZCompEl::CalcStiff variables.

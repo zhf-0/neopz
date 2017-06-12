@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 1; //ordem polinomial de aproximacao
+    int pOrder = 2; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
@@ -589,7 +589,7 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     cmeshHCurl->AutoBuild();
     
     TPZHCurlNedFTriEl * el2 = dynamic_cast<TPZHCurlNedFTriEl *> (cmeshHCurl->ElementVec()[0]);
-    el2->PRefine(2);
+    el2->PRefine( pOrder + 1);
     
 //    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
 //    
