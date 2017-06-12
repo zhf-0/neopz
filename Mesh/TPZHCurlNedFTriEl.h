@@ -70,13 +70,13 @@ public:
     
     virtual void SetConnectIndex(int i, long connectindex);
     
-    virtual int NSideConnects(int iside) const;
+    virtual int NSideConnects(int side) const;
     
-    virtual int SideConnectLocId(int icon,int is) const;
+    virtual int SideConnectLocId(int con,int is) const;
     
-    virtual int NConnectShapeF(int icon) const;
+    virtual int NConnectShapeF(int con) const;
     
-    virtual int NConnectShapeF(int icon, int order) const;
+    virtual int NConnectShapeF(int con, int order) const;
     
     void CreateDofVec();
     
@@ -96,7 +96,7 @@ public:
     
     virtual void GetInterpolationOrder(TPZVec<int> &ord);
     
-    virtual int PreferredSideOrder(int iside);
+    virtual int PreferredSideOrder(int side);
     
     int ConnectOrder(int connect) const;
     

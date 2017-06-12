@@ -138,14 +138,14 @@ int TPZHCurlNedFTriEl::NSideConnects(int side) const{
     return -1;
 }// TODO: TRANSFER TO LINEAR EL
 
-int TPZHCurlNedFTriEl::SideConnectLocId(int iCon,int iSide) const{
+int TPZHCurlNedFTriEl::SideConnectLocId(int con,int side) const{
 #ifdef PZDEBUG
-    if( TPZShapeTriang::SideDimension(iSide) <= TPZShapeTriang::Dimension - 2 || iCon >= NSideConnects(iSide) ){
+    if( TPZShapeTriang::SideDimension(side) <= TPZShapeTriang::Dimension - 2 || con >= NSideConnects(side) ){
         PZError << "TPZHCurlNedFTriEl::SideConnectLocId no connect associate " <<  std::endl;
         return -1;
     }
 #endif
-    return iSide - (TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1);
+    return side - (TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1);
 }
 
 int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
@@ -167,10 +167,10 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
     return -1;
 }
 
-int TPZHCurlNedFTriEl::NConnectShapeF(int iCon) const{
+int TPZHCurlNedFTriEl::NConnectShapeF(int con) const{
     int nConnectShapeF = 0;
-    for(int iOrder = 0; iOrder <= ConnectOrder( iCon ); iOrder++){
-        nConnectShapeF+=NConnectShapeF( iCon  , iOrder);
+    for(int iOrder = 0; iOrder <= ConnectOrder( con ); iOrder++){
+        nConnectShapeF+=NConnectShapeF( con  , iOrder);
     }
     return nConnectShapeF;
 }
