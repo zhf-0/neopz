@@ -82,8 +82,6 @@ public:
     
     void EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     
-    virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
-    
     virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat);
     
     virtual void SetIntegrationRule(int ord);
@@ -105,6 +103,10 @@ public:
     virtual void SetSideOrder(int side, int order);
     
     virtual TPZTransform TransformSideToElement(int side);
+	
+	void Convert2Axes(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
+	
+	virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     
 protected:
 	

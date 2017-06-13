@@ -303,7 +303,6 @@ int TPZHCurlNedFTriEl::PreferredSideOrder(int side){
     PZError << "TPZHCurlNedFTriEl::PreferredSideOrder called for connect = " << connect << "\n";
     return 0;
 }
-
 int TPZHCurlNedFTriEl::ConnectOrder(int connect) const{
     if (connect < 0 || connect >= this->NConnects()){
 #ifdef LOG4CXX
@@ -375,13 +374,15 @@ TPZTransform TPZHCurlNedFTriEl::TransformSideToElement(int side){
     DebugStop();
 }
 
-TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
-    DebugStop();
-    return new TPZHCurlNedFTriEl(mesh,gel,index);
-}
-
-TPZCompEl * CreateHCurlNedFTriEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
-    return new TPZHCurlNedFTriEl(mesh,gel,index);
+void TPZHCurlNedFTriEl::Convert2Axes(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi)
+{
+	int nshape = curlPhiHat.Cols();
+	REAL detJacInv = jacinv.GetVal(0,0)*jacinv.GetVal(1,1)-jacinv.GetVal(1,0)*jacinv.GetVal(0,1);
+	int ieq;
+	for(ieq = 0; ieq < nshape; ieq++) {
+		curlPhi(0,ieq) = detJacInv*curlPhiHat.GetVal(0,ieq);
+	}
+	
 }
 
 /**
@@ -404,7 +405,8 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix
     for (int iCon = 1; iCon < nCon; iCon++) {
         firstConFuncPos[ iCon ] = firstConFuncPos[ iCon - 1 ] + NConnectShapeF( iCon - 1);
     }
-    int lastFuncPos = firstConFuncPos[ nCon - 1 ] + NConnectShapeF( nCon - 1);
+    int lastFuncPos = firstConFuncPos[ nCon - 1 ] + NConnectShapeF( nCon - 1) - 1;
+	
     phi.Resize( lastFuncPos + 1, dim );
     curlPhiHat.Resize( 1, lastFuncPos + 1);
     for (int iCon = 0; iCon < nCon; iCon++) {
@@ -1515,7 +1517,8 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix
                         phi( currentFuncPos , 0 ) = 8*(1 + 3*qsi[0] - 2*qsi[1])*qsi[1];
                         phi( currentFuncPos , 1 ) = 8*qsi[0]*(1 - 3*qsi[0] + 2*qsi[1]);
                         curlPhiHat( 0 , currentFuncPos ) = -72*qsi[0] + 48*qsi[1];
-                        break;
+					case 1:
+						break;
                     default:
                         DebugStop();//polynomial order not implemented!
                 }
@@ -1525,4 +1528,13 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix
                 break;
         }
     }
+}
+
+TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
+	DebugStop();
+	return new TPZHCurlNedFTriEl(mesh,gel,index);
+}
+
+TPZCompEl * CreateHCurlNedFTriEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
+	return new TPZHCurlNedFTriEl(mesh,gel,index);
 }
