@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include "TPZMatMFHCurlH1.h"
+#include "TPZMatMFHDivRotH1.h"
 #include "pzextractval.h"
 //#include "TPZMatHCurlProjection.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
@@ -580,49 +581,21 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     TPZMatHCurlProjection *matHCurl = new TPZMatHCurlProjection(matId);
     cmeshHCurl->InsertMaterialObject(matHCurl);
     
-    val1( 0, 0 ) = 0.;
-    val2( 0, 0 ) = 0.;
-    TPZMaterial * BCondHCurlDir = matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
-    
-    //cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
-    cmeshHCurl->SetAllCreateFunctionsHCurl();//define espaco de aproximacao
-    cmeshHCurl->AutoBuild();
-    
-    TPZHCurlNedFTriEl * el2 = dynamic_cast<TPZHCurlNedFTriEl *> (cmeshHCurl->ElementVec()[0]);
-    el2->PRefine( pOrder + 1);
-    
-//    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
-//    
-//    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-//        TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
-//        if ( el == NULL) {
-//            continue;
-//        }
-//        el->SetSideOrient(4,  1);
-//        el->SetSideOrient(5,  1);
-//        el->SetSideOrient(6, -1);
-//        el->SetSideOrient(7, -1);
-//    }
-//    
-//    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-//        TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
-//        if ( el == NULL) {
-//            continue;
-//        }
-//        if ( i % 2 == 1) {
-//            el->SetSideOrient(3,  1);
-//            el->SetSideOrient(4, -1);
-//            el->SetSideOrient(5, -1);
-//        }
-//        else{
-//            el->SetSideOrient(3,  1);
-//            el->SetSideOrient(4,  1);
-//            el->SetSideOrient(5, -1);
-//        }
-//    }
+//    val1( 0, 0 ) = 0.;
+//    val2( 0, 0 ) = 0.;
+//    TPZMaterial * BCondHCurlDir = matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+//	
+//    cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
+	
     if (isRT) {
+		cmeshHCurl->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
+		cmeshHCurl->AutoBuild();
         TPZCreateApproximationSpace::MakeRaviartThomas(*cmeshHCurl);
     }
+	else{
+		cmeshHCurl->SetAllCreateFunctionsHCurl();//define espaco de aproximacao
+		cmeshHCurl->AutoBuild();
+	}
     cmeshHCurl->CleanUpUnconnectedNodes();
     
     TPZMatMFHCurlH1 *matMultiPhysics = NULL;
@@ -632,13 +605,17 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
         matMultiPhysics = dummy;
     }
     else{
-        TPZMatMFHCurlH1 * dummy = new TPZMatMFHCurlH1(matId , f0 , ur , er);
-        matMultiPhysics = dummy;
+		if(isRT){
+			TPZMatMFHDivRotH1 * dummy = new TPZMatMFHDivRotH1(matId , f0 , ur , er);
+			matMultiPhysics = dummy;
+		}
+		else{
+			TPZMatMFHCurlH1 * dummy = new TPZMatMFHCurlH1(matId , f0 , ur , er);
+			matMultiPhysics = dummy;
+		}
     }
     meshVec[ matMultiPhysics->H1Index() ] = cmeshH1;
     meshVec[ matMultiPhysics->HCurlIndex() ] = cmeshHCurl;
-    
-    //  TPZMatHCurl2D *matMultiPhysics = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);
     
     
     TPZCompMesh *cmeshMF = new TPZCompMesh( gmesh );
