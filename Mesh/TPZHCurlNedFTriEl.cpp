@@ -13,15 +13,10 @@ using namespace pzshape;
 static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFTriEl"));
 #endif
 
-bool TPZHCurlNedFTriEl::fHaveShapeFBeenCreated = false;
-
 TPZHCurlNedFTriEl::TPZHCurlNedFTriEl(TPZCompMesh &mesh, TPZGeoEl *geoEl, long &index) :
 TPZInterpolatedElement(mesh,geoEl,index),
 fConnectIndexes(TPZShapeTriang::NFaces + 1, -1),
 fSideOrient(TPZShapeTriang::NFaces, 1){
-
-	fHaveDofVecBeenCreated = false;
-    fPhiVecDofs = NULL;
     geoEl->SetReference(this);
     
     TPZStack<int> facesides;
@@ -29,10 +24,10 @@ fSideOrient(TPZShapeTriang::NFaces, 1){
     TPZShapeTriang::LowerDimensionSides(TPZShapeTriang::NSides-1,facesides,TPZShapeTriang::Dimension-1);//inserts 3 edges
     facesides.Push(TPZShapeTriang::NSides-1);//inserts triangle face
     for(int i=0;i< fConnectIndexes.size() ;i++) {
-        int sideIndex = facesides[i];
-        fConnectIndexes[i] = CreateMidSideConnect( sideIndex );
+        int side = facesides[i];
+        fConnectIndexes[i] = CreateMidSideConnect( side );
         mesh.ConnectVec()[ fConnectIndexes[i] ].IncrementElConnected();
-        this->IdentifySideOrder(sideIndex);
+        this->IdentifySideOrder(side);
     }
     
     AdjustIntegrationRule();
@@ -47,8 +42,6 @@ fSideOrient(TPZShapeTriang::NFaces, 1){
 TPZHCurlNedFTriEl::TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy) :
 TPZInterpolatedElement(mesh,copy), fConnectIndexes(copy.fConnectIndexes),
 fSideOrient(copy.fSideOrient){
-	fPhiVecDofs = NULL; //TODO: copy the other vec
-	fHaveDofVecBeenCreated = copy.fHaveDofVecBeenCreated;
     fIntRule = copy.fIntRule;
     fPreferredOrder = copy.fPreferredOrder;
 }
@@ -60,8 +53,6 @@ TPZInterpolatedElement(mesh,copy,gl2lcElMap),
 fConnectIndexes(copy.fConnectIndexes),
 fSideOrient(copy.fSideOrient)
 {
-	fPhiVecDofs = NULL;//TODO: copy the other vec
-	fHaveDofVecBeenCreated = copy.fHaveDofVecBeenCreated;
     fIntRule = copy.fIntRule;
     fPreferredOrder = copy.fPreferredOrder;
 }
@@ -157,92 +148,16 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const{
 #endif
     if(TPZShapeTriang::SideDimension(side) == Dimension()-1){
         if( order > EffectiveSideOrder(side) || order == 0 ) return 0;
-        return 1;
+        return 1 + NConnectShapeF(icon , order - 1) ;
     }
     if(TPZShapeTriang::SideDimension(side) == Dimension()){
         if( order < 2 ) return 0;
         
-        return 2 * order + 1 - 3;
+        return 2 * order + 1 - 3 + NConnectShapeF( icon, order - 1);
     }
     return -1;
 }
 
-int TPZHCurlNedFTriEl::NConnectShapeF(int con) const{
-    int nConnectShapeF = 0;
-    for(int iOrder = 0; iOrder <= ConnectOrder( con ); iOrder++){
-        nConnectShapeF+=NConnectShapeF( con  , iOrder);
-    }
-    return nConnectShapeF;
-}
-
-void TPZHCurlNedFTriEl::CreateDofVec(){
-	//fPhiVecDofs = new TPZManVector<TPZManVector<REAL,31>,255 >(0, TPZManVector<REAL>(1,0));
-    fPhiVecDofs = new TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4>(4, 0);
-	
-    TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4> &phiVecRef = *fPhiVecDofs;
-    phiVecRef.Resize(NConnects());
-	for (int iCon = 0; iCon < NConnects(); iCon++) {
-        const int nConnectShapeF = NConnectShapeF( iCon );
-
-		phiVecRef[iCon].Resize(phiVecRef[iCon].size() + nConnectShapeF);
-        
-        int lastFuncPos = 0;
-        const int connectOrder = ConnectOrder( iCon );
-        for (int iOrder = 0; iOrder <= connectOrder ; iOrder++ ) {
-            for (int iFunc = 0; iFunc < NConnectShapeF( iCon , iOrder ); iFunc++) {
-                phiVecRef[iCon][ lastFuncPos ].Resize( 2 * iOrder + 1);//number of dofs to define shape function
-                lastFuncPos++;
-            }
-        }
-		
-        std::cout<<"iCon = "<<iCon<<" nPhi = "<<phiVecRef[iCon].size()<<std::endl;
-        for(int iFunc = 0; iFunc < phiVecRef[iCon].size(); iFunc++) std::cout<<"\tphi "<<iFunc<<" nDof = "<<phiVecRef[iCon][iFunc].size()<<std::endl;
-	}
-
-}
-
-
-/**
- Method to get shape functions evaluated at reference element coordinates qsi.
- Shape functions are NOT calculated in this method.
- They were already calculated in TPZHCurlNedFTriEl::CreateShapeF().
-
- @param qsi [in] coordinates in reference element
- @param phi [out] shape function vec
- @param dphidxi [out] shape function derivatives vec
- */
-void TPZHCurlNedFTriEl::EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat){
-	
-	if( fHaveDofVecBeenCreated == false ){
-		fHaveDofVecBeenCreated = true;
-		CreateDofVec();
-	}
-	
-//	if( fHaveShapeFBeenCreated == false ){
-//		fHaveShapeFBeenCreated = true;
-//		CreateShapeF();
-//	}//TODO: THINK ON SHAPE F STRUCTURE
-	
-    TPZManVector<TPZManVector<TPZManVector<REAL,31>,255 >, 4> &phiVecRef = *fPhiVecDofs;
-    
-    
-    for (int iCon = 0; iCon < NConnects(); iCon++){
-        const int nFunc = phiVecRef[iCon].size();
-        phi.Resize(phi.Rows() + nFunc , Dimension());
-        curlPhiHat.Resize(Dimension() , curlPhiHat.Cols() + nFunc);
-        for (int iFunc = 0; iFunc < nFunc; iFunc++ ) {
-            for (int iDof = 0 ; iDof < phiVecRef[iCon][ iFunc ].size(); iDof++) {
-                TPZFMatrix<REAL> funcValueAtQsi(Dimension(),1);//TODO:Evaluate basis for shape functions
-                TPZFMatrix<REAL> funcCurlValueAtQsi(Dimension(),1);//TODO:Evaluate basis for shape functions
-                phi(iFunc,0) = funcValueAtQsi(0,0) * phiVecRef[iCon][iFunc][iDof];
-                phi(iFunc,1) = funcValueAtQsi(1,0) * phiVecRef[iCon][iFunc][iDof];
-                
-                curlPhiHat(0,iFunc) = funcCurlValueAtQsi(0,0) * phiVecRef[iCon][iFunc][iDof];
-                curlPhiHat(1,iFunc) = funcCurlValueAtQsi(1,0) * phiVecRef[iCon][iFunc][iDof];
-            }//for iDof
-        }//for iFunc
-    }//iCon
-}
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi){
     DebugStop();
 }
@@ -403,9 +318,9 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix
     const int firstSide = TPZShapeTriang::NSides-TPZShapeTriang::NFaces-1;
     
     for (int iCon = 1; iCon < nCon; iCon++) {
-        firstConFuncPos[ iCon ] = firstConFuncPos[ iCon - 1 ] + NConnectShapeF( iCon - 1);
+        firstConFuncPos[ iCon ] = firstConFuncPos[ iCon - 1 ] + NConnectShapeF( iCon - 1, ConnectOrder(iCon) );
     }
-    int lastFuncPos = firstConFuncPos[ nCon - 1 ] + NConnectShapeF( nCon - 1) - 1;
+    int lastFuncPos = firstConFuncPos[ nCon - 1 ] + NConnectShapeF( nCon - 1, ConnectOrder( nCon - 1 ) ) - 1;
 	
     phi.Resize( lastFuncPos + 1, dim );
     curlPhiHat.Resize( 1, lastFuncPos + 1);
@@ -414,7 +329,7 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix
         const int side = iCon + TPZShapeTriang::NSides-TPZShapeTriang::NumSides(TPZShapeTriang::Dimension-1)-1 ;
         const int orient = side == firstSide + 3 ? 1 : fSideOrient[ side - firstSide ];
         
-        int currentFuncPos = firstConFuncPos[ iCon ] + NConnectShapeF( iCon ) - 1;
+        int currentFuncPos = firstConFuncPos[ iCon ] + NConnectShapeF( iCon , pOrder ) - 1;
         switch (side) {
             case firstSide:
                 switch (pOrder) {

@@ -74,13 +74,7 @@ public:
     
     virtual int SideConnectLocId(int con,int is) const;
     
-    virtual int NConnectShapeF(int con) const;
-    
     virtual int NConnectShapeF(int con, int order) const;
-    
-    void CreateDofVec();
-    
-    void EvaluateShapeF(const TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     
     virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat);
     
@@ -109,10 +103,7 @@ public:
 	virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     
 protected:
-	
-	static bool fHaveShapeFBeenCreated;
-	bool fHaveDofVecBeenCreated;
-    TPZManVector< TPZManVector<TPZManVector<REAL,31>,255 >, 4> *fPhiVecDofs;
+    
     TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
     
     TPZManVector<int, pzshape::TPZShapeTriang::NFaces> fSideOrient;//TODO: TRANSFER TO LINEAR EL
