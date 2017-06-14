@@ -292,7 +292,8 @@ TPZTransform TPZHCurlNedFTriEl::TransformSideToElement(int side){
 void TPZHCurlNedFTriEl::Convert2Axes(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi)
 {
 	int nshape = curlPhiHat.Cols();
-	REAL detJacInv = jacinv.GetVal(0,0)*jacinv.GetVal(1,1)-jacinv.GetVal(1,0)*jacinv.GetVal(0,1);
+    curlPhi.Redim(curlPhiHat.Rows(), curlPhiHat.Cols());
+	REAL detJacInv = 2*jacinv.GetVal(0,0)*jacinv.GetVal(1,1)-jacinv.GetVal(1,0)*jacinv.GetVal(0,1);//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
 	int ieq;
 	for(ieq = 0; ieq < nshape; ieq++) {
 		curlPhi(0,ieq) = detJacInv*curlPhiHat.GetVal(0,ieq);

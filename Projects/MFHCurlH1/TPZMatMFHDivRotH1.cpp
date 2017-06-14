@@ -63,7 +63,7 @@ void TPZMatMFHDivRotH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &dat
         DebugStop();
     }
     enum whichTest {curl = 0 , dotVec, dotSca, mixed, gradSca};
-    whichTest test = dotVec;
+    whichTest test = mixed;
     /*********************CREATE H1 FUNCTIONS****************************/
     TPZFNMatrix<12,REAL> phiH1 = datavec[ h1meshindex ].phi;
     TPZFNMatrix<36,REAL> dphiH1daxes = datavec[ h1meshindex ].dphix;
@@ -193,16 +193,9 @@ void TPZMatMFHDivRotH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &dat
     }
 }
 
-
-void TPZMatMFHDivRotH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
-{
-    DebugStop();
-}
-
 void TPZMatMFHDivRotH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-	return;
-    isTesting = false;
+    isTesting = true;
     if( isTesting == true ){
         ContributeValidateFunctions(datavec, weight, ek, ef);
         return;
@@ -384,22 +377,9 @@ void TPZMatMFHDivRotH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     }
 }
 
-void TPZMatMFHDivRotH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
-{
-    DebugStop();
-}
-
-void TPZMatMFHDivRotH1::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-    DebugStop();
-}
-
-void TPZMatMFHDivRotH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
-{
-    DebugStop();
-}
-
 void TPZMatMFHDivRotH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
+    return;
     if( isTesting ) return;
     //if( this->assembling == B ) return;
     
@@ -474,57 +454,6 @@ void TPZMatMFHDivRotH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
     }
 
 }
-
-void TPZMatMFHDivRotH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
-{
-    DebugStop();
-}
-
-void TPZMatMFHDivRotH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
-{
-    DebugStop();
-}
-
-int TPZMatMFHDivRotH1::IntegrationRuleOrder(int elPMaxOrder) const
-{
-    return 2+elPMaxOrder*2;
-}
-
-
-int TPZMatMFHDivRotH1::VariableIndex(const std::string &name)
-{
-    if( strcmp(name.c_str(), "Et") == 0) return 0;
-    if( strcmp(name.c_str(), "Ez") == 0) return 1;
-    DebugStop();
-    return 1;
-}
-
-/**
- * @brief Returns the number of variables associated with the variable indexed by var.
- * @param var Index variable into the solution, is obtained by calling VariableIndex
- */
-int TPZMatMFHDivRotH1::NSolutionVariables(int var)
-{
-    switch (var) {
-        case 0: //Et
-            return 2;
-            break;
-        case 1://Ez
-            return 1;
-        default:
-            DebugStop();
-            break;
-    }
-    return 1;
-}
-
-/** @brief Returns the solution associated with the var index based on the finite element approximation */
-void TPZMatMFHDivRotH1::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
-{
-    
-    DebugStop();
-}
-
 
 /** @brief Returns the solution associated with the var index based on the finite element approximation */
 void TPZMatMFHDivRotH1::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
