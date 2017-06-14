@@ -135,7 +135,7 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     TPZManVector<long,1000>activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    FilterBoundaryEquations(meshVec, activeEquations , neq , neqOriginal , isRT);
+    //FilterBoundaryEquations(meshVec, activeEquations , neq , neqOriginal , isRT);
     
     int nSolutions = neq >= 10 ? 10 : neq;
     
@@ -143,7 +143,7 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     
     fmtrx = new TPZFStructMatrix(cmeshMF);
     fmtrx->SetNumThreads(0);
-    fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+    //fmtrx->EquationFilter().SetActiveEquations(activeEquations);
     an.SetStructuralMatrix(fmtrx);
     
     TPZStepSolver<STATE> step;
@@ -404,10 +404,6 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activ
         }
     }
     
-    std::cout<<"------\t------\t-------"<<std::endl;
-    std::cout<<"cmeshH1->NEquations()"<<"\t"<<cmeshH1->NEquations()<<std::endl;
-    std::cout<<"cmeshHCurl->NEquations()"<<"\t"<<cmeshHCurl->NEquations()<<std::endl;
-    std::cout<<"cmeshMF->NEquations()"<<"\t"<<cmeshMF->NEquations()<<std::endl;
     neqOriginal = cmeshMF->NEquations();
     
     int nHCurlEquations = 0 , nH1Equations = 0;
@@ -649,8 +645,14 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     cmeshMF->CleanUpUnconnectedNodes();
     std::ofstream fileH1("../cmeshH1.txt");
     cmeshH1->Print(fileH1);
-    std::ofstream fileHCurl("../cmeshHCurl.txt");
-    cmeshHCurl->Print(fileHCurl);
+    if(isRT){
+        std::ofstream fileHCurl("../cmeshHDivRot.txt");
+        cmeshHCurl->Print(fileHCurl);
+    }
+    else{
+        std::ofstream fileHCurl("../cmeshHCurl.txt");
+        cmeshHCurl->Print(fileHCurl);
+    }
     std::ofstream fileMF("../cmeshMFHCurl.txt");
     cmeshMF->Print(fileMF);
 
@@ -659,5 +661,11 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     meshVecOut[0] = cmeshMF;
     meshVecOut[1 + matMultiPhysics->H1Index()] = cmeshH1;
     meshVecOut[1 + matMultiPhysics->HCurlIndex()] = cmeshHCurl;
+    
+    std::cout<<"------\t------\t-------"<<std::endl;
+    std::cout<<"cmeshH1->NEquations()"<<"\t"<<cmeshH1->NEquations()<<std::endl;
+    std::cout<<"cmeshHCurl->NEquations()"<<"\t"<<cmeshHCurl->NEquations()<<std::endl;
+    std::cout<<"cmeshMF->NEquations()"<<"\t"<<cmeshMF->NEquations()<<std::endl;
+    std::cout<<"------\t------\t-------"<<std::endl;
     return meshVecOut;
 }

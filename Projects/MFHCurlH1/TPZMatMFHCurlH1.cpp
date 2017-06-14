@@ -237,16 +237,19 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     /*********************CREATE HCURL FUNCTIONS*****************************/
     TPZFNMatrix< 36 , REAL > phiHCurlAxes = datavec[ hcurlmeshindex ].phi;
     TPZFNMatrix<40,REAL> curlPhiDAxes = datavec[ hcurlmeshindex ].dphix;
-	TPZFNMatrix<40,REAL> curlPhi, phiHCurlPre(phiHCurlAxes.Cols(), phiHCurlAxes.Rows()), phiHCurl;
-	TPZFNMatrix<3,REAL> normalVec(1,3);
+	
+    TPZFNMatrix<40,REAL> curlPhi, phiHCurl;
+    
+    TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes , phiHCurl , datavec[hcurlmeshindex].axes , false);
+	
+    TPZFNMatrix<3,REAL> normalVec(1,3);
 	normalVec(0,0) = datavec[hcurlmeshindex].normal[0];
 	normalVec(0,1) = datavec[hcurlmeshindex].normal[1];
 	normalVec(0,2) = datavec[hcurlmeshindex].normal[2];
 	TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
-	for(int i = 0; i < phiHCurlAxes.Rows(); i++)
-		for(int j = 0; j < phiHCurlAxes.Cols(); j++)
-			phiHCurlPre(j,i) = phiHCurlAxes(i,j);
-	TPZAxesTools<REAL>::Axes2XYZ(phiHCurlPre, phiHCurl, datavec[hcurlmeshindex].axes);
+	
+    
+    
     TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
     const STATE muR =  fUr(x);
     const STATE epsilonR = fEr(x);
@@ -263,8 +266,8 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
             STATE stiffAtt = 0.;
             STATE stiffBtt = 0.;
             STATE curlIdotCurlJ = 0.;
-            curlIdotCurlJ += std::conj( curlPhi(0 , iVec ) ) * curlPhi(0 , jVec);
-            curlIdotCurlJ += std::conj( curlPhi(1 , iVec ) ) * curlPhi(1 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(0 , iVec) ) * curlPhi(0 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(1 , iVec) ) * curlPhi(1 , jVec);
             curlIdotCurlJ += std::conj( curlPhi(2 , iVec) ) * curlPhi(2 , jVec);
             STATE phiIdotPhiJ = 0.;
             phiIdotPhiJ += std::conj( phiHCurl(iVec , 0) ) * phiHCurl(jVec , 0);
