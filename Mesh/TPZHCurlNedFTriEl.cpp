@@ -315,8 +315,8 @@ void TPZHCurlNedFTriEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZ
         phi(iPhi , 0) = jacinv.GetVal(0,0) * phiHat.GetVal(iPhi , 0) + jacinv.GetVal(1,0) * phiHat.GetVal(iPhi , 1);
         phi(iPhi , 1) = jacinv.GetVal(0,1) * phiHat.GetVal(iPhi , 0) + jacinv.GetVal(1,1) * phiHat.GetVal(iPhi , 1);
         
-        phi(iPhi , 0) *= sqrt(2);
-        phi(iPhi , 1) *= sqrt(2);
+        phi(iPhi , 0) *= 2;
+        phi(iPhi , 1) *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
     }    
 }
 
@@ -325,7 +325,7 @@ void TPZHCurlNedFTriEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const 
 	int nshape = curlPhiHat.Cols();
     curlPhi.Redim(curlPhiHat.Rows(), curlPhiHat.Cols());
 	REAL detJacInv = jacinv.GetVal(0,0)*jacinv.GetVal(1,1)-jacinv.GetVal(1,0)*jacinv.GetVal(0,1);
-    //detJacInv *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
+    detJacInv *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
     
 	int ieq;
 	for(ieq = 0; ieq < nshape; ieq++) {

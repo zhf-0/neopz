@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 #endif
     
     //PARAMETROS FISICOS DO PROBLEMA
-    REAL hDomain = 1;//4 * 2.54 * 1e-3;
-    REAL wDomain = 1;//9 * 2.54 * 1e-3;
+    REAL hDomain = 4 * 2.54 * 1e-3;
+    REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 1;
+    int nDiv = 10;
     int nSim = 2;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
@@ -466,6 +466,21 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     
     lrCoord[0] = wDomain/2;
     lrCoord[1] = -hDomain/2;
+    
+    const REAL theta = 0.2;
+    const REAL sinT = sin(theta), cosT = cos(theta);
+    
+    llCoord[0] = cosT * ( -wDomain/2 ) - sinT * ( -hDomain/2 );
+    llCoord[1] = sinT * ( -wDomain/2 ) + cosT * ( -hDomain/2 );
+
+    ulCoord[0] = cosT * ( -wDomain/2 ) - sinT * ( hDomain/2 );
+    ulCoord[1] = sinT * ( -wDomain/2 ) + cosT * ( hDomain/2 );
+
+    urCoord[0] = cosT * ( wDomain/2 ) - sinT * ( hDomain/2 );
+    urCoord[1] = sinT * ( wDomain/2 ) + cosT * ( hDomain/2 );
+
+    lrCoord[0] = cosT * ( wDomain/2 ) - sinT * ( -hDomain/2 );
+    lrCoord[1] = sinT * ( wDomain/2 ) + cosT * ( -hDomain/2 );
     
     nx[0]=xDiv;
     nx[1]=yDiv;

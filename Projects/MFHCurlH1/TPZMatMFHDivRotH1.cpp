@@ -63,7 +63,7 @@ void TPZMatMFHDivRotH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &dat
         DebugStop();
     }
     enum whichTest {curl = 0 , dotVec, dotSca, mixed, gradSca};
-    whichTest test = dotVec;
+    whichTest test = mixed;
     /*********************CREATE H1 FUNCTIONS****************************/
     TPZFNMatrix<12,REAL> phiH1 = datavec[ h1meshindex ].phi;
     TPZFNMatrix<36,REAL> dphiH1daxes = datavec[ h1meshindex ].dphix;
