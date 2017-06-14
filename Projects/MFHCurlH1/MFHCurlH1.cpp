@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 2; //ordem polinomial de aproximacao
+    int pOrder = 1; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     const int meshType = createTriangular;
     
     
-    bool generatingResults = true;
+    bool generatingResults = false;
     if(generatingResults){
         struct stat sb;
         if (stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)){
@@ -98,12 +98,12 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 1;
-    int nSim = 5;
+    int nDiv = 10;
+    int nSim = 2;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
         RunSimulation( isCutOff, meshType, isRT , pOrder, nDiv, hDomain, wDomain, f0, generatingResults);
-        nDiv += 5;
+        isRT = true;
     }
     
     
@@ -166,8 +166,18 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     std::cout<<"saindo do assemble"<<std::endl;
     
 #ifdef PZDEBUG
-    std::ofstream fileA("../stiffA.csv");
-    std::ofstream fileB("../stiffB.csv");
+    std::string fileAName("../stiffA"), fileBName("../stiffB");
+    if( !isRT ){
+        fileAName.append("HCurl.csv");
+        fileBName.append("HCurl.csv");
+    }
+    else{
+        fileAName.append("RT.csv");
+        fileBName.append("RT.csv");
+    }
+    std::ofstream fileA(fileAName.c_str());
+    std::ofstream fileB(fileBName.c_str());
+    
     char number[256];
     for (int i = 0; i<stiffAPtr->Rows(); i++) {
         for(int j = 0 ; j<stiffAPtr->Rows();j++){
@@ -203,9 +213,9 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     TPZFMatrix< STATE > eVectors;
     std::cout<<"entrando no calculo dos autovalores"<<std::endl;
     
-    TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
-    TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
-    stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
+    //TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
+    //TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
+    //stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
     
     std::cout<<"saindo do calculo dos autovalores"<<std::endl;
     timer.stop();
@@ -646,7 +656,7 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     std::ofstream fileH1("../cmeshH1.txt");
     cmeshH1->Print(fileH1);
     if(isRT){
-        std::ofstream fileHCurl("../cmeshHDivRot.txt");
+        std::ofstream fileHCurl("../cmeshRT.txt");
         cmeshHCurl->Print(fileHCurl);
     }
     else{

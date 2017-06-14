@@ -48,30 +48,6 @@ TPZMatMFHCurlH1::~TPZMatMFHCurlH1()
 {
     
 }
-void TPZMatMFHCurlH1::RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl ){
-    int nFunctions = vHdiv.Rows();
-    vHcurl.Resize( vHdiv.Rows(), vHdiv.Cols());
-    vHcurl.Zero();
-    
-    for (int i = 0 ; i < nFunctions; i++) {
-        
-        vHcurl(i,0) = normal[1]*vHdiv(i,2) - vHdiv(i,1)*normal[2];
-        vHcurl(i,1) = normal[2]*vHdiv(i,0) - vHdiv(i,2)*normal[0];
-        vHcurl(i,2) = normal[0]*vHdiv(i,1) - vHdiv(i,0)*normal[1];
-    }
-}
-void TPZMatMFHCurlH1::ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi ){
-    int nFunctions = gradScalarPhi.Rows();
-    curlPhi.Resize( nFunctions , 3);
-    curlPhi.Zero();
-    TPZManVector<REAL,3> result(3,0.);
-    
-    for (int i = 0 ; i < nFunctions; i++) {
-        curlPhi(i,0) = gradScalarPhi(i,1)*ivecHCurl(i,2) - ivecHCurl(i,1)*gradScalarPhi(i,2);
-        curlPhi(i,1) = gradScalarPhi(i,2)*ivecHCurl(i,0) - ivecHCurl(i,2)*gradScalarPhi(i,0);
-        curlPhi(i,2) = gradScalarPhi(i,0)*ivecHCurl(i,1) - ivecHCurl(i,0)*gradScalarPhi(i,1);
-    }
-}
 
 void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
@@ -79,77 +55,43 @@ void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datav
         DebugStop();
     }
     enum whichTest {curl = 0 , dotVec, dotSca, mixed, gradSca};
-    whichTest test = dotVec;
+    whichTest test = mixed;
     /*********************CREATE H1 FUNCTIONS****************************/
     TPZFNMatrix<12,REAL> phiH1 = datavec[ h1meshindex ].phi;
     TPZFNMatrix<36,REAL> dphiH1daxes = datavec[ h1meshindex ].dphix;
     TPZFNMatrix<3,REAL> dphiH1;
     TPZAxesTools<REAL>::Axes2XYZ(dphiH1daxes, dphiH1, datavec[ h1meshindex ].axes);
     TPZFNMatrix<3,REAL> gradPhiH1(phiH1.Rows() , 3 , 0.);
-    
     for ( int iFunc = 0 ; iFunc < phiH1.Rows(); iFunc++ ) {
-    
+        
         gradPhiH1 ( iFunc , 0 ) = dphiH1 ( 0 , iFunc );
         gradPhiH1 ( iFunc , 1 ) = dphiH1 ( 1 , iFunc );
-        
     }
     
-    /*********************CREATE HDIV FUNCTIONS****************************/
-    TPZFNMatrix<12,REAL> phiScaHCurl = datavec[ hcurlmeshindex ].phi;
-    TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
-    TPZManVector<REAL,3> xParametric = datavec[ h1meshindex ].xParametric;
+    /*********************CREATE HCURL FUNCTIONS*****************************/
+    TPZFNMatrix< 36 , REAL > phiHCurlAxes = datavec[ hcurlmeshindex ].phi;
+    TPZFNMatrix<40,REAL> curlPhiDAxes = datavec[ hcurlmeshindex ].dphix;
     
-    int phrq = datavec[ hcurlmeshindex ].fVecShapeIndex.NElements();
-    //  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
+    TPZFNMatrix<40,REAL> curlPhi, phiHCurl;
     
-    TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.);
-    for (int iq = 0 ; iq < phrq ; iq++) {
-        int ivecind = datavec[ hcurlmeshindex ].fVecShapeIndex[iq].first;
-        int ishapeind = datavec[ hcurlmeshindex ].fVecShapeIndex[iq].second;
-        
-        phiVecHDiv(iq , 0) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(0,ivecind);
-        phiVecHDiv(iq , 1) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(1,ivecind);
-        phiVecHDiv(iq , 2) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(2,ivecind);
-        
-    }
+    TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes , phiHCurl , datavec[hcurlmeshindex].axes , false);
     
-    /*********************CALCULATE NORMAL VECTOR****************************/
     TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
     for (int i=0; i<3; i++) {
         ax1[i] = datavec[ hcurlmeshindex ].axes(0,i);
         ax2[i] = datavec[ hcurlmeshindex ].axes(1,i);
     }
     Cross(ax1, ax2, elNormal);
-    
-    /*********************CREATE HCURL FUNCTIONS*****************************/
-    TPZFNMatrix< 36 , REAL > phiVecHCurl(phrq , 3 , 0.);
-    RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
-    /*********************COMPUTE CURL****************************/
-    TPZFMatrix<REAL> &dphiQdaxes = datavec[ hcurlmeshindex ].dphix;
-    TPZFNMatrix<3,REAL> dphiQ;
-    TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, datavec[ hcurlmeshindex ].axes);
-    TPZFNMatrix<3,REAL> gradPhiForHCurl(phrq , 3 , 0.);
-    TPZFNMatrix<3,REAL> ivecHCurl(phrq , 3 , 0.);
-    TPZManVector<REAL,3> iVecHDiv(3,0.), ivecForCurl(3,0.);
-    for (int iPhi = 0; iPhi < phrq; iPhi++) {
-        int ivecind = datavec[ hcurlmeshindex ].fVecShapeIndex[iPhi].first;
-        int ishapeind = datavec[ hcurlmeshindex ].fVecShapeIndex[iPhi].second;
-        iVecHDiv[0] = datavec[ hcurlmeshindex ].fNormalVec(0,ivecind);
-        iVecHDiv[1] = datavec[ hcurlmeshindex ].fNormalVec(1,ivecind);
-        iVecHDiv[2] = datavec[ hcurlmeshindex ].fNormalVec(2,ivecind);
-        Cross(elNormal, iVecHDiv, ivecForCurl);
-        for (int i = 0; i<dphiQ.Rows(); i++) {
-            gradPhiForHCurl(iPhi,i) = dphiQ(i,ishapeind);
-            ivecHCurl(iPhi,i) = ivecForCurl[i];
-        }
-    }
-    TPZFNMatrix<40,REAL> curlPhi;
-    ComputeCurl(gradPhiForHCurl, ivecHCurl, curlPhi);
+    TPZFNMatrix<3,REAL> normalVec(1,3);
+    normalVec(0,0) = elNormal[0];
+    normalVec(0,1) = elNormal[1];
+    normalVec(0,2) = elNormal[2];
+    TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
     
     
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
-    const int nHCurlFunctions  = phrq;
+    const int nHCurlFunctions  = phiHCurl.Rows();
     const int nH1Functions  = phiH1.Rows();
     const int firstH1 = h1meshindex * nHCurlFunctions;
     const int firstHCurl = hcurlmeshindex * nH1Functions;
@@ -157,13 +99,13 @@ void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datav
     for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
         for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
             STATE curlIdotCurlJ = 0.;
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 0) ) * curlPhi(jVec , 0);
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 1) ) * curlPhi(jVec , 1);
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 2) ) * curlPhi(jVec , 2);
+            curlIdotCurlJ += std::conj( curlPhi(0 , iVec) ) * curlPhi(0 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(1 , iVec) ) * curlPhi(1 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(2 , iVec) ) * curlPhi(2 , jVec);
             STATE phiIdotPhiJ = 0.;
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 0) ) * phiVecHCurl(jVec , 0);
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 1) ) * phiVecHCurl(jVec , 1);
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 2) ) * phiVecHCurl(jVec , 2);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 0) ) * phiHCurl(jVec , 0);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 1) ) * phiHCurl(jVec , 1);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 2) ) * phiHCurl(jVec , 2);
             if (test == curl) {
                 ek( firstHCurl + iVec , firstHCurl + jVec ) += curlIdotCurlJ * weight ;
             }
@@ -174,9 +116,9 @@ void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datav
         for (int jSca = 0; jSca < nH1Functions; jSca++) {
             STATE phiVecDotGradPhiSca = 0.;
             
-            phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 0) ) * gradPhiH1(jSca , 0);
-            phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 1) ) * gradPhiH1(jSca , 1);
-            phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiH1(jSca , 2);
+            phiVecDotGradPhiSca += std::conj( phiHCurl(iVec , 0) ) * gradPhiH1(jSca , 0);
+            phiVecDotGradPhiSca += std::conj( phiHCurl(iVec , 1) ) * gradPhiH1(jSca , 1);
+            phiVecDotGradPhiSca += std::conj( phiHCurl(iVec , 2) ) * gradPhiH1(jSca , 2);
             if ( test == mixed) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += phiVecDotGradPhiSca * weight ;
             }
@@ -185,9 +127,9 @@ void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datav
     for (int iSca = 0; iSca < nH1Functions; iSca++) {
         for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
             STATE phiVecDotGradPhiSca = 0.;
-            phiVecDotGradPhiSca += phiVecHCurl(jVec , 0) * std::conj( gradPhiH1(iSca , 0) );
-            phiVecDotGradPhiSca += phiVecHCurl(jVec , 1) * std::conj( gradPhiH1(iSca , 1) );
-            phiVecDotGradPhiSca += phiVecHCurl(jVec , 2) * std::conj( gradPhiH1(iSca , 2) );
+            phiVecDotGradPhiSca += phiHCurl(jVec , 0) * std::conj( gradPhiH1(iSca , 0) );
+            phiVecDotGradPhiSca += phiHCurl(jVec , 1) * std::conj( gradPhiH1(iSca , 1) );
+            phiVecDotGradPhiSca += phiHCurl(jVec , 2) * std::conj( gradPhiH1(iSca , 2) );
             
             if ( test == mixed) {
                 ek( firstH1 + iSca , firstHCurl +  jVec ) += phiVecDotGradPhiSca * weight ;
@@ -217,7 +159,7 @@ void TPZMatMFHCurlH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<
 
 void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-    isTesting = false;
+    isTesting = true;
     if( isTesting == true ){
         ContributeValidateFunctions(datavec, weight, ek, ef);
         return;
@@ -242,10 +184,16 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     
     TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes , phiHCurl , datavec[hcurlmeshindex].axes , false);
 	
+    TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
+    for (int i=0; i<3; i++) {
+        ax1[i] = datavec[ hcurlmeshindex ].axes(0,i);
+        ax2[i] = datavec[ hcurlmeshindex ].axes(1,i);
+    }
+    Cross(ax1, ax2, elNormal);
     TPZFNMatrix<3,REAL> normalVec(1,3);
-	normalVec(0,0) = datavec[hcurlmeshindex].normal[0];
-	normalVec(0,1) = datavec[hcurlmeshindex].normal[1];
-	normalVec(0,2) = datavec[hcurlmeshindex].normal[2];
+	normalVec(0,0) = elNormal[0];
+	normalVec(0,1) = elNormal[1];
+	normalVec(0,2) = elNormal[2];
 	TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
 	
     
@@ -254,7 +202,7 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     const STATE muR =  fUr(x);
     const STATE epsilonR = fEr(x);
     REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
-    //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
+    /*****************ACTUAL COMPUTATION OF CONTRIBUTION****************/
     
 	const int nHCurlFunctions  = phiHCurl.Rows();
     const int nH1Functions  = phiH1.Rows();
@@ -367,6 +315,7 @@ void TPZMatMFHCurlH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatri
 
 void TPZMatMFHCurlH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
+    return;
     if( isTesting ) return;
     //if( this->assembling == B ) return;
     

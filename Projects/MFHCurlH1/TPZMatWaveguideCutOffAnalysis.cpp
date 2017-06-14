@@ -38,62 +38,32 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
         gradPhiH1 ( iFunc , 1 ) = dphiH1 ( 1 , iFunc );
     }
     
-    /*********************CREATE HDIV FUNCTIONS****************************/
-    TPZFNMatrix<12,REAL> phiScaHCurl = datavec[ hcurlmeshindex ].phi;
-    TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
-    TPZManVector<REAL,3> xParametric = datavec[ h1meshindex ].xParametric;
+    /*********************CREATE HCURL FUNCTIONS*****************************/
+    TPZFNMatrix< 36 , REAL > phiHCurlAxes = datavec[ hcurlmeshindex ].phi;
+    TPZFNMatrix<40,REAL> curlPhiDAxes = datavec[ hcurlmeshindex ].dphix;
     
-    int phrq = datavec[ hcurlmeshindex ].fVecShapeIndex.NElements();
-    //  std::cout<<"x"<<std::endl<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
+    TPZFNMatrix<40,REAL> curlPhi, phiHCurl;
     
-    TPZFNMatrix< 36 , REAL > phiVecHDiv(phrq , 3 , 0.);
-    for (int iq = 0 ; iq < phrq ; iq++) {
-        int ivecind = datavec[ hcurlmeshindex ].fVecShapeIndex[iq].first;
-        int ishapeind = datavec[ hcurlmeshindex ].fVecShapeIndex[iq].second;
-        
-        phiVecHDiv(iq , 0) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(0,ivecind);
-        phiVecHDiv(iq , 1) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(1,ivecind);
-        phiVecHDiv(iq , 2) = phiScaHCurl(ishapeind , 0) * datavec[ hcurlmeshindex ].fNormalVec(2,ivecind);
-    }
+    TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes , phiHCurl , datavec[hcurlmeshindex].axes , false);
     
-    /*********************CALCULATE NORMAL VECTOR****************************/
     TPZManVector<REAL,3> ax1(3),ax2(3), elNormal(3);
     for (int i=0; i<3; i++) {
         ax1[i] = datavec[ hcurlmeshindex ].axes(0,i);
         ax2[i] = datavec[ hcurlmeshindex ].axes(1,i);
     }
     Cross(ax1, ax2, elNormal);
+    TPZFNMatrix<3,REAL> normalVec(1,3);
+    normalVec(0,0) = elNormal[0];
+    normalVec(0,1) = elNormal[1];
+    normalVec(0,2) = elNormal[2];
+    TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
     
-    /*********************CREATE HCURL FUNCTIONS*****************************/
-    TPZFNMatrix< 36 , REAL > phiVecHCurl(phrq , 3 , 0.);
-    RotateForHCurl(elNormal , phiVecHDiv , phiVecHCurl);
-    /*********************COMPUTE CURL****************************/
-    TPZFMatrix<REAL> &dphiQdaxes = datavec[ hcurlmeshindex ].dphix;
-    TPZFNMatrix<3,REAL> dphiQ;
-    TPZAxesTools<REAL>::Axes2XYZ(dphiQdaxes, dphiQ, datavec[ hcurlmeshindex ].axes);
-    TPZFNMatrix<3,REAL> gradPhiForHCurl(phrq , 3 , 0.);
-    TPZFNMatrix<3,REAL> ivecHCurl(phrq , 3 , 0.);
-    TPZManVector<REAL,3> iVecHDiv(3,0.), ivecForCurl(3,0.);
-    for (int iPhi = 0; iPhi < phrq; iPhi++) {
-        int ivecind = datavec[ hcurlmeshindex ].fVecShapeIndex[iPhi].first;
-        int ishapeind = datavec[ hcurlmeshindex ].fVecShapeIndex[iPhi].second;
-        iVecHDiv[0] = datavec[ hcurlmeshindex ].fNormalVec(0,ivecind);
-        iVecHDiv[1] = datavec[ hcurlmeshindex ].fNormalVec(1,ivecind);
-        iVecHDiv[2] = datavec[ hcurlmeshindex ].fNormalVec(2,ivecind);
-        Cross(elNormal, iVecHDiv, ivecForCurl);
-        for (int i = 0; i<dphiQ.Rows(); i++) {
-            gradPhiForHCurl(iPhi,i) = dphiQ(i,ishapeind);
-            ivecHCurl(iPhi,i) = ivecForCurl[i];
-        }
-    }
-    TPZFNMatrix<40,REAL> curlPhi;
-    ComputeCurl(gradPhiForHCurl, ivecHCurl, curlPhi);
-    
+    TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
     const STATE muR =  fUr(x);
     const STATE epsilonR = fEr(x);
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
-    const int nHCurlFunctions  = phrq;
+    const int nHCurlFunctions  = phiHCurl.Rows();
     const int nH1Functions  = phiH1.Rows();
     const int firstH1 = h1meshindex * nHCurlFunctions;
     const int firstHCurl = hcurlmeshindex * nH1Functions;
@@ -103,13 +73,13 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             STATE stiffAtt = 0.;
             STATE stiffBtt = 0.;
             STATE curlIdotCurlJ = 0.;
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 0) ) * curlPhi(jVec , 0);
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 1) ) * curlPhi(jVec , 1);
-            curlIdotCurlJ += std::conj( curlPhi(iVec , 2) ) * curlPhi(jVec , 2);
+            curlIdotCurlJ += std::conj( curlPhi(0 , iVec) ) * curlPhi(0 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(1 , iVec) ) * curlPhi(1 , jVec);
+            curlIdotCurlJ += std::conj( curlPhi(2 , iVec) ) * curlPhi(2 , jVec);
             STATE phiIdotPhiJ = 0.;
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 0) ) * phiVecHCurl(jVec , 0);
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 1) ) * phiVecHCurl(jVec , 1);
-            phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 2) ) * phiVecHCurl(jVec , 2);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 0) ) * phiHCurl(jVec , 0);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 1) ) * phiHCurl(jVec , 1);
+            phiIdotPhiJ += std::conj( phiHCurl(iVec , 2) ) * phiHCurl(jVec , 2);
             
             stiffAtt = 1./muR * curlIdotCurlJ;
             stiffBtt = epsilonR * phiIdotPhiJ;;
@@ -155,11 +125,6 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             }
         }
     }
-}
-
-void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
-{
-    DebugStop();
 }
 
 

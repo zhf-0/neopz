@@ -126,7 +126,7 @@ public:
 							  REAL &detjac, TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi, TPZFMatrix<REAL> &dphidx);
 
     /// convert a shapefunction derivative in xi-eta to a function derivative in axes
-    static void Convert2Axes(const TPZFMatrix<REAL> &dphi, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &dphidx);
+    virtual void Convert2Axes(const TPZFMatrix<REAL> &dphi, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &dphidx);
 
 	
 	/** @brief Compute the values of the shape function along the side*/
