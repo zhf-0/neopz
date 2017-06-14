@@ -97,8 +97,15 @@ public:
     virtual void SetSideOrder(int side, int order);
     
     virtual TPZTransform TransformSideToElement(int side);
+    
+    void ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
+                      TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,
+                      REAL &detjac, TPZFMatrix<REAL> &jacinv,
+                      TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi, TPZFMatrix<REAL> &dphidx);
 	
-	void Convert2Axes(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
+    void ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi);
+    
+	void CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
 	
 	virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
     

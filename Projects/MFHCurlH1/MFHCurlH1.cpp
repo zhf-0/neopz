@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 #endif
     
     //PARAMETROS FISICOS DO PROBLEMA
-    REAL hDomain = 4 * 2.54 * 1e-3;
-    REAL wDomain = 9 * 2.54 * 1e-3;
+    REAL hDomain = 1;//4 * 2.54 * 1e-3;
+    REAL wDomain = 1;//9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
     int pOrder = 1; //ordem polinomial de aproximacao
     
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 10;
+    int nDiv = 1;
     int nSim = 2;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
