@@ -602,11 +602,11 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     TPZMatHCurlProjection *matHCurl = new TPZMatHCurlProjection(matId);
     cmeshHCurl->InsertMaterialObject(matHCurl);
     
-//    val1( 0, 0 ) = 0.;
-//    val2( 0, 0 ) = 0.;
-//    TPZMaterial * BCondHCurlDir = matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
-//	
-//    cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
+    val1( 0, 0 ) = 0.;
+    val2( 0, 0 ) = 0.;
+    TPZMaterial * BCondHCurlDir = matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1, val2);//cria material que implementa a condicao de contorno de dirichlet
+	
+    cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
 	
     if (isRT) {
 		cmeshHCurl->SetAllCreateFunctionsHDiv();//define espaco de aproximacao

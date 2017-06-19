@@ -101,13 +101,17 @@ public:
     void ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
                       TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,
                       REAL &detjac, TPZFMatrix<REAL> &jacinv,
-                      TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &dphi, TPZFMatrix<REAL> &dphidx);
+                      TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat, TPZFMatrix<REAL> &curlPhi);
 	
     void ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi);
     
 	void CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
 	
 	virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
+    
+    virtual void SetCreateFunctions(TPZCompMesh *mesh){
+        mesh->SetAllCreateFunctionsHCurl();
+    }//TODO: is this necessary?
     
 protected:
     

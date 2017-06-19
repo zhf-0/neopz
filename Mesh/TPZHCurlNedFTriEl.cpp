@@ -309,8 +309,11 @@ void TPZHCurlNedFTriEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
 void TPZHCurlNedFTriEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi)
 {
     int nshape = phiHat.Rows();
+#ifdef PZDEBUG
+    if (phiHat.Cols() != 2) DebugStop();
+#endif
     phi.Redim(phiHat.Rows(), phiHat.Cols());
-    
+
     for(int iPhi = 0; iPhi < nshape; iPhi++) {
         phi(iPhi , 0) = jacinv.GetVal(0,0) * phiHat.GetVal(iPhi , 0) + jacinv.GetVal(1,0) * phiHat.GetVal(iPhi , 1);
         phi(iPhi , 1) = jacinv.GetVal(0,1) * phiHat.GetVal(iPhi , 0) + jacinv.GetVal(1,1) * phiHat.GetVal(iPhi , 1);
@@ -323,7 +326,11 @@ void TPZHCurlNedFTriEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZ
 void TPZHCurlNedFTriEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi)
 {
 	int nshape = curlPhiHat.Cols();
+#ifdef PZDEBUG
+    if (curlPhiHat.Rows() != 1) DebugStop();
+#endif
     curlPhi.Redim(curlPhiHat.Rows(), curlPhiHat.Cols());
+    
 	REAL detJacInv = jacinv.GetVal(0,0)*jacinv.GetVal(1,1)-jacinv.GetVal(1,0)*jacinv.GetVal(0,1);
     detJacInv *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
     
@@ -332,11 +339,6 @@ void TPZHCurlNedFTriEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const 
 		curlPhi(0,ieq) = detJacInv*curlPhiHat.GetVal(0,ieq);
 	}
 	
-}
-
-TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
-	DebugStop();
-	return new TPZHCurlNedFTriEl(mesh,gel,index);
 }
 
 TPZCompEl * CreateHCurlNedFTriEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
