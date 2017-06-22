@@ -260,10 +260,12 @@ void TPZHCurlNedFLinEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
                                      REAL &detjac, TPZFMatrix<REAL> &jacinv,
                                      TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat, TPZFMatrix<REAL> &curlPhi){
     TPZGeoEl * ref = this->Reference();
+#ifdef PZDEBUG
     if (!ref){
         PZError << "\nERROR AT " << __PRETTY_FUNCTION__ << " - this->Reference() == NULL\n";
         return;
     }//if
+#endif
     TPZFMatrix<REAL> phiHat;
     
     ref->Jacobian( intpoint, jacobian, axes, detjac , jacinv);
@@ -291,7 +293,7 @@ void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZ
     
     for(int iPhi = 0; iPhi < nshape; iPhi++) {
         phi(iPhi , 0) = jacinv.GetVal(0,0) * phiHat.GetVal(iPhi , 0);
-        phi(iPhi , 0) *= 2 / edgeSize;//This is the scale factor present in TPZTriangle::ComputeDirections
+        phi(iPhi , 0) *= 2 * edgeSize;//This is the scale factor present in TPZTriangle::ComputeDirections
     }
 }
 

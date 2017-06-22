@@ -296,11 +296,13 @@ void TPZHCurlNedFTriEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
                                      TPZFMatrix<REAL> &curlPhiHat,
                                      TPZFMatrix<REAL> &curlPhi) {
   TPZGeoEl *ref = this->Reference();
-  if (!ref) {
+#ifdef PZDEBUG
+	if (!ref) {
     PZError << "\nERROR AT " << __PRETTY_FUNCTION__
             << " - this->Reference() == NULL\n";
     return;
   }  // if
+#endif
   TPZFMatrix<REAL> phiHat;
 
   ref->Jacobian(intpoint, jacobian, axes, detjac, jacinv);
