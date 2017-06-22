@@ -274,36 +274,29 @@ void TPZHCurlNedFLinEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
 
 void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi){
     int nshape = phiHat.Rows();
+	TPZGeoEl * gel = this->Reference();
 #ifdef PZDEBUG
-    if (phiHat.Cols() != 2) DebugStop();
+	if (!(gel && gel->Dimension() == 1)) {
+		DebugStop();
+	}
+	
+	if(gel->Neighbour(2).Side() > 6 || gel->Neighbour(2).Side() < 3 ){
+		DebugStop();
+	}
 #endif
+	
+	const REAL edgeSize = gel->Neighbour(2).Side() == 4 ? sqrt(2) : 1;
+
     phi.Redim(phiHat.Rows(), phiHat.Cols());
     
     for(int iPhi = 0; iPhi < nshape; iPhi++) {
         phi(iPhi , 0) = jacinv.GetVal(0,0) * phiHat.GetVal(iPhi , 0);
-        
-        phi(iPhi , 0) *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
+        phi(iPhi , 0) *= 2 / edgeSize;//This is the scale factor present in TPZTriangle::ComputeDirections
     }
 }
 
 void TPZHCurlNedFLinEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi){
-    int nshape = curlPhiHat.Cols();
-#ifdef PZDEBUG
-    if (curlPhiHat.Rows() != 1) DebugStop();
-#endif
-    curlPhi.Redim(curlPhiHat.Rows(), curlPhiHat.Cols());
-
-    REAL detJacInv = jacinv.GetVal(0,0);
-    detJacInv *= 2;//TODO: think about this. this is the scale factor present in TPZTriangle::ComputeDirections
-    
-    int ieq;
-    for(ieq = 0; ieq < nshape; ieq++) {
-        curlPhi(0,ieq) = detJacInv*curlPhiHat.GetVal(0,ieq);
-    }
-}
-
-void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat){
-    DebugStop();
+	return;//The curl wont be calculated in boundary elements for now.
 }
 
 TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {

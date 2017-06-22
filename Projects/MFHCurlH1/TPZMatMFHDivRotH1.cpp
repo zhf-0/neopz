@@ -195,7 +195,7 @@ void TPZMatMFHDivRotH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &dat
 
 void TPZMatMFHDivRotH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
-    isTesting = true;
+    isTesting = false;
     if( isTesting == true ){
         ContributeValidateFunctions(datavec, weight, ek, ef);
         return;

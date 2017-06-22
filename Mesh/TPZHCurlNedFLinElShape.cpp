@@ -21,8 +21,6 @@ static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFLinEl"));
  */
 void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                               TPZFMatrix<REAL> &curlPhiHat) {
-  // EvaluateShapeF(qsi, phi, curlPhiHat);
-  // return;
   const int nCon = NConnects();
   const int dim = Dimension();
   const int firstSide = TPZShapeLinear::NSides - TPZShapeLinear::NFaces - 1;
@@ -36,8 +34,8 @@ void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
   const int lastFuncPos = NConnectShapeF(nCon - 1, ConnectOrder(nCon - 1)) - 1;
 
   phi.Resize(lastFuncPos + 1, dim);
-  curlPhiHat.Resize(1, 1);  // DOESNT MAKE SENSE IN THIS CONTEXT. WILL BE
-                            // IGNORED
+  curlPhiHat.Resize(1, 1);  //The curl wont be calculated in boundary
+							//elements for now.
   const int pOrder = ConnectOrder(0);
   const int orient = fSideOrient;
 

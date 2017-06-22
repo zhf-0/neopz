@@ -73,11 +73,11 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 1; //ordem polinomial de aproximacao
+    int pOrder = 3; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
-    bool isRT = true;
+    bool isRT = false;
     
     const int meshType = createTriangular;
     
@@ -98,12 +98,11 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 10000;
-    int nSim = 2;
+    int nDiv = 5;
+    int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
         RunSimulation( isCutOff, meshType, isRT , pOrder, nDiv, hDomain, wDomain, f0, generatingResults);
-        isRT = false;
     }
     
     
@@ -135,7 +134,7 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     TPZManVector<long,1000>activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    //FilterBoundaryEquations(meshVec, activeEquations , neq , neqOriginal , isRT);
+    FilterBoundaryEquations(meshVec, activeEquations , neq , neqOriginal , isRT);
     
     int nSolutions = neq >= 10 ? 10 : neq;
     
@@ -143,7 +142,7 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     
     fmtrx = new TPZFStructMatrix(cmeshMF);
     fmtrx->SetNumThreads(0);
-    //fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+    fmtrx->EquationFilter().SetActiveEquations(activeEquations);
     an.SetStructuralMatrix(fmtrx);
     
     TPZStepSolver<STATE> step;
@@ -213,10 +212,9 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
     TPZFMatrix< STATE > eVectors;
     std::cout<<"entrando no calculo dos autovalores"<<std::endl;
     
-    //TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
-    //TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
-    //stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
-    
+    TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
+    TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
+    stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
     std::cout<<"saindo do calculo dos autovalores"<<std::endl;
     timer.stop();
     
@@ -306,30 +304,30 @@ void RunSimulation( bool isCutOff, const int meshType, bool isRT, int pOrder, in
         }
         fileA.close();
     }
-    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
-    
-    TPZStack<std::string> scalnames, vecnames;
-    scalnames.Push("Ez");//setando para imprimir u
-    vecnames.Push("Et");
-    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
-    int dim = 2;
-    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
-    int postProcessResolution = 2;//define resolucao do pos processamento
-    
-    
-    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
-    for (int iSol = 0; iSol < nSolutions; iSol ++) {
-        if( iT == eigenValuesRe.end() ){
-            DebugStop();
-        }
-        for (int i = 0 ; i < neq; i++) {
-            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
-        }
-        an.LoadSolution( solMat );
-        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
-        an.PostProcess(postProcessResolution);
-        iT++;
-    }
+//    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
+//    
+//    TPZStack<std::string> scalnames, vecnames;
+//    scalnames.Push("Ez");//setando para imprimir u
+//    vecnames.Push("Et");
+//    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
+//    int dim = 2;
+//    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
+//    int postProcessResolution = 2;//define resolucao do pos processamento
+//    
+//    
+//    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
+//    for (int iSol = 0; iSol < nSolutions; iSol ++) {
+//        if( iT == eigenValuesRe.end() ){
+//            DebugStop();
+//        }
+//        for (int i = 0 ; i < neq; i++) {
+//            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
+//        }
+//        an.LoadSolution( solMat );
+//        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
+//        an.PostProcess(postProcessResolution);
+//        iT++;
+//    }
     std::cout << "FINISHED!" << std::endl;
 }
 
