@@ -18,111 +18,117 @@
  * @ingroup CompElement
  */
 class TPZHCurlNedFTriEl : public TPZInterpolatedElement {
-	
-public:
-	/**
-	 * @brief Constructor with a mesh and geometric element as arguments
-	 * @param mesh mesh object into which the element will insert itself
-	 * @param reference geometric element to which this element will refer
-	 * @param index index in the vector of elements of mesh where this element was inserted
-	 */
-	TPZHCurlNedFTriEl(TPZCompMesh &mesh, TPZGeoEl *reference, long &index);
-	
-	/**
-	 * @brief Constructor aimed at creating a copy of an interpolated element within a new mesh
-	 */
-	TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy);
-	
-	/**
-	 * @brief Copy the given element into a new patch mesh
-	 * @param mesh patch mesh
-	 * @param copy element to be copied
-	 * @param gl2lcElMap map the indexes of the orginal mesh to the patched mesh
-	 */
-	TPZHCurlNedFTriEl ( TPZCompMesh &mesh,
-							const TPZHCurlNedFTriEl &copy,
-							std::map<long,long> & gl2lcElMap);
-	
-    /**
-     * @brief Constructor used to generate patch mesh... generates a map of connect index from
-     * global mesh to clone mesh
-     */
-    TPZHCurlNedFTriEl (TPZCompMesh &mesh,
-                  const TPZHCurlNedFTriEl &copy,
-                  std::map<long,long> & gl2lcConMap,
-                  std::map<long,long> & gl2lcElMap);
-    
-	TPZHCurlNedFTriEl();
-	/** @brief Destructor, does nothing */
-	virtual ~TPZHCurlNedFTriEl();
-    
-    virtual TPZHCurlNedFTriEl *Clone(TPZCompMesh &mesh) const;
-    
-    virtual TPZHCurlNedFTriEl *ClonePatchEl(TPZCompMesh &mesh, std::map<long,long> & gl2lcConMap, std::map<long,long> & gl2lcElMap) const;
-    
-    virtual int Dimension() const;
-    
-    virtual int NCornerConnects() const;
-    
-    virtual int NConnects() const;
-    
-    virtual long ConnectIndex(int i) const;
-    
-    virtual void SetConnectIndex(int i, long connectindex);
-    
-    virtual int NSideConnects(int side) const;
-    
-    virtual int SideConnectLocId(int con,int is) const;
-    
-    virtual int NConnectShapeF(int con, int order) const;
-    
-    virtual void SideShapeFunction(int side, TPZVec<REAL> &point, TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat);
-    
-    virtual void SetIntegrationRule(int ord);
-    
-    virtual const TPZIntPoints &GetIntegrationRule() const;
-    
-    virtual TPZIntPoints &GetIntegrationRule();
-    
-    virtual void SetPreferredOrder(int order);
-    
-    virtual void GetInterpolationOrder(TPZVec<int> &ord);
-    
-    virtual int PreferredSideOrder(int side);
-    
-    int ConnectOrder(int connect) const;
-    
-    virtual int EffectiveSideOrder(int side) const;
-    
-    virtual void SetSideOrder(int side, int order);
-    
-    virtual TPZTransform TransformSideToElement(int side);
-    
-    void ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
-                      TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,
-                      REAL &detjac, TPZFMatrix<REAL> &jacinv,
-                      TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat, TPZFMatrix<REAL> &curlPhi);
-	
-    void ShapeTransform(const TPZFMatrix<REAL> &phiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi);
-    
-	void CurlTransform(const TPZFMatrix<REAL> &curlPhiHat, const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
-	
-	virtual void Shape(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &curlPhiHat);
-    
-    virtual void SetCreateFunctions(TPZCompMesh *mesh){
-        mesh->SetAllCreateFunctionsHCurl();
-    }//TODO: is this necessary?
-    
-protected:
-    
-    TPZManVector<long,pzshape::TPZShapeTriang::NSides> fConnectIndexes;
-    
-    TPZManVector<int, pzshape::TPZShapeTriang::NFaces> fSideOrient;//TODO: TRANSFER TO LINEAR EL
-    
-    pzshape::TPZShapeTriang::IntruleType fIntRule;
-	
+ public:
+  /**
+   * @brief Constructor with a mesh and geometric element as arguments
+   * @param mesh mesh object into which the element will insert itself
+   * @param reference geometric element to which this element will refer
+   * @param index index in the vector of elements of mesh where this element was
+   * inserted
+   */
+  TPZHCurlNedFTriEl(TPZCompMesh &mesh, TPZGeoEl *reference, long &index);
+
+  /**
+   * @brief Constructor aimed at creating a copy of an interpolated element
+   * within a new mesh
+   */
+  TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy);
+
+  /**
+   * @brief Copy the given element into a new patch mesh
+   * @param mesh patch mesh
+   * @param copy element to be copied
+   * @param gl2lcElMap map the indexes of the orginal mesh to the patched mesh
+   */
+  TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy,
+                    std::map<long, long> &gl2lcElMap);
+
+  /**
+   * @brief Constructor used to generate patch mesh... generates a map of
+   * connect index from global mesh to clone mesh
+   */
+  TPZHCurlNedFTriEl(TPZCompMesh &mesh, const TPZHCurlNedFTriEl &copy,
+                    std::map<long, long> &gl2lcConMap,
+                    std::map<long, long> &gl2lcElMap);
+
+  TPZHCurlNedFTriEl();
+  /** @brief Destructor, does nothing */
+  virtual ~TPZHCurlNedFTriEl();
+
+  virtual TPZHCurlNedFTriEl *Clone(TPZCompMesh &mesh) const;
+
+  virtual TPZHCurlNedFTriEl *ClonePatchEl(
+      TPZCompMesh &mesh, std::map<long, long> &gl2lcConMap,
+      std::map<long, long> &gl2lcElMap) const;
+
+  virtual int Dimension() const;
+
+  virtual int NCornerConnects() const;
+
+  virtual int NConnects() const;
+
+  virtual long ConnectIndex(int i) const;
+
+  virtual void SetConnectIndex(int i, long connectindex);
+
+  virtual int NSideConnects(int side) const;
+
+  virtual int SideConnectLocId(int con, int is) const;
+
+  virtual int NConnectShapeF(int con, int order) const;
+
+  virtual void SideShapeFunction(int side, TPZVec<REAL> &point,
+                                 TPZFMatrix<REAL> &phi,
+                                 TPZFMatrix<REAL> &curlPhiHat);
+
+  virtual void SetIntegrationRule(int ord);
+
+  virtual const TPZIntPoints &GetIntegrationRule() const;
+
+  virtual TPZIntPoints &GetIntegrationRule();
+
+  virtual void SetPreferredOrder(int order);
+
+  virtual void GetInterpolationOrder(TPZVec<int> &ord);
+
+  virtual int PreferredSideOrder(int side);
+
+  int ConnectOrder(int connect) const;
+
+  virtual int EffectiveSideOrder(int side) const;
+
+  virtual void SetSideOrder(int side, int order);
+
+  virtual TPZTransform TransformSideToElement(int side);
+
+  void ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
+                    TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,
+                    REAL &detjac, TPZFMatrix<REAL> &jacinv,
+                    TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat,
+                    TPZFMatrix<REAL> &curlPhi);
+
+  void ShapeTransform(const TPZFMatrix<REAL> &phiHat,
+                      const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &phi);
+
+  void CurlTransform(const TPZFMatrix<REAL> &curlPhiHat,
+                     const TPZFMatrix<REAL> &jacinv, TPZFMatrix<REAL> &curlPhi);
+
+  virtual void Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+                     TPZFMatrix<REAL> &curlPhiHat);
+
+  virtual void SetCreateFunctions(TPZCompMesh *mesh) {
+    mesh->SetAllCreateFunctionsHCurl();
+  }  // TODO: is this necessary?
+
+ protected:
+  TPZManVector<long, pzshape::TPZShapeTriang::NSides> fConnectIndexes;
+
+  TPZManVector<int, pzshape::TPZShapeTriang::NFaces>
+      fSideOrient;  // TODO: TRANSFER TO LINEAR EL
+
+  pzshape::TPZShapeTriang::IntruleType fIntRule;
 };
 
-TPZCompEl * CreateHCurlNedFLinEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index);
-TPZCompEl * CreateHCurlNedFTriEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index);
+TPZCompEl *CreateHCurlNedFLinEl(TPZGeoEl *gel, TPZCompMesh &mesh, long &index);
+TPZCompEl *CreateHCurlNedFTriEl(TPZGeoEl *gel, TPZCompMesh &mesh, long &index);
 #endif

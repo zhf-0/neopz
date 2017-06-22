@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     
 
     bool isCutOff = false;
-    bool isRT = false;
+    bool isRT = true;
     
     const int meshType = createTriangular;
     
@@ -98,12 +98,12 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 10;
+    int nDiv = 10000;
     int nSim = 2;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
         RunSimulation( isCutOff, meshType, isRT , pOrder, nDiv, hDomain, wDomain, f0, generatingResults);
-        isRT = true;
+        isRT = false;
     }
     
     
