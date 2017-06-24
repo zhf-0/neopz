@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     REAL hDomain = 4 * 2.54 * 1e-3;
     REAL wDomain = 9 * 2.54 * 1e-3;
     REAL f0 = 25 * 1e+9;
-    int pOrder = 2; //ordem polinomial de aproximacao
+    int pOrder = 1; //ordem polinomial de aproximacao
     
 
     bool isCutOff = false;
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         }
     }
     
-    int nDiv = 2;
+    int nDiv = 16;
     int nSim = 1;
     for (int i = 0 ; i < nSim; i++) {
         std::cout<<"iteration "<<i+1<<" of "<<nSim<<std::endl;
