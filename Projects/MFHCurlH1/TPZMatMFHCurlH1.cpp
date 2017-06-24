@@ -315,7 +315,6 @@ void TPZMatMFHCurlH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatri
 
 void TPZMatMFHCurlH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
-    return;
     if( isTesting ) return;
     //if( this->assembling == B ) return;
     
@@ -448,15 +447,8 @@ void TPZMatMFHCurlH1::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
     
     TPZVec<STATE> et(3,0.);
     TPZVec<STATE> ez(1,0.);
-    TPZManVector<STATE,3> ax1(3),ax2(3), normal(3);
-    for (int i=0; i<3; i++) {
-        ax1[i] = datavec[hcurlmeshindex].axes(0,i);
-        ax2[i] = datavec[hcurlmeshindex].axes(1,i);
-    }
-    //ROTATE FOR HCURL
-    Cross(ax1, ax2, normal);
-    
-    Cross(normal,datavec[ hcurlmeshindex ].sol[0], et);
+	
+	et = datavec[ hcurlmeshindex ].sol[0];
     ez = datavec[ h1meshindex ].sol[0];
     switch (var) {
         case 0: //Et
