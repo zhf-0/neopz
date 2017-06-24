@@ -65,6 +65,7 @@ void CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder,
 
 void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
                  const REAL wDomain, const int xDiv, const int zDiv);
+
 void RunSimulation(const int nDiv, const int pOrder,
                    const enum meshTypeE meshType, bool filterEquations,
                    bool usingFullMtrx, bool optimizeBandwidth,
@@ -152,6 +153,7 @@ void RunSimulation(const int nDiv, const int pOrder,
     an.Run();
     timer.stop();
     an.LoadSolution();
+
     if (genVTK) {
         TPZStack<std::string> scalnames, vecnames;
         vecnames.Push("E");
