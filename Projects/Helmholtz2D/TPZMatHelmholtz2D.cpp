@@ -1,3 +1,12 @@
+              
+                           
+            
+           
+        
+      
+     
+    
+ 
 #include "TPZMatHelmholtz2D.h"
 #include "TPZVecL2.h"
 
@@ -131,6 +140,8 @@ int TPZMatHelmholtz2D::IntegrationRuleOrder(int elPMaxOrder) const {
 int TPZMatHelmholtz2D::VariableIndex(const std::string &name) {
     if (strcmp(name.c_str(), "E") == 0)
         return 0;
+	if (strcmp(name.c_str(), "curlE") == 0)
+		return 1;
     DebugStop();
     return 1;
 }
@@ -143,7 +154,10 @@ int TPZMatHelmholtz2D::VariableIndex(const std::string &name) {
  */
 int TPZMatHelmholtz2D::NSolutionVariables(int var) {
     switch (var) {
-    case 0: // Et
+    case 0: // E
+        return 2;
+        break;
+    case 1: // curlE
         return 2;
         break;
     default:
@@ -162,39 +176,40 @@ void TPZMatHelmholtz2D::Solution(TPZMaterialData &data, int var,
     {
         Solout = data.sol[0];
     } break;
+	case 1: // curlE
+	{
+		Solout[0] = data.dsol[0](2,0);
+	} break;
     default:
         DebugStop();
         break;
     }
 }
 
-void TPZMatHelmholtz2D::Errors(
-    TPZVec<REAL> &x, TPZVec<STATE> &u, TPZFMatrix<STATE> &curlU,
-    TPZFMatrix<REAL> &axes, TPZVec<STATE> & /*flux*/, TPZVec<STATE> &u_exact,
-    TPZFMatrix<STATE> &curlU_exact,
-    TPZVec<REAL> &values) { // TODO:Implementar direito
-
-    values.Resize(NEvalErrors());
+void TPZMatHelmholtz2D::ErrorsHdiv(TPZMaterialData &data,
+                                   TPZVec<STATE> &u_exact,
+                                   TPZFMatrix<STATE> &curlU_exact,
+                                   TPZVec<REAL> &values) {
     values.Fill(0.0);
+    TPZVec<STATE> u(3, 0.), curlU(1, 0.);
 
-    TPZManVector<STATE> sol(1), dsol(3, 0.);
-    int id;
-    // values[0] : erro em norma H1 <=> norma Energia
-    // values[1] : eror em norma L2
-    // values[2] : erro em semi norma H1
-    // values[2] : erro em norma HCurl
-    values[0] = 0;
-    REAL diff = 0.;
-    for (id = 0; id < fDim; id++) {
-        diff =
-            std::real((u[id] - u_exact[id]) * std::conj(u[id] - u_exact[id]));
-        values[0] += diff;
-    }
+    Solution(data, 0, u);     // E
+    Solution(data, 1, curlU); // curlE
 
-    values[1] = 0.;
-    for (id = 0; id < fDim; id++) {
-        diff = std::real((curlU(id, 0) - curlU_exact(id, 0)) *
-                         std::conj(curlU(id, 0) - curlU_exact(id, 0)));
-        values[1] += diff;
+    // values[0] : E error using HCurl norm (values[1]+values[2])
+    // values[1] : E error using L2 norm
+    // values[2] : curlE error using L2 norm
+
+	// values[1] : E error using L2 norm
+    for (int id = 0; id < fDim; id++) {
+        STATE diffE = u[id]-u_exact[id];
+		values[1] += std::norm(std::conj(diffE)*diffE);
     }
+	
+	// values[2] : curlE error using L2 norm
+	STATE diffCurl = curlU[0] - curlU_exact(0,0);
+	values[2] = std::norm(std::conj(diffCurl)*diffCurl);
+	
+	// values[0] : E error using HCurl norm (values[1]+values[2])
+    values[0] = values[1] + values[2];
 }

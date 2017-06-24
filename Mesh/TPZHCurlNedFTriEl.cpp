@@ -374,77 +374,7 @@ void TPZHCurlNedFTriEl::CreateGraphicalElement(TPZGraphMesh &grafgrid,
 void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
                                         TPZMaterialData &data) {
 
-    const int dim = data.axes.Cols();
-    const int numdof = this->Material()->NStateVariables();
-    const int ncon = this->NConnects();
-
-    TPZFMatrix<STATE> &MeshSol = this->Mesh()->Solution();
-
-    long numbersol = MeshSol.Cols();
-#ifdef PZDEBUG
-    if (numbersol != 1) {
-        DebugStop();
-    }
-#endif
-
-    data.sol.Resize(numbersol);
-    data.dsol.Resize(numbersol);
-
-    for (long is = 0; is < numbersol; is++) {
-        data.sol[is].Resize(dim, numdof); // HCurl field has 2 components
-        data.sol[is].Fill(0);
-        data.dsol[is].Redim(dim, numdof);
-        data.dsol[is].Zero();
-    }
-
-    // calculate shape functions
-    TPZFMatrix<REAL> phiHat, phiHCurlAxes, phiHCurl;
-    TPZFMatrix<REAL> curlPhiHat, curlPhiDAxes, curlPhi;
-
-    TPZFMatrix<REAL> jacobian, jacinv;
-    REAL detjac;
-
-    this->Reference()->Jacobian(qsi, jacobian, data.axes, detjac, jacinv);
-    this->Shape(qsi, phiHat, curlPhiHat);
-    this->ShapeTransform(phiHat, jacinv, phiHCurlAxes);
-    this->CurlTransform(curlPhiHat, jacinv, curlPhiDAxes);
-
-    TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes, phiHCurl, data.axes, false);
-
-    TPZManVector<REAL, 3> ax1(3), ax2(3), elNormal(3);
-    for (int i = 0; i < 3; i++) {
-        ax1[i] = data.axes(0, i);
-        ax2[i] = data.axes(1, i);
-    }
-    Cross(ax1, ax2, elNormal);
-    TPZFNMatrix<3, REAL> normalVec(1, 3);
-    normalVec(0, 0) = elNormal[0];
-    normalVec(0, 1) = elNormal[1];
-    normalVec(0, 2) = elNormal[2];
-
-    TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
-
-    TPZBlock<STATE> &block = this->Mesh()->Block();
-    int ishape = 0;
-    for (int in = 0; in < ncon; in++) {
-        TPZConnect *df = &this->Connect(in);
-        long dfseq = df->SequenceNumber();
-        int dfvar = block.Size(dfseq);
-        long pos = block.Position(dfseq);
-
-        for (int jn = 0; jn < dfvar; jn++) {
-
-            for (long is = 0; is < numbersol; is++) {
-                for (int ilinha = 0; ilinha < dim; ilinha++) {
-                    data.sol[is][ilinha] +=
-                        (STATE)MeshSol(pos + jn, is) * phiHCurl(ishape, ilinha);
-                    data.dsol[is](ilinha, 0) +=
-                        (STATE)MeshSol(pos + jn, is) * curlPhi(ilinha, ishape);
-                }
-                ishape++;
-            }
-        }
-    }
+    ComputeSolution(qsi, data.phi, data.dphix, data.axes, data.sol, data.dsol);
 }
 
 void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
@@ -453,36 +383,36 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
                                         const TPZFMatrix<REAL> &axes,
                                         TPZSolVec &sol, TPZGradSolVec &dsol) {
     const int dim = axes.Cols();
-    const int numdof = this->Material()->NStateVariables();
-    const int ncon = this->NConnects();
+    const int nVar = this->Material()->NStateVariables();
+    const int nCon = this->NConnects();
 
-    TPZFMatrix<STATE> &MeshSol = this->Mesh()->Solution();
+    TPZFMatrix<STATE> &meshSol = this->Mesh()->Solution();
 
-    long numbersol = MeshSol.Cols();
+    long numberSol = meshSol.Cols();
 #ifdef PZDEBUG
-    if (numbersol != 1) {
+    if (numberSol != 1) {
         DebugStop();
     }
 #endif
 
-    sol.Resize(numbersol);
-    dsol.Resize(numbersol);
+    sol.Resize(numberSol);
+    dsol.Resize(numberSol);
 
-    for (long is = 0; is < numbersol; is++) {
-        sol[is].Resize(dim, numdof); // HCurl field has 2 components
-        sol[is].Fill(0);
-        dsol[is].Redim(dim, numdof);
-        dsol[is].Zero();
+    for (long iSol = 0; iSol < numberSol; iSol++) {
+        sol[iSol].Resize(dim, nVar);
+        sol[iSol].Fill(0);
+        dsol[iSol].Redim(dim, nVar);
+        dsol[iSol].Zero();
     }
 
     // calculate shape functions
     TPZFMatrix<REAL> phiHat, phiHCurlAxes, phiHCurl;
     TPZFMatrix<REAL> curlPhiHat, curlPhiDAxes, curlPhi;
 
-    TPZFMatrix<REAL> jacobian, jacinv, axesCp = axes;
+    TPZFMatrix<REAL> jacobian, jacinv, axesDummy;
     REAL detjac;
 
-    this->Reference()->Jacobian(qsi, jacobian, axesCp, detjac, jacinv);
+    this->Reference()->Jacobian(qsi, jacobian, axesDummy, detjac, jacinv);
     this->Shape(qsi, phiHat, curlPhiHat);
     this->ShapeTransform(phiHat, jacinv, phiHCurlAxes);
     this->CurlTransform(curlPhiHat, jacinv, curlPhiDAxes);
@@ -491,8 +421,8 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
 
     TPZManVector<REAL, 3> ax1(3), ax2(3), elNormal(3);
     for (int i = 0; i < 3; i++) {
-        ax1[i] = axesCp(0, i);
-        ax2[i] = axesCp(1, i);
+        ax1[i] = axes.GetVal(0, i);
+        ax2[i] = axes.GetVal(1, i);
     }
     Cross(ax1, ax2, elNormal);
     TPZFNMatrix<3, REAL> normalVec(1, 3);
@@ -504,26 +434,31 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
 
     TPZBlock<STATE> &block = this->Mesh()->Block();
     int ishape = 0;
-    for (int in = 0; in < ncon; in++) {
-        TPZConnect *df = &this->Connect(in);
-        long dfseq = df->SequenceNumber();
-        int dfvar = block.Size(dfseq);
-        long pos = block.Position(dfseq);
+    for (int iCon = 0; iCon < nCon; iCon++) {
+        TPZConnect *con = &this->Connect(iCon);
+        long conSeqN = con->SequenceNumber();
+        int nShapeCon = block.Size(conSeqN);
+        long pos = block.Position(conSeqN);
 
-        for (int jn = 0; jn < dfvar; jn++) {
+        for (int jShape = 0; jShape < nShapeCon; jShape++) {
 
-            for (long is = 0; is < numbersol; is++) {
-                for (int ilinha = 0; ilinha < dim; ilinha++) {
-                    sol[is][ilinha] +=
-                        (STATE)MeshSol(pos + jn, is) * phiHCurl(ishape, ilinha);
-                    dsol[is](ilinha, 0) +=
-                        (STATE)MeshSol(pos + jn, is) * curlPhi(ilinha, ishape);
+            for (long iSol = 0; iSol < numberSol; iSol++) {
+                for (int coord = 0; coord < dim; coord++) {
+                    sol[iSol][coord] +=
+                        (STATE)meshSol(pos + jShape, iSol) * phiHCurl(ishape, coord);
+                    dsol[iSol](coord, nVar - 1) +=
+                        (STATE)meshSol(pos + jShape, iSol) * curlPhi(coord, ishape);
                 }
                 ishape++;
             }
         }
     }
 }
+
+void TPZHCurlNedFTriEl::InitMaterialData(TPZMaterialData &data){
+	data.fShapeType = TPZMaterialData::EVecShape;
+}
+
 TPZCompEl *CreateHCurlNedFTriEl(TPZGeoEl *gel, TPZCompMesh &mesh, long &index) {
     return new TPZHCurlNedFTriEl(mesh, gel, index);
 }

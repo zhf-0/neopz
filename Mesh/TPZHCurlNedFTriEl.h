@@ -128,7 +128,9 @@ class TPZHCurlNedFTriEl : public TPZInterpolatedElement {
     void ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                          TPZFMatrix<REAL> &dphix, const TPZFMatrix<REAL> &axes,
                          TPZSolVec &sol, TPZGradSolVec &dsol);
-
+	
+	virtual void InitMaterialData(TPZMaterialData &data);
+	
   protected:
     TPZManVector<long, pzshape::TPZShapeTriang::NSides> fConnectIndexes;
 

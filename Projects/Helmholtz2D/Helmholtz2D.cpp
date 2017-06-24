@@ -50,9 +50,11 @@ void loadVec(const TPZVec<REAL> &coord, TPZVec<STATE> &val) {
 void exactSol(const TPZVec<REAL> &coord, TPZVec<STATE> &result,
               TPZFMatrix<STATE> &curl) {
     result.Resize(3, 0.);
-
     result[0] = M_PI * cos(M_PI * coord[0]) * sin(M_PI * coord[1]);
     result[1] = M_PI * (-1.) * sin(M_PI * coord[0]) * cos(M_PI * coord[1]);
+
+    curl.Resize(1, 1);
+    curl(0, 0) = -2 * M_PI * M_PI * cos(M_PI * coord[0]) * cos(M_PI * coord[1]);
 }
 
 void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
@@ -82,18 +84,17 @@ int main(int argc, char *argv[]) {
     bool filterEquations = true;
     bool usingFullMtrx = true;
     bool optimizeBandwidth = true;
-    const int nThreads = 0;
+    const int nThreads = 0;//TODO: fix multithread issue
     bool genVTK = false;
     bool l2error = true;
     const enum meshTypeE meshType = createTriangular;
 
     TPZVec<REAL> errorVec(1, 0);
-    for (int iDiv = 0; iDiv < 4; iDiv++) {
+    for (int iDiv = 0; iDiv < 5; iDiv++) {
         std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
                   << std::endl;
         RunSimulation(nDiv, pOrder, meshType, filterEquations, usingFullMtrx,
                       optimizeBandwidth, nThreads, genVTK, l2error, errorVec);
-        std::cout << "error obtained (l2) = " << sqrt(errorVec[0]) << std::endl;
         nDiv *= 2;
     }
 
@@ -118,7 +119,13 @@ void RunSimulation(const int nDiv, const int pOrder,
     TPZCompMesh *cmeshHCurl = NULL;
     CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec,
                 constitutiveFunc); // funcao para criar a malha computacional
-
+	{
+		std::string fileName("../cmeshHCurl");
+		fileName.append(std::to_string(nDiv*nDiv*2));
+		fileName.append(".txt");
+		std::ofstream fileHCurl(fileName.c_str());
+		cmeshHCurl->Print(fileHCurl);
+	}
     TPZAnalysis an(cmeshHCurl, optimizeBandwidth);
     // configuracoes do objeto de analise
     TPZManVector<long, 1000> activeEquations;
@@ -170,6 +177,13 @@ void RunSimulation(const int nDiv, const int pOrder,
         an.SetExact(&exactSol);
         errorVec.Resize(2, 0.);
         an.PostProcessError(errorVec);
+		std::string fileName = "../error";
+		fileName.append(std::to_string(nDiv*nDiv*2));
+		fileName.append(".csv");
+		std::ofstream errorFile(fileName.c_str());
+                errorFile << errorVec[0] << "," << errorVec[1] << ","
+                          << errorVec[2] << std::endl;
+		errorFile.close();
     }
 }
 
@@ -297,9 +311,8 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
     case createRectangular: {
         outTxt.open("../gmeshRectangular.txt"); // define arquivo de saida para
                                                 // impressao da malha no
-        outVtk.open(
-            "../gmeshRectangular.vtk"); // define arquivo de saida para
-                                        // impressao da malha no paraview
+        outVtk.open("../gmeshRectangular.vtk"); // define arquivo de saida para
+        // impressao da malha no paraview
 
     } break;
     case createTriangular: {
@@ -361,10 +374,4 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
 
     cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
     cmeshHCurl->AutoBuild();
-
-    std::string fileName("../cmeshHCurl");
-    fileName.append(std::to_string(cmeshHCurl->NElements()));
-    fileName.append(".txt");
-    std::ofstream fileHCurl(fileName.c_str());
-    cmeshHCurl->Print(fileHCurl);
 }
