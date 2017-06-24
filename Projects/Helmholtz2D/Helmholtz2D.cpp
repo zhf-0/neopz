@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
     int pOrder = 1; // ordem polinomial de aproximacao
     int nDiv = 4;
 
-    bool filterEquations = true;
-    bool usingFullMtrx = true;
+    bool filterEquations = false;
+    bool usingFullMtrx = false;
     bool optimizeBandwidth = true;
     const int nThreads = 0;//TODO: fix multithread issue
     bool genVTK = false;
@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
     const enum meshTypeE meshType = createTriangular;
 
     TPZVec<REAL> errorVec(1, 0);
-    for (int iDiv = 0; iDiv < 5; iDiv++) {
+	const int nSim = 6;
+    for (int iDiv = 0; iDiv < nSim; iDiv++) {
         std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
                   << std::endl;
         RunSimulation(nDiv, pOrder, meshType, filterEquations, usingFullMtrx,
@@ -113,7 +114,7 @@ void RunSimulation(const int nDiv, const int pOrder,
     TPZTimer timer;
     timer.start();
 
-    TPZGeoMesh *gmesh = new TPZGeoMesh();
+    TPZGeoMesh *gmesh = NULL;
     CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, nDiv);
 
     TPZCompMesh *cmeshHCurl = NULL;
@@ -185,6 +186,7 @@ void RunSimulation(const int nDiv, const int pOrder,
                           << errorVec[2] << std::endl;
 		errorFile.close();
     }
+	delete gmesh;
 }
 
 void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,

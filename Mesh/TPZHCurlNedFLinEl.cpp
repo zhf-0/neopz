@@ -267,22 +267,23 @@ void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,
     int nshape = phiHat.Rows();
     TPZGeoEl *gel = this->Reference();
 #ifdef PZDEBUG
-    if (!(gel && gel->Dimension() == 1)) {
+    if (!(gel && gel->Dimension() == 1 && gel->MaterialId() < 0)) {
         DebugStop();
+		return;
     }
-
     if (gel->Neighbour(2).Side() > 6 || gel->Neighbour(2).Side() < 3) {
         DebugStop();
+		return;
     }
 #endif
 
-    const REAL edgeSize = gel->Neighbour(2).Side() == 4 ? sqrt(2) : 1;
+	const REAL edgeSize = gel->Neighbour(2).Side() == 4 ? sqrt(2) : 1;
 
     phi.Redim(phiHat.Rows(), phiHat.Cols());
 
     for (int iPhi = 0; iPhi < nshape; iPhi++) {
         phi(iPhi, 0) = jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0);
-        phi(iPhi, 0) *= 2 * edgeSize; // This is the scale factor present in
+        phi(iPhi, 0) *= 2 / edgeSize; // This is the scale factor present in
                                       // TPZTriangle::ComputeDirections
     }
 }

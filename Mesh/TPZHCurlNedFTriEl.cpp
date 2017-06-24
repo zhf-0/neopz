@@ -329,17 +329,26 @@ void TPZHCurlNedFTriEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,
     if (phiHat.Cols() != 2)
         DebugStop();
 #endif
+
     phi.Redim(phiHat.Rows(), phiHat.Cols());
+    int iPhi = 0;
+    for (int iCon = 0; iCon < NConnects(); iCon++) {
+        const int side =
+            iCon + TPZShapeTriang::NSides -
+            TPZShapeTriang::NumSides(TPZShapeTriang::Dimension - 1) - 1;
+		const REAL edgeSize = 1;//side == 4 ? sqrt(2) : 1;
+        const int nShapeConnect = NConnectShapeF(iCon, ConnectOrder(iCon));
+        for (int iPhiAux = 0; iPhiAux < nShapeConnect; iPhiAux++) {
+            phi(iPhi, 0) = jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0) +
+                           jacinv.GetVal(1, 0) * phiHat.GetVal(iPhi, 1);
+            phi(iPhi, 1) = jacinv.GetVal(0, 1) * phiHat.GetVal(iPhi, 0) +
+                           jacinv.GetVal(1, 1) * phiHat.GetVal(iPhi, 1);
 
-    for (int iPhi = 0; iPhi < nshape; iPhi++) {
-        phi(iPhi, 0) = jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0) +
-                       jacinv.GetVal(1, 0) * phiHat.GetVal(iPhi, 1);
-        phi(iPhi, 1) = jacinv.GetVal(0, 1) * phiHat.GetVal(iPhi, 0) +
-                       jacinv.GetVal(1, 1) * phiHat.GetVal(iPhi, 1);
-
-        phi(iPhi, 0) *= 2;
-        phi(iPhi, 1) *= 2; // this is the scale factor
-                           // present in TPZTriangle::ComputeDirections
+            phi(iPhi, 0) *= 2*edgeSize;
+            phi(iPhi, 1) *= 2*edgeSize; // this is the scale factor
+                               // present in TPZTriangle::ComputeDirections
+			iPhi++;
+        }
     }
 }
 
@@ -358,10 +367,21 @@ void TPZHCurlNedFTriEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat,
     detJacInv *= 2; // this is the scale factor present
                     // in TPZTriangle::ComputeDirections
 
-    int ieq;
-    for (ieq = 0; ieq < nshape; ieq++) {
-        curlPhi(0, ieq) = detJacInv * curlPhiHat.GetVal(0, ieq);
-    }
+	int iPhi = 0;
+	for (int iCon = 0; iCon < NConnects(); iCon++) {
+		const int side =
+		iCon + TPZShapeTriang::NSides -
+		TPZShapeTriang::NumSides(TPZShapeTriang::Dimension - 1) - 1;
+		const REAL edgeSize = 1;//side == 4 ? sqrt(2) : 1;
+		const int nShapeConnect = NConnectShapeF(iCon, ConnectOrder(iCon));
+		for (int iPhiAux = 0; iPhiAux < nShapeConnect; iPhiAux++) {
+			curlPhi(0, iPhi) = detJacInv * curlPhiHat.GetVal(0, iPhi);
+
+			curlPhi(0, iPhi) *= edgeSize; // this is the scale factor
+			// present in TPZTriangle::ComputeDirections
+			iPhi++;
+		}
+	}
 }
 
 void TPZHCurlNedFTriEl::CreateGraphicalElement(TPZGraphMesh &grafgrid,
