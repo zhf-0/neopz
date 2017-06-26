@@ -71,6 +71,12 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
     } else {
         DebugStop(); // RHS not set!
     }
+//	std::cout<<"phiHCurl"<<std::endl;
+//	for (int iVec = 0; iVec < phiHCurl.Rows(); iVec++) {
+//		std::cout<<phiHCurl(iVec,0)<<" "<<phiHCurl(iVec,1)<<
+//		" "<<phiHCurl(iVec,2)<<std::endl;
+//	}//TESTESHAPE
+	
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
 
     const int nHCurlFunctions = phiHCurl.Rows();
@@ -95,7 +101,6 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
             curlPhiIvecCurlPhiJ += curlPhi(2, iVec) * curlPhi(2, jVec);
 
             stiff = curlPhiIvecCurlPhiJ + cVal * phiIdotPhiJ;
-
             ek(iVec, jVec) += stiff * weight;
         }
     }
@@ -104,7 +109,8 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
 void TPZMatHelmholtz2D::ContributeBC(TPZMaterialData &data, REAL weight,
                                      TPZFMatrix<STATE> &ek,
                                      TPZFMatrix<STATE> &ef, TPZBndCond &bc) {
-    TPZFMatrix<REAL> &phiHCurl = data.phi;
+	return;
+	TPZFMatrix<REAL> &phiHCurl = data.phi;
 
     int nHCurlFunctions = phiHCurl.Rows();
     REAL BIG = TPZMaterial::gBigNumber;

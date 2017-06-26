@@ -1,3 +1,6 @@
+//#undef USING_HCURL_HIERARCHICAL
+#define USING_HCURL_HIERARCHICAL
+#ifdef USING_HCURL_HIERARCHICAL
 /**
  * @file
  * @brief Contains the implementation of the TPZHCurlNedFTriEl::Shape method.
@@ -42,8 +45,9 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
         const int side =
             iCon + TPZShapeTriang::NSides -
             TPZShapeTriang::NumSides(TPZShapeTriang::Dimension - 1) - 1;
-        const int orient =
-            side == firstSide + 3 ? 1 : fSideOrient[side - firstSide];
+		const REAL edgeLength = side == firstSide + 1 ? sqrt(2) : 1;
+        const REAL orient =
+            side == firstSide + 3 ? 1*edgeLength : fSideOrient[side - firstSide]*edgeLength;
 
         int currentFuncPos =
             firstConFuncPos[iCon] + NConnectShapeF(iCon, pOrder) - 1;
@@ -24745,3 +24749,4 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
         }
     }
 }
+#endif

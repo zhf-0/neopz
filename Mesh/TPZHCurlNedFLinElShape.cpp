@@ -1,3 +1,4 @@
+#ifdef USING_HCURL_HIERARCHICAL
 /**
  * @file
  * @brief Contains the implementation of the TPZHCurlNedFLinEl::Shape method.
@@ -153,3 +154,4 @@ void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
       DebugStop();  // polynomial order not implemented!
   }
 }
+#endif

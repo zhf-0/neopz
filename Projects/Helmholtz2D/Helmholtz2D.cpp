@@ -26,9 +26,7 @@
 #include "pzskylstrmatrix.h"
 #include "pzstepsolver.h"
 #include "pzstrmatrix.h"
-#include "pzsubcmesh.h"
-#include "pzvisualmatrix.h"
-#include "tpzmatredstructmatrix.h"
+#include "pzextractval.h"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -73,24 +71,25 @@ void RunSimulation(const int nDiv, const int pOrder,
                    bool usingFullMtrx, bool optimizeBandwidth,
                    const int nThreads, bool genVTK, bool l2error,
                    TPZVec<REAL> &errorVec);
+#define TESTING_FUNCS
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 
-    int pOrder = 1; // ordem polinomial de aproximacao
-    int nDiv = 4;
+    int pOrder = 2; // ordem polinomial de aproximacao
+    int nDiv = 1;
 
     bool filterEquations = false;
     bool usingFullMtrx = false;
-    bool optimizeBandwidth = true;
-    const int nThreads = 0;//TODO: fix multithread issue
+    bool optimizeBandwidth = false;
+    const int nThreads = 0; // TODO: fix multithread issue
     bool genVTK = false;
     bool l2error = true;
     const enum meshTypeE meshType = createTriangular;
 
     TPZVec<REAL> errorVec(1, 0);
-	const int nSim = 6;
+    const int nSim = 1;
     for (int iDiv = 0; iDiv < nSim; iDiv++) {
         std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
                   << std::endl;
@@ -120,19 +119,21 @@ void RunSimulation(const int nDiv, const int pOrder,
     TPZCompMesh *cmeshHCurl = NULL;
     CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec,
                 constitutiveFunc); // funcao para criar a malha computacional
-	{
-		std::string fileName("../cmeshHCurl");
-		fileName.append(std::to_string(nDiv*nDiv*2));
-		fileName.append(".txt");
-		std::ofstream fileHCurl(fileName.c_str());
-		cmeshHCurl->Print(fileHCurl);
-	}
+    {
+        std::string fileName("../cmeshHCurl");
+        fileName.append(std::to_string(nDiv * nDiv * 2));
+        fileName.append(".txt");
+        std::ofstream fileHCurl(fileName.c_str());
+        cmeshHCurl->Print(fileHCurl);
+    }
     TPZAnalysis an(cmeshHCurl, optimizeBandwidth);
     // configuracoes do objeto de analise
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
+	if(filterEquations){
+		FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
+	}
 
     TPZAutoPointer<TPZSBandStructMatrix> sbstr;
 
@@ -158,8 +159,48 @@ void RunSimulation(const int nDiv, const int pOrder,
     step.SetDirect(ECholesky); // caso simetrico
     an.SetSolver(step);
 
-    an.Run();
-    timer.stop();
+    an.Assemble();
+	
+#ifdef TESTING_FUNCS
+    {
+        std::string fileName("../stiff.csv");
+        std::ofstream fileA(fileName.c_str());
+
+        TPZMatrix<STATE> *stiffPtr = NULL;
+
+        if (usingFullMtrx) {
+            stiffPtr = new TPZFMatrix<STATE>(*dynamic_cast<TPZFMatrix<STATE> *>(
+                an.Solver().Matrix().operator->()));
+        } else {
+            stiffPtr =
+                new TPZSBMatrix<STATE>(*dynamic_cast<TPZSBMatrix<STATE> *>(
+                    an.Solver().Matrix().operator->()));
+        }
+        char number[256];
+        for (int i = 0; i < stiffPtr->Rows(); i++) {
+            for (int j = 0; j < stiffPtr->Rows(); j++) {
+                sprintf(number, "%16.16Lf",
+                        (long double)TPZExtractVal::val(
+                            std::real(stiffPtr->GetVal(i, j))));
+                fileA << number;
+
+                fileA << " + I * ";
+
+                sprintf(number, "%16.16Lf",
+                        (long double)TPZExtractVal::val(
+                            std::imag(stiffPtr->GetVal(i, j))));
+                fileA << number;
+                if (j != stiffPtr->Rows() - 1) {
+                    fileA << " , ";
+                }
+            }
+            fileA << std::endl;
+        }
+        fileA.close();
+    }
+#endif
+	an.Run();
+	timer.stop();
     an.LoadSolution();
 
     if (genVTK) {
@@ -178,15 +219,15 @@ void RunSimulation(const int nDiv, const int pOrder,
         an.SetExact(&exactSol);
         errorVec.Resize(2, 0.);
         an.PostProcessError(errorVec);
-		std::string fileName = "../error";
-		fileName.append(std::to_string(nDiv*nDiv*2));
-		fileName.append(".csv");
-		std::ofstream errorFile(fileName.c_str());
-                errorFile << errorVec[0] << "," << errorVec[1] << ","
-                          << errorVec[2] << std::endl;
-		errorFile.close();
+        std::string fileName = "../error";
+        fileName.append(std::to_string(nDiv * nDiv * 2));
+        fileName.append(".csv");
+        std::ofstream errorFile(fileName.c_str());
+        errorFile << errorVec[0] << "," << errorVec[1] << "," << errorVec[2]
+                  << std::endl;
+        errorFile.close();
     }
-	delete gmesh;
+    delete gmesh;
 }
 
 void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
