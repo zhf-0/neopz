@@ -1628,27 +1628,36 @@ TPZSBMatrix<complex <float> >::SolveEigenProblem(TPZVec <complex<double> > &eige
 
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &B , TPZVec < complex<double> > &w, TPZFMatrix < complex<double> > &eigenVectors)
+TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w, TPZFMatrix < complex<double> > &eigenVectors)
 {
     TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
     return( 0 );
 }
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &B , TPZVec < complex<double> > &w)
+TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w)
 {
     TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
     return( 0 );
 }
 template<>
 int
-TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
+TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZMatrix<float> &Bref , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
 {
+	TPZSBMatrix<float> &B = dynamic_cast<TPZSBMatrix<float>& >(Bref);
+#ifdef PZDEBUG
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
         TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
     }
-    
+	try{
+		TPZSBMatrix<float> &B = dynamic_cast<TPZSBMatrix<float>& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
+	
 #ifdef USING_LAPACK
     char jobz = 'V'; //compute eigenvectors
     char uplo = 'U';//assume upper triangular
@@ -1688,12 +1697,21 @@ TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec 
 
 template<>
 int
-TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec <complex<double> > &eigenvalues)
+TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZMatrix<float> &Bref , TPZVec <complex<double> > &eigenvalues)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
+	TPZSBMatrix<float> &B = dynamic_cast<TPZSBMatrix<float>& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<float> &B = dynamic_cast<TPZSBMatrix<float>& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
     
 #ifdef USING_LAPACK
     char jobz = 'N'; //do NOT compute eigenvectors
@@ -1729,13 +1747,22 @@ TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZSBMatrix<float> &B , TPZVec 
 
 template<>
 int
-TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
+TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<float> > &Bref , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
-    
+	TPZSBMatrix<complex<float> > &B = dynamic_cast<TPZSBMatrix<complex<float> >& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<complex<float> > &B = dynamic_cast<TPZSBMatrix<complex<float> >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
+	
 #ifdef USING_LAPACK
     char jobz = 'V'; //compute eigenvectors
     char uplo = 'U';//assume upper triangular
@@ -1776,13 +1803,22 @@ TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<f
 
 template<>
 int
-TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues)
+TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<float> > &Bref , TPZVec <complex<double> > &eigenvalues)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
-    
+	TPZSBMatrix<complex<float> > &B = dynamic_cast<TPZSBMatrix<complex<float> >& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<complex<float> > &B = dynamic_cast<TPZSBMatrix<complex<float> >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
+	
 #ifdef USING_LAPACK
     char jobz = 'N'; //do NOT compute eigenvectors
     char uplo = 'U';//assume upper triangular
@@ -1819,13 +1855,22 @@ TPZSBMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<f
 
 template<>
 int
-TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
+TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZMatrix<double> &Bref , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<double>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
-    
+	TPZSBMatrix<double> &B = dynamic_cast<TPZSBMatrix<double >& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<double > &B = dynamic_cast<TPZSBMatrix<double >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
+	
 #ifdef USING_LAPACK
     char jobz = 'V'; //compute eigenvectors
     char uplo = 'U';//assume upper triangular
@@ -1865,12 +1910,21 @@ TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVe
 
 template<>
 int
-TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVec <complex<double> > &eigenvalues)
+TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZMatrix<double> &Bref , TPZVec <complex<double> > &eigenvalues)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<double>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
+	TPZSBMatrix<double > &B = dynamic_cast<TPZSBMatrix<double>& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<double> &B = dynamic_cast<TPZSBMatrix<double >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
     
 #ifdef USING_LAPACK
     char jobz = 'N'; //do NOT compute eigenvectors
@@ -1905,12 +1959,21 @@ TPZSBMatrix<double>::SolveGeneralisedEigenProblem(TPZSBMatrix<double> &B , TPZVe
 }
 template<>
 int
-TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
+TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<double> > &Bref , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<double>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
+	TPZSBMatrix<complex<double> > &B = dynamic_cast<TPZSBMatrix<complex<double> >& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<complex<double> > &B = dynamic_cast<TPZSBMatrix<complex<double> >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
     
 #ifdef USING_LAPACK
     char jobz = 'V'; //compute eigenvectors
@@ -1952,12 +2015,21 @@ TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<
 
 template<>
 int
-TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues)
+TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<double> > &Bref , TPZVec <complex<double> > &eigenvalues)
 {
-    if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
-    {
-        TPZMatrix<double>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
-    }
+	TPZSBMatrix<complex<double> > &B = dynamic_cast<TPZSBMatrix<complex<double> >& >(Bref);
+#ifdef PZDEBUG
+	if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
+	{
+		TPZMatrix<float>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <Uncompatible Dimensions>" );
+	}
+	try{
+		TPZSBMatrix<complex<double> > &B = dynamic_cast<TPZSBMatrix<complex<double> >& >(Bref);
+	}
+	catch(const std::bad_cast& B){
+		DebugStop();
+	}
+#endif
     
 #ifdef USING_LAPACK
     char jobz = 'N'; //do NOT compute eigenvectors

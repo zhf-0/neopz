@@ -82,11 +82,7 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             phiIdotPhiJ += std::conj( phiHCurl(iVec , 2) ) * phiHCurl(jVec , 2);
             
             stiffAtt = 1./muR * curlIdotCurlJ;
-            stiffBtt = epsilonR * phiIdotPhiJ;;
-//            if( iVec == jVec ){
-//                std::cout<<"stiffBtt "<<iVec<<" "<<jVec<<":"<<stiffBtt<<std::endl;
-//            }
-            //ek( firstHCurl + iVec , firstHCurl + jVec ) += curlIdotCurlJ * weight ;
+            stiffBtt = epsilonR * phiIdotPhiJ;
             if (this->assembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -110,10 +106,6 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             
             stiffAzz =  1./muR * gradPhiScaDotGradPhiSca;
             stiffBzz = epsilonR * std::conj( phiH1( iSca , 0 ) ) * phiH1( jSca , 0 );
-            //ek( firstH1 + iSca , firstH1 + jSca ) += stiff * weight ;
-//            if( iSca == jSca){
-//                std::cout<<"stiffBzz "<<iSca<<" "<<jSca<<":"<<stiffBzz<<std::endl;
-//            }
             if (this->assembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffAzz * weight ;
             }

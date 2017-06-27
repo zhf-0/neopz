@@ -49,7 +49,7 @@ enum MatrixOutputFormat {EFormatted, EInputFormat, EMathematicaInput, EMatlabNon
 
 /** @brief Root matrix class (abstract). \ref matrix "Matrix" */
 /** Abstract class TPZMatrix<TVar>which defines interface of derived matrix classes. */
-template<class TVar=REAL>
+template<class TVar>
 class TPZMatrix: public TPZSaveable
 
 {
@@ -691,6 +691,43 @@ public:
 	 * @param b right hand side and result after all
 	 */
 	virtual int Subst_Diag( TPZFMatrix<TVar>* b ) const;
+	
+#ifdef USING_LAPACK
+	/*** @name Solve eigenvalues ***/
+	/** @{ */
+	/** @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
+	 * @param w Stores the eigenvalues
+	 * @param Stores the correspondent eigenvectors
+	 */
+	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+		DebugStop();//this should never be called. Must implement it in child class.
+		return 1;
+	}
+	/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+	 * @param w Stores the eigenvalues
+	 */
+	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w){
+		DebugStop();//this should never be called. Must implement it in child class.
+		return 1;
+	}
+	
+	/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+	 * @param w Stores the eigenvalues
+	 * @param Stores the correspondent eigenvectors
+	 */
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+		DebugStop();//this should never be called. Must implement it in child class.
+		return 1;
+	}
+	/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+	 * @param w Stores the eigenvalues
+	 */
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w){
+		DebugStop();//this should never be called. Must implement it in child class.
+		return 1;
+	}
+	/** @} */
+#endif
 	
 	/** @} */
 	

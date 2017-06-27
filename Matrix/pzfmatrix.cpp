@@ -2651,14 +2651,14 @@ int TPZFMatrix<complex< float> >::SolveEigenProblem(TPZVec < std::complex<double
 
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &B , TPZVec < complex<double> > &w, TPZFMatrix < complex<double> > &eigenVectors)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w, TPZFMatrix < complex<double> > &eigenVectors)
 {
     TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
     return( 0 );
 }
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &B , TPZVec < complex<double> > &w)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w)
 {
     TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
     return( 0 );
@@ -2666,7 +2666,7 @@ TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &B , TPZVec < co
 
 template<>
 int
-TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
+TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZMatrix<float> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2726,7 +2726,7 @@ TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &B , TPZVec <c
 
 template<>
 int
-TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &B , TPZVec <complex<double> > &eigenvalues)
+TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZMatrix<float> &B , TPZVec <complex<double> > &eigenvalues)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2769,7 +2769,7 @@ TPZFMatrix<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &B , TPZVec <c
 }
 template<>
 int
-TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
+TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZMatrix<double> &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2829,7 +2829,7 @@ TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &B , TPZVec 
 
 template<>
 int
-TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &B , TPZVec <complex<double> > &eigenvalues)
+TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZMatrix<double> &B , TPZVec <complex<double> > &eigenvalues)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2873,7 +2873,7 @@ TPZFMatrix<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &B , TPZVec 
 
 template<>
 int
-TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
+TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2923,7 +2923,7 @@ TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<flo
 
 template<>
 int
-TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues)
+TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<float> > &B , TPZVec <complex<double> > &eigenvalues)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -2966,7 +2966,7 @@ TPZFMatrix<complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<flo
 
 template<>
 int
-TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
+TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenvectors)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {
@@ -3016,7 +3016,7 @@ TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<do
 
 template<>
 int
-TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues)
+TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<double> > &B , TPZVec <complex<double> > &eigenvalues)
 {
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
     {

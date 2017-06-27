@@ -71,25 +71,25 @@ void RunSimulation(const int nDiv, const int pOrder,
                    bool usingFullMtrx, bool optimizeBandwidth,
                    const int nThreads, bool genVTK, bool l2error,
                    TPZVec<REAL> &errorVec);
-#define TESTING_FUNCS
+#undef TESTING_FUNCS
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 
-    int pOrder = 2; // ordem polinomial de aproximacao
-    int nDiv = 1;
+    int pOrder = 1; // ordem polinomial de aproximacao
+    int nDiv = 4;
 
     bool filterEquations = false;
     bool usingFullMtrx = false;
-    bool optimizeBandwidth = false;
+    bool optimizeBandwidth = true;
     const int nThreads = 0; // TODO: fix multithread issue
     bool genVTK = false;
     bool l2error = true;
     const enum meshTypeE meshType = createTriangular;
 
     TPZVec<REAL> errorVec(1, 0);
-    const int nSim = 1;
+    const int nSim = 5;
     for (int iDiv = 0; iDiv < nSim; iDiv++) {
         std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
                   << std::endl;
@@ -221,6 +221,8 @@ void RunSimulation(const int nDiv, const int pOrder,
         an.PostProcessError(errorVec);
         std::string fileName = "../error";
         fileName.append(std::to_string(nDiv * nDiv * 2));
+		fileName.append("_p");
+		fileName.append(std::to_string(pOrder));
         fileName.append(".csv");
         std::ofstream errorFile(fileName.c_str());
         errorFile << errorVec[0] << "," << errorVec[1] << "," << errorVec[2]

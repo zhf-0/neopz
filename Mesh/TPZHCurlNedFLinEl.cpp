@@ -276,20 +276,11 @@ void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,
 		return;
     }
 #endif
-
-//	const REAL edgeSize = 1;//gel->Neighbour(2).Side() == 4 ? sqrt(2) : 1;
-//
-//    phi.Redim(phiHat.Rows(), phiHat.Cols());
-//
-//    for (int iPhi = 0; iPhi < nshape; iPhi++) {
-//        phi(iPhi, 0) = jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0);
-//        phi(iPhi, 0) *= 2 / edgeSize; // This is the scale factor present in
-//                                      // TPZTriangle::ComputeDirections
-//    }
 	phi.Redim(phiHat.Rows(), phiHat.Cols());
 	
 	for (int iPhi = 0; iPhi < nshape; iPhi++) {
-		phi(iPhi, 0) = jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0);
+		const int funcOrient = (iPhi % 2)*1 + ((iPhi+1) % 2)*fSideOrient;
+		phi(iPhi, 0) = funcOrient * jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0);
 	}
 }
 

@@ -9,7 +9,7 @@
 
 #include "pzintel.h"
 #include "pzshapelinear.h"
-
+#include "TPZHCurlNedFTriEl.h"
 /** \addtogroup CompElement */
 /** @{ */
 /**

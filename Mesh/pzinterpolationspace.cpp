@@ -153,6 +153,7 @@ void TPZInterpolationSpace::InitMaterialData(TPZMaterialData &data){
 void TPZInterpolationSpace::ComputeRequiredData(TPZMaterialData &data,
                                                 TPZVec<REAL> &qsi){
     data.intGlobPtIndex = -1;
+	data.xParametric = qsi;
     this->ComputeShape(qsi, data);
     
     if (data.fNeedsSol){
@@ -1121,7 +1122,7 @@ void TPZInterpolationSpace::EvaluateError(  void (*fp)(const TPZVec<REAL> &loc,T
 		if(fp) {
 			fp(data.x,u_exact,du_exact);
             
-			if(data.fVecShapeIndex.NElements())
+			if(data.fVecShapeIndex.NElements() || data.fShapeType == TPZMaterialData::EVecShape)
 			{
 				this->ComputeSolution(intpoint, data);
                 				

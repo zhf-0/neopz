@@ -3,12 +3,11 @@
  * @brief Contains the implementation of the TPZHCurlNedFTriEl::Shape method.
  */
 #include "TPZHCurlNedFTriEl.h"
-#ifdef HCURL_NON_HIERARCHICAL
 
+#ifdef HCURL_HIERARCHICAL_SCALED
 #include "pzshapetriang.h"
 
 using namespace pzshape;
-
 
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFTriEl"));
@@ -16,7 +15,7 @@ static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFTriEl"));
 /**
  Method to get shape functions values transferred to TPZCompEl::CalcStiff
  variables. Shape functions are calculated according to INSERT REFERENCE HERE.
- 
+
  @param qsi [in] coordinates in reference element
  @param phi [out] shape function vec
  @param dphidxi [out] shape function derivatives vec
@@ -51,579 +50,548 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
             switch (pOrder) {
             case 15:
                 phi(currentFuncPos, 0) =
-                    (-((40116600 * pow(qsi[0], 14) +
-                        280816200 * pow(qsi[0], 13) * (-1 + qsi[1]) +
-                        878850700 * pow(qsi[0], 12) * pow(-1 + qsi[1], 2) +
-                        1622493600 * pow(qsi[0], 11) * pow(-1 + qsi[1], 3) +
-                        1963217256 * pow(qsi[0], 10) * pow(-1 + qsi[1], 4) +
-                        1636014380 * pow(qsi[0], 9) * pow(-1 + qsi[1], 5) +
-                        960269310 * pow(qsi[0], 8) * pow(-1 + qsi[1], 6) +
-                        399072960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 7) +
-                        116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 8) +
-                        23279256 * pow(qsi[0], 5) * pow(-1 + qsi[1], 9) +
-                        3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 10) +
-                        247520 * pow(qsi[0], 3) * pow(-1 + qsi[1], 11) +
-                        10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 12) +
-                        210 * qsi[0] * pow(-1 + qsi[1], 13) +
-                        pow(-1 + qsi[1], 14)) *
-                       (-8 + 15 * qsi[1])) /
-                     8.);
+                    -((40116600 * pow(qsi[0], 14) +
+                       280816200 * pow(qsi[0], 13) * (-1 + qsi[1]) +
+                       878850700 * pow(qsi[0], 12) * pow(-1 + qsi[1], 2) +
+                       1622493600 * pow(qsi[0], 11) * pow(-1 + qsi[1], 3) +
+                       1963217256 * pow(qsi[0], 10) * pow(-1 + qsi[1], 4) +
+                       1636014380 * pow(qsi[0], 9) * pow(-1 + qsi[1], 5) +
+                       960269310 * pow(qsi[0], 8) * pow(-1 + qsi[1], 6) +
+                       399072960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 7) +
+                       116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 8) +
+                       23279256 * pow(qsi[0], 5) * pow(-1 + qsi[1], 9) +
+                       3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 10) +
+                       247520 * pow(qsi[0], 3) * pow(-1 + qsi[1], 11) +
+                       10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 12) +
+                       210 * qsi[0] * pow(-1 + qsi[1], 13) +
+                       pow(-1 + qsi[1], 14)) *
+                      (-8 + 15 * qsi[1])) /
+                    8.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (601749000 * pow(qsi[0], 14) +
-                       34918884 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) *
-                           (-17 + 10 * qsi[1]) +
-                       pow(-1 + qsi[1], 13) * (-113 + 15 * qsi[1]) +
-                       10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) *
-                           (-43 + 15 * qsi[1]) +
-                       3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) *
-                           (-29 + 15 * qsi[1]) +
-                       116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) *
-                           (-23 + 15 * qsi[1]) +
-                       105 * qsi[0] * pow(-1 + qsi[1], 12) *
-                           (-121 + 30 * qsi[1]) +
-                       818007190 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) *
-                           (-37 + 30 * qsi[1]) +
-                       140408100 * pow(qsi[0], 13) * (-31 + 30 * qsi[1]) +
-                       320089770 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) *
-                           (-59 + 45 * qsi[1]) +
-                       61880 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) *
-                           (-137 + 60 * qsi[1]) +
-                       405623400 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) *
-                           (-67 + 60 * qsi[1]) +
-                       49884120 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) *
-                           (-169 + 120 * qsi[1]) +
-                       178474296 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) *
-                           (-193 + 165 * qsi[1]) +
-                       67603900 * pow(qsi[0], 12) *
-                           (209 - 404 * qsi[1] + 195 * pow(qsi[1], 2)))) /
-                     8.);
+                    (qsi[0] *
+                     (601749000 * pow(qsi[0], 14) +
+                      34918884 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) *
+                          (-17 + 10 * qsi[1]) +
+                      pow(-1 + qsi[1], 13) * (-113 + 15 * qsi[1]) +
+                      10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) *
+                          (-43 + 15 * qsi[1]) +
+                      3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) *
+                          (-29 + 15 * qsi[1]) +
+                      116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) *
+                          (-23 + 15 * qsi[1]) +
+                      105 * qsi[0] * pow(-1 + qsi[1], 12) *
+                          (-121 + 30 * qsi[1]) +
+                      818007190 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) *
+                          (-37 + 30 * qsi[1]) +
+                      140408100 * pow(qsi[0], 13) * (-31 + 30 * qsi[1]) +
+                      320089770 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) *
+                          (-59 + 45 * qsi[1]) +
+                      61880 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) *
+                          (-137 + 60 * qsi[1]) +
+                      405623400 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) *
+                          (-67 + 60 * qsi[1]) +
+                      49884120 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) *
+                          (-169 + 120 * qsi[1]) +
+                      178474296 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) *
+                          (-193 + 165 * qsi[1]) +
+                      67603900 * pow(qsi[0], 12) *
+                          (209 - 404 * qsi[1] + 195 * pow(qsi[1], 2)))) /
+                    8.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (30 * (40116600 * pow(qsi[0], 14) +
-                           280816200 * pow(qsi[0], 13) * (-1 + qsi[1]) +
-                           878850700 * pow(qsi[0], 12) * pow(-1 + qsi[1], 2) +
-                           1622493600 * pow(qsi[0], 11) * pow(-1 + qsi[1], 3) +
-                           1963217256 * pow(qsi[0], 10) * pow(-1 + qsi[1], 4) +
-                           1636014380 * pow(qsi[0], 9) * pow(-1 + qsi[1], 5) +
-                           960269310 * pow(qsi[0], 8) * pow(-1 + qsi[1], 6) +
-                           399072960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 7) +
-                           116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 8) +
-                           23279256 * pow(qsi[0], 5) * pow(-1 + qsi[1], 9) +
-                           3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 10) +
-                           247520 * pow(qsi[0], 3) * pow(-1 + qsi[1], 11) +
-                           10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 12) +
-                           210 * qsi[0] * pow(-1 + qsi[1], 13) +
-                           pow(-1 + qsi[1], 14)));
+                    30 * (40116600 * pow(qsi[0], 14) +
+                          280816200 * pow(qsi[0], 13) * (-1 + qsi[1]) +
+                          878850700 * pow(qsi[0], 12) * pow(-1 + qsi[1], 2) +
+                          1622493600 * pow(qsi[0], 11) * pow(-1 + qsi[1], 3) +
+                          1963217256 * pow(qsi[0], 10) * pow(-1 + qsi[1], 4) +
+                          1636014380 * pow(qsi[0], 9) * pow(-1 + qsi[1], 5) +
+                          960269310 * pow(qsi[0], 8) * pow(-1 + qsi[1], 6) +
+                          399072960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 7) +
+                          116396280 * pow(qsi[0], 6) * pow(-1 + qsi[1], 8) +
+                          23279256 * pow(qsi[0], 5) * pow(-1 + qsi[1], 9) +
+                          3063060 * pow(qsi[0], 4) * pow(-1 + qsi[1], 10) +
+                          247520 * pow(qsi[0], 3) * pow(-1 + qsi[1], 11) +
+                          10920 * pow(qsi[0], 2) * pow(-1 + qsi[1], 12) +
+                          210 * qsi[0] * pow(-1 + qsi[1], 13) +
+                          pow(-1 + qsi[1], 14));
                 currentFuncPos--;
             case 14:
                 phi(currentFuncPos, 0) =
-
-                    (-((10400600 * pow(qsi[0], 13) +
-                        67603900 * pow(qsi[0], 12) * (-1 + qsi[1]) +
-                        194699232 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) +
-                        327202876 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) +
-                        355655300 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) +
-                        261891630 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) +
-                        133024320 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) +
-                        46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) +
-                        11027016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) +
-                        1701700 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) +
-                        160160 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) +
-                        8190 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) +
-                        182 * qsi[0] * pow(-1 + qsi[1], 12) +
-                        pow(-1 + qsi[1], 13)) *
-                       (-15 + 28 * qsi[1])) /
-                     15.);
+                    -((10400600 * pow(qsi[0], 13) +
+                       67603900 * pow(qsi[0], 12) * (-1 + qsi[1]) +
+                       194699232 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) +
+                       327202876 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) +
+                       355655300 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) +
+                       261891630 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) +
+                       133024320 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) +
+                       46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) +
+                       11027016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) +
+                       1701700 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) +
+                       160160 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) +
+                       8190 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) +
+                       182 * qsi[0] * pow(-1 + qsi[1], 12) +
+                       pow(-1 + qsi[1], 13)) *
+                      (-15 + 28 * qsi[1])) /
+                    15.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (291216800 * pow(qsi[0], 13) +
-                       364 * qsi[0] * pow(-1 + qsi[1], 11) *
-                           (-53 + 14 * qsi[1]) +
-                       14702688 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) *
-                           (-34 + 21 * qsi[1]) +
-                       pow(-1 + qsi[1], 12) * (-197 + 28 * qsi[1]) +
-                       46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) *
-                           (-41 + 28 * qsi[1]) +
-                       67603900 * pow(qsi[0], 12) * (-29 + 28 * qsi[1]) +
-                       80080 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) *
-                           (-121 + 56 * qsi[1]) +
-                       142262120 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) *
-                           (-83 + 70 * qsi[1]) +
-                       2730 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) *
-                           (-227 + 84 * qsi[1]) +
-                       33256080 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) *
-                           (-151 + 112 * qsi[1]) +
-                       340340 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) *
-                           (-257 + 140 * qsi[1]) +
-                       29099070 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) *
-                           (-317 + 252 * qsi[1]) +
-                       29745716 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) *
-                           (-347 + 308 * qsi[1]) +
-                       32449872 * pow(qsi[0], 11) *
-                           (181 - 349 * qsi[1] + 168 * pow(qsi[1], 2)))) /
-                     15.);
+                    (qsi[0] *
+                     (291216800 * pow(qsi[0], 13) +
+                      364 * qsi[0] * pow(-1 + qsi[1], 11) *
+                          (-53 + 14 * qsi[1]) +
+                      14702688 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) *
+                          (-34 + 21 * qsi[1]) +
+                      pow(-1 + qsi[1], 12) * (-197 + 28 * qsi[1]) +
+                      46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) *
+                          (-41 + 28 * qsi[1]) +
+                      67603900 * pow(qsi[0], 12) * (-29 + 28 * qsi[1]) +
+                      80080 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) *
+                          (-121 + 56 * qsi[1]) +
+                      142262120 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) *
+                          (-83 + 70 * qsi[1]) +
+                      2730 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) *
+                          (-227 + 84 * qsi[1]) +
+                      33256080 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) *
+                          (-151 + 112 * qsi[1]) +
+                      340340 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) *
+                          (-257 + 140 * qsi[1]) +
+                      29099070 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) *
+                          (-317 + 252 * qsi[1]) +
+                      29745716 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) *
+                          (-347 + 308 * qsi[1]) +
+                      32449872 * pow(qsi[0], 11) *
+                          (181 - 349 * qsi[1] + 168 * pow(qsi[1], 2)))) /
+                    15.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (28 * (10400600 * pow(qsi[0], 13) +
-                           67603900 * pow(qsi[0], 12) * (-1 + qsi[1]) +
-                           194699232 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) +
-                           327202876 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) +
-                           355655300 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) +
-                           261891630 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) +
-                           133024320 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) +
-                           46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) +
-                           11027016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) +
-                           1701700 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) +
-                           160160 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) +
-                           8190 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) +
-                           182 * qsi[0] * pow(-1 + qsi[1], 12) +
-                           pow(-1 + qsi[1], 13)));
+                    28 * (10400600 * pow(qsi[0], 13) +
+                          67603900 * pow(qsi[0], 12) * (-1 + qsi[1]) +
+                          194699232 * pow(qsi[0], 11) * pow(-1 + qsi[1], 2) +
+                          327202876 * pow(qsi[0], 10) * pow(-1 + qsi[1], 3) +
+                          355655300 * pow(qsi[0], 9) * pow(-1 + qsi[1], 4) +
+                          261891630 * pow(qsi[0], 8) * pow(-1 + qsi[1], 5) +
+                          133024320 * pow(qsi[0], 7) * pow(-1 + qsi[1], 6) +
+                          46558512 * pow(qsi[0], 6) * pow(-1 + qsi[1], 7) +
+                          11027016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 8) +
+                          1701700 * pow(qsi[0], 4) * pow(-1 + qsi[1], 9) +
+                          160160 * pow(qsi[0], 3) * pow(-1 + qsi[1], 10) +
+                          8190 * pow(qsi[0], 2) * pow(-1 + qsi[1], 11) +
+                          182 * qsi[0] * pow(-1 + qsi[1], 12) +
+                          pow(-1 + qsi[1], 13));
                 currentFuncPos--;
             case 13:
                 phi(currentFuncPos, 0) =
-
-                    (-((2704156 * pow(qsi[0], 12) +
-                        16224936 * pow(qsi[0], 11) * (-1 + qsi[1]) +
-                        42678636 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) +
-                        64664600 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) +
-                        62355150 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) +
-                        39907296 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) +
-                        17153136 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) +
-                        4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) +
-                        900900 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) +
-                        100100 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) +
-                        6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) +
-                        156 * qsi[0] * pow(-1 + qsi[1], 11) +
-                        pow(-1 + qsi[1], 12)) *
-                       (-7 + 13 * qsi[1])) /
-                     7.);
+                    -((2704156 * pow(qsi[0], 12) +
+                       16224936 * pow(qsi[0], 11) * (-1 + qsi[1]) +
+                       42678636 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) +
+                       64664600 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) +
+                       62355150 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) +
+                       39907296 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) +
+                       17153136 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) +
+                       4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) +
+                       900900 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) +
+                       100100 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) +
+                       6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) +
+                       156 * qsi[0] * pow(-1 + qsi[1], 11) +
+                       pow(-1 + qsi[1], 12)) *
+                      (-7 + 13 * qsi[1])) /
+                    7.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (35154028 * pow(qsi[0], 12) +
-                       pow(-1 + qsi[1], 11) * (-85 + 13 * qsi[1]) +
-                       156 * qsi[0] * pow(-1 + qsi[1], 10) *
-                           (-46 + 13 * qsi[1]) +
-                       6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) *
-                           (-33 + 13 * qsi[1]) +
-                       4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) *
-                           (-20 + 13 * qsi[1]) +
-                       50050 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) *
-                           (-53 + 26 * qsi[1]) +
-                       8112468 * pow(qsi[0], 11) * (-27 + 26 * qsi[1]) +
-                       20785050 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) *
-                           (-47 + 39 * qsi[1]) +
-                       9976824 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) *
-                           (-67 + 52 * qsi[1]) +
-                       180180 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) *
-                           (-113 + 65 * qsi[1]) +
-                       12932920 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) *
-                           (-74 + 65 * qsi[1]) +
-                       2450448 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) *
-                           (-127 + 91 * qsi[1]) +
-                       3879876 * pow(qsi[0], 10) *
-                           (155 - 298 * qsi[1] + 143 * pow(qsi[1], 2)))) /
-                     7.);
+                    (qsi[0] *
+                     (35154028 * pow(qsi[0], 12) +
+                      pow(-1 + qsi[1], 11) * (-85 + 13 * qsi[1]) +
+                      156 * qsi[0] * pow(-1 + qsi[1], 10) *
+                          (-46 + 13 * qsi[1]) +
+                      6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) *
+                          (-33 + 13 * qsi[1]) +
+                      4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) *
+                          (-20 + 13 * qsi[1]) +
+                      50050 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) *
+                          (-53 + 26 * qsi[1]) +
+                      8112468 * pow(qsi[0], 11) * (-27 + 26 * qsi[1]) +
+                      20785050 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) *
+                          (-47 + 39 * qsi[1]) +
+                      9976824 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) *
+                          (-67 + 52 * qsi[1]) +
+                      180180 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) *
+                          (-113 + 65 * qsi[1]) +
+                      12932920 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) *
+                          (-74 + 65 * qsi[1]) +
+                      2450448 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) *
+                          (-127 + 91 * qsi[1]) +
+                      3879876 * pow(qsi[0], 10) *
+                          (155 - 298 * qsi[1] + 143 * pow(qsi[1], 2)))) /
+                    7.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (26 * (2704156 * pow(qsi[0], 12) +
-                           16224936 * pow(qsi[0], 11) * (-1 + qsi[1]) +
-                           42678636 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) +
-                           64664600 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) +
-                           62355150 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) +
-                           39907296 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) +
-                           17153136 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) +
-                           4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) +
-                           900900 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) +
-                           100100 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) +
-                           6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) +
-                           156 * qsi[0] * pow(-1 + qsi[1], 11) +
-                           pow(-1 + qsi[1], 12)));
+                    26 * (2704156 * pow(qsi[0], 12) +
+                          16224936 * pow(qsi[0], 11) * (-1 + qsi[1]) +
+                          42678636 * pow(qsi[0], 10) * pow(-1 + qsi[1], 2) +
+                          64664600 * pow(qsi[0], 9) * pow(-1 + qsi[1], 3) +
+                          62355150 * pow(qsi[0], 8) * pow(-1 + qsi[1], 4) +
+                          39907296 * pow(qsi[0], 7) * pow(-1 + qsi[1], 5) +
+                          17153136 * pow(qsi[0], 6) * pow(-1 + qsi[1], 6) +
+                          4900896 * pow(qsi[0], 5) * pow(-1 + qsi[1], 7) +
+                          900900 * pow(qsi[0], 4) * pow(-1 + qsi[1], 8) +
+                          100100 * pow(qsi[0], 3) * pow(-1 + qsi[1], 9) +
+                          6006 * pow(qsi[0], 2) * pow(-1 + qsi[1], 10) +
+                          156 * qsi[0] * pow(-1 + qsi[1], 11) +
+                          pow(-1 + qsi[1], 12));
                 currentFuncPos--;
             case 12:
                 phi(currentFuncPos, 0) =
-
-                    (-((705432 * pow(qsi[0], 11) +
-                        3879876 * pow(qsi[0], 10) * (-1 + qsi[1]) +
-                        9237800 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) +
-                        12471030 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) +
-                        10501920 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) +
-                        5717712 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) +
-                        2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) +
-                        450450 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) +
-                        60060 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) +
-                        4290 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) +
-                        132 * qsi[0] * pow(-1 + qsi[1], 10) +
-                        pow(-1 + qsi[1], 11)) *
-                       (-13 + 24 * qsi[1])) /
-                     13.);
+                    -((705432 * pow(qsi[0], 11) +
+                       3879876 * pow(qsi[0], 10) * (-1 + qsi[1]) +
+                       9237800 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) +
+                       12471030 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) +
+                       10501920 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) +
+                       5717712 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) +
+                       2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) +
+                       450450 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) +
+                       60060 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) +
+                       4290 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) +
+                       132 * qsi[0] * pow(-1 + qsi[1], 10) +
+                       pow(-1 + qsi[1], 11)) *
+                      (-13 + 24 * qsi[1])) /
+                    13.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (16930368 * pow(qsi[0], 11) +
-                       12870 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) *
-                           (-19 + 8 * qsi[1]) +
-                       120120 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) *
-                           (-23 + 12 * qsi[1]) +
-                       pow(-1 + qsi[1], 10) * (-145 + 24 * qsi[1]) +
-                       132 * qsi[0] * pow(-1 + qsi[1], 9) *
-                           (-79 + 24 * qsi[1]) +
-                       2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) *
-                           (-35 + 24 * qsi[1]) +
-                       3879876 * pow(qsi[0], 10) * (-25 + 24 * qsi[1]) +
-                       5250960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) *
-                           (-59 + 48 * qsi[1]) +
-                       4157010 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) *
-                           (-83 + 72 * qsi[1]) +
-                       90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) *
-                           (-197 + 120 * qsi[1]) +
-                       816816 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) *
-                           (-223 + 168 * qsi[1]) +
-                       1847560 * pow(qsi[0], 9) *
-                           (131 - 251 * qsi[1] + 120 * pow(qsi[1], 2)))) /
-                     13.);
+                    (qsi[0] *
+                     (16930368 * pow(qsi[0], 11) +
+                      12870 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) *
+                          (-19 + 8 * qsi[1]) +
+                      120120 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) *
+                          (-23 + 12 * qsi[1]) +
+                      pow(-1 + qsi[1], 10) * (-145 + 24 * qsi[1]) +
+                      132 * qsi[0] * pow(-1 + qsi[1], 9) * (-79 + 24 * qsi[1]) +
+                      2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) *
+                          (-35 + 24 * qsi[1]) +
+                      3879876 * pow(qsi[0], 10) * (-25 + 24 * qsi[1]) +
+                      5250960 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) *
+                          (-59 + 48 * qsi[1]) +
+                      4157010 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) *
+                          (-83 + 72 * qsi[1]) +
+                      90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) *
+                          (-197 + 120 * qsi[1]) +
+                      816816 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) *
+                          (-223 + 168 * qsi[1]) +
+                      1847560 * pow(qsi[0], 9) *
+                          (131 - 251 * qsi[1] + 120 * pow(qsi[1], 2)))) /
+                    13.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (24 * (705432 * pow(qsi[0], 11) +
-                           3879876 * pow(qsi[0], 10) * (-1 + qsi[1]) +
-                           9237800 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) +
-                           12471030 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) +
-                           10501920 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) +
-                           5717712 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) +
-                           2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) +
-                           450450 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) +
-                           60060 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) +
-                           4290 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) +
-                           132 * qsi[0] * pow(-1 + qsi[1], 10) +
-                           pow(-1 + qsi[1], 11)));
+                    24 * (705432 * pow(qsi[0], 11) +
+                          3879876 * pow(qsi[0], 10) * (-1 + qsi[1]) +
+                          9237800 * pow(qsi[0], 9) * pow(-1 + qsi[1], 2) +
+                          12471030 * pow(qsi[0], 8) * pow(-1 + qsi[1], 3) +
+                          10501920 * pow(qsi[0], 7) * pow(-1 + qsi[1], 4) +
+                          5717712 * pow(qsi[0], 6) * pow(-1 + qsi[1], 5) +
+                          2018016 * pow(qsi[0], 5) * pow(-1 + qsi[1], 6) +
+                          450450 * pow(qsi[0], 4) * pow(-1 + qsi[1], 7) +
+                          60060 * pow(qsi[0], 3) * pow(-1 + qsi[1], 8) +
+                          4290 * pow(qsi[0], 2) * pow(-1 + qsi[1], 9) +
+                          132 * qsi[0] * pow(-1 + qsi[1], 10) +
+                          pow(-1 + qsi[1], 11));
                 currentFuncPos--;
             case 11:
                 phi(currentFuncPos, 0) =
-
-                    (-((184756 * pow(qsi[0], 10) +
-                        923780 * pow(qsi[0], 9) * (-1 + qsi[1]) +
-                        1969110 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) +
-                        2333760 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) +
-                        1681680 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) +
-                        756756 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) +
-                        210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) +
-                        34320 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) +
-                        2970 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) +
-                        110 * qsi[0] * pow(-1 + qsi[1], 9) +
-                        pow(-1 + qsi[1], 10)) *
-                       (-6 + 11 * qsi[1])) /
-                     6.);
+                    -((184756 * pow(qsi[0], 10) +
+                       923780 * pow(qsi[0], 9) * (-1 + qsi[1]) +
+                       1969110 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) +
+                       2333760 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) +
+                       1681680 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) +
+                       756756 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) +
+                       210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) +
+                       34320 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) +
+                       2970 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) +
+                       110 * qsi[0] * pow(-1 + qsi[1], 9) +
+                       pow(-1 + qsi[1], 10)) *
+                      (-6 + 11 * qsi[1])) /
+                    6.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (2032316 * pow(qsi[0], 10) +
-                       pow(-1 + qsi[1], 9) * (-61 + 11 * qsi[1]) +
-                       210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) *
-                           (-17 + 11 * qsi[1]) +
-                       55 * qsi[0] * pow(-1 + qsi[1], 8) * (-67 + 22 * qsi[1]) +
-                       461890 * pow(qsi[0], 9) * (-23 + 22 * qsi[1]) +
-                       990 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) *
-                           (-73 + 33 * qsi[1]) +
-                       8580 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) *
-                           (-79 + 44 * qsi[1]) +
-                       126126 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) *
-                           (-91 + 66 * qsi[1]) +
-                       240240 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) *
-                           (-97 + 77 * qsi[1]) +
-                       291720 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) *
-                           (-103 + 88 * qsi[1]) +
-                       218790 * pow(qsi[0], 8) *
-                           (109 - 208 * qsi[1] + 99 * pow(qsi[1], 2)))) /
-                     6.);
+                    (qsi[0] *
+                     (2032316 * pow(qsi[0], 10) +
+                      pow(-1 + qsi[1], 9) * (-61 + 11 * qsi[1]) +
+                      210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) *
+                          (-17 + 11 * qsi[1]) +
+                      55 * qsi[0] * pow(-1 + qsi[1], 8) * (-67 + 22 * qsi[1]) +
+                      461890 * pow(qsi[0], 9) * (-23 + 22 * qsi[1]) +
+                      990 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) *
+                          (-73 + 33 * qsi[1]) +
+                      8580 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) *
+                          (-79 + 44 * qsi[1]) +
+                      126126 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) *
+                          (-91 + 66 * qsi[1]) +
+                      240240 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) *
+                          (-97 + 77 * qsi[1]) +
+                      291720 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) *
+                          (-103 + 88 * qsi[1]) +
+                      218790 * pow(qsi[0], 8) *
+                          (109 - 208 * qsi[1] + 99 * pow(qsi[1], 2)))) /
+                    6.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (22 * (184756 * pow(qsi[0], 10) +
-                           923780 * pow(qsi[0], 9) * (-1 + qsi[1]) +
-                           1969110 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) +
-                           2333760 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) +
-                           1681680 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) +
-                           756756 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) +
-                           210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) +
-                           34320 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) +
-                           2970 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) +
-                           110 * qsi[0] * pow(-1 + qsi[1], 9) +
-                           pow(-1 + qsi[1], 10)));
+                    22 *
+                    (184756 * pow(qsi[0], 10) +
+                     923780 * pow(qsi[0], 9) * (-1 + qsi[1]) +
+                     1969110 * pow(qsi[0], 8) * pow(-1 + qsi[1], 2) +
+                     2333760 * pow(qsi[0], 7) * pow(-1 + qsi[1], 3) +
+                     1681680 * pow(qsi[0], 6) * pow(-1 + qsi[1], 4) +
+                     756756 * pow(qsi[0], 5) * pow(-1 + qsi[1], 5) +
+                     210210 * pow(qsi[0], 4) * pow(-1 + qsi[1], 6) +
+                     34320 * pow(qsi[0], 3) * pow(-1 + qsi[1], 7) +
+                     2970 * pow(qsi[0], 2) * pow(-1 + qsi[1], 8) +
+                     110 * qsi[0] * pow(-1 + qsi[1], 9) + pow(-1 + qsi[1], 10));
                 currentFuncPos--;
             case 10:
                 phi(currentFuncPos, 0) =
-                    (-((48620 * pow(qsi[0], 9) +
-                        218790 * pow(qsi[0], 8) * (-1 + qsi[1]) +
-                        411840 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) +
-                        420420 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) +
-                        252252 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) +
-                        90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) +
-                        18480 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) +
-                        1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) +
-                        90 * qsi[0] * pow(-1 + qsi[1], 8) +
-                        pow(-1 + qsi[1], 9)) *
-                       (-11 + 20 * qsi[1])) /
-                     11.);
+                    -((48620 * pow(qsi[0], 9) +
+                       218790 * pow(qsi[0], 8) * (-1 + qsi[1]) +
+                       411840 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) +
+                       420420 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) +
+                       252252 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) +
+                       90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) +
+                       18480 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) +
+                       1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) +
+                       90 * qsi[0] * pow(-1 + qsi[1], 8) +
+                       pow(-1 + qsi[1], 9)) *
+                      (-11 + 20 * qsi[1])) /
+                    11.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (972400 * pow(qsi[0], 9) +
-                       360 * qsi[0] * pow(-1 + qsi[1], 7) * (-14 + 5 * qsi[1]) +
-                       504504 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) *
-                           (-13 + 10 * qsi[1]) +
-                       pow(-1 + qsi[1], 8) * (-101 + 20 * qsi[1]) +
-                       1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) *
-                           (-41 + 20 * qsi[1]) +
-                       90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) *
-                           (-29 + 20 * qsi[1]) +
-                       218790 * pow(qsi[0], 8) * (-21 + 20 * qsi[1]) +
-                       9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) *
-                           (-67 + 40 * qsi[1]) +
-                       60060 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) *
-                           (-167 + 140 * qsi[1]) +
-                       102960 * pow(qsi[0], 7) *
-                           (89 - 169 * qsi[1] + 80 * pow(qsi[1], 2)))) /
-                     11.);
+                    (qsi[0] *
+                     (972400 * pow(qsi[0], 9) +
+                      360 * qsi[0] * pow(-1 + qsi[1], 7) * (-14 + 5 * qsi[1]) +
+                      504504 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) *
+                          (-13 + 10 * qsi[1]) +
+                      pow(-1 + qsi[1], 8) * (-101 + 20 * qsi[1]) +
+                      1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) *
+                          (-41 + 20 * qsi[1]) +
+                      90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) *
+                          (-29 + 20 * qsi[1]) +
+                      218790 * pow(qsi[0], 8) * (-21 + 20 * qsi[1]) +
+                      9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) *
+                          (-67 + 40 * qsi[1]) +
+                      60060 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) *
+                          (-167 + 140 * qsi[1]) +
+                      102960 * pow(qsi[0], 7) *
+                          (89 - 169 * qsi[1] + 80 * pow(qsi[1], 2)))) /
+                    11.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (20 *
-                     (48620 * pow(qsi[0], 9) +
-                      218790 * pow(qsi[0], 8) * (-1 + qsi[1]) +
-                      411840 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) +
-                      420420 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) +
-                      252252 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) +
-                      90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) +
-                      18480 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) +
-                      1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) +
-                      90 * qsi[0] * pow(-1 + qsi[1], 8) + pow(-1 + qsi[1], 9)));
+                    20 *
+                    (48620 * pow(qsi[0], 9) +
+                     218790 * pow(qsi[0], 8) * (-1 + qsi[1]) +
+                     411840 * pow(qsi[0], 7) * pow(-1 + qsi[1], 2) +
+                     420420 * pow(qsi[0], 6) * pow(-1 + qsi[1], 3) +
+                     252252 * pow(qsi[0], 5) * pow(-1 + qsi[1], 4) +
+                     90090 * pow(qsi[0], 4) * pow(-1 + qsi[1], 5) +
+                     18480 * pow(qsi[0], 3) * pow(-1 + qsi[1], 6) +
+                     1980 * pow(qsi[0], 2) * pow(-1 + qsi[1], 7) +
+                     90 * qsi[0] * pow(-1 + qsi[1], 8) + pow(-1 + qsi[1], 9));
                 currentFuncPos--;
             case 9:
                 phi(currentFuncPos, 0) =
-                    (-((12870 * pow(qsi[0], 8) +
-                        51480 * pow(qsi[0], 7) * (-1 + qsi[1]) +
-                        84084 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) +
-                        72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) +
-                        34650 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) +
-                        9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) +
-                        1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) +
-                        72 * qsi[0] * pow(-1 + qsi[1], 7) +
-                        pow(-1 + qsi[1], 8)) *
-                       (-5 + 9 * qsi[1])) /
-                     5.);
+                    -((12870 * pow(qsi[0], 8) +
+                       51480 * pow(qsi[0], 7) * (-1 + qsi[1]) +
+                       84084 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) +
+                       72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) +
+                       34650 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) +
+                       9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) +
+                       1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) +
+                       72 * qsi[0] * pow(-1 + qsi[1], 7) +
+                       pow(-1 + qsi[1], 8)) *
+                      (-5 + 9 * qsi[1])) /
+                    5.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (115830 * pow(qsi[0], 8) +
-                       pow(-1 + qsi[1], 7) * (-41 + 9 * qsi[1]) +
-                       72 * qsi[0] * pow(-1 + qsi[1], 6) * (-23 + 9 * qsi[1]) +
-                       1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) *
-                           (-17 + 9 * qsi[1]) +
-                       9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) *
-                           (-14 + 9 * qsi[1]) +
-                       72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) *
-                           (-11 + 9 * qsi[1]) +
-                       25740 * pow(qsi[0], 7) * (-19 + 18 * qsi[1]) +
-                       6930 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) *
-                           (-61 + 45 * qsi[1]) +
-                       12012 * pow(qsi[0], 6) *
-                           (71 - 134 * qsi[1] + 63 * pow(qsi[1], 2)))) /
-                     5.);
+                    (qsi[0] *
+                     (115830 * pow(qsi[0], 8) +
+                      pow(-1 + qsi[1], 7) * (-41 + 9 * qsi[1]) +
+                      72 * qsi[0] * pow(-1 + qsi[1], 6) * (-23 + 9 * qsi[1]) +
+                      1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) *
+                          (-17 + 9 * qsi[1]) +
+                      9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) *
+                          (-14 + 9 * qsi[1]) +
+                      72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) *
+                          (-11 + 9 * qsi[1]) +
+                      25740 * pow(qsi[0], 7) * (-19 + 18 * qsi[1]) +
+                      6930 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) *
+                          (-61 + 45 * qsi[1]) +
+                      12012 * pow(qsi[0], 6) *
+                          (71 - 134 * qsi[1] + 63 * pow(qsi[1], 2)))) /
+                    5.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (18 *
-                     (12870 * pow(qsi[0], 8) +
-                      51480 * pow(qsi[0], 7) * (-1 + qsi[1]) +
-                      84084 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) +
-                      72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) +
-                      34650 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) +
-                      9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) +
-                      1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) +
-                      72 * qsi[0] * pow(-1 + qsi[1], 7) + pow(-1 + qsi[1], 8)));
+                    18 *
+                    (12870 * pow(qsi[0], 8) +
+                     51480 * pow(qsi[0], 7) * (-1 + qsi[1]) +
+                     84084 * pow(qsi[0], 6) * pow(-1 + qsi[1], 2) +
+                     72072 * pow(qsi[0], 5) * pow(-1 + qsi[1], 3) +
+                     34650 * pow(qsi[0], 4) * pow(-1 + qsi[1], 4) +
+                     9240 * pow(qsi[0], 3) * pow(-1 + qsi[1], 5) +
+                     1260 * pow(qsi[0], 2) * pow(-1 + qsi[1], 6) +
+                     72 * qsi[0] * pow(-1 + qsi[1], 7) + pow(-1 + qsi[1], 8));
                 currentFuncPos--;
             case 8:
                 phi(currentFuncPos, 0) =
-                    (-((3432 * pow(qsi[0], 7) +
-                        12012 * pow(qsi[0], 6) * (-1 + qsi[1]) +
-                        16632 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) +
-                        11550 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) +
-                        4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) +
-                        756 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) +
-                        56 * qsi[0] * pow(-1 + qsi[1], 6) +
-                        pow(-1 + qsi[1], 7)) *
-                       (-9 + 16 * qsi[1])) /
-                     9.);
+                    -((3432 * pow(qsi[0], 7) +
+                       12012 * pow(qsi[0], 6) * (-1 + qsi[1]) +
+                       16632 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) +
+                       11550 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) +
+                       4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) +
+                       756 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) +
+                       56 * qsi[0] * pow(-1 + qsi[1], 6) +
+                       pow(-1 + qsi[1], 7)) *
+                      (-9 + 16 * qsi[1])) /
+                    9.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (54912 * pow(qsi[0], 7) +
-                       pow(-1 + qsi[1], 6) * (-65 + 16 * qsi[1]) +
-                       56 * qsi[0] * pow(-1 + qsi[1], 5) * (-37 + 16 * qsi[1]) +
-                       4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) *
-                           (-23 + 16 * qsi[1]) +
-                       12012 * pow(qsi[0], 6) * (-17 + 16 * qsi[1]) +
-                       252 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) *
-                           (-83 + 48 * qsi[1]) +
-                       2310 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) *
-                           (-101 + 80 * qsi[1]) +
-                       5544 * pow(qsi[0], 5) *
-                           (55 - 103 * qsi[1] + 48 * pow(qsi[1], 2)))) /
-                     9.);
+                    (qsi[0] *
+                     (54912 * pow(qsi[0], 7) +
+                      pow(-1 + qsi[1], 6) * (-65 + 16 * qsi[1]) +
+                      56 * qsi[0] * pow(-1 + qsi[1], 5) * (-37 + 16 * qsi[1]) +
+                      4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) *
+                          (-23 + 16 * qsi[1]) +
+                      12012 * pow(qsi[0], 6) * (-17 + 16 * qsi[1]) +
+                      252 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) *
+                          (-83 + 48 * qsi[1]) +
+                      2310 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) *
+                          (-101 + 80 * qsi[1]) +
+                      5544 * pow(qsi[0], 5) *
+                          (55 - 103 * qsi[1] + 48 * pow(qsi[1], 2)))) /
+                    9.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (16 *
-                     (3432 * pow(qsi[0], 7) +
-                      12012 * pow(qsi[0], 6) * (-1 + qsi[1]) +
-                      16632 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) +
-                      11550 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) +
-                      4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) +
-                      756 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) +
-                      56 * qsi[0] * pow(-1 + qsi[1], 6) + pow(-1 + qsi[1], 7)));
+                    16 *
+                    (3432 * pow(qsi[0], 7) +
+                     12012 * pow(qsi[0], 6) * (-1 + qsi[1]) +
+                     16632 * pow(qsi[0], 5) * pow(-1 + qsi[1], 2) +
+                     11550 * pow(qsi[0], 4) * pow(-1 + qsi[1], 3) +
+                     4200 * pow(qsi[0], 3) * pow(-1 + qsi[1], 4) +
+                     756 * pow(qsi[0], 2) * pow(-1 + qsi[1], 5) +
+                     56 * qsi[0] * pow(-1 + qsi[1], 6) + pow(-1 + qsi[1], 7));
                 currentFuncPos--;
             case 7:
                 phi(currentFuncPos, 0) =
-                    (-((924 * pow(qsi[0], 6) +
-                        2772 * pow(qsi[0], 5) * (-1 + qsi[1]) +
-                        3150 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) +
-                        1680 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) +
-                        420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) +
-                        42 * qsi[0] * pow(-1 + qsi[1], 5) +
-                        pow(-1 + qsi[1], 6)) *
-                       (-4 + 7 * qsi[1])) /
-                     4.);
+                    -((924 * pow(qsi[0], 6) +
+                       2772 * pow(qsi[0], 5) * (-1 + qsi[1]) +
+                       3150 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) +
+                       1680 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) +
+                       420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) +
+                       42 * qsi[0] * pow(-1 + qsi[1], 5) +
+                       pow(-1 + qsi[1], 6)) *
+                      (-4 + 7 * qsi[1])) /
+                    4.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (6468 * pow(qsi[0], 6) +
-                       pow(-1 + qsi[1], 5) * (-25 + 7 * qsi[1]) +
-                       420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) *
-                           (-11 + 7 * qsi[1]) +
-                       21 * qsi[0] * pow(-1 + qsi[1], 4) * (-29 + 14 * qsi[1]) +
-                       1386 * pow(qsi[0], 5) * (-15 + 14 * qsi[1]) +
-                       420 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) *
-                           (-37 + 28 * qsi[1]) +
-                       630 * pow(qsi[0], 4) *
-                           (41 - 76 * qsi[1] + 35 * pow(qsi[1], 2)))) /
-                     4.);
+                    (qsi[0] *
+                     (6468 * pow(qsi[0], 6) +
+                      pow(-1 + qsi[1], 5) * (-25 + 7 * qsi[1]) +
+                      420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) *
+                          (-11 + 7 * qsi[1]) +
+                      21 * qsi[0] * pow(-1 + qsi[1], 4) * (-29 + 14 * qsi[1]) +
+                      1386 * pow(qsi[0], 5) * (-15 + 14 * qsi[1]) +
+                      420 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) *
+                          (-37 + 28 * qsi[1]) +
+                      630 * pow(qsi[0], 4) *
+                          (41 - 76 * qsi[1] + 35 * pow(qsi[1], 2)))) /
+                    4.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (14 *
-                     (924 * pow(qsi[0], 6) +
-                      2772 * pow(qsi[0], 5) * (-1 + qsi[1]) +
-                      3150 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) +
-                      1680 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) +
-                      420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) +
-                      42 * qsi[0] * pow(-1 + qsi[1], 5) + pow(-1 + qsi[1], 6)));
+                    14 *
+                    (924 * pow(qsi[0], 6) +
+                     2772 * pow(qsi[0], 5) * (-1 + qsi[1]) +
+                     3150 * pow(qsi[0], 4) * pow(-1 + qsi[1], 2) +
+                     1680 * pow(qsi[0], 3) * pow(-1 + qsi[1], 3) +
+                     420 * pow(qsi[0], 2) * pow(-1 + qsi[1], 4) +
+                     42 * qsi[0] * pow(-1 + qsi[1], 5) + pow(-1 + qsi[1], 6));
                 currentFuncPos--;
             case 6:
                 phi(currentFuncPos, 0) =
-                    (-((252 * pow(qsi[0], 5) +
-                        630 * pow(qsi[0], 4) * (-1 + qsi[1]) +
-                        560 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) +
-                        210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) +
-                        30 * qsi[0] * pow(-1 + qsi[1], 4) +
-                        pow(-1 + qsi[1], 5)) *
-                       (-7 + 12 * qsi[1])) /
-                     7.);
+                    -((252 * pow(qsi[0], 5) +
+                       630 * pow(qsi[0], 4) * (-1 + qsi[1]) +
+                       560 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) +
+                       210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) +
+                       30 * qsi[0] * pow(-1 + qsi[1], 4) +
+                       pow(-1 + qsi[1], 5)) *
+                      (-7 + 12 * qsi[1])) /
+                    7.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (3024 * pow(qsi[0], 5) +
-                       60 * qsi[0] * pow(-1 + qsi[1], 3) * (-11 + 6 * qsi[1]) +
-                       pow(-1 + qsi[1], 4) * (-37 + 12 * qsi[1]) +
-                       210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) *
-                           (-17 + 12 * qsi[1]) +
-                       630 * pow(qsi[0], 4) * (-13 + 12 * qsi[1]) +
-                       280 * pow(qsi[0], 3) *
-                           (29 - 53 * qsi[1] + 24 * pow(qsi[1], 2)))) /
-                     7.);
+                    (qsi[0] *
+                     (3024 * pow(qsi[0], 5) +
+                      60 * qsi[0] * pow(-1 + qsi[1], 3) * (-11 + 6 * qsi[1]) +
+                      pow(-1 + qsi[1], 4) * (-37 + 12 * qsi[1]) +
+                      210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) *
+                          (-17 + 12 * qsi[1]) +
+                      630 * pow(qsi[0], 4) * (-13 + 12 * qsi[1]) +
+                      280 * pow(qsi[0], 3) *
+                          (29 - 53 * qsi[1] + 24 * pow(qsi[1], 2)))) /
+                    7.;
                 curlPhiHat(0, currentFuncPos) =
-                    (12 *
-                     (252 * pow(qsi[0], 5) +
-                      630 * pow(qsi[0], 4) * (-1 + qsi[1]) +
-                      560 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) +
-                      210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) +
-                      30 * qsi[0] * pow(-1 + qsi[1], 4) + pow(-1 + qsi[1], 5)));
+                    12 *
+                    (252 * pow(qsi[0], 5) +
+                     630 * pow(qsi[0], 4) * (-1 + qsi[1]) +
+                     560 * pow(qsi[0], 3) * pow(-1 + qsi[1], 2) +
+                     210 * pow(qsi[0], 2) * pow(-1 + qsi[1], 3) +
+                     30 * qsi[0] * pow(-1 + qsi[1], 4) + pow(-1 + qsi[1], 5));
                 currentFuncPos--;
             case 5:
                 phi(currentFuncPos, 0) =
-                    (-((70 * pow(qsi[0], 4) +
-                        140 * pow(qsi[0], 3) * (-1 + qsi[1]) +
-                        90 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) +
-                        20 * qsi[0] * pow(-1 + qsi[1], 3) +
-                        pow(-1 + qsi[1], 4)) *
-                       (-3 + 5 * qsi[1])) /
-                     3.);
+                    -((70 * pow(qsi[0], 4) +
+                       140 * pow(qsi[0], 3) * (-1 + qsi[1]) +
+                       90 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) +
+                       20 * qsi[0] * pow(-1 + qsi[1], 3) +
+                       pow(-1 + qsi[1], 4)) *
+                      (-3 + 5 * qsi[1])) /
+                    3.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (350 * pow(qsi[0], 4) +
-                       pow(-1 + qsi[1], 3) * (-13 + 5 * qsi[1]) +
-                       20 * qsi[0] * pow(-1 + qsi[1], 2) * (-8 + 5 * qsi[1]) +
-                       70 * pow(qsi[0], 3) * (-11 + 10 * qsi[1]) +
-                       30 * pow(qsi[0], 2) *
-                           (19 - 34 * qsi[1] + 15 * pow(qsi[1], 2)))) /
-                     3.);
+                    (qsi[0] *
+                     (350 * pow(qsi[0], 4) +
+                      pow(-1 + qsi[1], 3) * (-13 + 5 * qsi[1]) +
+                      20 * qsi[0] * pow(-1 + qsi[1], 2) * (-8 + 5 * qsi[1]) +
+                      70 * pow(qsi[0], 3) * (-11 + 10 * qsi[1]) +
+                      30 * pow(qsi[0], 2) *
+                          (19 - 34 * qsi[1] + 15 * pow(qsi[1], 2)))) /
+                    3.;
                 curlPhiHat(0, currentFuncPos) =
-                    (10 *
-                     (70 * pow(qsi[0], 4) +
-                      140 * pow(qsi[0], 3) * (-1 + qsi[1]) +
-                      90 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) +
-                      20 * qsi[0] * pow(-1 + qsi[1], 3) + pow(-1 + qsi[1], 4)));
+                    10 *
+                    (70 * pow(qsi[0], 4) +
+                     140 * pow(qsi[0], 3) * (-1 + qsi[1]) +
+                     90 * pow(qsi[0], 2) * pow(-1 + qsi[1], 2) +
+                     20 * qsi[0] * pow(-1 + qsi[1], 3) + pow(-1 + qsi[1], 4));
                 currentFuncPos--;
             case 4:
                 phi(currentFuncPos, 0) =
-                    (-((20 * pow(qsi[0], 3) +
-                        30 * pow(qsi[0], 2) * (-1 + qsi[1]) +
-                        12 * qsi[0] * pow(-1 + qsi[1], 2) +
-                        pow(-1 + qsi[1], 3)) *
-                       (-5 + 8 * qsi[1])) /
-                     5.);
+                    -((20 * pow(qsi[0], 3) +
+                       30 * pow(qsi[0], 2) * (-1 + qsi[1]) +
+                       12 * qsi[0] * pow(-1 + qsi[1], 2) +
+                       pow(-1 + qsi[1], 3)) *
+                      (-5 + 8 * qsi[1])) /
+                    5.;
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (160 * pow(qsi[0], 3) +
-                       pow(-1 + qsi[1], 2) * (-17 + 8 * qsi[1]) +
-                       30 * pow(qsi[0], 2) * (-9 + 8 * qsi[1]) +
-                       12 * qsi[0] * (11 - 19 * qsi[1] + 8 * pow(qsi[1], 2)))) /
-                     5.);
+                    (qsi[0] *
+                     (160 * pow(qsi[0], 3) +
+                      pow(-1 + qsi[1], 2) * (-17 + 8 * qsi[1]) +
+                      30 * pow(qsi[0], 2) * (-9 + 8 * qsi[1]) +
+                      12 * qsi[0] * (11 - 19 * qsi[1] + 8 * pow(qsi[1], 2)))) /
+                    5.;
                 curlPhiHat(0, currentFuncPos) =
-                    (8 *
-                     (20 * pow(qsi[0], 3) +
-                      30 * pow(qsi[0], 2) * (-1 + qsi[1]) +
-                      12 * qsi[0] * pow(-1 + qsi[1], 2) + pow(-1 + qsi[1], 3)));
+                    8 *
+                    (20 * pow(qsi[0], 3) + 30 * pow(qsi[0], 2) * (-1 + qsi[1]) +
+                     12 * qsi[0] * pow(-1 + qsi[1], 2) + pow(-1 + qsi[1], 3));
                 currentFuncPos--;
             case 3:
                 phi(currentFuncPos, 0) =
-
-                    (-((6 * pow(qsi[0], 2) + 6 * qsi[0] * (-1 + qsi[1]) +
-                        pow(-1 + qsi[1], 2)) *
-                       (-2 + 3 * qsi[1])) /
-                     2.);
+                    -((6 * pow(qsi[0], 2) + 6 * qsi[0] * (-1 + qsi[1]) +
+                       pow(-1 + qsi[1], 2)) *
+                      (-2 + 3 * qsi[1])) /
+                    2.;
                 phi(currentFuncPos, 1) =
-                    ((qsi[0] *
-                      (5 + 18 * pow(qsi[0], 2) - 8 * qsi[1] +
-                       3 * pow(qsi[1], 2) + 3 * qsi[0] * (-7 + 6 * qsi[1]))) /
-                     2.);
+                    (qsi[0] *
+                     (5 + 18 * pow(qsi[0], 2) - 8 * qsi[1] +
+                      3 * pow(qsi[1], 2) + 3 * qsi[0] * (-7 + 6 * qsi[1]))) /
+                    2.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (6 * (6 * pow(qsi[0], 2) + 6 * qsi[0] * (-1 + qsi[1]) +
-                          pow(-1 + qsi[1], 2)));
+                    6 * (6 * pow(qsi[0], 2) + 6 * qsi[0] * (-1 + qsi[1]) +
+                         pow(-1 + qsi[1], 2));
                 currentFuncPos--;
             case 2:
                 phi(currentFuncPos, 0) =
-
-                    (-((-1 + 2 * qsi[0] + qsi[1]) * (-3 + 4 * qsi[1])) / 3.);
+                    -((-1 + 2 * qsi[0] + qsi[1]) * (-3 + 4 * qsi[1])) / 3.;
                 phi(currentFuncPos, 1) =
-                    ((qsi[0] * (-5 + 8 * qsi[0] + 4 * qsi[1])) / 3.);
-                curlPhiHat(0, currentFuncPos) =
-                    (4 * (-1 + 2 * qsi[0] + qsi[1]));
+                    (qsi[0] * (-5 + 8 * qsi[0] + 4 * qsi[1])) / 3.;
+                curlPhiHat(0, currentFuncPos) = 4 * (-1 + 2 * qsi[0] + qsi[1]);
                 currentFuncPos--;
             case 1:
-                phi(currentFuncPos, 0) = (1 - qsi[1]);
-                phi(currentFuncPos, 1) = (qsi[0]);
-                curlPhiHat(0, currentFuncPos) = (2);
+                phi(currentFuncPos, 0) = 1 - qsi[1];
+                phi(currentFuncPos, 1) = qsi[0];
+                curlPhiHat(0, currentFuncPos) = 2;
                 break;
             default:
                 DebugStop(); // polynomial order not implemented!
@@ -633,607 +601,571 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
             switch (pOrder) {
             case 15:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-15 * pow(qsi[0], 14) +
-                       (7 - 15 * qsi[1]) * pow(qsi[1], 13) -
-                       5010005 * pow(qsi[0], 4) * pow(qsi[1], 9) *
-                           (-1 + 3 * qsi[1]) -
-                       24843 * pow(qsi[0], 2) * pow(qsi[1], 11) *
-                           (-2 + 5 * qsi[1]) -
-                       27054027 * pow(qsi[0], 8) * pow(qsi[1], 5) *
-                           (-1 + 5 * qsi[1]) +
-                       10020010 * pow(qsi[0], 9) * pow(qsi[1], 4) *
-                           (-1 + 6 * qsi[1]) +
-                       6012006 * pow(qsi[0], 5) * pow(qsi[1], 8) *
-                           (-3 + 10 * qsi[1]) +
-                       198744 * pow(qsi[0], 11) * pow(qsi[1], 2) *
-                           (-1 + 10 * qsi[1]) -
-                       9018009 * pow(qsi[0], 6) * pow(qsi[1], 7) *
-                           (-4 + 15 * qsi[1]) -
-                       1002001 * pow(qsi[0], 10) * pow(qsi[1], 3) *
-                           (-2 + 15 * qsi[1]) -
-                       8281 * pow(qsi[0], 12) * qsi[1] * (-1 + 15 * qsi[1]) +
-                       98 * qsi[0] * pow(qsi[1], 12) * (-13 + 30 * qsi[1]) +
-                       66248 * pow(qsi[0], 3) * pow(qsi[1], 10) *
-                           (-11 + 30 * qsi[1]) +
-                       5889312 * pow(qsi[0], 7) * pow(qsi[1], 6) *
-                           (-7 + 30 * qsi[1]) +
-                       98 * pow(qsi[0], 13) * (-1 + 30 * qsi[1]))) /
-                     (4. * sqrt(2)));
+                    (qsi[1] *
+                     (-15 * pow(qsi[0], 14) +
+                      (7 - 15 * qsi[1]) * pow(qsi[1], 13) -
+                      5010005 * pow(qsi[0], 4) * pow(qsi[1], 9) *
+                          (-1 + 3 * qsi[1]) -
+                      24843 * pow(qsi[0], 2) * pow(qsi[1], 11) *
+                          (-2 + 5 * qsi[1]) -
+                      27054027 * pow(qsi[0], 8) * pow(qsi[1], 5) *
+                          (-1 + 5 * qsi[1]) +
+                      10020010 * pow(qsi[0], 9) * pow(qsi[1], 4) *
+                          (-1 + 6 * qsi[1]) +
+                      6012006 * pow(qsi[0], 5) * pow(qsi[1], 8) *
+                          (-3 + 10 * qsi[1]) +
+                      198744 * pow(qsi[0], 11) * pow(qsi[1], 2) *
+                          (-1 + 10 * qsi[1]) -
+                      9018009 * pow(qsi[0], 6) * pow(qsi[1], 7) *
+                          (-4 + 15 * qsi[1]) -
+                      1002001 * pow(qsi[0], 10) * pow(qsi[1], 3) *
+                          (-2 + 15 * qsi[1]) -
+                      8281 * pow(qsi[0], 12) * qsi[1] * (-1 + 15 * qsi[1]) +
+                      98 * qsi[0] * pow(qsi[1], 12) * (-13 + 30 * qsi[1]) +
+                      66248 * pow(qsi[0], 3) * pow(qsi[1], 10) *
+                          (-11 + 30 * qsi[1]) +
+                      5889312 * pow(qsi[0], 7) * pow(qsi[1], 6) *
+                          (-7 + 30 * qsi[1]) +
+                      98 * pow(qsi[0], 13) * (-1 + 30 * qsi[1]))) /
+                    (4. * sqrt(2));
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (15 * pow(qsi[0], 14) +
-                       5010005 * pow(qsi[0], 4) * pow(qsi[1], 9) *
-                           (2 + 3 * qsi[1]) +
-                       24843 * pow(qsi[0], 2) * pow(qsi[1], 11) *
-                           (8 + 5 * qsi[1]) -
-                       5010005 * pow(qsi[0], 9) * pow(qsi[1], 4) *
-                           (1 + 12 * qsi[1]) +
-                       9018009 * pow(qsi[0], 8) * pow(qsi[1], 5) *
-                           (2 + 15 * qsi[1]) +
-                       pow(qsi[1], 13) * (98 + 15 * qsi[1]) -
-                       3006003 * pow(qsi[0], 5) * pow(qsi[1], 8) *
-                           (9 + 20 * qsi[1]) -
-                       49686 * pow(qsi[0], 11) * pow(qsi[1], 2) *
-                           (1 + 40 * qsi[1]) -
-                       49 * qsi[0] * pow(qsi[1], 12) * (169 + 60 * qsi[1]) +
-                       1288287 * pow(qsi[0], 6) * pow(qsi[1], 7) *
-                           (32 + 105 * qsi[1]) -
-                       16562 * pow(qsi[0], 3) * pow(qsi[1], 10) *
-                           (121 + 120 * qsi[1]) +
-                       91091 * pow(qsi[0], 10) * pow(qsi[1], 3) *
-                           (8 + 165 * qsi[1]) +
-                       637 * pow(qsi[0], 12) * qsi[1] * (2 + 195 * qsi[1]) -
-                       736164 * pow(qsi[0], 7) * pow(qsi[1], 6) *
-                           (49 + 240 * qsi[1]) -
-                       7 * pow(qsi[0], 13) * (1 + 420 * qsi[1]))) /
-                     (4. * sqrt(2)));
+                    (qsi[0] *
+                     (15 * pow(qsi[0], 14) +
+                      5010005 * pow(qsi[0], 4) * pow(qsi[1], 9) *
+                          (2 + 3 * qsi[1]) +
+                      24843 * pow(qsi[0], 2) * pow(qsi[1], 11) *
+                          (8 + 5 * qsi[1]) -
+                      5010005 * pow(qsi[0], 9) * pow(qsi[1], 4) *
+                          (1 + 12 * qsi[1]) +
+                      9018009 * pow(qsi[0], 8) * pow(qsi[1], 5) *
+                          (2 + 15 * qsi[1]) +
+                      pow(qsi[1], 13) * (98 + 15 * qsi[1]) -
+                      3006003 * pow(qsi[0], 5) * pow(qsi[1], 8) *
+                          (9 + 20 * qsi[1]) -
+                      49686 * pow(qsi[0], 11) * pow(qsi[1], 2) *
+                          (1 + 40 * qsi[1]) -
+                      49 * qsi[0] * pow(qsi[1], 12) * (169 + 60 * qsi[1]) +
+                      1288287 * pow(qsi[0], 6) * pow(qsi[1], 7) *
+                          (32 + 105 * qsi[1]) -
+                      16562 * pow(qsi[0], 3) * pow(qsi[1], 10) *
+                          (121 + 120 * qsi[1]) +
+                      91091 * pow(qsi[0], 10) * pow(qsi[1], 3) *
+                          (8 + 165 * qsi[1]) +
+                      637 * pow(qsi[0], 12) * qsi[1] * (2 + 195 * qsi[1]) -
+                      736164 * pow(qsi[0], 7) * pow(qsi[1], 6) *
+                          (49 + 240 * qsi[1]) -
+                      7 * pow(qsi[0], 13) * (1 + 420 * qsi[1]))) /
+                    (4. * sqrt(2));
                 curlPhiHat(0, currentFuncPos) =
-
-                    (30 * sqrt(2) *
-                     (pow(qsi[0], 14) - 196 * pow(qsi[0], 13) * qsi[1] +
-                      8281 * pow(qsi[0], 12) * pow(qsi[1], 2) -
-                      132496 * pow(qsi[0], 11) * pow(qsi[1], 3) +
-                      1002001 * pow(qsi[0], 10) * pow(qsi[1], 4) -
-                      4008004 * pow(qsi[0], 9) * pow(qsi[1], 5) +
-                      9018009 * pow(qsi[0], 8) * pow(qsi[1], 6) -
-                      11778624 * pow(qsi[0], 7) * pow(qsi[1], 7) +
-                      9018009 * pow(qsi[0], 6) * pow(qsi[1], 8) -
-                      4008004 * pow(qsi[0], 5) * pow(qsi[1], 9) +
-                      1002001 * pow(qsi[0], 4) * pow(qsi[1], 10) -
-                      132496 * pow(qsi[0], 3) * pow(qsi[1], 11) +
-                      8281 * pow(qsi[0], 2) * pow(qsi[1], 12) -
-                      196 * qsi[0] * pow(qsi[1], 13) + pow(qsi[1], 14)));
+                    30 * sqrt(2) *
+                    (pow(qsi[0], 14) - 196 * pow(qsi[0], 13) * qsi[1] +
+                     8281 * pow(qsi[0], 12) * pow(qsi[1], 2) -
+                     132496 * pow(qsi[0], 11) * pow(qsi[1], 3) +
+                     1002001 * pow(qsi[0], 10) * pow(qsi[1], 4) -
+                     4008004 * pow(qsi[0], 9) * pow(qsi[1], 5) +
+                     9018009 * pow(qsi[0], 8) * pow(qsi[1], 6) -
+                     11778624 * pow(qsi[0], 7) * pow(qsi[1], 7) +
+                     9018009 * pow(qsi[0], 6) * pow(qsi[1], 8) -
+                     4008004 * pow(qsi[0], 5) * pow(qsi[1], 9) +
+                     1002001 * pow(qsi[0], 4) * pow(qsi[1], 10) -
+                     132496 * pow(qsi[0], 3) * pow(qsi[1], 11) +
+                     8281 * pow(qsi[0], 2) * pow(qsi[1], 12) -
+                     196 * qsi[0] * pow(qsi[1], 13) + pow(qsi[1], 14));
                 currentFuncPos--;
             case 14:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (28 * pow(qsi[0], 13) +
-                       (13 - 28 * qsi[1]) * pow(qsi[1], 12) -
-                       20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
-                           (-1 + 4 * qsi[1]) +
-                       676 * qsi[0] * pow(qsi[1], 11) * (-3 + 7 * qsi[1]) +
-                       6625476 * pow(qsi[0], 5) * pow(qsi[1], 7) *
-                           (-2 + 7 * qsi[1]) +
-                       2044900 * pow(qsi[0], 9) * pow(qsi[1], 3) *
-                           (-1 + 7 * qsi[1]) +
-                       163592 * pow(qsi[0], 3) * pow(qsi[1], 9) *
-                           (-5 + 14 * qsi[1]) +
-                       5889312 * pow(qsi[0], 7) * pow(qsi[1], 5) *
-                           (-3 + 14 * qsi[1]) +
-                       12168 * pow(qsi[0], 11) * qsi[1] * (-1 + 14 * qsi[1]) -
-                       6084 * pow(qsi[0], 2) * pow(qsi[1], 10) *
-                           (-11 + 28 * qsi[1]) -
-                       511225 * pow(qsi[0], 4) * pow(qsi[1], 8) *
-                           (-9 + 28 * qsi[1]) -
-                       1656369 * pow(qsi[0], 8) * pow(qsi[1], 4) *
-                           (-5 + 28 * qsi[1]) -
-                       81796 * pow(qsi[0], 10) * pow(qsi[1], 2) *
-                           (-3 + 28 * qsi[1]) -
-                       169 * pow(qsi[0], 12) * (-1 + 28 * qsi[1]))) /
-                     15.);
+                    (sqrt(2) * qsi[1] *
+                     (28 * pow(qsi[0], 13) +
+                      (13 - 28 * qsi[1]) * pow(qsi[1], 12) -
+                      20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
+                          (-1 + 4 * qsi[1]) +
+                      676 * qsi[0] * pow(qsi[1], 11) * (-3 + 7 * qsi[1]) +
+                      6625476 * pow(qsi[0], 5) * pow(qsi[1], 7) *
+                          (-2 + 7 * qsi[1]) +
+                      2044900 * pow(qsi[0], 9) * pow(qsi[1], 3) *
+                          (-1 + 7 * qsi[1]) +
+                      163592 * pow(qsi[0], 3) * pow(qsi[1], 9) *
+                          (-5 + 14 * qsi[1]) +
+                      5889312 * pow(qsi[0], 7) * pow(qsi[1], 5) *
+                          (-3 + 14 * qsi[1]) +
+                      12168 * pow(qsi[0], 11) * qsi[1] * (-1 + 14 * qsi[1]) -
+                      6084 * pow(qsi[0], 2) * pow(qsi[1], 10) *
+                          (-11 + 28 * qsi[1]) -
+                      511225 * pow(qsi[0], 4) * pow(qsi[1], 8) *
+                          (-9 + 28 * qsi[1]) -
+                      1656369 * pow(qsi[0], 8) * pow(qsi[1], 4) *
+                          (-5 + 28 * qsi[1]) -
+                      81796 * pow(qsi[0], 10) * pow(qsi[1], 2) *
+                          (-3 + 28 * qsi[1]) -
+                      169 * pow(qsi[0], 12) * (-1 + 28 * qsi[1]))) /
+                    15.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] *
-                       (28 * pow(qsi[0], 13) -
-                        20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
-                            (1 + 4 * qsi[1]) +
-                        676 * qsi[0] * pow(qsi[1], 11) * (18 + 7 * qsi[1]) +
-                        2208492 * pow(qsi[0], 5) * pow(qsi[1], 7) *
-                            (8 + 21 * qsi[1]) +
-                        81796 * pow(qsi[0], 3) * pow(qsi[1], 9) *
-                            (25 + 28 * qsi[1]) -
-                        pow(qsi[1], 12) * (169 + 28 * qsi[1]) +
-                        408980 * pow(qsi[0], 9) * pow(qsi[1], 3) *
-                            (2 + 35 * qsi[1]) +
-                        1472328 * pow(qsi[0], 7) * pow(qsi[1], 5) *
-                            (9 + 56 * qsi[1]) +
-                        2028 * pow(qsi[0], 11) * qsi[1] * (1 + 84 * qsi[1]) -
-                        2028 * pow(qsi[0], 2) * pow(qsi[1], 10) *
-                            (121 + 84 * qsi[1]) -
-                        102245 * pow(qsi[0], 4) * pow(qsi[1], 8) *
-                            (81 + 140 * qsi[1]) -
-                        184041 * pow(qsi[0], 8) * pow(qsi[1], 4) *
-                            (25 + 252 * qsi[1]) -
-                        7436 * pow(qsi[0], 10) * pow(qsi[1], 2) *
-                            (9 + 308 * qsi[1]) -
-                        13 * pow(qsi[0], 12) * (1 + 364 * qsi[1]))) /
-                     15.);
+                    -(sqrt(2) * qsi[0] *
+                      (28 * pow(qsi[0], 13) -
+                       20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
+                           (1 + 4 * qsi[1]) +
+                       676 * qsi[0] * pow(qsi[1], 11) * (18 + 7 * qsi[1]) +
+                       2208492 * pow(qsi[0], 5) * pow(qsi[1], 7) *
+                           (8 + 21 * qsi[1]) +
+                       81796 * pow(qsi[0], 3) * pow(qsi[1], 9) *
+                           (25 + 28 * qsi[1]) -
+                       pow(qsi[1], 12) * (169 + 28 * qsi[1]) +
+                       408980 * pow(qsi[0], 9) * pow(qsi[1], 3) *
+                           (2 + 35 * qsi[1]) +
+                       1472328 * pow(qsi[0], 7) * pow(qsi[1], 5) *
+                           (9 + 56 * qsi[1]) +
+                       2028 * pow(qsi[0], 11) * qsi[1] * (1 + 84 * qsi[1]) -
+                       2028 * pow(qsi[0], 2) * pow(qsi[1], 10) *
+                           (121 + 84 * qsi[1]) -
+                       102245 * pow(qsi[0], 4) * pow(qsi[1], 8) *
+                           (81 + 140 * qsi[1]) -
+                       184041 * pow(qsi[0], 8) * pow(qsi[1], 4) *
+                           (25 + 252 * qsi[1]) -
+                       7436 * pow(qsi[0], 10) * pow(qsi[1], 2) *
+                           (9 + 308 * qsi[1]) -
+                       13 * pow(qsi[0], 12) * (1 + 364 * qsi[1]))) /
+                    15.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (-28 * sqrt(2) *
-                     (pow(qsi[0], 13) - 169 * pow(qsi[0], 12) * qsi[1] +
-                      6084 * pow(qsi[0], 11) * pow(qsi[1], 2) -
-                      81796 * pow(qsi[0], 10) * pow(qsi[1], 3) +
-                      511225 * pow(qsi[0], 9) * pow(qsi[1], 4) -
-                      1656369 * pow(qsi[0], 8) * pow(qsi[1], 5) +
-                      2944656 * pow(qsi[0], 7) * pow(qsi[1], 6) -
-                      2944656 * pow(qsi[0], 6) * pow(qsi[1], 7) +
-                      1656369 * pow(qsi[0], 5) * pow(qsi[1], 8) -
-                      511225 * pow(qsi[0], 4) * pow(qsi[1], 9) +
-                      81796 * pow(qsi[0], 3) * pow(qsi[1], 10) -
-                      6084 * pow(qsi[0], 2) * pow(qsi[1], 11) +
-                      169 * qsi[0] * pow(qsi[1], 12) - pow(qsi[1], 13)));
+                    -28 * sqrt(2) *
+                    (pow(qsi[0], 13) - 169 * pow(qsi[0], 12) * qsi[1] +
+                     6084 * pow(qsi[0], 11) * pow(qsi[1], 2) -
+                     81796 * pow(qsi[0], 10) * pow(qsi[1], 3) +
+                     511225 * pow(qsi[0], 9) * pow(qsi[1], 4) -
+                     1656369 * pow(qsi[0], 8) * pow(qsi[1], 5) +
+                     2944656 * pow(qsi[0], 7) * pow(qsi[1], 6) -
+                     2944656 * pow(qsi[0], 6) * pow(qsi[1], 7) +
+                     1656369 * pow(qsi[0], 5) * pow(qsi[1], 8) -
+                     511225 * pow(qsi[0], 4) * pow(qsi[1], 9) +
+                     81796 * pow(qsi[0], 3) * pow(qsi[1], 10) -
+                     6084 * pow(qsi[0], 2) * pow(qsi[1], 11) +
+                     169 * qsi[0] * pow(qsi[1], 12) - pow(qsi[1], 13));
                 currentFuncPos--;
             case 13:
                 phi(currentFuncPos, 0) =
-
-                    (-(sqrt(2) * qsi[1] *
-                       (13 * pow(qsi[0], 12) +
-                        pow(qsi[1], 11) * (-6 + 13 * qsi[1]) +
-                        4356 * pow(qsi[0], 2) * pow(qsi[1], 9) *
-                            (-5 + 13 * qsi[1]) +
-                        245025 * pow(qsi[0], 4) * pow(qsi[1], 7) *
-                            (-4 + 13 * qsi[1]) +
-                        853776 * pow(qsi[0], 6) * pow(qsi[1], 5) *
-                            (-3 + 13 * qsi[1]) +
-                        245025 * pow(qsi[0], 8) * pow(qsi[1], 3) *
-                            (-2 + 13 * qsi[1]) +
-                        4356 * pow(qsi[0], 10) * qsi[1] * (-1 + 13 * qsi[1]) -
-                        72 * qsi[0] * pow(qsi[1], 10) * (-11 + 26 * qsi[1]) -
-                        24200 * pow(qsi[0], 3) * pow(qsi[1], 8) *
-                            (-9 + 26 * qsi[1]) -
-                        313632 * pow(qsi[0], 5) * pow(qsi[1], 6) *
-                            (-7 + 26 * qsi[1]) -
-                        313632 * pow(qsi[0], 7) * pow(qsi[1], 4) *
-                            (-5 + 26 * qsi[1]) -
-                        24200 * pow(qsi[0], 9) * pow(qsi[1], 2) *
-                            (-3 + 26 * qsi[1]) -
-                        72 * pow(qsi[0], 11) * (-1 + 26 * qsi[1]))) /
-                     7.);
-                phi(currentFuncPos, 1) =
-
-                    ((sqrt(2) * qsi[0] *
+                    -(sqrt(2) * qsi[1] *
                       (13 * pow(qsi[0], 12) +
-                       pow(qsi[1], 11) * (72 + 13 * qsi[1]) +
-                       1452 * pow(qsi[0], 2) * pow(qsi[1], 9) *
-                           (50 + 39 * qsi[1]) -
-                       36 * qsi[0] * pow(qsi[1], 10) * (121 + 52 * qsi[1]) +
-                       49005 * pow(qsi[0], 4) * pow(qsi[1], 7) *
-                           (32 + 65 * qsi[1]) +
-                       121968 * pow(qsi[0], 6) * pow(qsi[1], 5) *
-                           (18 + 91 * qsi[1]) -
-                       6050 * pow(qsi[0], 3) * pow(qsi[1], 8) *
-                           (81 + 104 * qsi[1]) +
-                       27225 * pow(qsi[0], 8) * pow(qsi[1], 3) *
-                           (8 + 117 * qsi[1]) +
-                       396 * pow(qsi[0], 10) * qsi[1] * (2 + 143 * qsi[1]) -
-                       52272 * pow(qsi[0], 5) * pow(qsi[1], 6) *
-                           (49 + 156 * qsi[1]) -
-                       39204 * pow(qsi[0], 7) * pow(qsi[1], 4) *
-                           (25 + 208 * qsi[1]) -
-                       2420 * pow(qsi[0], 9) * pow(qsi[1], 2) *
-                           (9 + 260 * qsi[1]) -
-                       6 * pow(qsi[0], 11) * (1 + 312 * qsi[1]))) /
-                     7.);
+                       pow(qsi[1], 11) * (-6 + 13 * qsi[1]) +
+                       4356 * pow(qsi[0], 2) * pow(qsi[1], 9) *
+                           (-5 + 13 * qsi[1]) +
+                       245025 * pow(qsi[0], 4) * pow(qsi[1], 7) *
+                           (-4 + 13 * qsi[1]) +
+                       853776 * pow(qsi[0], 6) * pow(qsi[1], 5) *
+                           (-3 + 13 * qsi[1]) +
+                       245025 * pow(qsi[0], 8) * pow(qsi[1], 3) *
+                           (-2 + 13 * qsi[1]) +
+                       4356 * pow(qsi[0], 10) * qsi[1] * (-1 + 13 * qsi[1]) -
+                       72 * qsi[0] * pow(qsi[1], 10) * (-11 + 26 * qsi[1]) -
+                       24200 * pow(qsi[0], 3) * pow(qsi[1], 8) *
+                           (-9 + 26 * qsi[1]) -
+                       313632 * pow(qsi[0], 5) * pow(qsi[1], 6) *
+                           (-7 + 26 * qsi[1]) -
+                       313632 * pow(qsi[0], 7) * pow(qsi[1], 4) *
+                           (-5 + 26 * qsi[1]) -
+                       24200 * pow(qsi[0], 9) * pow(qsi[1], 2) *
+                           (-3 + 26 * qsi[1]) -
+                       72 * pow(qsi[0], 11) * (-1 + 26 * qsi[1]))) /
+                    7.;
+                phi(currentFuncPos, 1) =
+                    (sqrt(2) * qsi[0] *
+                     (13 * pow(qsi[0], 12) +
+                      pow(qsi[1], 11) * (72 + 13 * qsi[1]) +
+                      1452 * pow(qsi[0], 2) * pow(qsi[1], 9) *
+                          (50 + 39 * qsi[1]) -
+                      36 * qsi[0] * pow(qsi[1], 10) * (121 + 52 * qsi[1]) +
+                      49005 * pow(qsi[0], 4) * pow(qsi[1], 7) *
+                          (32 + 65 * qsi[1]) +
+                      121968 * pow(qsi[0], 6) * pow(qsi[1], 5) *
+                          (18 + 91 * qsi[1]) -
+                      6050 * pow(qsi[0], 3) * pow(qsi[1], 8) *
+                          (81 + 104 * qsi[1]) +
+                      27225 * pow(qsi[0], 8) * pow(qsi[1], 3) *
+                          (8 + 117 * qsi[1]) +
+                      396 * pow(qsi[0], 10) * qsi[1] * (2 + 143 * qsi[1]) -
+                      52272 * pow(qsi[0], 5) * pow(qsi[1], 6) *
+                          (49 + 156 * qsi[1]) -
+                      39204 * pow(qsi[0], 7) * pow(qsi[1], 4) *
+                          (25 + 208 * qsi[1]) -
+                      2420 * pow(qsi[0], 9) * pow(qsi[1], 2) *
+                          (9 + 260 * qsi[1]) -
+                      6 * pow(qsi[0], 11) * (1 + 312 * qsi[1]))) /
+                    7.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (26 * sqrt(2) *
-                     (pow(qsi[0], 12) - 144 * pow(qsi[0], 11) * qsi[1] +
-                      4356 * pow(qsi[0], 10) * pow(qsi[1], 2) -
-                      48400 * pow(qsi[0], 9) * pow(qsi[1], 3) +
-                      245025 * pow(qsi[0], 8) * pow(qsi[1], 4) -
-                      627264 * pow(qsi[0], 7) * pow(qsi[1], 5) +
-                      853776 * pow(qsi[0], 6) * pow(qsi[1], 6) -
-                      627264 * pow(qsi[0], 5) * pow(qsi[1], 7) +
-                      245025 * pow(qsi[0], 4) * pow(qsi[1], 8) -
-                      48400 * pow(qsi[0], 3) * pow(qsi[1], 9) +
-                      4356 * pow(qsi[0], 2) * pow(qsi[1], 10) -
-                      144 * qsi[0] * pow(qsi[1], 11) + pow(qsi[1], 12)));
+                    26 * sqrt(2) *
+                    (pow(qsi[0], 12) - 144 * pow(qsi[0], 11) * qsi[1] +
+                     4356 * pow(qsi[0], 10) * pow(qsi[1], 2) -
+                     48400 * pow(qsi[0], 9) * pow(qsi[1], 3) +
+                     245025 * pow(qsi[0], 8) * pow(qsi[1], 4) -
+                     627264 * pow(qsi[0], 7) * pow(qsi[1], 5) +
+                     853776 * pow(qsi[0], 6) * pow(qsi[1], 6) -
+                     627264 * pow(qsi[0], 5) * pow(qsi[1], 7) +
+                     245025 * pow(qsi[0], 4) * pow(qsi[1], 8) -
+                     48400 * pow(qsi[0], 3) * pow(qsi[1], 9) +
+                     4356 * pow(qsi[0], 2) * pow(qsi[1], 10) -
+                     144 * qsi[0] * pow(qsi[1], 11) + pow(qsi[1], 12));
                 currentFuncPos--;
             case 12:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (24 * pow(qsi[0], 11) +
-                       (11 - 24 * qsi[1]) * pow(qsi[1], 10) +
-                       217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
-                           (-1 + 3 * qsi[1]) +
-                       1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
-                           (-1 + 4 * qsi[1]) +
-                       435600 * pow(qsi[0], 7) * pow(qsi[1], 3) *
-                           (-1 + 6 * qsi[1]) -
-                       9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
-                           (-3 + 8 * qsi[1]) -
-                       81675 * pow(qsi[0], 8) * pow(qsi[1], 2) *
-                           (-1 + 8 * qsi[1]) +
-                       242 * qsi[0] * pow(qsi[1], 9) * (-5 + 12 * qsi[1]) +
-                       6050 * pow(qsi[0], 9) * qsi[1] * (-1 + 12 * qsi[1]) -
-                       108900 * pow(qsi[0], 4) * pow(qsi[1], 6) *
-                           (-7 + 24 * qsi[1]) -
-                       213444 * pow(qsi[0], 6) * pow(qsi[1], 4) *
-                           (-5 + 24 * qsi[1]) -
-                       121 * pow(qsi[0], 10) * (-1 + 24 * qsi[1]))) /
-                     13.);
+                    (sqrt(2) * qsi[1] *
+                     (24 * pow(qsi[0], 11) +
+                      (11 - 24 * qsi[1]) * pow(qsi[1], 10) +
+                      217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
+                          (-1 + 3 * qsi[1]) +
+                      1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
+                          (-1 + 4 * qsi[1]) +
+                      435600 * pow(qsi[0], 7) * pow(qsi[1], 3) *
+                          (-1 + 6 * qsi[1]) -
+                      9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
+                          (-3 + 8 * qsi[1]) -
+                      81675 * pow(qsi[0], 8) * pow(qsi[1], 2) *
+                          (-1 + 8 * qsi[1]) +
+                      242 * qsi[0] * pow(qsi[1], 9) * (-5 + 12 * qsi[1]) +
+                      6050 * pow(qsi[0], 9) * qsi[1] * (-1 + 12 * qsi[1]) -
+                      108900 * pow(qsi[0], 4) * pow(qsi[1], 6) *
+                          (-7 + 24 * qsi[1]) -
+                      213444 * pow(qsi[0], 6) * pow(qsi[1], 4) *
+                          (-5 + 24 * qsi[1]) -
+                      121 * pow(qsi[0], 10) * (-1 + 24 * qsi[1]))) /
+                    13.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] *
-                       (24 * pow(qsi[0], 11) +
-                        217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
-                            (2 + 3 * qsi[1]) +
-                        1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
-                            (1 + 4 * qsi[1]) -
-                        9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
-                            (9 + 8 * qsi[1]) +
-                        217800 * pow(qsi[0], 7) * pow(qsi[1], 3) *
-                            (1 + 12 * qsi[1]) +
-                        242 * qsi[0] * pow(qsi[1], 9) * (25 + 12 * qsi[1]) -
-                        27225 * pow(qsi[0], 8) * pow(qsi[1], 2) *
-                            (1 + 24 * qsi[1]) -
-                        pow(qsi[1], 10) * (121 + 24 * qsi[1]) +
-                        1210 * pow(qsi[0], 9) * qsi[1] * (1 + 60 * qsi[1]) -
-                        21780 * pow(qsi[0], 4) * pow(qsi[1], 6) *
-                            (49 + 120 * qsi[1]) -
-                        30492 * pow(qsi[0], 6) * pow(qsi[1], 4) *
-                            (25 + 168 * qsi[1]) -
-                        11 * pow(qsi[0], 10) * (1 + 264 * qsi[1]))) /
-                     13.);
+                    -(sqrt(2) * qsi[0] *
+                      (24 * pow(qsi[0], 11) +
+                       217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
+                           (2 + 3 * qsi[1]) +
+                       1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
+                           (1 + 4 * qsi[1]) -
+                       9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
+                           (9 + 8 * qsi[1]) +
+                       217800 * pow(qsi[0], 7) * pow(qsi[1], 3) *
+                           (1 + 12 * qsi[1]) +
+                       242 * qsi[0] * pow(qsi[1], 9) * (25 + 12 * qsi[1]) -
+                       27225 * pow(qsi[0], 8) * pow(qsi[1], 2) *
+                           (1 + 24 * qsi[1]) -
+                       pow(qsi[1], 10) * (121 + 24 * qsi[1]) +
+                       1210 * pow(qsi[0], 9) * qsi[1] * (1 + 60 * qsi[1]) -
+                       21780 * pow(qsi[0], 4) * pow(qsi[1], 6) *
+                           (49 + 120 * qsi[1]) -
+                       30492 * pow(qsi[0], 6) * pow(qsi[1], 4) *
+                           (25 + 168 * qsi[1]) -
+                       11 * pow(qsi[0], 10) * (1 + 264 * qsi[1]))) /
+                    13.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (-24 * sqrt(2) *
-                     (pow(qsi[0], 11) - 121 * pow(qsi[0], 10) * qsi[1] +
-                      3025 * pow(qsi[0], 9) * pow(qsi[1], 2) -
-                      27225 * pow(qsi[0], 8) * pow(qsi[1], 3) +
-                      108900 * pow(qsi[0], 7) * pow(qsi[1], 4) -
-                      213444 * pow(qsi[0], 6) * pow(qsi[1], 5) +
-                      213444 * pow(qsi[0], 5) * pow(qsi[1], 6) -
-                      108900 * pow(qsi[0], 4) * pow(qsi[1], 7) +
-                      27225 * pow(qsi[0], 3) * pow(qsi[1], 8) -
-                      3025 * pow(qsi[0], 2) * pow(qsi[1], 9) +
-                      121 * qsi[0] * pow(qsi[1], 10) - pow(qsi[1], 11)));
+                    -24 * sqrt(2) *
+                    (pow(qsi[0], 11) - 121 * pow(qsi[0], 10) * qsi[1] +
+                     3025 * pow(qsi[0], 9) * pow(qsi[1], 2) -
+                     27225 * pow(qsi[0], 8) * pow(qsi[1], 3) +
+                     108900 * pow(qsi[0], 7) * pow(qsi[1], 4) -
+                     213444 * pow(qsi[0], 6) * pow(qsi[1], 5) +
+                     213444 * pow(qsi[0], 5) * pow(qsi[1], 6) -
+                     108900 * pow(qsi[0], 4) * pow(qsi[1], 7) +
+                     27225 * pow(qsi[0], 3) * pow(qsi[1], 8) -
+                     3025 * pow(qsi[0], 2) * pow(qsi[1], 9) +
+                     121 * qsi[0] * pow(qsi[1], 10) - pow(qsi[1], 11));
                 currentFuncPos--;
             case 11:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-11 * pow(qsi[0], 10) +
-                       (5 - 11 * qsi[1]) * pow(qsi[1], 9) -
-                       2025 * pow(qsi[0], 2) * pow(qsi[1], 7) *
-                           (-4 + 11 * qsi[1]) -
-                       44100 * pow(qsi[0], 4) * pow(qsi[1], 5) *
-                           (-3 + 11 * qsi[1]) -
-                       44100 * pow(qsi[0], 6) * pow(qsi[1], 3) *
-                           (-2 + 11 * qsi[1]) -
-                       2025 * pow(qsi[0], 8) * qsi[1] * (-1 + 11 * qsi[1]) +
-                       50 * qsi[0] * pow(qsi[1], 8) * (-9 + 22 * qsi[1]) +
-                       7200 * pow(qsi[0], 3) * pow(qsi[1], 6) *
-                           (-7 + 22 * qsi[1]) +
-                       31752 * pow(qsi[0], 5) * pow(qsi[1], 4) *
-                           (-5 + 22 * qsi[1]) +
-                       7200 * pow(qsi[0], 7) * pow(qsi[1], 2) *
-                           (-3 + 22 * qsi[1]) +
-                       50 * pow(qsi[0], 9) * (-1 + 22 * qsi[1]))) /
-                     (3. * sqrt(2)));
+                    (qsi[1] *
+                     (-11 * pow(qsi[0], 10) +
+                      (5 - 11 * qsi[1]) * pow(qsi[1], 9) -
+                      2025 * pow(qsi[0], 2) * pow(qsi[1], 7) *
+                          (-4 + 11 * qsi[1]) -
+                      44100 * pow(qsi[0], 4) * pow(qsi[1], 5) *
+                          (-3 + 11 * qsi[1]) -
+                      44100 * pow(qsi[0], 6) * pow(qsi[1], 3) *
+                          (-2 + 11 * qsi[1]) -
+                      2025 * pow(qsi[0], 8) * qsi[1] * (-1 + 11 * qsi[1]) +
+                      50 * qsi[0] * pow(qsi[1], 8) * (-9 + 22 * qsi[1]) +
+                      7200 * pow(qsi[0], 3) * pow(qsi[1], 6) *
+                          (-7 + 22 * qsi[1]) +
+                      31752 * pow(qsi[0], 5) * pow(qsi[1], 4) *
+                          (-5 + 22 * qsi[1]) +
+                      7200 * pow(qsi[0], 7) * pow(qsi[1], 2) *
+                          (-3 + 22 * qsi[1]) +
+                      50 * pow(qsi[0], 9) * (-1 + 22 * qsi[1]))) /
+                    (3. * sqrt(2));
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (11 * pow(qsi[0], 10) +
-                       pow(qsi[1], 9) * (50 + 11 * qsi[1]) +
-                       675 * pow(qsi[0], 2) * pow(qsi[1], 7) *
-                           (32 + 33 * qsi[1]) -
-                       25 * qsi[0] * pow(qsi[1], 8) * (81 + 44 * qsi[1]) +
-                       8820 * pow(qsi[0], 4) * pow(qsi[1], 5) *
-                           (18 + 55 * qsi[1]) +
-                       6300 * pow(qsi[0], 6) * pow(qsi[1], 3) *
-                           (8 + 77 * qsi[1]) -
-                       1800 * pow(qsi[0], 3) * pow(qsi[1], 6) *
-                           (49 + 88 * qsi[1]) +
-                       225 * pow(qsi[0], 8) * qsi[1] * (2 + 99 * qsi[1]) -
-                       5292 * pow(qsi[0], 5) * pow(qsi[1], 4) *
-                           (25 + 132 * qsi[1]) -
-                       900 * pow(qsi[0], 7) * pow(qsi[1], 2) *
-                           (9 + 176 * qsi[1]) -
-                       5 * pow(qsi[0], 9) * (1 + 220 * qsi[1]))) /
-                     (3. * sqrt(2)));
+                    (qsi[0] *
+                     (11 * pow(qsi[0], 10) +
+                      pow(qsi[1], 9) * (50 + 11 * qsi[1]) +
+                      675 * pow(qsi[0], 2) * pow(qsi[1], 7) *
+                          (32 + 33 * qsi[1]) -
+                      25 * qsi[0] * pow(qsi[1], 8) * (81 + 44 * qsi[1]) +
+                      8820 * pow(qsi[0], 4) * pow(qsi[1], 5) *
+                          (18 + 55 * qsi[1]) +
+                      6300 * pow(qsi[0], 6) * pow(qsi[1], 3) *
+                          (8 + 77 * qsi[1]) -
+                      1800 * pow(qsi[0], 3) * pow(qsi[1], 6) *
+                          (49 + 88 * qsi[1]) +
+                      225 * pow(qsi[0], 8) * qsi[1] * (2 + 99 * qsi[1]) -
+                      5292 * pow(qsi[0], 5) * pow(qsi[1], 4) *
+                          (25 + 132 * qsi[1]) -
+                      900 * pow(qsi[0], 7) * pow(qsi[1], 2) *
+                          (9 + 176 * qsi[1]) -
+                      5 * pow(qsi[0], 9) * (1 + 220 * qsi[1]))) /
+                    (3. * sqrt(2));
                 curlPhiHat(0, currentFuncPos) =
-
-                    (22 * sqrt(2) *
-                     (pow(qsi[0], 10) - 100 * pow(qsi[0], 9) * qsi[1] +
-                      2025 * pow(qsi[0], 8) * pow(qsi[1], 2) -
-                      14400 * pow(qsi[0], 7) * pow(qsi[1], 3) +
-                      44100 * pow(qsi[0], 6) * pow(qsi[1], 4) -
-                      63504 * pow(qsi[0], 5) * pow(qsi[1], 5) +
-                      44100 * pow(qsi[0], 4) * pow(qsi[1], 6) -
-                      14400 * pow(qsi[0], 3) * pow(qsi[1], 7) +
-                      2025 * pow(qsi[0], 2) * pow(qsi[1], 8) -
-                      100 * qsi[0] * pow(qsi[1], 9) + pow(qsi[1], 10)));
+                    22 * sqrt(2) *
+                    (pow(qsi[0], 10) - 100 * pow(qsi[0], 9) * qsi[1] +
+                     2025 * pow(qsi[0], 8) * pow(qsi[1], 2) -
+                     14400 * pow(qsi[0], 7) * pow(qsi[1], 3) +
+                     44100 * pow(qsi[0], 6) * pow(qsi[1], 4) -
+                     63504 * pow(qsi[0], 5) * pow(qsi[1], 5) +
+                     44100 * pow(qsi[0], 4) * pow(qsi[1], 6) -
+                     14400 * pow(qsi[0], 3) * pow(qsi[1], 7) +
+                     2025 * pow(qsi[0], 2) * pow(qsi[1], 8) -
+                     100 * qsi[0] * pow(qsi[1], 9) + pow(qsi[1], 10));
                 currentFuncPos--;
             case 10:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (20 * pow(qsi[0], 9) +
-                       (9 - 20 * qsi[1]) * pow(qsi[1], 8) -
-                       79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
-                           (-1 + 4 * qsi[1]) +
-                       324 * qsi[0] * pow(qsi[1], 7) * (-2 + 5 * qsi[1]) +
-                       63504 * pow(qsi[0], 5) * pow(qsi[1], 3) *
-                           (-1 + 5 * qsi[1]) +
-                       14112 * pow(qsi[0], 3) * pow(qsi[1], 5) *
-                           (-3 + 10 * qsi[1]) +
-                       2592 * pow(qsi[0], 7) * qsi[1] * (-1 + 10 * qsi[1]) -
-                       1296 * pow(qsi[0], 2) * pow(qsi[1], 6) *
-                           (-7 + 20 * qsi[1]) -
-                       7056 * pow(qsi[0], 6) * pow(qsi[1], 2) *
-                           (-3 + 20 * qsi[1]) -
-                       81 * pow(qsi[0], 8) * (-1 + 20 * qsi[1]))) /
-                     11.);
+                    (sqrt(2) * qsi[1] *
+                     (20 * pow(qsi[0], 9) + (9 - 20 * qsi[1]) * pow(qsi[1], 8) -
+                      79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
+                          (-1 + 4 * qsi[1]) +
+                      324 * qsi[0] * pow(qsi[1], 7) * (-2 + 5 * qsi[1]) +
+                      63504 * pow(qsi[0], 5) * pow(qsi[1], 3) *
+                          (-1 + 5 * qsi[1]) +
+                      14112 * pow(qsi[0], 3) * pow(qsi[1], 5) *
+                          (-3 + 10 * qsi[1]) +
+                      2592 * pow(qsi[0], 7) * qsi[1] * (-1 + 10 * qsi[1]) -
+                      1296 * pow(qsi[0], 2) * pow(qsi[1], 6) *
+                          (-7 + 20 * qsi[1]) -
+                      7056 * pow(qsi[0], 6) * pow(qsi[1], 2) *
+                          (-3 + 20 * qsi[1]) -
+                      81 * pow(qsi[0], 8) * (-1 + 20 * qsi[1]))) /
+                    11.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] *
-                       (20 * pow(qsi[0], 9) -
-                        79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
-                            (1 + 4 * qsi[1]) +
-                        324 * qsi[0] * pow(qsi[1], 7) * (8 + 5 * qsi[1]) +
-                        21168 * pow(qsi[0], 5) * pow(qsi[1], 3) *
-                            (2 + 15 * qsi[1]) +
-                        7056 * pow(qsi[0], 3) * pow(qsi[1], 5) *
-                            (9 + 20 * qsi[1]) -
-                        pow(qsi[1], 8) * (81 + 20 * qsi[1]) +
-                        648 * pow(qsi[0], 7) * qsi[1] * (1 + 40 * qsi[1]) -
-                        432 * pow(qsi[0], 2) * pow(qsi[1], 6) *
-                            (49 + 60 * qsi[1]) -
-                        1008 * pow(qsi[0], 6) * pow(qsi[1], 2) *
-                            (9 + 140 * qsi[1]) -
-                        9 * pow(qsi[0], 8) * (1 + 180 * qsi[1]))) /
-                     11.);
+                    -(sqrt(2) * qsi[0] *
+                      (20 * pow(qsi[0], 9) -
+                       79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
+                           (1 + 4 * qsi[1]) +
+                       324 * qsi[0] * pow(qsi[1], 7) * (8 + 5 * qsi[1]) +
+                       21168 * pow(qsi[0], 5) * pow(qsi[1], 3) *
+                           (2 + 15 * qsi[1]) +
+                       7056 * pow(qsi[0], 3) * pow(qsi[1], 5) *
+                           (9 + 20 * qsi[1]) -
+                       pow(qsi[1], 8) * (81 + 20 * qsi[1]) +
+                       648 * pow(qsi[0], 7) * qsi[1] * (1 + 40 * qsi[1]) -
+                       432 * pow(qsi[0], 2) * pow(qsi[1], 6) *
+                           (49 + 60 * qsi[1]) -
+                       1008 * pow(qsi[0], 6) * pow(qsi[1], 2) *
+                           (9 + 140 * qsi[1]) -
+                       9 * pow(qsi[0], 8) * (1 + 180 * qsi[1]))) /
+                    11.;
                 curlPhiHat(0, currentFuncPos) =
-                    (-20 * sqrt(2) *
-                     (pow(qsi[0], 9) - 81 * pow(qsi[0], 8) * qsi[1] +
-                      1296 * pow(qsi[0], 7) * pow(qsi[1], 2) -
-                      7056 * pow(qsi[0], 6) * pow(qsi[1], 3) +
-                      15876 * pow(qsi[0], 5) * pow(qsi[1], 4) -
-                      15876 * pow(qsi[0], 4) * pow(qsi[1], 5) +
-                      7056 * pow(qsi[0], 3) * pow(qsi[1], 6) -
-                      1296 * pow(qsi[0], 2) * pow(qsi[1], 7) +
-                      81 * qsi[0] * pow(qsi[1], 8) - pow(qsi[1], 9)));
+                    -20 * sqrt(2) *
+                    (pow(qsi[0], 9) - 81 * pow(qsi[0], 8) * qsi[1] +
+                     1296 * pow(qsi[0], 7) * pow(qsi[1], 2) -
+                     7056 * pow(qsi[0], 6) * pow(qsi[1], 3) +
+                     15876 * pow(qsi[0], 5) * pow(qsi[1], 4) -
+                     15876 * pow(qsi[0], 4) * pow(qsi[1], 5) +
+                     7056 * pow(qsi[0], 3) * pow(qsi[1], 6) -
+                     1296 * pow(qsi[0], 2) * pow(qsi[1], 7) +
+                     81 * qsi[0] * pow(qsi[1], 8) - pow(qsi[1], 9));
                 currentFuncPos--;
             case 9:
                 phi(currentFuncPos, 0) =
-
-                    (-(sqrt(2) * qsi[1] *
-                       (9 * pow(qsi[0], 8) +
-                        pow(qsi[0], 7) * (32 - 576 * qsi[1]) +
-                        2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
-                            (-1 + 3 * qsi[1]) -
-                        4704 * pow(qsi[0], 5) * pow(qsi[1], 2) *
-                            (-1 + 6 * qsi[1]) +
-                        pow(qsi[1], 7) * (-4 + 9 * qsi[1]) +
-                        4900 * pow(qsi[0], 4) * pow(qsi[1], 3) *
-                            (-2 + 9 * qsi[1]) +
-                        784 * pow(qsi[0], 6) * qsi[1] * (-1 + 9 * qsi[1]) -
-                        32 * qsi[0] * pow(qsi[1], 6) * (-7 + 18 * qsi[1]) -
-                        1568 * pow(qsi[0], 3) * pow(qsi[1], 4) *
-                            (-5 + 18 * qsi[1]))) /
-                     5.);
-                phi(currentFuncPos, 1) =
-
-                    ((sqrt(2) * qsi[0] *
+                    -(sqrt(2) * qsi[1] *
                       (9 * pow(qsi[0], 8) +
+                       pow(qsi[0], 7) * (32 - 576 * qsi[1]) +
                        2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
-                           (2 + 3 * qsi[1]) +
-                       pow(qsi[1], 7) * (32 + 9 * qsi[1]) -
-                       2352 * pow(qsi[0], 5) * pow(qsi[1], 2) *
-                           (1 + 12 * qsi[1]) -
-                       16 * qsi[0] * pow(qsi[1], 6) * (49 + 36 * qsi[1]) +
-                       980 * pow(qsi[0], 4) * pow(qsi[1], 3) *
-                           (8 + 45 * qsi[1]) +
-                       112 * pow(qsi[0], 6) * qsi[1] * (2 + 63 * qsi[1]) -
-                       392 * pow(qsi[0], 3) * pow(qsi[1], 4) *
-                           (25 + 72 * qsi[1]) -
-                       4 * pow(qsi[0], 7) * (1 + 144 * qsi[1]))) /
-                     5.);
+                           (-1 + 3 * qsi[1]) -
+                       4704 * pow(qsi[0], 5) * pow(qsi[1], 2) *
+                           (-1 + 6 * qsi[1]) +
+                       pow(qsi[1], 7) * (-4 + 9 * qsi[1]) +
+                       4900 * pow(qsi[0], 4) * pow(qsi[1], 3) *
+                           (-2 + 9 * qsi[1]) +
+                       784 * pow(qsi[0], 6) * qsi[1] * (-1 + 9 * qsi[1]) -
+                       32 * qsi[0] * pow(qsi[1], 6) * (-7 + 18 * qsi[1]) -
+                       1568 * pow(qsi[0], 3) * pow(qsi[1], 4) *
+                           (-5 + 18 * qsi[1]))) /
+                    5.;
+                phi(currentFuncPos, 1) =
+                    (sqrt(2) * qsi[0] *
+                     (9 * pow(qsi[0], 8) +
+                      2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
+                          (2 + 3 * qsi[1]) +
+                      pow(qsi[1], 7) * (32 + 9 * qsi[1]) -
+                      2352 * pow(qsi[0], 5) * pow(qsi[1], 2) *
+                          (1 + 12 * qsi[1]) -
+                      16 * qsi[0] * pow(qsi[1], 6) * (49 + 36 * qsi[1]) +
+                      980 * pow(qsi[0], 4) * pow(qsi[1], 3) *
+                          (8 + 45 * qsi[1]) +
+                      112 * pow(qsi[0], 6) * qsi[1] * (2 + 63 * qsi[1]) -
+                      392 * pow(qsi[0], 3) * pow(qsi[1], 4) *
+                          (25 + 72 * qsi[1]) -
+                      4 * pow(qsi[0], 7) * (1 + 144 * qsi[1]))) /
+                    5.;
                 curlPhiHat(0, currentFuncPos) =
-                    (18 * sqrt(2) *
-                     (pow(qsi[0], 8) - 64 * pow(qsi[0], 7) * qsi[1] +
-                      784 * pow(qsi[0], 6) * pow(qsi[1], 2) -
-                      3136 * pow(qsi[0], 5) * pow(qsi[1], 3) +
-                      4900 * pow(qsi[0], 4) * pow(qsi[1], 4) -
-                      3136 * pow(qsi[0], 3) * pow(qsi[1], 5) +
-                      784 * pow(qsi[0], 2) * pow(qsi[1], 6) -
-                      64 * qsi[0] * pow(qsi[1], 7) + pow(qsi[1], 8)));
+                    18 * sqrt(2) *
+                    (pow(qsi[0], 8) - 64 * pow(qsi[0], 7) * qsi[1] +
+                     784 * pow(qsi[0], 6) * pow(qsi[1], 2) -
+                     3136 * pow(qsi[0], 5) * pow(qsi[1], 3) +
+                     4900 * pow(qsi[0], 4) * pow(qsi[1], 4) -
+                     3136 * pow(qsi[0], 3) * pow(qsi[1], 5) +
+                     784 * pow(qsi[0], 2) * pow(qsi[1], 6) -
+                     64 * qsi[0] * pow(qsi[1], 7) + pow(qsi[1], 8));
                 currentFuncPos--;
             case 8:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (16 * pow(qsi[0], 7) +
-                       pow(qsi[0], 6) * (49 - 784 * qsi[1]) +
-                       (7 - 16 * qsi[1]) * pow(qsi[1], 6) +
-                       4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
-                           (-1 + 4 * qsi[1]) +
-                       98 * qsi[0] * pow(qsi[1], 5) * (-3 + 8 * qsi[1]) +
-                       882 * pow(qsi[0], 5) * qsi[1] * (-1 + 8 * qsi[1]) -
-                       441 * pow(qsi[0], 2) * pow(qsi[1], 4) *
-                           (-5 + 16 * qsi[1]) -
-                       1225 * pow(qsi[0], 4) * pow(qsi[1], 2) *
-                           (-3 + 16 * qsi[1]))) /
-                     9.);
+                    (sqrt(2) * qsi[1] *
+                     (16 * pow(qsi[0], 7) +
+                      pow(qsi[0], 6) * (49 - 784 * qsi[1]) +
+                      (7 - 16 * qsi[1]) * pow(qsi[1], 6) +
+                      4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
+                          (-1 + 4 * qsi[1]) +
+                      98 * qsi[0] * pow(qsi[1], 5) * (-3 + 8 * qsi[1]) +
+                      882 * pow(qsi[0], 5) * qsi[1] * (-1 + 8 * qsi[1]) -
+                      441 * pow(qsi[0], 2) * pow(qsi[1], 4) *
+                          (-5 + 16 * qsi[1]) -
+                      1225 * pow(qsi[0], 4) * pow(qsi[1], 2) *
+                          (-3 + 16 * qsi[1]))) /
+                    9.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] *
-                       (16 * pow(qsi[0], 7) +
-                        4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
-                            (1 + 4 * qsi[1]) +
-                        98 * qsi[0] * pow(qsi[1], 5) * (9 + 8 * qsi[1]) -
-                        pow(qsi[1], 6) * (49 + 16 * qsi[1]) +
-                        294 * pow(qsi[0], 5) * qsi[1] * (1 + 24 * qsi[1]) -
-                        147 * pow(qsi[0], 2) * pow(qsi[1], 4) *
-                            (25 + 48 * qsi[1]) -
-                        245 * pow(qsi[0], 4) * pow(qsi[1], 2) *
-                            (9 + 80 * qsi[1]) -
-                        7 * pow(qsi[0], 6) * (1 + 112 * qsi[1]))) /
-                     9.);
+                    -(sqrt(2) * qsi[0] *
+                      (16 * pow(qsi[0], 7) +
+                       4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
+                           (1 + 4 * qsi[1]) +
+                       98 * qsi[0] * pow(qsi[1], 5) * (9 + 8 * qsi[1]) -
+                       pow(qsi[1], 6) * (49 + 16 * qsi[1]) +
+                       294 * pow(qsi[0], 5) * qsi[1] * (1 + 24 * qsi[1]) -
+                       147 * pow(qsi[0], 2) * pow(qsi[1], 4) *
+                           (25 + 48 * qsi[1]) -
+                       245 * pow(qsi[0], 4) * pow(qsi[1], 2) *
+                           (9 + 80 * qsi[1]) -
+                       7 * pow(qsi[0], 6) * (1 + 112 * qsi[1]))) /
+                    9.;
                 curlPhiHat(0, currentFuncPos) =
-                    (-16 * sqrt(2) *
-                     (pow(qsi[0], 7) - 49 * pow(qsi[0], 6) * qsi[1] +
-                      441 * pow(qsi[0], 5) * pow(qsi[1], 2) -
-                      1225 * pow(qsi[0], 4) * pow(qsi[1], 3) +
-                      1225 * pow(qsi[0], 3) * pow(qsi[1], 4) -
-                      441 * pow(qsi[0], 2) * pow(qsi[1], 5) +
-                      49 * qsi[0] * pow(qsi[1], 6) - pow(qsi[1], 7)));
+                    -16 * sqrt(2) *
+                    (pow(qsi[0], 7) - 49 * pow(qsi[0], 6) * qsi[1] +
+                     441 * pow(qsi[0], 5) * pow(qsi[1], 2) -
+                     1225 * pow(qsi[0], 4) * pow(qsi[1], 3) +
+                     1225 * pow(qsi[0], 3) * pow(qsi[1], 4) -
+                     441 * pow(qsi[0], 2) * pow(qsi[1], 5) +
+                     49 * qsi[0] * pow(qsi[1], 6) - pow(qsi[1], 7));
                 currentFuncPos--;
             case 7:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (7 * pow(qsi[0], 6) +
-                        pow(qsi[0], 5) * (18 - 252 * qsi[1]) +
-                        18 * qsi[0] * (5 - 14 * qsi[1]) * pow(qsi[1], 4) +
-                        pow(qsi[1], 5) * (-3 + 7 * qsi[1]) +
-                        225 * pow(qsi[0], 2) * pow(qsi[1], 3) *
-                            (-2 + 7 * qsi[1]) +
-                        225 * pow(qsi[0], 4) * qsi[1] * (-1 + 7 * qsi[1]) -
-                        200 * pow(qsi[0], 3) * pow(qsi[1], 2) *
-                            (-3 + 14 * qsi[1]))) /
-                     (2. * sqrt(2)));
+                    -(qsi[1] *
+                      (7 * pow(qsi[0], 6) +
+                       pow(qsi[0], 5) * (18 - 252 * qsi[1]) +
+                       18 * qsi[0] * (5 - 14 * qsi[1]) * pow(qsi[1], 4) +
+                       pow(qsi[1], 5) * (-3 + 7 * qsi[1]) +
+                       225 * pow(qsi[0], 2) * pow(qsi[1], 3) *
+                           (-2 + 7 * qsi[1]) +
+                       225 * pow(qsi[0], 4) * qsi[1] * (-1 + 7 * qsi[1]) -
+                       200 * pow(qsi[0], 3) * pow(qsi[1], 2) *
+                           (-3 + 14 * qsi[1]))) /
+                    (2. * sqrt(2));
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] *
-                      (7 * pow(qsi[0], 6) + pow(qsi[1], 5) * (18 + 7 * qsi[1]) +
-                       75 * pow(qsi[0], 2) * pow(qsi[1], 3) *
-                           (8 + 21 * qsi[1]) -
-                       9 * qsi[0] * pow(qsi[1], 4) * (25 + 28 * qsi[1]) +
-                       45 * pow(qsi[0], 4) * qsi[1] * (2 + 35 * qsi[1]) -
-                       50 * pow(qsi[0], 3) * pow(qsi[1], 2) *
-                           (9 + 56 * qsi[1]) -
-                       3 * pow(qsi[0], 5) * (1 + 84 * qsi[1]))) /
-                     (2. * sqrt(2)));
+                    (qsi[0] *
+                     (7 * pow(qsi[0], 6) + pow(qsi[1], 5) * (18 + 7 * qsi[1]) +
+                      75 * pow(qsi[0], 2) * pow(qsi[1], 3) * (8 + 21 * qsi[1]) -
+                      9 * qsi[0] * pow(qsi[1], 4) * (25 + 28 * qsi[1]) +
+                      45 * pow(qsi[0], 4) * qsi[1] * (2 + 35 * qsi[1]) -
+                      50 * pow(qsi[0], 3) * pow(qsi[1], 2) * (9 + 56 * qsi[1]) -
+                      3 * pow(qsi[0], 5) * (1 + 84 * qsi[1]))) /
+                    (2. * sqrt(2));
                 curlPhiHat(0, currentFuncPos) =
-                    (14 * sqrt(2) *
-                     (pow(qsi[0], 6) - 36 * pow(qsi[0], 5) * qsi[1] +
-                      225 * pow(qsi[0], 4) * pow(qsi[1], 2) -
-                      400 * pow(qsi[0], 3) * pow(qsi[1], 3) +
-                      225 * pow(qsi[0], 2) * pow(qsi[1], 4) -
-                      36 * qsi[0] * pow(qsi[1], 5) + pow(qsi[1], 6)));
+                    14 * sqrt(2) *
+                    (pow(qsi[0], 6) - 36 * pow(qsi[0], 5) * qsi[1] +
+                     225 * pow(qsi[0], 4) * pow(qsi[1], 2) -
+                     400 * pow(qsi[0], 3) * pow(qsi[1], 3) +
+                     225 * pow(qsi[0], 2) * pow(qsi[1], 4) -
+                     36 * qsi[0] * pow(qsi[1], 5) + pow(qsi[1], 6));
                 currentFuncPos--;
             case 6:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (12 * pow(qsi[0], 5) +
-                       pow(qsi[0], 4) * (25 - 300 * qsi[1]) +
-                       (5 - 12 * qsi[1]) * pow(qsi[1], 4) +
-                       100 * qsi[0] * pow(qsi[1], 3) * (-1 + 3 * qsi[1]) -
-                       300 * pow(qsi[0], 2) * pow(qsi[1], 2) *
-                           (-1 + 4 * qsi[1]) +
-                       200 * pow(qsi[0], 3) * qsi[1] * (-1 + 6 * qsi[1]))) /
-                     7.);
+                    (sqrt(2) * qsi[1] *
+                     (12 * pow(qsi[0], 5) +
+                      pow(qsi[0], 4) * (25 - 300 * qsi[1]) +
+                      (5 - 12 * qsi[1]) * pow(qsi[1], 4) +
+                      100 * qsi[0] * pow(qsi[1], 3) * (-1 + 3 * qsi[1]) -
+                      300 * pow(qsi[0], 2) * pow(qsi[1], 2) *
+                          (-1 + 4 * qsi[1]) +
+                      200 * pow(qsi[0], 3) * qsi[1] * (-1 + 6 * qsi[1]))) /
+                    7.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] *
-                       (12 * pow(qsi[0], 5) +
-                        100 * qsi[0] * pow(qsi[1], 3) * (2 + 3 * qsi[1]) -
-                        300 * pow(qsi[0], 2) * pow(qsi[1], 2) *
-                            (1 + 4 * qsi[1]) +
-                        100 * pow(qsi[0], 3) * qsi[1] * (1 + 12 * qsi[1]) -
-                        pow(qsi[1], 4) * (25 + 12 * qsi[1]) -
-                        5 * pow(qsi[0], 4) * (1 + 60 * qsi[1]))) /
-                     7.);
+                    -(sqrt(2) * qsi[0] *
+                      (12 * pow(qsi[0], 5) +
+                       100 * qsi[0] * pow(qsi[1], 3) * (2 + 3 * qsi[1]) -
+                       300 * pow(qsi[0], 2) * pow(qsi[1], 2) *
+                           (1 + 4 * qsi[1]) +
+                       100 * pow(qsi[0], 3) * qsi[1] * (1 + 12 * qsi[1]) -
+                       pow(qsi[1], 4) * (25 + 12 * qsi[1]) -
+                       5 * pow(qsi[0], 4) * (1 + 60 * qsi[1]))) /
+                    7.;
                 curlPhiHat(0, currentFuncPos) =
-                    (-12 * sqrt(2) *
-                     (pow(qsi[0], 5) - 25 * pow(qsi[0], 4) * qsi[1] +
-                      100 * pow(qsi[0], 3) * pow(qsi[1], 2) -
-                      100 * pow(qsi[0], 2) * pow(qsi[1], 3) +
-                      25 * qsi[0] * pow(qsi[1], 4) - pow(qsi[1], 5)));
+                    -12 * sqrt(2) *
+                    (pow(qsi[0], 5) - 25 * pow(qsi[0], 4) * qsi[1] +
+                     100 * pow(qsi[0], 3) * pow(qsi[1], 2) -
+                     100 * pow(qsi[0], 2) * pow(qsi[1], 3) +
+                     25 * qsi[0] * pow(qsi[1], 4) - pow(qsi[1], 5));
                 currentFuncPos--;
             case 5:
                 phi(currentFuncPos, 0) =
-
-                    (-(sqrt(2) * qsi[1] *
-                       (5 * pow(qsi[0], 4) +
-                        pow(qsi[0], 3) * (8 - 80 * qsi[1]) +
-                        8 * qsi[0] * (3 - 10 * qsi[1]) * pow(qsi[1], 2) +
-                        pow(qsi[1], 3) * (-2 + 5 * qsi[1]) +
-                        36 * pow(qsi[0], 2) * qsi[1] * (-1 + 5 * qsi[1]))) /
-                     3.);
+                    -(sqrt(2) * qsi[1] *
+                      (5 * pow(qsi[0], 4) + pow(qsi[0], 3) * (8 - 80 * qsi[1]) +
+                       8 * qsi[0] * (3 - 10 * qsi[1]) * pow(qsi[1], 2) +
+                       pow(qsi[1], 3) * (-2 + 5 * qsi[1]) +
+                       36 * pow(qsi[0], 2) * qsi[1] * (-1 + 5 * qsi[1]))) /
+                    3.;
                 phi(currentFuncPos, 1) =
-
-                    ((sqrt(2) * qsi[0] *
-                      (5 * pow(qsi[0], 4) + pow(qsi[1], 3) * (8 + 5 * qsi[1]) +
-                       12 * pow(qsi[0], 2) * qsi[1] * (2 + 15 * qsi[1]) -
-                       4 * qsi[0] * pow(qsi[1], 2) * (9 + 20 * qsi[1]) -
-                       2 * pow(qsi[0], 3) * (1 + 40 * qsi[1]))) /
-                     3.);
+                    (sqrt(2) * qsi[0] *
+                     (5 * pow(qsi[0], 4) + pow(qsi[1], 3) * (8 + 5 * qsi[1]) +
+                      12 * pow(qsi[0], 2) * qsi[1] * (2 + 15 * qsi[1]) -
+                      4 * qsi[0] * pow(qsi[1], 2) * (9 + 20 * qsi[1]) -
+                      2 * pow(qsi[0], 3) * (1 + 40 * qsi[1]))) /
+                    3.;
                 curlPhiHat(0, currentFuncPos) =
-                    (10 * sqrt(2) *
-                     (pow(qsi[0], 4) - 16 * pow(qsi[0], 3) * qsi[1] +
-                      36 * pow(qsi[0], 2) * pow(qsi[1], 2) -
-                      16 * qsi[0] * pow(qsi[1], 3) + pow(qsi[1], 4)));
+                    10 * sqrt(2) *
+                    (pow(qsi[0], 4) - 16 * pow(qsi[0], 3) * qsi[1] +
+                     36 * pow(qsi[0], 2) * pow(qsi[1], 2) -
+                     16 * qsi[0] * pow(qsi[1], 3) + pow(qsi[1], 4));
                 currentFuncPos--;
             case 4:
                 phi(currentFuncPos, 0) =
-
-                    ((sqrt(2) * qsi[1] *
-                      (8 * pow(qsi[0], 3) + pow(qsi[0], 2) * (9 - 72 * qsi[1]) +
-                       (3 - 8 * qsi[1]) * pow(qsi[1], 2) +
-                       18 * qsi[0] * qsi[1] * (-1 + 4 * qsi[1]))) /
-                     5.);
+                    (sqrt(2) * qsi[1] *
+                     (8 * pow(qsi[0], 3) + pow(qsi[0], 2) * (9 - 72 * qsi[1]) +
+                      (3 - 8 * qsi[1]) * pow(qsi[1], 2) +
+                      18 * qsi[0] * qsi[1] * (-1 + 4 * qsi[1]))) /
+                    5.;
                 phi(currentFuncPos, 1) =
-                    (-(sqrt(2) * qsi[0] *
-                       (8 * pow(qsi[0], 3) +
-                        18 * qsi[0] * qsi[1] * (1 + 4 * qsi[1]) -
-                        pow(qsi[1], 2) * (9 + 8 * qsi[1]) -
-                        3 * pow(qsi[0], 2) * (1 + 24 * qsi[1]))) /
-                     5.);
+                    -(sqrt(2) * qsi[0] *
+                      (8 * pow(qsi[0], 3) +
+                       18 * qsi[0] * qsi[1] * (1 + 4 * qsi[1]) -
+                       pow(qsi[1], 2) * (9 + 8 * qsi[1]) -
+                       3 * pow(qsi[0], 2) * (1 + 24 * qsi[1]))) /
+                    5.;
                 curlPhiHat(0, currentFuncPos) =
-                    (-8 * sqrt(2) *
-                     (pow(qsi[0], 3) - 9 * pow(qsi[0], 2) * qsi[1] +
-                      9 * qsi[0] * pow(qsi[1], 2) - pow(qsi[1], 3)));
+                    -8 * sqrt(2) *
+                    (pow(qsi[0], 3) - 9 * pow(qsi[0], 2) * qsi[1] +
+                     9 * qsi[0] * pow(qsi[1], 2) - pow(qsi[1], 3));
                 currentFuncPos--;
             case 3:
                 phi(currentFuncPos, 0) =
-                    ((qsi[1] *
-                      (-3 * pow(qsi[0], 2) + qsi[1] - 3 * pow(qsi[1], 2) +
-                       2 * qsi[0] * (-1 + 6 * qsi[1]))) /
-                     sqrt(2));
+                    (qsi[1] *
+                     (-3 * pow(qsi[0], 2) + qsi[1] - 3 * pow(qsi[1], 2) +
+                      2 * qsi[0] * (-1 + 6 * qsi[1]))) /
+                    sqrt(2);
                 phi(currentFuncPos, 1) =
-
-                    ((qsi[0] * (3 * pow(qsi[0], 2) + qsi[1] * (2 + 3 * qsi[1]) -
-                                qsi[0] * (1 + 12 * qsi[1]))) /
-                     sqrt(2));
+                    (qsi[0] * (3 * pow(qsi[0], 2) + qsi[1] * (2 + 3 * qsi[1]) -
+                               qsi[0] * (1 + 12 * qsi[1]))) /
+                    sqrt(2);
                 curlPhiHat(0, currentFuncPos) =
-
-                    (6 * sqrt(2) *
-                     (pow(qsi[0], 2) - 4 * qsi[0] * qsi[1] + pow(qsi[1], 2)));
+                    6 * sqrt(2) *
+                    (pow(qsi[0], 2) - 4 * qsi[0] * qsi[1] + pow(qsi[1], 2));
                 currentFuncPos--;
             case 2:
                 phi(currentFuncPos, 0) =
-
-                    (-(sqrt(2) * qsi[1] * (-1 - 4 * qsi[0] + 4 * qsi[1])) / 3.);
+                    -(sqrt(2) * qsi[1] * (-1 - 4 * qsi[0] + 4 * qsi[1])) / 3.;
                 phi(currentFuncPos, 1) =
-
-                    (-(sqrt(2) * qsi[0] * (-1 + 4 * qsi[0] - 4 * qsi[1])) / 3.);
+                    -(sqrt(2) * qsi[0] * (-1 + 4 * qsi[0] - 4 * qsi[1])) / 3.;
                 curlPhiHat(0, currentFuncPos) =
-                    (-4 * sqrt(2) * (qsi[0] - qsi[1]));
+                    -4 * sqrt(2) * (qsi[0] - qsi[1]);
                 currentFuncPos--;
             case 1:
-                phi(currentFuncPos, 0) = (-(sqrt(2) * qsi[1]));
-                phi(currentFuncPos, 1) = (sqrt(2) * qsi[0]);
-                curlPhiHat(0, currentFuncPos) = (2 * sqrt(2));
+                phi(currentFuncPos, 0) = -(sqrt(2) * qsi[1]);
+                phi(currentFuncPos, 1) = sqrt(2) * qsi[0];
+                curlPhiHat(0, currentFuncPos) = 2 * sqrt(2);
                 break;
             default:
                 DebugStop(); // polynomial order not implemented!
@@ -1243,203 +1175,105 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
             switch (pOrder) {
             case 15:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (113 + 15 * pow(qsi[0], 14) - 12705 * qsi[1] +
-                        469560 * pow(qsi[1], 2) - 8477560 * pow(qsi[1], 3) +
-                        88828740 * pow(qsi[1], 4) - 593621028 * pow(qsi[1], 5) +
-                        2677114440 * pow(qsi[1], 6) -
-                        8430416280 * pow(qsi[1], 7) +
-                        18885296430 * pow(qsi[1], 8) -
-                        30266266030 * pow(qsi[1], 9) +
-                        34445539128 * pow(qsi[1], 10) -
-                        27176767800 * pow(qsi[1], 11) +
-                        14129215100 * pow(qsi[1], 12) -
-                        4352651100 * pow(qsi[1], 13) +
-                        601749000 * pow(qsi[1], 14) +
-                        14 * pow(qsi[0], 13) * (-22 + 225 * qsi[1]) +
-                        91 * pow(qsi[0], 12) *
-                            (29 - 555 * qsi[1] + 1800 * pow(qsi[1], 2)) +
-                        2184 * pow(qsi[0], 11) *
-                            (-6 + 165 * qsi[1] - 1040 * pow(qsi[1], 2) +
-                             1700 * pow(qsi[1], 3)) +
-                        1001 * pow(qsi[0], 10) *
-                            (43 - 1530 * qsi[1] + 14160 * pow(qsi[1], 2) -
-                             45560 * pow(qsi[1], 3) + 45900 * pow(qsi[1], 4)) +
-                        10010 * pow(qsi[0], 9) *
-                            (-10 + 435 * qsi[1] - 5280 * pow(qsi[1], 2) +
-                             25160 * pow(qsi[1], 3) - 50184 * pow(qsi[1], 4) +
-                             34884 * pow(qsi[1], 5)) +
-                        9009 * pow(qsi[0], 8) *
-                            (19 - 975 * qsi[1] + 14600 * pow(qsi[1], 2) -
-                             91800 * pow(qsi[1], 3) + 272340 * pow(qsi[1], 4) -
-                             375972 * pow(qsi[1], 5) +
-                             193800 * pow(qsi[1], 6)) +
-                        13728 * pow(qsi[0], 7) *
-                            (-16 + 945 * qsi[1] - 16800 * pow(qsi[1], 2) +
-                             130900 * pow(qsi[1], 3) - 514080 * pow(qsi[1], 4) +
-                             1058148 * pow(qsi[1], 5) -
-                             1085280 * pow(qsi[1], 6) +
-                             436050 * pow(qsi[1], 7)) +
-                        3003 * pow(qsi[0], 6) *
-                            (71 - 4740 * qsi[1] + 97440 * pow(qsi[1], 2) -
-                             904400 * pow(qsi[1], 3) +
-                             4412520 * pow(qsi[1], 4) -
-                             12046608 * pow(qsi[1], 5) +
-                             18449760 * pow(qsi[1], 6) -
-                             14767560 * pow(qsi[1], 7) +
-                             4796550 * pow(qsi[1], 8)) +
-                        6006 * pow(qsi[0], 5) *
-                            (-26 + 1935 * qsi[1] - 45120 * pow(qsi[1], 2) +
-                             485520 * pow(qsi[1], 3) -
-                             2827440 * pow(qsi[1], 4) +
-                             9604728 * pow(qsi[1], 5) -
-                             19535040 * pow(qsi[1], 6) +
-                             23372280 * pow(qsi[1], 7) -
-                             15135780 * pow(qsi[1], 8) +
-                             4085950 * pow(qsi[1], 9)) +
-                        5005 * pow(qsi[0], 4) *
-                            (17 - 1395 * qsi[1] + 36360 * pow(qsi[1], 2) -
-                             444720 * pow(qsi[1], 3) +
-                             3007368 * pow(qsi[1], 4) -
-                             12209400 * pow(qsi[1], 5) +
-                             30930480 * pow(qsi[1], 6) -
-                             49186440 * pow(qsi[1], 7) +
-                             47645730 * pow(qsi[1], 8) -
-                             25659766 * pow(qsi[1], 9) +
-                             5883768 * pow(qsi[1], 10)) +
-                        728 * pow(qsi[0], 3) *
-                            (-46 + 4125 * qsi[1] - 118800 * pow(qsi[1], 2) +
-                             1626900 * pow(qsi[1], 3) -
-                             12521520 * pow(qsi[1], 4) +
-                             59093496 * pow(qsi[1], 5) -
-                             179071200 * pow(qsi[1], 6) +
-                             354944700 * pow(qsi[1], 7) -
-                             457271100 * pow(qsi[1], 8) +
-                             368552690 * pow(qsi[1], 9) -
-                             168668016 * pow(qsi[1], 10) +
-                             33430500 * pow(qsi[1], 11)) +
-                        273 * pow(qsi[0], 2) *
-                            (33 - 3210 * qsi[1] + 101200 * pow(qsi[1], 2) -
-                             1533400 * pow(qsi[1], 3) +
-                             13228380 * pow(qsi[1], 4) -
-                             71116848 * pow(qsi[1], 5) +
-                             250699680 * pow(qsi[1], 6) -
-                             594772200 * pow(qsi[1], 7) +
-                             955579350 * pow(qsi[1], 8) -
-                             1024756260 * pow(qsi[1], 9) +
-                             702129648 * pow(qsi[1], 10) -
-                             277844600 * pow(qsi[1], 11) +
-                             48288500 * pow(qsi[1], 12)) +
-                        14 * qsi[0] *
-                            (-106 + 11115 * qsi[1] - 380640 * pow(qsi[1], 2) +
-                             6320600 * pow(qsi[1], 3) -
-                             60386040 * pow(qsi[1], 4) +
-                             364154076 * pow(qsi[1], 5) -
-                             1463267520 * pow(qsi[1], 6) +
-                             4040613720 * pow(qsi[1], 7) -
-                             7773608700 * pow(qsi[1], 8) +
-                             10400377130 * pow(qsi[1], 9) -
-                             9484634016 * pow(qsi[1], 10) +
-                             5620781400 * pow(qsi[1], 11) -
-                             1950855400 * pow(qsi[1], 12) +
-                             300874500 * pow(qsi[1], 13)))) /
-                     8.);
-                phi(currentFuncPos, 1) =
-
-                    (((-8 + 15 * qsi[0]) *
-                      (1 + pow(qsi[0], 14) - 210 * qsi[1] +
-                       10920 * pow(qsi[1], 2) - 247520 * pow(qsi[1], 3) +
-                       3063060 * pow(qsi[1], 4) - 23279256 * pow(qsi[1], 5) +
-                       116396280 * pow(qsi[1], 6) - 399072960 * pow(qsi[1], 7) +
-                       960269310 * pow(qsi[1], 8) -
-                       1636014380 * pow(qsi[1], 9) +
-                       1963217256 * pow(qsi[1], 10) -
-                       1622493600 * pow(qsi[1], 11) +
-                       878850700 * pow(qsi[1], 12) -
-                       280816200 * pow(qsi[1], 13) +
-                       40116600 * pow(qsi[1], 14) +
-                       14 * pow(qsi[0], 13) * (-1 + 15 * qsi[1]) +
+                    -(qsi[1] *
+                      (113 + 15 * pow(qsi[0], 14) - 12705 * qsi[1] +
+                       469560 * pow(qsi[1], 2) - 8477560 * pow(qsi[1], 3) +
+                       88828740 * pow(qsi[1], 4) - 593621028 * pow(qsi[1], 5) +
+                       2677114440 * pow(qsi[1], 6) -
+                       8430416280 * pow(qsi[1], 7) +
+                       18885296430 * pow(qsi[1], 8) -
+                       30266266030 * pow(qsi[1], 9) +
+                       34445539128 * pow(qsi[1], 10) -
+                       27176767800 * pow(qsi[1], 11) +
+                       14129215100 * pow(qsi[1], 12) -
+                       4352651100 * pow(qsi[1], 13) +
+                       601749000 * pow(qsi[1], 14) +
+                       14 * pow(qsi[0], 13) * (-22 + 225 * qsi[1]) +
                        91 * pow(qsi[0], 12) *
-                           (1 - 30 * qsi[1] + 120 * pow(qsi[1], 2)) +
-                       364 * pow(qsi[0], 11) *
-                           (-1 + 45 * qsi[1] - 360 * pow(qsi[1], 2) +
-                            680 * pow(qsi[1], 3)) +
+                           (29 - 555 * qsi[1] + 1800 * pow(qsi[1], 2)) +
+                       2184 * pow(qsi[0], 11) *
+                           (-6 + 165 * qsi[1] - 1040 * pow(qsi[1], 2) +
+                            1700 * pow(qsi[1], 3)) +
                        1001 * pow(qsi[0], 10) *
-                           (1 - 60 * qsi[1] + 720 * pow(qsi[1], 2) -
-                            2720 * pow(qsi[1], 3) + 3060 * pow(qsi[1], 4)) +
-                       2002 * pow(qsi[0], 9) *
-                           (-1 + 75 * qsi[1] - 1200 * pow(qsi[1], 2) +
-                            6800 * pow(qsi[1], 3) - 15300 * pow(qsi[1], 4) +
-                            11628 * pow(qsi[1], 5)) +
-                       3003 * pow(qsi[0], 8) *
-                           (1 - 90 * qsi[1] + 1800 * pow(qsi[1], 2) -
-                            13600 * pow(qsi[1], 3) + 45900 * pow(qsi[1], 4) -
-                            69768 * pow(qsi[1], 5) + 38760 * pow(qsi[1], 6)) +
-                       3432 * pow(qsi[0], 7) *
-                           (-1 + 105 * qsi[1] - 2520 * pow(qsi[1], 2) +
-                            23800 * pow(qsi[1], 3) - 107100 * pow(qsi[1], 4) +
-                            244188 * pow(qsi[1], 5) - 271320 * pow(qsi[1], 6) +
-                            116280 * pow(qsi[1], 7)) +
+                           (43 - 1530 * qsi[1] + 14160 * pow(qsi[1], 2) -
+                            45560 * pow(qsi[1], 3) + 45900 * pow(qsi[1], 4)) +
+                       10010 * pow(qsi[0], 9) *
+                           (-10 + 435 * qsi[1] - 5280 * pow(qsi[1], 2) +
+                            25160 * pow(qsi[1], 3) - 50184 * pow(qsi[1], 4) +
+                            34884 * pow(qsi[1], 5)) +
+                       9009 * pow(qsi[0], 8) *
+                           (19 - 975 * qsi[1] + 14600 * pow(qsi[1], 2) -
+                            91800 * pow(qsi[1], 3) + 272340 * pow(qsi[1], 4) -
+                            375972 * pow(qsi[1], 5) + 193800 * pow(qsi[1], 6)) +
+                       13728 * pow(qsi[0], 7) *
+                           (-16 + 945 * qsi[1] - 16800 * pow(qsi[1], 2) +
+                            130900 * pow(qsi[1], 3) - 514080 * pow(qsi[1], 4) +
+                            1058148 * pow(qsi[1], 5) -
+                            1085280 * pow(qsi[1], 6) +
+                            436050 * pow(qsi[1], 7)) +
                        3003 * pow(qsi[0], 6) *
-                           (1 - 120 * qsi[1] + 3360 * pow(qsi[1], 2) -
-                            38080 * pow(qsi[1], 3) + 214200 * pow(qsi[1], 4) -
-                            651168 * pow(qsi[1], 5) + 1085280 * pow(qsi[1], 6) -
-                            930240 * pow(qsi[1], 7) + 319770 * pow(qsi[1], 8)) +
-                       2002 * pow(qsi[0], 5) *
-                           (-1 + 135 * qsi[1] - 4320 * pow(qsi[1], 2) +
-                            57120 * pow(qsi[1], 3) - 385560 * pow(qsi[1], 4) +
-                            1465128 * pow(qsi[1], 5) -
-                            3255840 * pow(qsi[1], 6) +
-                            4186080 * pow(qsi[1], 7) -
-                            2877930 * pow(qsi[1], 8) +
-                            817190 * pow(qsi[1], 9)) +
-                       1001 * pow(qsi[0], 4) *
-                           (1 - 150 * qsi[1] + 5400 * pow(qsi[1], 2) -
-                            81600 * pow(qsi[1], 3) + 642600 * pow(qsi[1], 4) -
-                            2930256 * pow(qsi[1], 5) +
-                            8139600 * pow(qsi[1], 6) -
-                            13953600 * pow(qsi[1], 7) +
-                            14389650 * pow(qsi[1], 8) -
-                            8171900 * pow(qsi[1], 9) +
-                            1961256 * pow(qsi[1], 10)) +
-                       364 * pow(qsi[0], 3) *
-                           (-1 + 165 * qsi[1] - 6600 * pow(qsi[1], 2) +
-                            112200 * pow(qsi[1], 3) - 1009800 * pow(qsi[1], 4) +
-                            5372136 * pow(qsi[1], 5) -
-                            17907120 * pow(qsi[1], 6) +
-                            38372400 * pow(qsi[1], 7) -
-                            52762050 * pow(qsi[1], 8) +
-                            44945450 * pow(qsi[1], 9) -
-                            21573816 * pow(qsi[1], 10) +
-                            4457400 * pow(qsi[1], 11)) +
-                       91 * pow(qsi[0], 2) *
-                           (1 - 180 * qsi[1] + 7920 * pow(qsi[1], 2) -
-                            149600 * pow(qsi[1], 3) + 1514700 * pow(qsi[1], 4) -
-                            9209376 * pow(qsi[1], 5) +
-                            35814240 * pow(qsi[1], 6) -
-                            92093760 * pow(qsi[1], 7) +
-                            158286150 * pow(qsi[1], 8) -
-                            179781800 * pow(qsi[1], 9) +
-                            129442896 * pow(qsi[1], 10) -
-                            53488800 * pow(qsi[1], 11) +
-                            9657700 * pow(qsi[1], 12)) +
+                           (71 - 4740 * qsi[1] + 97440 * pow(qsi[1], 2) -
+                            904400 * pow(qsi[1], 3) + 4412520 * pow(qsi[1], 4) -
+                            12046608 * pow(qsi[1], 5) +
+                            18449760 * pow(qsi[1], 6) -
+                            14767560 * pow(qsi[1], 7) +
+                            4796550 * pow(qsi[1], 8)) +
+                       6006 * pow(qsi[0], 5) *
+                           (-26 + 1935 * qsi[1] - 45120 * pow(qsi[1], 2) +
+                            485520 * pow(qsi[1], 3) - 2827440 * pow(qsi[1], 4) +
+                            9604728 * pow(qsi[1], 5) -
+                            19535040 * pow(qsi[1], 6) +
+                            23372280 * pow(qsi[1], 7) -
+                            15135780 * pow(qsi[1], 8) +
+                            4085950 * pow(qsi[1], 9)) +
+                       5005 * pow(qsi[0], 4) *
+                           (17 - 1395 * qsi[1] + 36360 * pow(qsi[1], 2) -
+                            444720 * pow(qsi[1], 3) + 3007368 * pow(qsi[1], 4) -
+                            12209400 * pow(qsi[1], 5) +
+                            30930480 * pow(qsi[1], 6) -
+                            49186440 * pow(qsi[1], 7) +
+                            47645730 * pow(qsi[1], 8) -
+                            25659766 * pow(qsi[1], 9) +
+                            5883768 * pow(qsi[1], 10)) +
+                       728 * pow(qsi[0], 3) *
+                           (-46 + 4125 * qsi[1] - 118800 * pow(qsi[1], 2) +
+                            1626900 * pow(qsi[1], 3) -
+                            12521520 * pow(qsi[1], 4) +
+                            59093496 * pow(qsi[1], 5) -
+                            179071200 * pow(qsi[1], 6) +
+                            354944700 * pow(qsi[1], 7) -
+                            457271100 * pow(qsi[1], 8) +
+                            368552690 * pow(qsi[1], 9) -
+                            168668016 * pow(qsi[1], 10) +
+                            33430500 * pow(qsi[1], 11)) +
+                       273 * pow(qsi[0], 2) *
+                           (33 - 3210 * qsi[1] + 101200 * pow(qsi[1], 2) -
+                            1533400 * pow(qsi[1], 3) +
+                            13228380 * pow(qsi[1], 4) -
+                            71116848 * pow(qsi[1], 5) +
+                            250699680 * pow(qsi[1], 6) -
+                            594772200 * pow(qsi[1], 7) +
+                            955579350 * pow(qsi[1], 8) -
+                            1024756260 * pow(qsi[1], 9) +
+                            702129648 * pow(qsi[1], 10) -
+                            277844600 * pow(qsi[1], 11) +
+                            48288500 * pow(qsi[1], 12)) +
                        14 * qsi[0] *
-                           (-1 + 195 * qsi[1] - 9360 * pow(qsi[1], 2) +
-                            194480 * pow(qsi[1], 3) - 2187900 * pow(qsi[1], 4) +
-                            14965236 * pow(qsi[1], 5) -
-                            66512160 * pow(qsi[1], 6) +
-                            199536480 * pow(qsi[1], 7) -
-                            411543990 * pow(qsi[1], 8) +
-                            584290850 * pow(qsi[1], 9) -
-                            560919216 * pow(qsi[1], 10) +
-                            347677200 * pow(qsi[1], 11) -
-                            125550100 * pow(qsi[1], 12) +
-                            20058300 * pow(qsi[1], 13)))) /
-                     8.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (30 *
+                           (-106 + 11115 * qsi[1] - 380640 * pow(qsi[1], 2) +
+                            6320600 * pow(qsi[1], 3) -
+                            60386040 * pow(qsi[1], 4) +
+                            364154076 * pow(qsi[1], 5) -
+                            1463267520 * pow(qsi[1], 6) +
+                            4040613720 * pow(qsi[1], 7) -
+                            7773608700 * pow(qsi[1], 8) +
+                            10400377130 * pow(qsi[1], 9) -
+                            9484634016 * pow(qsi[1], 10) +
+                            5620781400 * pow(qsi[1], 11) -
+                            1950855400 * pow(qsi[1], 12) +
+                            300874500 * pow(qsi[1], 13)))) /
+                    8.;
+                phi(currentFuncPos, 1) =
+                    ((-8 + 15 * qsi[0]) *
                      (1 + pow(qsi[0], 14) - 210 * qsi[1] +
                       10920 * pow(qsi[1], 2) - 247520 * pow(qsi[1], 3) +
                       3063060 * pow(qsi[1], 4) - 23279256 * pow(qsi[1], 5) +
@@ -1522,392 +1356,392 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                            560919216 * pow(qsi[1], 10) +
                            347677200 * pow(qsi[1], 11) -
                            125550100 * pow(qsi[1], 12) +
-                           20058300 * pow(qsi[1], 13))));
+                           20058300 * pow(qsi[1], 13)))) /
+                    8.;
+                curlPhiHat(0, currentFuncPos) =
+                    30 *
+                    (1 + pow(qsi[0], 14) - 210 * qsi[1] +
+                     10920 * pow(qsi[1], 2) - 247520 * pow(qsi[1], 3) +
+                     3063060 * pow(qsi[1], 4) - 23279256 * pow(qsi[1], 5) +
+                     116396280 * pow(qsi[1], 6) - 399072960 * pow(qsi[1], 7) +
+                     960269310 * pow(qsi[1], 8) - 1636014380 * pow(qsi[1], 9) +
+                     1963217256 * pow(qsi[1], 10) -
+                     1622493600 * pow(qsi[1], 11) +
+                     878850700 * pow(qsi[1], 12) - 280816200 * pow(qsi[1], 13) +
+                     40116600 * pow(qsi[1], 14) +
+                     14 * pow(qsi[0], 13) * (-1 + 15 * qsi[1]) +
+                     91 * pow(qsi[0], 12) *
+                         (1 - 30 * qsi[1] + 120 * pow(qsi[1], 2)) +
+                     364 * pow(qsi[0], 11) *
+                         (-1 + 45 * qsi[1] - 360 * pow(qsi[1], 2) +
+                          680 * pow(qsi[1], 3)) +
+                     1001 * pow(qsi[0], 10) *
+                         (1 - 60 * qsi[1] + 720 * pow(qsi[1], 2) -
+                          2720 * pow(qsi[1], 3) + 3060 * pow(qsi[1], 4)) +
+                     2002 * pow(qsi[0], 9) *
+                         (-1 + 75 * qsi[1] - 1200 * pow(qsi[1], 2) +
+                          6800 * pow(qsi[1], 3) - 15300 * pow(qsi[1], 4) +
+                          11628 * pow(qsi[1], 5)) +
+                     3003 * pow(qsi[0], 8) *
+                         (1 - 90 * qsi[1] + 1800 * pow(qsi[1], 2) -
+                          13600 * pow(qsi[1], 3) + 45900 * pow(qsi[1], 4) -
+                          69768 * pow(qsi[1], 5) + 38760 * pow(qsi[1], 6)) +
+                     3432 * pow(qsi[0], 7) *
+                         (-1 + 105 * qsi[1] - 2520 * pow(qsi[1], 2) +
+                          23800 * pow(qsi[1], 3) - 107100 * pow(qsi[1], 4) +
+                          244188 * pow(qsi[1], 5) - 271320 * pow(qsi[1], 6) +
+                          116280 * pow(qsi[1], 7)) +
+                     3003 * pow(qsi[0], 6) *
+                         (1 - 120 * qsi[1] + 3360 * pow(qsi[1], 2) -
+                          38080 * pow(qsi[1], 3) + 214200 * pow(qsi[1], 4) -
+                          651168 * pow(qsi[1], 5) + 1085280 * pow(qsi[1], 6) -
+                          930240 * pow(qsi[1], 7) + 319770 * pow(qsi[1], 8)) +
+                     2002 * pow(qsi[0], 5) *
+                         (-1 + 135 * qsi[1] - 4320 * pow(qsi[1], 2) +
+                          57120 * pow(qsi[1], 3) - 385560 * pow(qsi[1], 4) +
+                          1465128 * pow(qsi[1], 5) - 3255840 * pow(qsi[1], 6) +
+                          4186080 * pow(qsi[1], 7) - 2877930 * pow(qsi[1], 8) +
+                          817190 * pow(qsi[1], 9)) +
+                     1001 * pow(qsi[0], 4) *
+                         (1 - 150 * qsi[1] + 5400 * pow(qsi[1], 2) -
+                          81600 * pow(qsi[1], 3) + 642600 * pow(qsi[1], 4) -
+                          2930256 * pow(qsi[1], 5) + 8139600 * pow(qsi[1], 6) -
+                          13953600 * pow(qsi[1], 7) +
+                          14389650 * pow(qsi[1], 8) - 8171900 * pow(qsi[1], 9) +
+                          1961256 * pow(qsi[1], 10)) +
+                     364 * pow(qsi[0], 3) *
+                         (-1 + 165 * qsi[1] - 6600 * pow(qsi[1], 2) +
+                          112200 * pow(qsi[1], 3) - 1009800 * pow(qsi[1], 4) +
+                          5372136 * pow(qsi[1], 5) - 17907120 * pow(qsi[1], 6) +
+                          38372400 * pow(qsi[1], 7) -
+                          52762050 * pow(qsi[1], 8) +
+                          44945450 * pow(qsi[1], 9) -
+                          21573816 * pow(qsi[1], 10) +
+                          4457400 * pow(qsi[1], 11)) +
+                     91 * pow(qsi[0], 2) *
+                         (1 - 180 * qsi[1] + 7920 * pow(qsi[1], 2) -
+                          149600 * pow(qsi[1], 3) + 1514700 * pow(qsi[1], 4) -
+                          9209376 * pow(qsi[1], 5) + 35814240 * pow(qsi[1], 6) -
+                          92093760 * pow(qsi[1], 7) +
+                          158286150 * pow(qsi[1], 8) -
+                          179781800 * pow(qsi[1], 9) +
+                          129442896 * pow(qsi[1], 10) -
+                          53488800 * pow(qsi[1], 11) +
+                          9657700 * pow(qsi[1], 12)) +
+                     14 * qsi[0] *
+                         (-1 + 195 * qsi[1] - 9360 * pow(qsi[1], 2) +
+                          194480 * pow(qsi[1], 3) - 2187900 * pow(qsi[1], 4) +
+                          14965236 * pow(qsi[1], 5) -
+                          66512160 * pow(qsi[1], 6) +
+                          199536480 * pow(qsi[1], 7) -
+                          411543990 * pow(qsi[1], 8) +
+                          584290850 * pow(qsi[1], 9) -
+                          560919216 * pow(qsi[1], 10) +
+                          347677200 * pow(qsi[1], 11) -
+                          125550100 * pow(qsi[1], 12) +
+                          20058300 * pow(qsi[1], 13)));
                 currentFuncPos--;
             case 14:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-197 + 28 * pow(qsi[0], 13) + 19292 * qsi[1] -
-                       619710 * pow(qsi[1], 2) + 9689680 * pow(qsi[1], 3) -
-                       87467380 * pow(qsi[1], 4) + 499891392 * pow(qsi[1], 5) -
-                       1908898992 * pow(qsi[1], 6) +
-                       5021668080 * pow(qsi[1], 7) -
-                       9224405190 * pow(qsi[1], 8) +
-                       11807755960 * pow(qsi[1], 9) -
-                       10321763452 * pow(qsi[1], 10) +
-                       5873426832 * pow(qsi[1], 11) -
-                       1960513100 * pow(qsi[1], 12) +
-                       291216800 * pow(qsi[1], 13) +
-                       13 * pow(qsi[0], 12) * (-41 + 392 * qsi[1]) +
-                       468 * pow(qsi[0], 11) *
-                           (9 - 161 * qsi[1] + 490 * pow(qsi[1], 2)) +
-                       286 * pow(qsi[0], 10) *
-                           (-67 + 1722 * qsi[1] - 10185 * pow(qsi[1], 2) +
-                            15680 * pow(qsi[1], 3)) +
-                       14300 * pow(qsi[0], 9) *
-                           (4 - 133 * qsi[1] + 1155 * pow(qsi[1], 2) -
-                            3500 * pow(qsi[1], 3) + 3332 * pow(qsi[1], 4)) +
-                       3861 * pow(qsi[0], 8) *
-                           (-31 + 1260 * qsi[1] - 14350 * pow(qsi[1], 2) +
-                            64400 * pow(qsi[1], 3) - 121380 * pow(qsi[1], 4) +
-                            79968 * pow(qsi[1], 5)) +
-                       3432 * pow(qsi[0], 7) *
-                           (53 - 2541 * qsi[1] + 35700 * pow(qsi[1], 2) -
-                            211400 * pow(qsi[1], 3) + 592620 * pow(qsi[1], 4) -
-                            775404 * pow(qsi[1], 5) + 379848 * pow(qsi[1], 6)) +
-                       12012 * pow(qsi[0], 6) *
-                           (-17 + 938 * qsi[1] - 15645 * pow(qsi[1], 2) +
-                            114800 * pow(qsi[1], 3) - 426020 * pow(qsi[1], 4) +
-                            831096 * pow(qsi[1], 5) - 810084 * pow(qsi[1], 6) +
-                            310080 * pow(qsi[1], 7)) +
-                       15444 * pow(qsi[0], 5) *
-                           (11 - 686 * qsi[1] + 13230 * pow(qsi[1], 2) -
-                            115640 * pow(qsi[1], 3) + 533120 * pow(qsi[1], 4) -
-                            1379448 * pow(qsi[1], 5) +
-                            2007768 * pow(qsi[1], 6) -
-                            1531020 * pow(qsi[1], 7) +
-                            474810 * pow(qsi[1], 8)) +
-                       3575 * pow(qsi[0], 4) *
-                           (-29 + 2016 * qsi[1] - 44100 * pow(qsi[1], 2) +
-                            446880 * pow(qsi[1], 3) - 2459016 * pow(qsi[1], 4) +
-                            7916832 * pow(qsi[1], 5) -
-                            15302448 * pow(qsi[1], 6) +
-                            17442000 * pow(qsi[1], 7) -
-                            10784970 * pow(qsi[1], 8) +
-                            2785552 * pow(qsi[1], 9)) +
-                       572 * pow(qsi[0], 3) *
-                           (79 - 6055 * qsi[1] + 148050 * pow(qsi[1], 2) -
-                            1705200 * pow(qsi[1], 3) +
-                            10895640 * pow(qsi[1], 4) -
-                            41923224 * pow(qsi[1], 5) +
-                            100931040 * pow(qsi[1], 6) -
-                            152908200 * pow(qsi[1], 7) +
-                            141425550 * pow(qsi[1], 8) -
-                            72872030 * pow(qsi[1], 9) +
-                            16016924 * pow(qsi[1], 10)) +
-                       234 * pow(qsi[0], 2) *
-                           (-57 + 4774 * qsi[1] - 128975 * pow(qsi[1], 2) +
-                            1663200 * pow(qsi[1], 3) -
-                            12095160 * pow(qsi[1], 4) +
-                            54098352 * pow(qsi[1], 5) -
-                            155791944 * pow(qsi[1], 6) +
-                            294188400 * pow(qsi[1], 7) -
-                            361873050 * pow(qsi[1], 8) +
-                            279052620 * pow(qsi[1], 9) -
-                            122415062 * pow(qsi[1], 10) +
-                            23297344 * pow(qsi[1], 11)) +
-                       52 * qsi[0] *
-                           (46 - 4179 * qsi[1] + 123585 * pow(qsi[1], 2) -
-                            1763300 * pow(qsi[1], 3) +
-                            14372820 * pow(qsi[1], 4) -
-                            73230696 * pow(qsi[1], 5) +
-                            245327544 * pow(qsi[1], 6) -
-                            554481180 * pow(qsi[1], 7) +
-                            850588200 * pow(qsi[1], 8) -
-                            872723390 * pow(qsi[1], 9) +
-                            573177066 * pow(qsi[1], 10) -
-                            217788564 * pow(qsi[1], 11) +
-                            36402100 * pow(qsi[1], 12)))) /
-                     15.);
-                phi(currentFuncPos, 1) =
-
-                    (-((-15 + 28 * qsi[0]) *
-                       (-1 + pow(qsi[0], 13) + 182 * qsi[1] -
-                        8190 * pow(qsi[1], 2) + 160160 * pow(qsi[1], 3) -
-                        1701700 * pow(qsi[1], 4) + 11027016 * pow(qsi[1], 5) -
-                        46558512 * pow(qsi[1], 6) + 133024320 * pow(qsi[1], 7) -
-                        261891630 * pow(qsi[1], 8) +
-                        355655300 * pow(qsi[1], 9) -
-                        327202876 * pow(qsi[1], 10) +
-                        194699232 * pow(qsi[1], 11) -
-                        67603900 * pow(qsi[1], 12) +
-                        10400600 * pow(qsi[1], 13) +
-                        13 * pow(qsi[0], 12) * (-1 + 14 * qsi[1]) +
-                        78 * pow(qsi[0], 11) *
-                            (1 - 28 * qsi[1] + 105 * pow(qsi[1], 2)) +
-                        286 * pow(qsi[0], 10) *
-                            (-1 + 42 * qsi[1] - 315 * pow(qsi[1], 2) +
-                             560 * pow(qsi[1], 3)) +
-                        715 * pow(qsi[0], 9) *
-                            (1 - 56 * qsi[1] + 630 * pow(qsi[1], 2) -
-                             2240 * pow(qsi[1], 3) + 2380 * pow(qsi[1], 4)) +
-                        1287 * pow(qsi[0], 8) *
-                            (-1 + 70 * qsi[1] - 1050 * pow(qsi[1], 2) +
-                             5600 * pow(qsi[1], 3) - 11900 * pow(qsi[1], 4) +
-                             8568 * pow(qsi[1], 5)) +
-                        1716 * pow(qsi[0], 7) *
-                            (1 - 84 * qsi[1] + 1575 * pow(qsi[1], 2) -
-                             11200 * pow(qsi[1], 3) + 35700 * pow(qsi[1], 4) -
-                             51408 * pow(qsi[1], 5) + 27132 * pow(qsi[1], 6)) +
-                        1716 * pow(qsi[0], 6) *
-                            (-1 + 98 * qsi[1] - 2205 * pow(qsi[1], 2) +
-                             19600 * pow(qsi[1], 3) - 83300 * pow(qsi[1], 4) +
-                             179928 * pow(qsi[1], 5) - 189924 * pow(qsi[1], 6) +
-                             77520 * pow(qsi[1], 7)) +
-                        1287 * pow(qsi[0], 5) *
-                            (1 - 112 * qsi[1] + 2940 * pow(qsi[1], 2) -
-                             31360 * pow(qsi[1], 3) + 166600 * pow(qsi[1], 4) -
-                             479808 * pow(qsi[1], 5) + 759696 * pow(qsi[1], 6) -
-                             620160 * pow(qsi[1], 7) +
-                             203490 * pow(qsi[1], 8)) +
-                        715 * pow(qsi[0], 4) *
-                            (-1 + 126 * qsi[1] - 3780 * pow(qsi[1], 2) +
-                             47040 * pow(qsi[1], 3) - 299880 * pow(qsi[1], 4) +
-                             1079568 * pow(qsi[1], 5) -
-                             2279088 * pow(qsi[1], 6) +
-                             2790720 * pow(qsi[1], 7) -
-                             1831410 * pow(qsi[1], 8) +
-                             497420 * pow(qsi[1], 9)) +
-                        286 * pow(qsi[0], 3) *
-                            (1 - 140 * qsi[1] + 4725 * pow(qsi[1], 2) -
-                             67200 * pow(qsi[1], 3) + 499800 * pow(qsi[1], 4) -
-                             2159136 * pow(qsi[1], 5) +
-                             5697720 * pow(qsi[1], 6) -
-                             9302400 * pow(qsi[1], 7) +
-                             9157050 * pow(qsi[1], 8) -
-                             4974200 * pow(qsi[1], 9) +
-                             1144066 * pow(qsi[1], 10)) +
-                        78 * pow(qsi[0], 2) *
-                            (-1 + 154 * qsi[1] - 5775 * pow(qsi[1], 2) +
-                             92400 * pow(qsi[1], 3) - 785400 * pow(qsi[1], 4) +
-                             3958416 * pow(qsi[1], 5) -
-                             12534984 * pow(qsi[1], 6) +
-                             25581600 * pow(qsi[1], 7) -
-                             33575850 * pow(qsi[1], 8) +
-                             27358100 * pow(qsi[1], 9) -
-                             12584726 * pow(qsi[1], 10) +
-                             2496144 * pow(qsi[1], 11)) +
-                        13 * qsi[0] *
-                            (1 - 168 * qsi[1] + 6930 * pow(qsi[1], 2) -
-                             123200 * pow(qsi[1], 3) +
-                             1178100 * pow(qsi[1], 4) -
-                             6785856 * pow(qsi[1], 5) +
-                             25069968 * pow(qsi[1], 6) -
-                             61395840 * pow(qsi[1], 7) +
-                             100727550 * pow(qsi[1], 8) -
-                             109432400 * pow(qsi[1], 9) +
-                             75508356 * pow(qsi[1], 10) -
-                             29953728 * pow(qsi[1], 11) +
-                             5200300 * pow(qsi[1], 12)))) /
-                     15.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (-28 *
-                     (-1 + pow(qsi[0], 13) + 182 * qsi[1] -
-                      8190 * pow(qsi[1], 2) + 160160 * pow(qsi[1], 3) -
-                      1701700 * pow(qsi[1], 4) + 11027016 * pow(qsi[1], 5) -
-                      46558512 * pow(qsi[1], 6) + 133024320 * pow(qsi[1], 7) -
-                      261891630 * pow(qsi[1], 8) + 355655300 * pow(qsi[1], 9) -
-                      327202876 * pow(qsi[1], 10) +
-                      194699232 * pow(qsi[1], 11) - 67603900 * pow(qsi[1], 12) +
-                      10400600 * pow(qsi[1], 13) +
-                      13 * pow(qsi[0], 12) * (-1 + 14 * qsi[1]) +
-                      78 * pow(qsi[0], 11) *
-                          (1 - 28 * qsi[1] + 105 * pow(qsi[1], 2)) +
+                    (qsi[1] *
+                     (-197 + 28 * pow(qsi[0], 13) + 19292 * qsi[1] -
+                      619710 * pow(qsi[1], 2) + 9689680 * pow(qsi[1], 3) -
+                      87467380 * pow(qsi[1], 4) + 499891392 * pow(qsi[1], 5) -
+                      1908898992 * pow(qsi[1], 6) +
+                      5021668080 * pow(qsi[1], 7) -
+                      9224405190 * pow(qsi[1], 8) +
+                      11807755960 * pow(qsi[1], 9) -
+                      10321763452 * pow(qsi[1], 10) +
+                      5873426832 * pow(qsi[1], 11) -
+                      1960513100 * pow(qsi[1], 12) +
+                      291216800 * pow(qsi[1], 13) +
+                      13 * pow(qsi[0], 12) * (-41 + 392 * qsi[1]) +
+                      468 * pow(qsi[0], 11) *
+                          (9 - 161 * qsi[1] + 490 * pow(qsi[1], 2)) +
                       286 * pow(qsi[0], 10) *
-                          (-1 + 42 * qsi[1] - 315 * pow(qsi[1], 2) +
-                           560 * pow(qsi[1], 3)) +
-                      715 * pow(qsi[0], 9) *
-                          (1 - 56 * qsi[1] + 630 * pow(qsi[1], 2) -
-                           2240 * pow(qsi[1], 3) + 2380 * pow(qsi[1], 4)) +
-                      1287 * pow(qsi[0], 8) *
-                          (-1 + 70 * qsi[1] - 1050 * pow(qsi[1], 2) +
-                           5600 * pow(qsi[1], 3) - 11900 * pow(qsi[1], 4) +
-                           8568 * pow(qsi[1], 5)) +
-                      1716 * pow(qsi[0], 7) *
-                          (1 - 84 * qsi[1] + 1575 * pow(qsi[1], 2) -
-                           11200 * pow(qsi[1], 3) + 35700 * pow(qsi[1], 4) -
-                           51408 * pow(qsi[1], 5) + 27132 * pow(qsi[1], 6)) +
-                      1716 * pow(qsi[0], 6) *
-                          (-1 + 98 * qsi[1] - 2205 * pow(qsi[1], 2) +
-                           19600 * pow(qsi[1], 3) - 83300 * pow(qsi[1], 4) +
-                           179928 * pow(qsi[1], 5) - 189924 * pow(qsi[1], 6) +
-                           77520 * pow(qsi[1], 7)) +
-                      1287 * pow(qsi[0], 5) *
-                          (1 - 112 * qsi[1] + 2940 * pow(qsi[1], 2) -
-                           31360 * pow(qsi[1], 3) + 166600 * pow(qsi[1], 4) -
-                           479808 * pow(qsi[1], 5) + 759696 * pow(qsi[1], 6) -
-                           620160 * pow(qsi[1], 7) + 203490 * pow(qsi[1], 8)) +
-                      715 * pow(qsi[0], 4) *
-                          (-1 + 126 * qsi[1] - 3780 * pow(qsi[1], 2) +
-                           47040 * pow(qsi[1], 3) - 299880 * pow(qsi[1], 4) +
-                           1079568 * pow(qsi[1], 5) - 2279088 * pow(qsi[1], 6) +
-                           2790720 * pow(qsi[1], 7) - 1831410 * pow(qsi[1], 8) +
-                           497420 * pow(qsi[1], 9)) +
-                      286 * pow(qsi[0], 3) *
-                          (1 - 140 * qsi[1] + 4725 * pow(qsi[1], 2) -
-                           67200 * pow(qsi[1], 3) + 499800 * pow(qsi[1], 4) -
-                           2159136 * pow(qsi[1], 5) + 5697720 * pow(qsi[1], 6) -
-                           9302400 * pow(qsi[1], 7) + 9157050 * pow(qsi[1], 8) -
-                           4974200 * pow(qsi[1], 9) +
-                           1144066 * pow(qsi[1], 10)) +
-                      78 * pow(qsi[0], 2) *
-                          (-1 + 154 * qsi[1] - 5775 * pow(qsi[1], 2) +
-                           92400 * pow(qsi[1], 3) - 785400 * pow(qsi[1], 4) +
-                           3958416 * pow(qsi[1], 5) -
-                           12534984 * pow(qsi[1], 6) +
-                           25581600 * pow(qsi[1], 7) -
-                           33575850 * pow(qsi[1], 8) +
-                           27358100 * pow(qsi[1], 9) -
-                           12584726 * pow(qsi[1], 10) +
-                           2496144 * pow(qsi[1], 11)) +
-                      13 * qsi[0] *
-                          (1 - 168 * qsi[1] + 6930 * pow(qsi[1], 2) -
-                           123200 * pow(qsi[1], 3) + 1178100 * pow(qsi[1], 4) -
-                           6785856 * pow(qsi[1], 5) +
-                           25069968 * pow(qsi[1], 6) -
-                           61395840 * pow(qsi[1], 7) +
-                           100727550 * pow(qsi[1], 8) -
-                           109432400 * pow(qsi[1], 9) +
-                           75508356 * pow(qsi[1], 10) -
-                           29953728 * pow(qsi[1], 11) +
-                           5200300 * pow(qsi[1], 12))));
+                          (-67 + 1722 * qsi[1] - 10185 * pow(qsi[1], 2) +
+                           15680 * pow(qsi[1], 3)) +
+                      14300 * pow(qsi[0], 9) *
+                          (4 - 133 * qsi[1] + 1155 * pow(qsi[1], 2) -
+                           3500 * pow(qsi[1], 3) + 3332 * pow(qsi[1], 4)) +
+                      3861 * pow(qsi[0], 8) *
+                          (-31 + 1260 * qsi[1] - 14350 * pow(qsi[1], 2) +
+                           64400 * pow(qsi[1], 3) - 121380 * pow(qsi[1], 4) +
+                           79968 * pow(qsi[1], 5)) +
+                      3432 * pow(qsi[0], 7) *
+                          (53 - 2541 * qsi[1] + 35700 * pow(qsi[1], 2) -
+                           211400 * pow(qsi[1], 3) + 592620 * pow(qsi[1], 4) -
+                           775404 * pow(qsi[1], 5) + 379848 * pow(qsi[1], 6)) +
+                      12012 * pow(qsi[0], 6) *
+                          (-17 + 938 * qsi[1] - 15645 * pow(qsi[1], 2) +
+                           114800 * pow(qsi[1], 3) - 426020 * pow(qsi[1], 4) +
+                           831096 * pow(qsi[1], 5) - 810084 * pow(qsi[1], 6) +
+                           310080 * pow(qsi[1], 7)) +
+                      15444 * pow(qsi[0], 5) *
+                          (11 - 686 * qsi[1] + 13230 * pow(qsi[1], 2) -
+                           115640 * pow(qsi[1], 3) + 533120 * pow(qsi[1], 4) -
+                           1379448 * pow(qsi[1], 5) + 2007768 * pow(qsi[1], 6) -
+                           1531020 * pow(qsi[1], 7) + 474810 * pow(qsi[1], 8)) +
+                      3575 * pow(qsi[0], 4) *
+                          (-29 + 2016 * qsi[1] - 44100 * pow(qsi[1], 2) +
+                           446880 * pow(qsi[1], 3) - 2459016 * pow(qsi[1], 4) +
+                           7916832 * pow(qsi[1], 5) -
+                           15302448 * pow(qsi[1], 6) +
+                           17442000 * pow(qsi[1], 7) -
+                           10784970 * pow(qsi[1], 8) +
+                           2785552 * pow(qsi[1], 9)) +
+                      572 * pow(qsi[0], 3) *
+                          (79 - 6055 * qsi[1] + 148050 * pow(qsi[1], 2) -
+                           1705200 * pow(qsi[1], 3) +
+                           10895640 * pow(qsi[1], 4) -
+                           41923224 * pow(qsi[1], 5) +
+                           100931040 * pow(qsi[1], 6) -
+                           152908200 * pow(qsi[1], 7) +
+                           141425550 * pow(qsi[1], 8) -
+                           72872030 * pow(qsi[1], 9) +
+                           16016924 * pow(qsi[1], 10)) +
+                      234 * pow(qsi[0], 2) *
+                          (-57 + 4774 * qsi[1] - 128975 * pow(qsi[1], 2) +
+                           1663200 * pow(qsi[1], 3) -
+                           12095160 * pow(qsi[1], 4) +
+                           54098352 * pow(qsi[1], 5) -
+                           155791944 * pow(qsi[1], 6) +
+                           294188400 * pow(qsi[1], 7) -
+                           361873050 * pow(qsi[1], 8) +
+                           279052620 * pow(qsi[1], 9) -
+                           122415062 * pow(qsi[1], 10) +
+                           23297344 * pow(qsi[1], 11)) +
+                      52 * qsi[0] *
+                          (46 - 4179 * qsi[1] + 123585 * pow(qsi[1], 2) -
+                           1763300 * pow(qsi[1], 3) +
+                           14372820 * pow(qsi[1], 4) -
+                           73230696 * pow(qsi[1], 5) +
+                           245327544 * pow(qsi[1], 6) -
+                           554481180 * pow(qsi[1], 7) +
+                           850588200 * pow(qsi[1], 8) -
+                           872723390 * pow(qsi[1], 9) +
+                           573177066 * pow(qsi[1], 10) -
+                           217788564 * pow(qsi[1], 11) +
+                           36402100 * pow(qsi[1], 12)))) /
+                    15.;
+                phi(currentFuncPos, 1) =
+                    -((-15 + 28 * qsi[0]) *
+                      (-1 + pow(qsi[0], 13) + 182 * qsi[1] -
+                       8190 * pow(qsi[1], 2) + 160160 * pow(qsi[1], 3) -
+                       1701700 * pow(qsi[1], 4) + 11027016 * pow(qsi[1], 5) -
+                       46558512 * pow(qsi[1], 6) + 133024320 * pow(qsi[1], 7) -
+                       261891630 * pow(qsi[1], 8) + 355655300 * pow(qsi[1], 9) -
+                       327202876 * pow(qsi[1], 10) +
+                       194699232 * pow(qsi[1], 11) -
+                       67603900 * pow(qsi[1], 12) + 10400600 * pow(qsi[1], 13) +
+                       13 * pow(qsi[0], 12) * (-1 + 14 * qsi[1]) +
+                       78 * pow(qsi[0], 11) *
+                           (1 - 28 * qsi[1] + 105 * pow(qsi[1], 2)) +
+                       286 * pow(qsi[0], 10) *
+                           (-1 + 42 * qsi[1] - 315 * pow(qsi[1], 2) +
+                            560 * pow(qsi[1], 3)) +
+                       715 * pow(qsi[0], 9) *
+                           (1 - 56 * qsi[1] + 630 * pow(qsi[1], 2) -
+                            2240 * pow(qsi[1], 3) + 2380 * pow(qsi[1], 4)) +
+                       1287 * pow(qsi[0], 8) *
+                           (-1 + 70 * qsi[1] - 1050 * pow(qsi[1], 2) +
+                            5600 * pow(qsi[1], 3) - 11900 * pow(qsi[1], 4) +
+                            8568 * pow(qsi[1], 5)) +
+                       1716 * pow(qsi[0], 7) *
+                           (1 - 84 * qsi[1] + 1575 * pow(qsi[1], 2) -
+                            11200 * pow(qsi[1], 3) + 35700 * pow(qsi[1], 4) -
+                            51408 * pow(qsi[1], 5) + 27132 * pow(qsi[1], 6)) +
+                       1716 * pow(qsi[0], 6) *
+                           (-1 + 98 * qsi[1] - 2205 * pow(qsi[1], 2) +
+                            19600 * pow(qsi[1], 3) - 83300 * pow(qsi[1], 4) +
+                            179928 * pow(qsi[1], 5) - 189924 * pow(qsi[1], 6) +
+                            77520 * pow(qsi[1], 7)) +
+                       1287 * pow(qsi[0], 5) *
+                           (1 - 112 * qsi[1] + 2940 * pow(qsi[1], 2) -
+                            31360 * pow(qsi[1], 3) + 166600 * pow(qsi[1], 4) -
+                            479808 * pow(qsi[1], 5) + 759696 * pow(qsi[1], 6) -
+                            620160 * pow(qsi[1], 7) + 203490 * pow(qsi[1], 8)) +
+                       715 * pow(qsi[0], 4) *
+                           (-1 + 126 * qsi[1] - 3780 * pow(qsi[1], 2) +
+                            47040 * pow(qsi[1], 3) - 299880 * pow(qsi[1], 4) +
+                            1079568 * pow(qsi[1], 5) -
+                            2279088 * pow(qsi[1], 6) +
+                            2790720 * pow(qsi[1], 7) -
+                            1831410 * pow(qsi[1], 8) +
+                            497420 * pow(qsi[1], 9)) +
+                       286 * pow(qsi[0], 3) *
+                           (1 - 140 * qsi[1] + 4725 * pow(qsi[1], 2) -
+                            67200 * pow(qsi[1], 3) + 499800 * pow(qsi[1], 4) -
+                            2159136 * pow(qsi[1], 5) +
+                            5697720 * pow(qsi[1], 6) -
+                            9302400 * pow(qsi[1], 7) +
+                            9157050 * pow(qsi[1], 8) -
+                            4974200 * pow(qsi[1], 9) +
+                            1144066 * pow(qsi[1], 10)) +
+                       78 * pow(qsi[0], 2) *
+                           (-1 + 154 * qsi[1] - 5775 * pow(qsi[1], 2) +
+                            92400 * pow(qsi[1], 3) - 785400 * pow(qsi[1], 4) +
+                            3958416 * pow(qsi[1], 5) -
+                            12534984 * pow(qsi[1], 6) +
+                            25581600 * pow(qsi[1], 7) -
+                            33575850 * pow(qsi[1], 8) +
+                            27358100 * pow(qsi[1], 9) -
+                            12584726 * pow(qsi[1], 10) +
+                            2496144 * pow(qsi[1], 11)) +
+                       13 * qsi[0] *
+                           (1 - 168 * qsi[1] + 6930 * pow(qsi[1], 2) -
+                            123200 * pow(qsi[1], 3) + 1178100 * pow(qsi[1], 4) -
+                            6785856 * pow(qsi[1], 5) +
+                            25069968 * pow(qsi[1], 6) -
+                            61395840 * pow(qsi[1], 7) +
+                            100727550 * pow(qsi[1], 8) -
+                            109432400 * pow(qsi[1], 9) +
+                            75508356 * pow(qsi[1], 10) -
+                            29953728 * pow(qsi[1], 11) +
+                            5200300 * pow(qsi[1], 12)))) /
+                    15.;
+                curlPhiHat(0, currentFuncPos) =
+                    -28 *
+                    (-1 + pow(qsi[0], 13) + 182 * qsi[1] -
+                     8190 * pow(qsi[1], 2) + 160160 * pow(qsi[1], 3) -
+                     1701700 * pow(qsi[1], 4) + 11027016 * pow(qsi[1], 5) -
+                     46558512 * pow(qsi[1], 6) + 133024320 * pow(qsi[1], 7) -
+                     261891630 * pow(qsi[1], 8) + 355655300 * pow(qsi[1], 9) -
+                     327202876 * pow(qsi[1], 10) + 194699232 * pow(qsi[1], 11) -
+                     67603900 * pow(qsi[1], 12) + 10400600 * pow(qsi[1], 13) +
+                     13 * pow(qsi[0], 12) * (-1 + 14 * qsi[1]) +
+                     78 * pow(qsi[0], 11) *
+                         (1 - 28 * qsi[1] + 105 * pow(qsi[1], 2)) +
+                     286 * pow(qsi[0], 10) *
+                         (-1 + 42 * qsi[1] - 315 * pow(qsi[1], 2) +
+                          560 * pow(qsi[1], 3)) +
+                     715 * pow(qsi[0], 9) *
+                         (1 - 56 * qsi[1] + 630 * pow(qsi[1], 2) -
+                          2240 * pow(qsi[1], 3) + 2380 * pow(qsi[1], 4)) +
+                     1287 * pow(qsi[0], 8) *
+                         (-1 + 70 * qsi[1] - 1050 * pow(qsi[1], 2) +
+                          5600 * pow(qsi[1], 3) - 11900 * pow(qsi[1], 4) +
+                          8568 * pow(qsi[1], 5)) +
+                     1716 * pow(qsi[0], 7) *
+                         (1 - 84 * qsi[1] + 1575 * pow(qsi[1], 2) -
+                          11200 * pow(qsi[1], 3) + 35700 * pow(qsi[1], 4) -
+                          51408 * pow(qsi[1], 5) + 27132 * pow(qsi[1], 6)) +
+                     1716 * pow(qsi[0], 6) *
+                         (-1 + 98 * qsi[1] - 2205 * pow(qsi[1], 2) +
+                          19600 * pow(qsi[1], 3) - 83300 * pow(qsi[1], 4) +
+                          179928 * pow(qsi[1], 5) - 189924 * pow(qsi[1], 6) +
+                          77520 * pow(qsi[1], 7)) +
+                     1287 * pow(qsi[0], 5) *
+                         (1 - 112 * qsi[1] + 2940 * pow(qsi[1], 2) -
+                          31360 * pow(qsi[1], 3) + 166600 * pow(qsi[1], 4) -
+                          479808 * pow(qsi[1], 5) + 759696 * pow(qsi[1], 6) -
+                          620160 * pow(qsi[1], 7) + 203490 * pow(qsi[1], 8)) +
+                     715 * pow(qsi[0], 4) *
+                         (-1 + 126 * qsi[1] - 3780 * pow(qsi[1], 2) +
+                          47040 * pow(qsi[1], 3) - 299880 * pow(qsi[1], 4) +
+                          1079568 * pow(qsi[1], 5) - 2279088 * pow(qsi[1], 6) +
+                          2790720 * pow(qsi[1], 7) - 1831410 * pow(qsi[1], 8) +
+                          497420 * pow(qsi[1], 9)) +
+                     286 * pow(qsi[0], 3) *
+                         (1 - 140 * qsi[1] + 4725 * pow(qsi[1], 2) -
+                          67200 * pow(qsi[1], 3) + 499800 * pow(qsi[1], 4) -
+                          2159136 * pow(qsi[1], 5) + 5697720 * pow(qsi[1], 6) -
+                          9302400 * pow(qsi[1], 7) + 9157050 * pow(qsi[1], 8) -
+                          4974200 * pow(qsi[1], 9) +
+                          1144066 * pow(qsi[1], 10)) +
+                     78 * pow(qsi[0], 2) *
+                         (-1 + 154 * qsi[1] - 5775 * pow(qsi[1], 2) +
+                          92400 * pow(qsi[1], 3) - 785400 * pow(qsi[1], 4) +
+                          3958416 * pow(qsi[1], 5) - 12534984 * pow(qsi[1], 6) +
+                          25581600 * pow(qsi[1], 7) -
+                          33575850 * pow(qsi[1], 8) +
+                          27358100 * pow(qsi[1], 9) -
+                          12584726 * pow(qsi[1], 10) +
+                          2496144 * pow(qsi[1], 11)) +
+                     13 * qsi[0] *
+                         (1 - 168 * qsi[1] + 6930 * pow(qsi[1], 2) -
+                          123200 * pow(qsi[1], 3) + 1178100 * pow(qsi[1], 4) -
+                          6785856 * pow(qsi[1], 5) + 25069968 * pow(qsi[1], 6) -
+                          61395840 * pow(qsi[1], 7) +
+                          100727550 * pow(qsi[1], 8) -
+                          109432400 * pow(qsi[1], 9) +
+                          75508356 * pow(qsi[1], 10) -
+                          29953728 * pow(qsi[1], 11) +
+                          5200300 * pow(qsi[1], 12)));
                 currentFuncPos--;
             case 13:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (85 + 13 * pow(qsi[0], 12) - 7176 * qsi[1] +
-                        198198 * pow(qsi[1], 2) - 2652650 * pow(qsi[1], 3) +
-                        20360340 * pow(qsi[1], 4) - 98017920 * pow(qsi[1], 5) +
-                        311206896 * pow(qsi[1], 6) -
-                        668447208 * pow(qsi[1], 7) +
-                        976897350 * pow(qsi[1], 8) -
-                        957036080 * pow(qsi[1], 9) +
-                        601380780 * pow(qsi[1], 10) -
-                        219036636 * pow(qsi[1], 11) +
-                        35154028 * pow(qsi[1], 12) +
-                        12 * pow(qsi[0], 11) * (-19 + 169 * qsi[1]) +
-                        66 * pow(qsi[0], 10) *
-                            (25 - 416 * qsi[1] + 1183 * pow(qsi[1], 2)) +
-                        220 * pow(qsi[0], 9) *
-                            (-31 + 741 * qsi[1] - 4095 * pow(qsi[1], 2) +
-                             5915 * pow(qsi[1], 3)) +
-                        495 * pow(qsi[0], 8) *
-                            (37 - 1144 * qsi[1] + 9282 * pow(qsi[1], 2) -
-                             26390 * pow(qsi[1], 3) + 23660 * pow(qsi[1], 4)) +
-                        792 * pow(qsi[0], 7) *
-                            (-43 + 1625 * qsi[1] - 17290 * pow(qsi[1], 2) +
-                             72800 * pow(qsi[1], 3) - 129220 * pow(qsi[1], 4) +
-                             80444 * pow(qsi[1], 5)) +
-                        6468 * pow(qsi[0], 6) *
-                            (7 - 312 * qsi[1] + 4095 * pow(qsi[1], 2) -
-                             22750 * pow(qsi[1], 3) + 60060 * pow(qsi[1], 4) -
-                             74256 * pow(qsi[1], 5) + 34476 * pow(qsi[1], 6)) +
-                        792 * pow(qsi[0], 5) *
-                            (-55 + 2821 * qsi[1] - 43953 * pow(qsi[1], 2) +
-                             302575 * pow(qsi[1], 3) -
-                             1057420 * pow(qsi[1], 4) +
-                             1949220 * pow(qsi[1], 5) -
-                             1800708 * pow(qsi[1], 6) +
-                             655044 * pow(qsi[1], 7)) +
-                        495 * pow(qsi[0], 4) *
-                            (61 - 3536 * qsi[1] + 63700 * pow(qsi[1], 2) -
-                             522340 * pow(qsi[1], 3) +
-                             2267720 * pow(qsi[1], 4) -
-                             5544448 * pow(qsi[1], 5) +
-                             7648368 * pow(qsi[1], 6) -
-                             5542680 * pow(qsi[1], 7) +
-                             1637610 * pow(qsi[1], 8)) +
-                        220 * pow(qsi[0], 3) *
-                            (-67 + 4329 * qsi[1] - 88452 * pow(qsi[1], 2) +
-                             840840 * pow(qsi[1], 3) -
-                             4357080 * pow(qsi[1], 4) +
-                             13254696 * pow(qsi[1], 5) -
-                             24281712 * pow(qsi[1], 6) +
-                             26302536 * pow(qsi[1], 7) -
-                             15494310 * pow(qsi[1], 8) +
-                             3821090 * pow(qsi[1], 9)) +
-                        66 * pow(qsi[0], 2) *
-                            (73 - 5200 * qsi[1] + 118755 * pow(qsi[1], 2) -
-                             1283100 * pow(qsi[1], 3) +
-                             7720440 * pow(qsi[1], 4) -
-                             28068768 * pow(qsi[1], 5) +
-                             64045800 * pow(qsi[1], 6) -
-                             92210040 * pow(qsi[1], 7) +
-                             81250650 * pow(qsi[1], 8) -
-                             39974480 * pow(qsi[1], 9) +
-                             8406398 * pow(qsi[1], 10)) +
-                        12 * qsi[0] *
-                            (-79 + 6149 * qsi[1] - 155155 * pow(qsi[1], 2) +
-                             1876875 * pow(qsi[1], 3) -
-                             12852840 * pow(qsi[1], 4) +
-                             54318264 * pow(qsi[1], 5) -
-                             148252104 * pow(qsi[1], 6) +
-                             266048640 * pow(qsi[1], 7) -
-                             311775750 * pow(qsi[1], 8) +
-                             229559330 * pow(qsi[1], 9) -
-                             96350254 * pow(qsi[1], 10) +
-                             17577014 * pow(qsi[1], 11)))) /
-                     7.);
-                phi(currentFuncPos, 1) =
-
-                    (((-7 + 13 * qsi[0]) *
-                      (1 + pow(qsi[0], 12) - 156 * qsi[1] +
-                       6006 * pow(qsi[1], 2) - 100100 * pow(qsi[1], 3) +
-                       900900 * pow(qsi[1], 4) - 4900896 * pow(qsi[1], 5) +
-                       17153136 * pow(qsi[1], 6) - 39907296 * pow(qsi[1], 7) +
-                       62355150 * pow(qsi[1], 8) - 64664600 * pow(qsi[1], 9) +
-                       42678636 * pow(qsi[1], 10) - 16224936 * pow(qsi[1], 11) +
-                       2704156 * pow(qsi[1], 12) +
-                       12 * pow(qsi[0], 11) * (-1 + 13 * qsi[1]) +
+                    -(qsi[1] *
+                      (85 + 13 * pow(qsi[0], 12) - 7176 * qsi[1] +
+                       198198 * pow(qsi[1], 2) - 2652650 * pow(qsi[1], 3) +
+                       20360340 * pow(qsi[1], 4) - 98017920 * pow(qsi[1], 5) +
+                       311206896 * pow(qsi[1], 6) - 668447208 * pow(qsi[1], 7) +
+                       976897350 * pow(qsi[1], 8) - 957036080 * pow(qsi[1], 9) +
+                       601380780 * pow(qsi[1], 10) -
+                       219036636 * pow(qsi[1], 11) +
+                       35154028 * pow(qsi[1], 12) +
+                       12 * pow(qsi[0], 11) * (-19 + 169 * qsi[1]) +
                        66 * pow(qsi[0], 10) *
-                           (1 - 26 * qsi[1] + 91 * pow(qsi[1], 2)) +
+                           (25 - 416 * qsi[1] + 1183 * pow(qsi[1], 2)) +
                        220 * pow(qsi[0], 9) *
-                           (-1 + 39 * qsi[1] - 273 * pow(qsi[1], 2) +
-                            455 * pow(qsi[1], 3)) +
+                           (-31 + 741 * qsi[1] - 4095 * pow(qsi[1], 2) +
+                            5915 * pow(qsi[1], 3)) +
                        495 * pow(qsi[0], 8) *
-                           (1 - 52 * qsi[1] + 546 * pow(qsi[1], 2) -
-                            1820 * pow(qsi[1], 3) + 1820 * pow(qsi[1], 4)) +
+                           (37 - 1144 * qsi[1] + 9282 * pow(qsi[1], 2) -
+                            26390 * pow(qsi[1], 3) + 23660 * pow(qsi[1], 4)) +
                        792 * pow(qsi[0], 7) *
-                           (-1 + 65 * qsi[1] - 910 * pow(qsi[1], 2) +
-                            4550 * pow(qsi[1], 3) - 9100 * pow(qsi[1], 4) +
-                            6188 * pow(qsi[1], 5)) +
-                       924 * pow(qsi[0], 6) *
-                           (1 - 78 * qsi[1] + 1365 * pow(qsi[1], 2) -
-                            9100 * pow(qsi[1], 3) + 27300 * pow(qsi[1], 4) -
-                            37128 * pow(qsi[1], 5) + 18564 * pow(qsi[1], 6)) +
+                           (-43 + 1625 * qsi[1] - 17290 * pow(qsi[1], 2) +
+                            72800 * pow(qsi[1], 3) - 129220 * pow(qsi[1], 4) +
+                            80444 * pow(qsi[1], 5)) +
+                       6468 * pow(qsi[0], 6) *
+                           (7 - 312 * qsi[1] + 4095 * pow(qsi[1], 2) -
+                            22750 * pow(qsi[1], 3) + 60060 * pow(qsi[1], 4) -
+                            74256 * pow(qsi[1], 5) + 34476 * pow(qsi[1], 6)) +
                        792 * pow(qsi[0], 5) *
-                           (-1 + 91 * qsi[1] - 1911 * pow(qsi[1], 2) +
-                            15925 * pow(qsi[1], 3) - 63700 * pow(qsi[1], 4) +
-                            129948 * pow(qsi[1], 5) - 129948 * pow(qsi[1], 6) +
-                            50388 * pow(qsi[1], 7)) +
+                           (-55 + 2821 * qsi[1] - 43953 * pow(qsi[1], 2) +
+                            302575 * pow(qsi[1], 3) - 1057420 * pow(qsi[1], 4) +
+                            1949220 * pow(qsi[1], 5) -
+                            1800708 * pow(qsi[1], 6) +
+                            655044 * pow(qsi[1], 7)) +
                        495 * pow(qsi[0], 4) *
-                           (1 - 104 * qsi[1] + 2548 * pow(qsi[1], 2) -
-                            25480 * pow(qsi[1], 3) + 127400 * pow(qsi[1], 4) -
-                            346528 * pow(qsi[1], 5) + 519792 * pow(qsi[1], 6) -
-                            403104 * pow(qsi[1], 7) + 125970 * pow(qsi[1], 8)) +
+                           (61 - 3536 * qsi[1] + 63700 * pow(qsi[1], 2) -
+                            522340 * pow(qsi[1], 3) + 2267720 * pow(qsi[1], 4) -
+                            5544448 * pow(qsi[1], 5) +
+                            7648368 * pow(qsi[1], 6) -
+                            5542680 * pow(qsi[1], 7) +
+                            1637610 * pow(qsi[1], 8)) +
                        220 * pow(qsi[0], 3) *
-                           (-1 + 117 * qsi[1] - 3276 * pow(qsi[1], 2) +
-                            38220 * pow(qsi[1], 3) - 229320 * pow(qsi[1], 4) +
-                            779688 * pow(qsi[1], 5) - 1559376 * pow(qsi[1], 6) +
-                            1813968 * pow(qsi[1], 7) -
-                            1133730 * pow(qsi[1], 8) +
-                            293930 * pow(qsi[1], 9)) +
+                           (-67 + 4329 * qsi[1] - 88452 * pow(qsi[1], 2) +
+                            840840 * pow(qsi[1], 3) - 4357080 * pow(qsi[1], 4) +
+                            13254696 * pow(qsi[1], 5) -
+                            24281712 * pow(qsi[1], 6) +
+                            26302536 * pow(qsi[1], 7) -
+                            15494310 * pow(qsi[1], 8) +
+                            3821090 * pow(qsi[1], 9)) +
                        66 * pow(qsi[0], 2) *
-                           (1 - 130 * qsi[1] + 4095 * pow(qsi[1], 2) -
-                            54600 * pow(qsi[1], 3) + 382200 * pow(qsi[1], 4) -
-                            1559376 * pow(qsi[1], 5) +
-                            3898440 * pow(qsi[1], 6) -
-                            6046560 * pow(qsi[1], 7) +
-                            5668650 * pow(qsi[1], 8) -
-                            2939300 * pow(qsi[1], 9) +
-                            646646 * pow(qsi[1], 10)) +
+                           (73 - 5200 * qsi[1] + 118755 * pow(qsi[1], 2) -
+                            1283100 * pow(qsi[1], 3) +
+                            7720440 * pow(qsi[1], 4) -
+                            28068768 * pow(qsi[1], 5) +
+                            64045800 * pow(qsi[1], 6) -
+                            92210040 * pow(qsi[1], 7) +
+                            81250650 * pow(qsi[1], 8) -
+                            39974480 * pow(qsi[1], 9) +
+                            8406398 * pow(qsi[1], 10)) +
                        12 * qsi[0] *
-                           (-1 + 143 * qsi[1] - 5005 * pow(qsi[1], 2) +
-                            75075 * pow(qsi[1], 3) - 600600 * pow(qsi[1], 4) +
-                            2858856 * pow(qsi[1], 5) -
-                            8576568 * pow(qsi[1], 6) +
-                            16628040 * pow(qsi[1], 7) -
-                            20785050 * pow(qsi[1], 8) +
-                            16166150 * pow(qsi[1], 9) -
-                            7113106 * pow(qsi[1], 10) +
-                            1352078 * pow(qsi[1], 11)))) /
-                     7.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (26 *
+                           (-79 + 6149 * qsi[1] - 155155 * pow(qsi[1], 2) +
+                            1876875 * pow(qsi[1], 3) -
+                            12852840 * pow(qsi[1], 4) +
+                            54318264 * pow(qsi[1], 5) -
+                            148252104 * pow(qsi[1], 6) +
+                            266048640 * pow(qsi[1], 7) -
+                            311775750 * pow(qsi[1], 8) +
+                            229559330 * pow(qsi[1], 9) -
+                            96350254 * pow(qsi[1], 10) +
+                            17577014 * pow(qsi[1], 11)))) /
+                    7.;
+                phi(currentFuncPos, 1) =
+                    ((-7 + 13 * qsi[0]) *
                      (1 + pow(qsi[0], 12) - 156 * qsi[1] +
                       6006 * pow(qsi[1], 2) - 100100 * pow(qsi[1], 3) +
                       900900 * pow(qsi[1], 4) - 4900896 * pow(qsi[1], 5) +
@@ -1963,262 +1797,265 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                            20785050 * pow(qsi[1], 8) +
                            16166150 * pow(qsi[1], 9) -
                            7113106 * pow(qsi[1], 10) +
-                           1352078 * pow(qsi[1], 11))));
+                           1352078 * pow(qsi[1], 11)))) /
+                    7.;
+                curlPhiHat(0, currentFuncPos) =
+                    26 *
+                    (1 + pow(qsi[0], 12) - 156 * qsi[1] +
+                     6006 * pow(qsi[1], 2) - 100100 * pow(qsi[1], 3) +
+                     900900 * pow(qsi[1], 4) - 4900896 * pow(qsi[1], 5) +
+                     17153136 * pow(qsi[1], 6) - 39907296 * pow(qsi[1], 7) +
+                     62355150 * pow(qsi[1], 8) - 64664600 * pow(qsi[1], 9) +
+                     42678636 * pow(qsi[1], 10) - 16224936 * pow(qsi[1], 11) +
+                     2704156 * pow(qsi[1], 12) +
+                     12 * pow(qsi[0], 11) * (-1 + 13 * qsi[1]) +
+                     66 * pow(qsi[0], 10) *
+                         (1 - 26 * qsi[1] + 91 * pow(qsi[1], 2)) +
+                     220 * pow(qsi[0], 9) *
+                         (-1 + 39 * qsi[1] - 273 * pow(qsi[1], 2) +
+                          455 * pow(qsi[1], 3)) +
+                     495 * pow(qsi[0], 8) *
+                         (1 - 52 * qsi[1] + 546 * pow(qsi[1], 2) -
+                          1820 * pow(qsi[1], 3) + 1820 * pow(qsi[1], 4)) +
+                     792 * pow(qsi[0], 7) *
+                         (-1 + 65 * qsi[1] - 910 * pow(qsi[1], 2) +
+                          4550 * pow(qsi[1], 3) - 9100 * pow(qsi[1], 4) +
+                          6188 * pow(qsi[1], 5)) +
+                     924 * pow(qsi[0], 6) *
+                         (1 - 78 * qsi[1] + 1365 * pow(qsi[1], 2) -
+                          9100 * pow(qsi[1], 3) + 27300 * pow(qsi[1], 4) -
+                          37128 * pow(qsi[1], 5) + 18564 * pow(qsi[1], 6)) +
+                     792 * pow(qsi[0], 5) *
+                         (-1 + 91 * qsi[1] - 1911 * pow(qsi[1], 2) +
+                          15925 * pow(qsi[1], 3) - 63700 * pow(qsi[1], 4) +
+                          129948 * pow(qsi[1], 5) - 129948 * pow(qsi[1], 6) +
+                          50388 * pow(qsi[1], 7)) +
+                     495 * pow(qsi[0], 4) *
+                         (1 - 104 * qsi[1] + 2548 * pow(qsi[1], 2) -
+                          25480 * pow(qsi[1], 3) + 127400 * pow(qsi[1], 4) -
+                          346528 * pow(qsi[1], 5) + 519792 * pow(qsi[1], 6) -
+                          403104 * pow(qsi[1], 7) + 125970 * pow(qsi[1], 8)) +
+                     220 * pow(qsi[0], 3) *
+                         (-1 + 117 * qsi[1] - 3276 * pow(qsi[1], 2) +
+                          38220 * pow(qsi[1], 3) - 229320 * pow(qsi[1], 4) +
+                          779688 * pow(qsi[1], 5) - 1559376 * pow(qsi[1], 6) +
+                          1813968 * pow(qsi[1], 7) - 1133730 * pow(qsi[1], 8) +
+                          293930 * pow(qsi[1], 9)) +
+                     66 * pow(qsi[0], 2) *
+                         (1 - 130 * qsi[1] + 4095 * pow(qsi[1], 2) -
+                          54600 * pow(qsi[1], 3) + 382200 * pow(qsi[1], 4) -
+                          1559376 * pow(qsi[1], 5) + 3898440 * pow(qsi[1], 6) -
+                          6046560 * pow(qsi[1], 7) + 5668650 * pow(qsi[1], 8) -
+                          2939300 * pow(qsi[1], 9) + 646646 * pow(qsi[1], 10)) +
+                     12 * qsi[0] *
+                         (-1 + 143 * qsi[1] - 5005 * pow(qsi[1], 2) +
+                          75075 * pow(qsi[1], 3) - 600600 * pow(qsi[1], 4) +
+                          2858856 * pow(qsi[1], 5) - 8576568 * pow(qsi[1], 6) +
+                          16628040 * pow(qsi[1], 7) -
+                          20785050 * pow(qsi[1], 8) +
+                          16166150 * pow(qsi[1], 9) -
+                          7113106 * pow(qsi[1], 10) +
+                          1352078 * pow(qsi[1], 11)));
                 currentFuncPos--;
             case 12:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-145 + 24 * pow(qsi[0], 11) + 10428 * qsi[1] -
-                       244530 * pow(qsi[1], 2) + 2762760 * pow(qsi[1], 3) -
-                       17747730 * pow(qsi[1], 4) + 70630560 * pow(qsi[1], 5) -
-                       182149968 * pow(qsi[1], 6) + 309806640 * pow(qsi[1], 7) -
-                       345031830 * pow(qsi[1], 8) + 242030360 * pow(qsi[1], 9) -
-                       96996900 * pow(qsi[1], 10) + 16930368 * pow(qsi[1], 11) +
-                       11 * pow(qsi[0], 10) * (-35 + 288 * qsi[1]) +
-                       110 * pow(qsi[0], 9) *
-                           (23 - 354 * qsi[1] + 936 * pow(qsi[1], 2)) +
-                       495 * pow(qsi[0], 8) *
-                           (-19 + 420 * qsi[1] - 2158 * pow(qsi[1], 2) +
-                            2912 * pow(qsi[1], 3)) +
-                       1320 * pow(qsi[0], 7) *
-                           (17 - 486 * qsi[1] + 3666 * pow(qsi[1], 2) -
-                            9737 * pow(qsi[1], 3) + 8190 * pow(qsi[1], 4)) +
-                       462 * pow(qsi[0], 6) *
-                           (-79 + 2760 * qsi[1] - 27300 * pow(qsi[1], 2) +
-                            107380 * pow(qsi[1], 3) - 178815 * pow(qsi[1], 4) +
-                            104832 * pow(qsi[1], 5)) +
-                       2772 * pow(qsi[0], 5) *
-                           (15 - 618 * qsi[1] + 7540 * pow(qsi[1], 2) -
-                            39130 * pow(qsi[1], 3) + 96915 * pow(qsi[1], 4) -
-                            112840 * pow(qsi[1], 5) + 49504 * pow(qsi[1], 6)) +
-                       330 * pow(qsi[0], 4) *
-                           (-101 + 4788 * qsi[1] - 69342 * pow(qsi[1], 2) +
-                            445900 * pow(qsi[1], 3) - 1461915 * pow(qsi[1], 4) +
-                            2537808 * pow(qsi[1], 5) -
-                            2215304 * pow(qsi[1], 6) +
-                            763776 * pow(qsi[1], 7)) +
-                       1320 * pow(qsi[0], 3) *
-                           (14 - 750 * qsi[1] + 12558 * pow(qsi[1], 2) -
-                            96187 * pow(qsi[1], 3) + 391755 * pow(qsi[1], 4) -
-                            901992 * pow(qsi[1], 5) + 1175720 * pow(qsi[1], 6) -
-                            807534 * pow(qsi[1], 7) + 226746 * pow(qsi[1], 8)) +
-                       165 * pow(qsi[0], 2) *
-                           (-41 + 2448 * qsi[1] - 46488 * pow(qsi[1], 2) +
-                            412776 * pow(qsi[1], 3) - 2006550 * pow(qsi[1], 4) +
-                            5748288 * pow(qsi[1], 5) -
-                            9950304 * pow(qsi[1], 6) +
-                            10215504 * pow(qsi[1], 7) -
-                            5719038 * pow(qsi[1], 8) +
-                            1343680 * pow(qsi[1], 9)) +
-                       22 * qsi[0] *
-                           (67 - 4410 * qsi[1] + 93600 * pow(qsi[1], 2) -
-                            944580 * pow(qsi[1], 3) + 5331690 * pow(qsi[1], 4) -
-                            18253872 * pow(qsi[1], 5) +
-                            39355680 * pow(qsi[1], 6) -
-                            53703000 * pow(qsi[1], 7) +
-                            44971290 * pow(qsi[1], 8) -
-                            21078980 * pow(qsi[1], 9) +
-                            4232592 * pow(qsi[1], 10)))) /
-                     13.);
-                phi(currentFuncPos, 1) =
-
-                    (-((-13 + 24 * qsi[0]) *
-                       (-1 + pow(qsi[0], 11) + 132 * qsi[1] -
-                        4290 * pow(qsi[1], 2) + 60060 * pow(qsi[1], 3) -
-                        450450 * pow(qsi[1], 4) + 2018016 * pow(qsi[1], 5) -
-                        5717712 * pow(qsi[1], 6) + 10501920 * pow(qsi[1], 7) -
-                        12471030 * pow(qsi[1], 8) + 9237800 * pow(qsi[1], 9) -
-                        3879876 * pow(qsi[1], 10) + 705432 * pow(qsi[1], 11) +
-                        11 * pow(qsi[0], 10) * (-1 + 12 * qsi[1]) +
-                        55 * pow(qsi[0], 9) *
-                            (1 - 24 * qsi[1] + 78 * pow(qsi[1], 2)) +
-                        165 * pow(qsi[0], 8) *
-                            (-1 + 36 * qsi[1] - 234 * pow(qsi[1], 2) +
-                             364 * pow(qsi[1], 3)) +
-                        330 * pow(qsi[0], 7) *
-                            (1 - 48 * qsi[1] + 468 * pow(qsi[1], 2) -
-                             1456 * pow(qsi[1], 3) + 1365 * pow(qsi[1], 4)) +
-                        462 * pow(qsi[0], 6) *
-                            (-1 + 60 * qsi[1] - 780 * pow(qsi[1], 2) +
-                             3640 * pow(qsi[1], 3) - 6825 * pow(qsi[1], 4) +
-                             4368 * pow(qsi[1], 5)) +
-                        462 * pow(qsi[0], 5) *
-                            (1 - 72 * qsi[1] + 1170 * pow(qsi[1], 2) -
-                             7280 * pow(qsi[1], 3) + 20475 * pow(qsi[1], 4) -
-                             26208 * pow(qsi[1], 5) + 12376 * pow(qsi[1], 6)) +
-                        330 * pow(qsi[0], 4) *
-                            (-1 + 84 * qsi[1] - 1638 * pow(qsi[1], 2) +
-                             12740 * pow(qsi[1], 3) - 47775 * pow(qsi[1], 4) +
-                             91728 * pow(qsi[1], 5) - 86632 * pow(qsi[1], 6) +
-                             31824 * pow(qsi[1], 7)) +
-                        165 * pow(qsi[0], 3) *
-                            (1 - 96 * qsi[1] + 2184 * pow(qsi[1], 2) -
-                             20384 * pow(qsi[1], 3) + 95550 * pow(qsi[1], 4) -
-                             244608 * pow(qsi[1], 5) + 346528 * pow(qsi[1], 6) -
-                             254592 * pow(qsi[1], 7) + 75582 * pow(qsi[1], 8)) +
-                        55 * pow(qsi[0], 2) *
-                            (-1 + 108 * qsi[1] - 2808 * pow(qsi[1], 2) +
-                             30576 * pow(qsi[1], 3) - 171990 * pow(qsi[1], 4) +
-                             550368 * pow(qsi[1], 5) -
-                             1039584 * pow(qsi[1], 6) +
-                             1145664 * pow(qsi[1], 7) -
-                             680238 * pow(qsi[1], 8) +
-                             167960 * pow(qsi[1], 9)) +
-                        11 * qsi[0] *
-                            (1 - 120 * qsi[1] + 3510 * pow(qsi[1], 2) -
-                             43680 * pow(qsi[1], 3) + 286650 * pow(qsi[1], 4) -
-                             1100736 * pow(qsi[1], 5) +
-                             2598960 * pow(qsi[1], 6) -
-                             3818880 * pow(qsi[1], 7) +
-                             3401190 * pow(qsi[1], 8) -
-                             1679600 * pow(qsi[1], 9) +
-                             352716 * pow(qsi[1], 10)))) /
-                     13.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (-24 *
-                     (-1 + pow(qsi[0], 11) + 132 * qsi[1] -
-                      4290 * pow(qsi[1], 2) + 60060 * pow(qsi[1], 3) -
-                      450450 * pow(qsi[1], 4) + 2018016 * pow(qsi[1], 5) -
-                      5717712 * pow(qsi[1], 6) + 10501920 * pow(qsi[1], 7) -
-                      12471030 * pow(qsi[1], 8) + 9237800 * pow(qsi[1], 9) -
-                      3879876 * pow(qsi[1], 10) + 705432 * pow(qsi[1], 11) +
-                      11 * pow(qsi[0], 10) * (-1 + 12 * qsi[1]) +
-                      55 * pow(qsi[0], 9) *
-                          (1 - 24 * qsi[1] + 78 * pow(qsi[1], 2)) +
-                      165 * pow(qsi[0], 8) *
-                          (-1 + 36 * qsi[1] - 234 * pow(qsi[1], 2) +
-                           364 * pow(qsi[1], 3)) +
-                      330 * pow(qsi[0], 7) *
-                          (1 - 48 * qsi[1] + 468 * pow(qsi[1], 2) -
-                           1456 * pow(qsi[1], 3) + 1365 * pow(qsi[1], 4)) +
+                    (qsi[1] *
+                     (-145 + 24 * pow(qsi[0], 11) + 10428 * qsi[1] -
+                      244530 * pow(qsi[1], 2) + 2762760 * pow(qsi[1], 3) -
+                      17747730 * pow(qsi[1], 4) + 70630560 * pow(qsi[1], 5) -
+                      182149968 * pow(qsi[1], 6) + 309806640 * pow(qsi[1], 7) -
+                      345031830 * pow(qsi[1], 8) + 242030360 * pow(qsi[1], 9) -
+                      96996900 * pow(qsi[1], 10) + 16930368 * pow(qsi[1], 11) +
+                      11 * pow(qsi[0], 10) * (-35 + 288 * qsi[1]) +
+                      110 * pow(qsi[0], 9) *
+                          (23 - 354 * qsi[1] + 936 * pow(qsi[1], 2)) +
+                      495 * pow(qsi[0], 8) *
+                          (-19 + 420 * qsi[1] - 2158 * pow(qsi[1], 2) +
+                           2912 * pow(qsi[1], 3)) +
+                      1320 * pow(qsi[0], 7) *
+                          (17 - 486 * qsi[1] + 3666 * pow(qsi[1], 2) -
+                           9737 * pow(qsi[1], 3) + 8190 * pow(qsi[1], 4)) +
                       462 * pow(qsi[0], 6) *
-                          (-1 + 60 * qsi[1] - 780 * pow(qsi[1], 2) +
-                           3640 * pow(qsi[1], 3) - 6825 * pow(qsi[1], 4) +
-                           4368 * pow(qsi[1], 5)) +
-                      462 * pow(qsi[0], 5) *
-                          (1 - 72 * qsi[1] + 1170 * pow(qsi[1], 2) -
-                           7280 * pow(qsi[1], 3) + 20475 * pow(qsi[1], 4) -
-                           26208 * pow(qsi[1], 5) + 12376 * pow(qsi[1], 6)) +
+                          (-79 + 2760 * qsi[1] - 27300 * pow(qsi[1], 2) +
+                           107380 * pow(qsi[1], 3) - 178815 * pow(qsi[1], 4) +
+                           104832 * pow(qsi[1], 5)) +
+                      2772 * pow(qsi[0], 5) *
+                          (15 - 618 * qsi[1] + 7540 * pow(qsi[1], 2) -
+                           39130 * pow(qsi[1], 3) + 96915 * pow(qsi[1], 4) -
+                           112840 * pow(qsi[1], 5) + 49504 * pow(qsi[1], 6)) +
                       330 * pow(qsi[0], 4) *
-                          (-1 + 84 * qsi[1] - 1638 * pow(qsi[1], 2) +
-                           12740 * pow(qsi[1], 3) - 47775 * pow(qsi[1], 4) +
-                           91728 * pow(qsi[1], 5) - 86632 * pow(qsi[1], 6) +
-                           31824 * pow(qsi[1], 7)) +
-                      165 * pow(qsi[0], 3) *
-                          (1 - 96 * qsi[1] + 2184 * pow(qsi[1], 2) -
-                           20384 * pow(qsi[1], 3) + 95550 * pow(qsi[1], 4) -
-                           244608 * pow(qsi[1], 5) + 346528 * pow(qsi[1], 6) -
-                           254592 * pow(qsi[1], 7) + 75582 * pow(qsi[1], 8)) +
-                      55 * pow(qsi[0], 2) *
-                          (-1 + 108 * qsi[1] - 2808 * pow(qsi[1], 2) +
-                           30576 * pow(qsi[1], 3) - 171990 * pow(qsi[1], 4) +
-                           550368 * pow(qsi[1], 5) - 1039584 * pow(qsi[1], 6) +
-                           1145664 * pow(qsi[1], 7) - 680238 * pow(qsi[1], 8) +
-                           167960 * pow(qsi[1], 9)) +
-                      11 * qsi[0] *
-                          (1 - 120 * qsi[1] + 3510 * pow(qsi[1], 2) -
-                           43680 * pow(qsi[1], 3) + 286650 * pow(qsi[1], 4) -
-                           1100736 * pow(qsi[1], 5) + 2598960 * pow(qsi[1], 6) -
-                           3818880 * pow(qsi[1], 7) + 3401190 * pow(qsi[1], 8) -
-                           1679600 * pow(qsi[1], 9) +
-                           352716 * pow(qsi[1], 10))));
+                          (-101 + 4788 * qsi[1] - 69342 * pow(qsi[1], 2) +
+                           445900 * pow(qsi[1], 3) - 1461915 * pow(qsi[1], 4) +
+                           2537808 * pow(qsi[1], 5) - 2215304 * pow(qsi[1], 6) +
+                           763776 * pow(qsi[1], 7)) +
+                      1320 * pow(qsi[0], 3) *
+                          (14 - 750 * qsi[1] + 12558 * pow(qsi[1], 2) -
+                           96187 * pow(qsi[1], 3) + 391755 * pow(qsi[1], 4) -
+                           901992 * pow(qsi[1], 5) + 1175720 * pow(qsi[1], 6) -
+                           807534 * pow(qsi[1], 7) + 226746 * pow(qsi[1], 8)) +
+                      165 * pow(qsi[0], 2) *
+                          (-41 + 2448 * qsi[1] - 46488 * pow(qsi[1], 2) +
+                           412776 * pow(qsi[1], 3) - 2006550 * pow(qsi[1], 4) +
+                           5748288 * pow(qsi[1], 5) - 9950304 * pow(qsi[1], 6) +
+                           10215504 * pow(qsi[1], 7) -
+                           5719038 * pow(qsi[1], 8) +
+                           1343680 * pow(qsi[1], 9)) +
+                      22 * qsi[0] *
+                          (67 - 4410 * qsi[1] + 93600 * pow(qsi[1], 2) -
+                           944580 * pow(qsi[1], 3) + 5331690 * pow(qsi[1], 4) -
+                           18253872 * pow(qsi[1], 5) +
+                           39355680 * pow(qsi[1], 6) -
+                           53703000 * pow(qsi[1], 7) +
+                           44971290 * pow(qsi[1], 8) -
+                           21078980 * pow(qsi[1], 9) +
+                           4232592 * pow(qsi[1], 10)))) /
+                    13.;
+                phi(currentFuncPos, 1) =
+                    -((-13 + 24 * qsi[0]) *
+                      (-1 + pow(qsi[0], 11) + 132 * qsi[1] -
+                       4290 * pow(qsi[1], 2) + 60060 * pow(qsi[1], 3) -
+                       450450 * pow(qsi[1], 4) + 2018016 * pow(qsi[1], 5) -
+                       5717712 * pow(qsi[1], 6) + 10501920 * pow(qsi[1], 7) -
+                       12471030 * pow(qsi[1], 8) + 9237800 * pow(qsi[1], 9) -
+                       3879876 * pow(qsi[1], 10) + 705432 * pow(qsi[1], 11) +
+                       11 * pow(qsi[0], 10) * (-1 + 12 * qsi[1]) +
+                       55 * pow(qsi[0], 9) *
+                           (1 - 24 * qsi[1] + 78 * pow(qsi[1], 2)) +
+                       165 * pow(qsi[0], 8) *
+                           (-1 + 36 * qsi[1] - 234 * pow(qsi[1], 2) +
+                            364 * pow(qsi[1], 3)) +
+                       330 * pow(qsi[0], 7) *
+                           (1 - 48 * qsi[1] + 468 * pow(qsi[1], 2) -
+                            1456 * pow(qsi[1], 3) + 1365 * pow(qsi[1], 4)) +
+                       462 * pow(qsi[0], 6) *
+                           (-1 + 60 * qsi[1] - 780 * pow(qsi[1], 2) +
+                            3640 * pow(qsi[1], 3) - 6825 * pow(qsi[1], 4) +
+                            4368 * pow(qsi[1], 5)) +
+                       462 * pow(qsi[0], 5) *
+                           (1 - 72 * qsi[1] + 1170 * pow(qsi[1], 2) -
+                            7280 * pow(qsi[1], 3) + 20475 * pow(qsi[1], 4) -
+                            26208 * pow(qsi[1], 5) + 12376 * pow(qsi[1], 6)) +
+                       330 * pow(qsi[0], 4) *
+                           (-1 + 84 * qsi[1] - 1638 * pow(qsi[1], 2) +
+                            12740 * pow(qsi[1], 3) - 47775 * pow(qsi[1], 4) +
+                            91728 * pow(qsi[1], 5) - 86632 * pow(qsi[1], 6) +
+                            31824 * pow(qsi[1], 7)) +
+                       165 * pow(qsi[0], 3) *
+                           (1 - 96 * qsi[1] + 2184 * pow(qsi[1], 2) -
+                            20384 * pow(qsi[1], 3) + 95550 * pow(qsi[1], 4) -
+                            244608 * pow(qsi[1], 5) + 346528 * pow(qsi[1], 6) -
+                            254592 * pow(qsi[1], 7) + 75582 * pow(qsi[1], 8)) +
+                       55 * pow(qsi[0], 2) *
+                           (-1 + 108 * qsi[1] - 2808 * pow(qsi[1], 2) +
+                            30576 * pow(qsi[1], 3) - 171990 * pow(qsi[1], 4) +
+                            550368 * pow(qsi[1], 5) - 1039584 * pow(qsi[1], 6) +
+                            1145664 * pow(qsi[1], 7) - 680238 * pow(qsi[1], 8) +
+                            167960 * pow(qsi[1], 9)) +
+                       11 * qsi[0] *
+                           (1 - 120 * qsi[1] + 3510 * pow(qsi[1], 2) -
+                            43680 * pow(qsi[1], 3) + 286650 * pow(qsi[1], 4) -
+                            1100736 * pow(qsi[1], 5) +
+                            2598960 * pow(qsi[1], 6) -
+                            3818880 * pow(qsi[1], 7) +
+                            3401190 * pow(qsi[1], 8) -
+                            1679600 * pow(qsi[1], 9) +
+                            352716 * pow(qsi[1], 10)))) /
+                    13.;
+                curlPhiHat(0, currentFuncPos) =
+                    -24 *
+                    (-1 + pow(qsi[0], 11) + 132 * qsi[1] -
+                     4290 * pow(qsi[1], 2) + 60060 * pow(qsi[1], 3) -
+                     450450 * pow(qsi[1], 4) + 2018016 * pow(qsi[1], 5) -
+                     5717712 * pow(qsi[1], 6) + 10501920 * pow(qsi[1], 7) -
+                     12471030 * pow(qsi[1], 8) + 9237800 * pow(qsi[1], 9) -
+                     3879876 * pow(qsi[1], 10) + 705432 * pow(qsi[1], 11) +
+                     11 * pow(qsi[0], 10) * (-1 + 12 * qsi[1]) +
+                     55 * pow(qsi[0], 9) *
+                         (1 - 24 * qsi[1] + 78 * pow(qsi[1], 2)) +
+                     165 * pow(qsi[0], 8) *
+                         (-1 + 36 * qsi[1] - 234 * pow(qsi[1], 2) +
+                          364 * pow(qsi[1], 3)) +
+                     330 * pow(qsi[0], 7) *
+                         (1 - 48 * qsi[1] + 468 * pow(qsi[1], 2) -
+                          1456 * pow(qsi[1], 3) + 1365 * pow(qsi[1], 4)) +
+                     462 * pow(qsi[0], 6) *
+                         (-1 + 60 * qsi[1] - 780 * pow(qsi[1], 2) +
+                          3640 * pow(qsi[1], 3) - 6825 * pow(qsi[1], 4) +
+                          4368 * pow(qsi[1], 5)) +
+                     462 * pow(qsi[0], 5) *
+                         (1 - 72 * qsi[1] + 1170 * pow(qsi[1], 2) -
+                          7280 * pow(qsi[1], 3) + 20475 * pow(qsi[1], 4) -
+                          26208 * pow(qsi[1], 5) + 12376 * pow(qsi[1], 6)) +
+                     330 * pow(qsi[0], 4) *
+                         (-1 + 84 * qsi[1] - 1638 * pow(qsi[1], 2) +
+                          12740 * pow(qsi[1], 3) - 47775 * pow(qsi[1], 4) +
+                          91728 * pow(qsi[1], 5) - 86632 * pow(qsi[1], 6) +
+                          31824 * pow(qsi[1], 7)) +
+                     165 * pow(qsi[0], 3) *
+                         (1 - 96 * qsi[1] + 2184 * pow(qsi[1], 2) -
+                          20384 * pow(qsi[1], 3) + 95550 * pow(qsi[1], 4) -
+                          244608 * pow(qsi[1], 5) + 346528 * pow(qsi[1], 6) -
+                          254592 * pow(qsi[1], 7) + 75582 * pow(qsi[1], 8)) +
+                     55 * pow(qsi[0], 2) *
+                         (-1 + 108 * qsi[1] - 2808 * pow(qsi[1], 2) +
+                          30576 * pow(qsi[1], 3) - 171990 * pow(qsi[1], 4) +
+                          550368 * pow(qsi[1], 5) - 1039584 * pow(qsi[1], 6) +
+                          1145664 * pow(qsi[1], 7) - 680238 * pow(qsi[1], 8) +
+                          167960 * pow(qsi[1], 9)) +
+                     11 * qsi[0] *
+                         (1 - 120 * qsi[1] + 3510 * pow(qsi[1], 2) -
+                          43680 * pow(qsi[1], 3) + 286650 * pow(qsi[1], 4) -
+                          1100736 * pow(qsi[1], 5) + 2598960 * pow(qsi[1], 6) -
+                          3818880 * pow(qsi[1], 7) + 3401190 * pow(qsi[1], 8) -
+                          1679600 * pow(qsi[1], 9) + 352716 * pow(qsi[1], 10)));
                 currentFuncPos--;
             case 11:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (61 + 11 * pow(qsi[0], 10) - 3685 * qsi[1] +
-                        72270 * pow(qsi[1], 2) - 677820 * pow(qsi[1], 3) +
-                        3573570 * pow(qsi[1], 4) - 11477466 * pow(qsi[1], 5) +
-                        23303280 * pow(qsi[1], 6) - 30047160 * pow(qsi[1], 7) +
-                        23848110 * pow(qsi[1], 8) - 10623470 * pow(qsi[1], 9) +
-                        2032316 * pow(qsi[1], 10) +
-                        10 * pow(qsi[0], 9) * (-16 + 121 * qsi[1]) +
-                        135 * pow(qsi[0], 8) *
-                            (7 - 99 * qsi[1] + 242 * pow(qsi[1], 2)) +
-                        240 * pow(qsi[0], 7) *
-                            (-13 + 264 * qsi[1] - 1254 * pow(qsi[1], 2) +
-                             1573 * pow(qsi[1], 3)) +
-                        210 * pow(qsi[0], 6) *
-                            (31 - 814 * qsi[1] + 5676 * pow(qsi[1], 2) -
-                             14014 * pow(qsi[1], 3) + 11011 * pow(qsi[1], 4)) +
-                        756 * pow(qsi[0], 5) *
-                            (-12 + 385 * qsi[1] - 3520 * pow(qsi[1], 2) +
-                             12870 * pow(qsi[1], 3) - 20020 * pow(qsi[1], 4) +
-                             11011 * pow(qsi[1], 5)) +
-                        210 * pow(qsi[0], 4) *
-                            (41 - 1551 * qsi[1] + 17490 * pow(qsi[1], 2) -
-                             84370 * pow(qsi[1], 3) + 195195 * pow(qsi[1], 4) -
-                             213213 * pow(qsi[1], 5) + 88088 * pow(qsi[1], 6)) +
-                        240 * pow(qsi[0], 3) *
-                            (-23 + 1001 * qsi[1] - 13398 * pow(qsi[1], 2) +
-                             80080 * pow(qsi[1], 3) - 245245 * pow(qsi[1], 4) +
-                             399399 * pow(qsi[1], 5) - 328328 * pow(qsi[1], 6) +
-                             106964 * pow(qsi[1], 7)) +
-                        135 * pow(qsi[0], 2) *
-                            (17 - 836 * qsi[1] + 12936 * pow(qsi[1], 2) -
-                             92092 * pow(qsi[1], 3) + 350350 * pow(qsi[1], 4) -
-                             756756 * pow(qsi[1], 5) + 928928 * pow(qsi[1], 6) -
-                             602888 * pow(qsi[1], 7) +
-                             160446 * pow(qsi[1], 8)) +
-                        10 * qsi[0] *
-                            (-56 + 3069 * qsi[1] - 53856 * pow(qsi[1], 2) +
-                             444444 * pow(qsi[1], 3) -
-                             2018016 * pow(qsi[1], 4) +
-                             5423418 * pow(qsi[1], 5) -
-                             8840832 * pow(qsi[1], 6) +
-                             8576568 * pow(qsi[1], 7) -
-                             4550832 * pow(qsi[1], 8) +
-                             1016158 * pow(qsi[1], 9)))) /
-                     6.);
-                phi(currentFuncPos, 1) =
-
-                    (((-6 + 11 * qsi[0]) *
-                      (1 + pow(qsi[0], 10) - 110 * qsi[1] +
-                       2970 * pow(qsi[1], 2) - 34320 * pow(qsi[1], 3) +
-                       210210 * pow(qsi[1], 4) - 756756 * pow(qsi[1], 5) +
-                       1681680 * pow(qsi[1], 6) - 2333760 * pow(qsi[1], 7) +
-                       1969110 * pow(qsi[1], 8) - 923780 * pow(qsi[1], 9) +
-                       184756 * pow(qsi[1], 10) +
-                       10 * pow(qsi[0], 9) * (-1 + 11 * qsi[1]) +
-                       45 * pow(qsi[0], 8) *
-                           (1 - 22 * qsi[1] + 66 * pow(qsi[1], 2)) +
-                       120 * pow(qsi[0], 7) *
-                           (-1 + 33 * qsi[1] - 198 * pow(qsi[1], 2) +
-                            286 * pow(qsi[1], 3)) +
+                    -(qsi[1] *
+                      (61 + 11 * pow(qsi[0], 10) - 3685 * qsi[1] +
+                       72270 * pow(qsi[1], 2) - 677820 * pow(qsi[1], 3) +
+                       3573570 * pow(qsi[1], 4) - 11477466 * pow(qsi[1], 5) +
+                       23303280 * pow(qsi[1], 6) - 30047160 * pow(qsi[1], 7) +
+                       23848110 * pow(qsi[1], 8) - 10623470 * pow(qsi[1], 9) +
+                       2032316 * pow(qsi[1], 10) +
+                       10 * pow(qsi[0], 9) * (-16 + 121 * qsi[1]) +
+                       135 * pow(qsi[0], 8) *
+                           (7 - 99 * qsi[1] + 242 * pow(qsi[1], 2)) +
+                       240 * pow(qsi[0], 7) *
+                           (-13 + 264 * qsi[1] - 1254 * pow(qsi[1], 2) +
+                            1573 * pow(qsi[1], 3)) +
                        210 * pow(qsi[0], 6) *
-                           (1 - 44 * qsi[1] + 396 * pow(qsi[1], 2) -
-                            1144 * pow(qsi[1], 3) + 1001 * pow(qsi[1], 4)) +
-                       252 * pow(qsi[0], 5) *
-                           (-1 + 55 * qsi[1] - 660 * pow(qsi[1], 2) +
-                            2860 * pow(qsi[1], 3) - 5005 * pow(qsi[1], 4) +
-                            3003 * pow(qsi[1], 5)) +
+                           (31 - 814 * qsi[1] + 5676 * pow(qsi[1], 2) -
+                            14014 * pow(qsi[1], 3) + 11011 * pow(qsi[1], 4)) +
+                       756 * pow(qsi[0], 5) *
+                           (-12 + 385 * qsi[1] - 3520 * pow(qsi[1], 2) +
+                            12870 * pow(qsi[1], 3) - 20020 * pow(qsi[1], 4) +
+                            11011 * pow(qsi[1], 5)) +
                        210 * pow(qsi[0], 4) *
-                           (1 - 66 * qsi[1] + 990 * pow(qsi[1], 2) -
-                            5720 * pow(qsi[1], 3) + 15015 * pow(qsi[1], 4) -
-                            18018 * pow(qsi[1], 5) + 8008 * pow(qsi[1], 6)) +
-                       120 * pow(qsi[0], 3) *
-                           (-1 + 77 * qsi[1] - 1386 * pow(qsi[1], 2) +
-                            10010 * pow(qsi[1], 3) - 35035 * pow(qsi[1], 4) +
-                            63063 * pow(qsi[1], 5) - 56056 * pow(qsi[1], 6) +
-                            19448 * pow(qsi[1], 7)) +
-                       45 * pow(qsi[0], 2) *
-                           (1 - 88 * qsi[1] + 1848 * pow(qsi[1], 2) -
-                            16016 * pow(qsi[1], 3) + 70070 * pow(qsi[1], 4) -
-                            168168 * pow(qsi[1], 5) + 224224 * pow(qsi[1], 6) -
-                            155584 * pow(qsi[1], 7) + 43758 * pow(qsi[1], 8)) +
+                           (41 - 1551 * qsi[1] + 17490 * pow(qsi[1], 2) -
+                            84370 * pow(qsi[1], 3) + 195195 * pow(qsi[1], 4) -
+                            213213 * pow(qsi[1], 5) + 88088 * pow(qsi[1], 6)) +
+                       240 * pow(qsi[0], 3) *
+                           (-23 + 1001 * qsi[1] - 13398 * pow(qsi[1], 2) +
+                            80080 * pow(qsi[1], 3) - 245245 * pow(qsi[1], 4) +
+                            399399 * pow(qsi[1], 5) - 328328 * pow(qsi[1], 6) +
+                            106964 * pow(qsi[1], 7)) +
+                       135 * pow(qsi[0], 2) *
+                           (17 - 836 * qsi[1] + 12936 * pow(qsi[1], 2) -
+                            92092 * pow(qsi[1], 3) + 350350 * pow(qsi[1], 4) -
+                            756756 * pow(qsi[1], 5) + 928928 * pow(qsi[1], 6) -
+                            602888 * pow(qsi[1], 7) + 160446 * pow(qsi[1], 8)) +
                        10 * qsi[0] *
-                           (-1 + 99 * qsi[1] - 2376 * pow(qsi[1], 2) +
-                            24024 * pow(qsi[1], 3) - 126126 * pow(qsi[1], 4) +
-                            378378 * pow(qsi[1], 5) - 672672 * pow(qsi[1], 6) +
-                            700128 * pow(qsi[1], 7) - 393822 * pow(qsi[1], 8) +
-                            92378 * pow(qsi[1], 9)))) /
-                     6.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (22 *
+                           (-56 + 3069 * qsi[1] - 53856 * pow(qsi[1], 2) +
+                            444444 * pow(qsi[1], 3) - 2018016 * pow(qsi[1], 4) +
+                            5423418 * pow(qsi[1], 5) -
+                            8840832 * pow(qsi[1], 6) +
+                            8576568 * pow(qsi[1], 7) -
+                            4550832 * pow(qsi[1], 8) +
+                            1016158 * pow(qsi[1], 9)))) /
+                    6.;
+                phi(currentFuncPos, 1) =
+                    ((-6 + 11 * qsi[0]) *
                      (1 + pow(qsi[0], 10) - 110 * qsi[1] +
                       2970 * pow(qsi[1], 2) - 34320 * pow(qsi[1], 3) +
                       210210 * pow(qsi[1], 4) - 756756 * pow(qsi[1], 5) +
@@ -2257,185 +2094,190 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                            24024 * pow(qsi[1], 3) - 126126 * pow(qsi[1], 4) +
                            378378 * pow(qsi[1], 5) - 672672 * pow(qsi[1], 6) +
                            700128 * pow(qsi[1], 7) - 393822 * pow(qsi[1], 8) +
-                           92378 * pow(qsi[1], 9))));
+                           92378 * pow(qsi[1], 9)))) /
+                    6.;
+                curlPhiHat(0, currentFuncPos) =
+                    22 *
+                    (1 + pow(qsi[0], 10) - 110 * qsi[1] +
+                     2970 * pow(qsi[1], 2) - 34320 * pow(qsi[1], 3) +
+                     210210 * pow(qsi[1], 4) - 756756 * pow(qsi[1], 5) +
+                     1681680 * pow(qsi[1], 6) - 2333760 * pow(qsi[1], 7) +
+                     1969110 * pow(qsi[1], 8) - 923780 * pow(qsi[1], 9) +
+                     184756 * pow(qsi[1], 10) +
+                     10 * pow(qsi[0], 9) * (-1 + 11 * qsi[1]) +
+                     45 * pow(qsi[0], 8) *
+                         (1 - 22 * qsi[1] + 66 * pow(qsi[1], 2)) +
+                     120 * pow(qsi[0], 7) *
+                         (-1 + 33 * qsi[1] - 198 * pow(qsi[1], 2) +
+                          286 * pow(qsi[1], 3)) +
+                     210 * pow(qsi[0], 6) *
+                         (1 - 44 * qsi[1] + 396 * pow(qsi[1], 2) -
+                          1144 * pow(qsi[1], 3) + 1001 * pow(qsi[1], 4)) +
+                     252 * pow(qsi[0], 5) *
+                         (-1 + 55 * qsi[1] - 660 * pow(qsi[1], 2) +
+                          2860 * pow(qsi[1], 3) - 5005 * pow(qsi[1], 4) +
+                          3003 * pow(qsi[1], 5)) +
+                     210 * pow(qsi[0], 4) *
+                         (1 - 66 * qsi[1] + 990 * pow(qsi[1], 2) -
+                          5720 * pow(qsi[1], 3) + 15015 * pow(qsi[1], 4) -
+                          18018 * pow(qsi[1], 5) + 8008 * pow(qsi[1], 6)) +
+                     120 * pow(qsi[0], 3) *
+                         (-1 + 77 * qsi[1] - 1386 * pow(qsi[1], 2) +
+                          10010 * pow(qsi[1], 3) - 35035 * pow(qsi[1], 4) +
+                          63063 * pow(qsi[1], 5) - 56056 * pow(qsi[1], 6) +
+                          19448 * pow(qsi[1], 7)) +
+                     45 * pow(qsi[0], 2) *
+                         (1 - 88 * qsi[1] + 1848 * pow(qsi[1], 2) -
+                          16016 * pow(qsi[1], 3) + 70070 * pow(qsi[1], 4) -
+                          168168 * pow(qsi[1], 5) + 224224 * pow(qsi[1], 6) -
+                          155584 * pow(qsi[1], 7) + 43758 * pow(qsi[1], 8)) +
+                     10 * qsi[0] *
+                         (-1 + 99 * qsi[1] - 2376 * pow(qsi[1], 2) +
+                          24024 * pow(qsi[1], 3) - 126126 * pow(qsi[1], 4) +
+                          378378 * pow(qsi[1], 5) - 672672 * pow(qsi[1], 6) +
+                          700128 * pow(qsi[1], 7) - 393822 * pow(qsi[1], 8) +
+                          92378 * pow(qsi[1], 9)));
                 currentFuncPos--;
             case 10:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-101 + 20 * pow(qsi[0], 9) + 5040 * qsi[1] -
-                       81180 * pow(qsi[1], 2) + 619080 * pow(qsi[1], 3) -
-                       2612610 * pow(qsi[1], 4) + 6558552 * pow(qsi[1], 5) -
-                       10030020 * pow(qsi[1], 6) + 9163440 * pow(qsi[1], 7) -
-                       4594590 * pow(qsi[1], 8) + 972400 * pow(qsi[1], 9) +
-                       9 * pow(qsi[0], 8) * (-29 + 200 * qsi[1]) +
-                       72 * pow(qsi[0], 7) *
-                           (19 - 245 * qsi[1] + 550 * pow(qsi[1], 2)) +
-                       84 * pow(qsi[0], 6) *
-                           (-47 + 870 * qsi[1] - 3795 * pow(qsi[1], 2) +
-                            4400 * pow(qsi[1], 3)) +
-                       504 * pow(qsi[0], 5) *
-                           (14 - 335 * qsi[1] + 2145 * pow(qsi[1], 2) -
-                            4895 * pow(qsi[1], 3) + 3575 * pow(qsi[1], 4)) +
-                       630 * pow(qsi[0], 4) *
-                           (-13 + 380 * qsi[1] - 3190 * pow(qsi[1], 2) +
-                            10780 * pow(qsi[1], 3) - 15587 * pow(qsi[1], 4) +
-                            8008 * pow(qsi[1], 5)) +
-                       168 * pow(qsi[0], 3) *
-                           (37 - 1275 * qsi[1] + 13200 * pow(qsi[1], 2) -
-                            58850 * pow(qsi[1], 3) + 126555 * pow(qsi[1], 4) -
-                            129129 * pow(qsi[1], 5) + 50050 * pow(qsi[1], 6)) +
-                       36 * pow(qsi[0], 2) *
-                           (-83 + 3290 * qsi[1] - 40425 * pow(qsi[1], 2) +
-                            223300 * pow(qsi[1], 3) - 635635 * pow(qsi[1], 4) +
-                            966966 * pow(qsi[1], 5) - 745745 * pow(qsi[1], 6) +
-                            228800 * pow(qsi[1], 7)) +
-                       36 * qsi[0] *
-                           (23 - 1030 * qsi[1] + 14630 * pow(qsi[1], 2) -
-                            96250 * pow(qsi[1], 3) + 340340 * pow(qsi[1], 4) -
-                            686686 * pow(qsi[1], 5) + 790790 * pow(qsi[1], 6) -
-                            483340 * pow(qsi[1], 7) +
-                            121550 * pow(qsi[1], 8)))) /
-                     11.);
-                phi(currentFuncPos, 1) =
-
-                    (-((-11 + 20 * qsi[0]) *
-                       (-1 + pow(qsi[0], 9) + 90 * qsi[1] -
-                        1980 * pow(qsi[1], 2) + 18480 * pow(qsi[1], 3) -
-                        90090 * pow(qsi[1], 4) + 252252 * pow(qsi[1], 5) -
-                        420420 * pow(qsi[1], 6) + 411840 * pow(qsi[1], 7) -
-                        218790 * pow(qsi[1], 8) + 48620 * pow(qsi[1], 9) +
-                        pow(qsi[0], 8) * (-9 + 90 * qsi[1]) +
-                        36 * pow(qsi[0], 7) *
-                            (1 - 20 * qsi[1] + 55 * pow(qsi[1], 2)) +
-                        84 * pow(qsi[0], 6) *
-                            (-1 + 30 * qsi[1] - 165 * pow(qsi[1], 2) +
-                             220 * pow(qsi[1], 3)) +
-                        126 * pow(qsi[0], 5) *
-                            (1 - 40 * qsi[1] + 330 * pow(qsi[1], 2) -
-                             880 * pow(qsi[1], 3) + 715 * pow(qsi[1], 4)) +
-                        126 * pow(qsi[0], 4) *
-                            (-1 + 50 * qsi[1] - 550 * pow(qsi[1], 2) +
-                             2200 * pow(qsi[1], 3) - 3575 * pow(qsi[1], 4) +
-                             2002 * pow(qsi[1], 5)) +
-                        84 * pow(qsi[0], 3) *
-                            (1 - 60 * qsi[1] + 825 * pow(qsi[1], 2) -
-                             4400 * pow(qsi[1], 3) + 10725 * pow(qsi[1], 4) -
-                             12012 * pow(qsi[1], 5) + 5005 * pow(qsi[1], 6)) +
-                        36 * pow(qsi[0], 2) *
-                            (-1 + 70 * qsi[1] - 1155 * pow(qsi[1], 2) +
-                             7700 * pow(qsi[1], 3) - 25025 * pow(qsi[1], 4) +
-                             42042 * pow(qsi[1], 5) - 35035 * pow(qsi[1], 6) +
-                             11440 * pow(qsi[1], 7)) +
-                        9 * qsi[0] *
-                            (1 - 80 * qsi[1] + 1540 * pow(qsi[1], 2) -
-                             12320 * pow(qsi[1], 3) + 50050 * pow(qsi[1], 4) -
-                             112112 * pow(qsi[1], 5) + 140140 * pow(qsi[1], 6) -
-                             91520 * pow(qsi[1], 7) +
-                             24310 * pow(qsi[1], 8)))) /
-                     11.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (-20 *
-                     (-1 + pow(qsi[0], 9) + 90 * qsi[1] -
-                      1980 * pow(qsi[1], 2) + 18480 * pow(qsi[1], 3) -
-                      90090 * pow(qsi[1], 4) + 252252 * pow(qsi[1], 5) -
-                      420420 * pow(qsi[1], 6) + 411840 * pow(qsi[1], 7) -
-                      218790 * pow(qsi[1], 8) + 48620 * pow(qsi[1], 9) +
-                      pow(qsi[0], 8) * (-9 + 90 * qsi[1]) +
-                      36 * pow(qsi[0], 7) *
-                          (1 - 20 * qsi[1] + 55 * pow(qsi[1], 2)) +
+                    (qsi[1] *
+                     (-101 + 20 * pow(qsi[0], 9) + 5040 * qsi[1] -
+                      81180 * pow(qsi[1], 2) + 619080 * pow(qsi[1], 3) -
+                      2612610 * pow(qsi[1], 4) + 6558552 * pow(qsi[1], 5) -
+                      10030020 * pow(qsi[1], 6) + 9163440 * pow(qsi[1], 7) -
+                      4594590 * pow(qsi[1], 8) + 972400 * pow(qsi[1], 9) +
+                      9 * pow(qsi[0], 8) * (-29 + 200 * qsi[1]) +
+                      72 * pow(qsi[0], 7) *
+                          (19 - 245 * qsi[1] + 550 * pow(qsi[1], 2)) +
                       84 * pow(qsi[0], 6) *
-                          (-1 + 30 * qsi[1] - 165 * pow(qsi[1], 2) +
-                           220 * pow(qsi[1], 3)) +
-                      126 * pow(qsi[0], 5) *
-                          (1 - 40 * qsi[1] + 330 * pow(qsi[1], 2) -
-                           880 * pow(qsi[1], 3) + 715 * pow(qsi[1], 4)) +
-                      126 * pow(qsi[0], 4) *
-                          (-1 + 50 * qsi[1] - 550 * pow(qsi[1], 2) +
-                           2200 * pow(qsi[1], 3) - 3575 * pow(qsi[1], 4) +
-                           2002 * pow(qsi[1], 5)) +
-                      84 * pow(qsi[0], 3) *
-                          (1 - 60 * qsi[1] + 825 * pow(qsi[1], 2) -
-                           4400 * pow(qsi[1], 3) + 10725 * pow(qsi[1], 4) -
-                           12012 * pow(qsi[1], 5) + 5005 * pow(qsi[1], 6)) +
+                          (-47 + 870 * qsi[1] - 3795 * pow(qsi[1], 2) +
+                           4400 * pow(qsi[1], 3)) +
+                      504 * pow(qsi[0], 5) *
+                          (14 - 335 * qsi[1] + 2145 * pow(qsi[1], 2) -
+                           4895 * pow(qsi[1], 3) + 3575 * pow(qsi[1], 4)) +
+                      630 * pow(qsi[0], 4) *
+                          (-13 + 380 * qsi[1] - 3190 * pow(qsi[1], 2) +
+                           10780 * pow(qsi[1], 3) - 15587 * pow(qsi[1], 4) +
+                           8008 * pow(qsi[1], 5)) +
+                      168 * pow(qsi[0], 3) *
+                          (37 - 1275 * qsi[1] + 13200 * pow(qsi[1], 2) -
+                           58850 * pow(qsi[1], 3) + 126555 * pow(qsi[1], 4) -
+                           129129 * pow(qsi[1], 5) + 50050 * pow(qsi[1], 6)) +
                       36 * pow(qsi[0], 2) *
-                          (-1 + 70 * qsi[1] - 1155 * pow(qsi[1], 2) +
-                           7700 * pow(qsi[1], 3) - 25025 * pow(qsi[1], 4) +
-                           42042 * pow(qsi[1], 5) - 35035 * pow(qsi[1], 6) +
-                           11440 * pow(qsi[1], 7)) +
-                      9 * qsi[0] *
-                          (1 - 80 * qsi[1] + 1540 * pow(qsi[1], 2) -
-                           12320 * pow(qsi[1], 3) + 50050 * pow(qsi[1], 4) -
-                           112112 * pow(qsi[1], 5) + 140140 * pow(qsi[1], 6) -
-                           91520 * pow(qsi[1], 7) + 24310 * pow(qsi[1], 8))));
+                          (-83 + 3290 * qsi[1] - 40425 * pow(qsi[1], 2) +
+                           223300 * pow(qsi[1], 3) - 635635 * pow(qsi[1], 4) +
+                           966966 * pow(qsi[1], 5) - 745745 * pow(qsi[1], 6) +
+                           228800 * pow(qsi[1], 7)) +
+                      36 * qsi[0] *
+                          (23 - 1030 * qsi[1] + 14630 * pow(qsi[1], 2) -
+                           96250 * pow(qsi[1], 3) + 340340 * pow(qsi[1], 4) -
+                           686686 * pow(qsi[1], 5) + 790790 * pow(qsi[1], 6) -
+                           483340 * pow(qsi[1], 7) +
+                           121550 * pow(qsi[1], 8)))) /
+                    11.;
+                phi(currentFuncPos, 1) =
+                    -((-11 + 20 * qsi[0]) *
+                      (-1 + pow(qsi[0], 9) + 90 * qsi[1] -
+                       1980 * pow(qsi[1], 2) + 18480 * pow(qsi[1], 3) -
+                       90090 * pow(qsi[1], 4) + 252252 * pow(qsi[1], 5) -
+                       420420 * pow(qsi[1], 6) + 411840 * pow(qsi[1], 7) -
+                       218790 * pow(qsi[1], 8) + 48620 * pow(qsi[1], 9) +
+                       pow(qsi[0], 8) * (-9 + 90 * qsi[1]) +
+                       36 * pow(qsi[0], 7) *
+                           (1 - 20 * qsi[1] + 55 * pow(qsi[1], 2)) +
+                       84 * pow(qsi[0], 6) *
+                           (-1 + 30 * qsi[1] - 165 * pow(qsi[1], 2) +
+                            220 * pow(qsi[1], 3)) +
+                       126 * pow(qsi[0], 5) *
+                           (1 - 40 * qsi[1] + 330 * pow(qsi[1], 2) -
+                            880 * pow(qsi[1], 3) + 715 * pow(qsi[1], 4)) +
+                       126 * pow(qsi[0], 4) *
+                           (-1 + 50 * qsi[1] - 550 * pow(qsi[1], 2) +
+                            2200 * pow(qsi[1], 3) - 3575 * pow(qsi[1], 4) +
+                            2002 * pow(qsi[1], 5)) +
+                       84 * pow(qsi[0], 3) *
+                           (1 - 60 * qsi[1] + 825 * pow(qsi[1], 2) -
+                            4400 * pow(qsi[1], 3) + 10725 * pow(qsi[1], 4) -
+                            12012 * pow(qsi[1], 5) + 5005 * pow(qsi[1], 6)) +
+                       36 * pow(qsi[0], 2) *
+                           (-1 + 70 * qsi[1] - 1155 * pow(qsi[1], 2) +
+                            7700 * pow(qsi[1], 3) - 25025 * pow(qsi[1], 4) +
+                            42042 * pow(qsi[1], 5) - 35035 * pow(qsi[1], 6) +
+                            11440 * pow(qsi[1], 7)) +
+                       9 * qsi[0] *
+                           (1 - 80 * qsi[1] + 1540 * pow(qsi[1], 2) -
+                            12320 * pow(qsi[1], 3) + 50050 * pow(qsi[1], 4) -
+                            112112 * pow(qsi[1], 5) + 140140 * pow(qsi[1], 6) -
+                            91520 * pow(qsi[1], 7) + 24310 * pow(qsi[1], 8)))) /
+                    11.;
+                curlPhiHat(0, currentFuncPos) =
+                    -20 *
+                    (-1 + pow(qsi[0], 9) + 90 * qsi[1] - 1980 * pow(qsi[1], 2) +
+                     18480 * pow(qsi[1], 3) - 90090 * pow(qsi[1], 4) +
+                     252252 * pow(qsi[1], 5) - 420420 * pow(qsi[1], 6) +
+                     411840 * pow(qsi[1], 7) - 218790 * pow(qsi[1], 8) +
+                     48620 * pow(qsi[1], 9) +
+                     pow(qsi[0], 8) * (-9 + 90 * qsi[1]) +
+                     36 * pow(qsi[0], 7) *
+                         (1 - 20 * qsi[1] + 55 * pow(qsi[1], 2)) +
+                     84 * pow(qsi[0], 6) *
+                         (-1 + 30 * qsi[1] - 165 * pow(qsi[1], 2) +
+                          220 * pow(qsi[1], 3)) +
+                     126 * pow(qsi[0], 5) *
+                         (1 - 40 * qsi[1] + 330 * pow(qsi[1], 2) -
+                          880 * pow(qsi[1], 3) + 715 * pow(qsi[1], 4)) +
+                     126 * pow(qsi[0], 4) *
+                         (-1 + 50 * qsi[1] - 550 * pow(qsi[1], 2) +
+                          2200 * pow(qsi[1], 3) - 3575 * pow(qsi[1], 4) +
+                          2002 * pow(qsi[1], 5)) +
+                     84 * pow(qsi[0], 3) *
+                         (1 - 60 * qsi[1] + 825 * pow(qsi[1], 2) -
+                          4400 * pow(qsi[1], 3) + 10725 * pow(qsi[1], 4) -
+                          12012 * pow(qsi[1], 5) + 5005 * pow(qsi[1], 6)) +
+                     36 * pow(qsi[0], 2) *
+                         (-1 + 70 * qsi[1] - 1155 * pow(qsi[1], 2) +
+                          7700 * pow(qsi[1], 3) - 25025 * pow(qsi[1], 4) +
+                          42042 * pow(qsi[1], 5) - 35035 * pow(qsi[1], 6) +
+                          11440 * pow(qsi[1], 7)) +
+                     9 * qsi[0] *
+                         (1 - 80 * qsi[1] + 1540 * pow(qsi[1], 2) -
+                          12320 * pow(qsi[1], 3) + 50050 * pow(qsi[1], 4) -
+                          112112 * pow(qsi[1], 5) + 140140 * pow(qsi[1], 6) -
+                          91520 * pow(qsi[1], 7) + 24310 * pow(qsi[1], 8)));
                 currentFuncPos--;
             case 9:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (41 + 9 * pow(qsi[0], 8) - 1656 * qsi[1] +
-                        21420 * pow(qsi[1], 2) - 129360 * pow(qsi[1], 3) +
-                        422730 * pow(qsi[1], 4) - 792792 * pow(qsi[1], 5) +
-                        852852 * pow(qsi[1], 6) - 489060 * pow(qsi[1], 7) +
-                        115830 * pow(qsi[1], 8) +
-                        8 * pow(qsi[0], 7) * (-13 + 81 * qsi[1]) +
-                        28 * pow(qsi[0], 6) *
-                            (17 - 198 * qsi[1] + 405 * pow(qsi[1], 2)) +
-                        168 * pow(qsi[0], 5) *
-                            (-7 + 117 * qsi[1] - 465 * pow(qsi[1], 2) +
-                             495 * pow(qsi[1], 3)) +
-                        350 * pow(qsi[0], 4) *
-                            (5 - 108 * qsi[1] + 630 * pow(qsi[1], 2) -
-                             1320 * pow(qsi[1], 3) + 891 * pow(qsi[1], 4)) +
-                        56 * pow(qsi[0], 3) *
-                            (-29 + 765 * qsi[1] - 5850 * pow(qsi[1], 2) +
-                             18150 * pow(qsi[1], 3) - 24255 * pow(qsi[1], 4) +
-                             11583 * pow(qsi[1], 5)) +
-                        84 * pow(qsi[0], 2) *
-                            (11 - 342 * qsi[1] + 3225 * pow(qsi[1], 2) -
-                             13200 * pow(qsi[1], 3) + 26235 * pow(qsi[1], 4) -
-                             24882 * pow(qsi[1], 5) + 9009 * pow(qsi[1], 6)) +
-                        8 * qsi[0] *
-                            (-37 + 1323 * qsi[1] - 14805 * pow(qsi[1], 2) +
-                             75075 * pow(qsi[1], 3) - 197505 * pow(qsi[1], 4) +
-                             279279 * pow(qsi[1], 5) - 201201 * pow(qsi[1], 6) +
-                             57915 * pow(qsi[1], 7)))) /
-                     5.);
-                phi(currentFuncPos, 1) =
-
-                    (((-5 + 9 * qsi[0]) *
-                      (1 + pow(qsi[0], 8) - 72 * qsi[1] +
-                       1260 * pow(qsi[1], 2) - 9240 * pow(qsi[1], 3) +
-                       34650 * pow(qsi[1], 4) - 72072 * pow(qsi[1], 5) +
-                       84084 * pow(qsi[1], 6) - 51480 * pow(qsi[1], 7) +
-                       12870 * pow(qsi[1], 8) +
-                       8 * pow(qsi[0], 7) * (-1 + 9 * qsi[1]) +
+                    -(qsi[1] *
+                      (41 + 9 * pow(qsi[0], 8) - 1656 * qsi[1] +
+                       21420 * pow(qsi[1], 2) - 129360 * pow(qsi[1], 3) +
+                       422730 * pow(qsi[1], 4) - 792792 * pow(qsi[1], 5) +
+                       852852 * pow(qsi[1], 6) - 489060 * pow(qsi[1], 7) +
+                       115830 * pow(qsi[1], 8) +
+                       8 * pow(qsi[0], 7) * (-13 + 81 * qsi[1]) +
                        28 * pow(qsi[0], 6) *
-                           (1 - 18 * qsi[1] + 45 * pow(qsi[1], 2)) +
-                       56 * pow(qsi[0], 5) *
-                           (-1 + 27 * qsi[1] - 135 * pow(qsi[1], 2) +
-                            165 * pow(qsi[1], 3)) +
-                       70 * pow(qsi[0], 4) *
-                           (1 - 36 * qsi[1] + 270 * pow(qsi[1], 2) -
-                            660 * pow(qsi[1], 3) + 495 * pow(qsi[1], 4)) +
+                           (17 - 198 * qsi[1] + 405 * pow(qsi[1], 2)) +
+                       168 * pow(qsi[0], 5) *
+                           (-7 + 117 * qsi[1] - 465 * pow(qsi[1], 2) +
+                            495 * pow(qsi[1], 3)) +
+                       350 * pow(qsi[0], 4) *
+                           (5 - 108 * qsi[1] + 630 * pow(qsi[1], 2) -
+                            1320 * pow(qsi[1], 3) + 891 * pow(qsi[1], 4)) +
                        56 * pow(qsi[0], 3) *
-                           (-1 + 45 * qsi[1] - 450 * pow(qsi[1], 2) +
-                            1650 * pow(qsi[1], 3) - 2475 * pow(qsi[1], 4) +
-                            1287 * pow(qsi[1], 5)) +
-                       28 * pow(qsi[0], 2) *
-                           (1 - 54 * qsi[1] + 675 * pow(qsi[1], 2) -
-                            3300 * pow(qsi[1], 3) + 7425 * pow(qsi[1], 4) -
-                            7722 * pow(qsi[1], 5) + 3003 * pow(qsi[1], 6)) +
+                           (-29 + 765 * qsi[1] - 5850 * pow(qsi[1], 2) +
+                            18150 * pow(qsi[1], 3) - 24255 * pow(qsi[1], 4) +
+                            11583 * pow(qsi[1], 5)) +
+                       84 * pow(qsi[0], 2) *
+                           (11 - 342 * qsi[1] + 3225 * pow(qsi[1], 2) -
+                            13200 * pow(qsi[1], 3) + 26235 * pow(qsi[1], 4) -
+                            24882 * pow(qsi[1], 5) + 9009 * pow(qsi[1], 6)) +
                        8 * qsi[0] *
-                           (-1 + 63 * qsi[1] - 945 * pow(qsi[1], 2) +
-                            5775 * pow(qsi[1], 3) - 17325 * pow(qsi[1], 4) +
-                            27027 * pow(qsi[1], 5) - 21021 * pow(qsi[1], 6) +
-                            6435 * pow(qsi[1], 7)))) /
-                     5.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (18 *
+                           (-37 + 1323 * qsi[1] - 14805 * pow(qsi[1], 2) +
+                            75075 * pow(qsi[1], 3) - 197505 * pow(qsi[1], 4) +
+                            279279 * pow(qsi[1], 5) - 201201 * pow(qsi[1], 6) +
+                            57915 * pow(qsi[1], 7)))) /
+                    5.;
+                phi(currentFuncPos, 1) =
+                    ((-5 + 9 * qsi[0]) *
                      (1 + pow(qsi[0], 8) - 72 * qsi[1] + 1260 * pow(qsi[1], 2) -
                       9240 * pow(qsi[1], 3) + 34650 * pow(qsi[1], 4) -
                       72072 * pow(qsi[1], 5) + 84084 * pow(qsi[1], 6) -
@@ -2461,129 +2303,132 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                           (-1 + 63 * qsi[1] - 945 * pow(qsi[1], 2) +
                            5775 * pow(qsi[1], 3) - 17325 * pow(qsi[1], 4) +
                            27027 * pow(qsi[1], 5) - 21021 * pow(qsi[1], 6) +
-                           6435 * pow(qsi[1], 7))));
+                           6435 * pow(qsi[1], 7)))) /
+                    5.;
+                curlPhiHat(0, currentFuncPos) =
+                    18 *
+                    (1 + pow(qsi[0], 8) - 72 * qsi[1] + 1260 * pow(qsi[1], 2) -
+                     9240 * pow(qsi[1], 3) + 34650 * pow(qsi[1], 4) -
+                     72072 * pow(qsi[1], 5) + 84084 * pow(qsi[1], 6) -
+                     51480 * pow(qsi[1], 7) + 12870 * pow(qsi[1], 8) +
+                     8 * pow(qsi[0], 7) * (-1 + 9 * qsi[1]) +
+                     28 * pow(qsi[0], 6) *
+                         (1 - 18 * qsi[1] + 45 * pow(qsi[1], 2)) +
+                     56 * pow(qsi[0], 5) *
+                         (-1 + 27 * qsi[1] - 135 * pow(qsi[1], 2) +
+                          165 * pow(qsi[1], 3)) +
+                     70 * pow(qsi[0], 4) *
+                         (1 - 36 * qsi[1] + 270 * pow(qsi[1], 2) -
+                          660 * pow(qsi[1], 3) + 495 * pow(qsi[1], 4)) +
+                     56 * pow(qsi[0], 3) *
+                         (-1 + 45 * qsi[1] - 450 * pow(qsi[1], 2) +
+                          1650 * pow(qsi[1], 3) - 2475 * pow(qsi[1], 4) +
+                          1287 * pow(qsi[1], 5)) +
+                     28 * pow(qsi[0], 2) *
+                         (1 - 54 * qsi[1] + 675 * pow(qsi[1], 2) -
+                          3300 * pow(qsi[1], 3) + 7425 * pow(qsi[1], 4) -
+                          7722 * pow(qsi[1], 5) + 3003 * pow(qsi[1], 6)) +
+                     8 * qsi[0] *
+                         (-1 + 63 * qsi[1] - 945 * pow(qsi[1], 2) +
+                          5775 * pow(qsi[1], 3) - 17325 * pow(qsi[1], 4) +
+                          27027 * pow(qsi[1], 5) - 21021 * pow(qsi[1], 6) +
+                          6435 * pow(qsi[1], 7)));
                 currentFuncPos--;
             case 8:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-65 + 16 * pow(qsi[0], 7) + 2072 * qsi[1] -
-                       20916 * pow(qsi[1], 2) + 96600 * pow(qsi[1], 3) -
-                       233310 * pow(qsi[1], 4) + 304920 * pow(qsi[1], 5) -
-                       204204 * pow(qsi[1], 6) + 54912 * pow(qsi[1], 7) +
-                       7 * pow(qsi[0], 6) * (-23 + 128 * qsi[1]) +
-                       126 * pow(qsi[0], 5) *
-                           (5 - 52 * qsi[1] + 96 * pow(qsi[1], 2)) +
-                       35 * pow(qsi[0], 4) *
-                           (-37 + 552 * qsi[1] - 1980 * pow(qsi[1], 2) +
-                            1920 * pow(qsi[1], 3)) +
-                       140 * pow(qsi[0], 3) *
-                           (11 - 212 * qsi[1] + 1116 * pow(qsi[1], 2) -
-                            2130 * pow(qsi[1], 3) + 1320 * pow(qsi[1], 4)) +
-                       63 * pow(qsi[0], 2) *
-                           (-17 + 400 * qsi[1] - 2760 * pow(qsi[1], 2) +
-                            7800 * pow(qsi[1], 3) - 9570 * pow(qsi[1], 4) +
-                            4224 * pow(qsi[1], 5)) +
-                       14 * qsi[0] *
-                           (29 - 804 * qsi[1] + 6840 * pow(qsi[1], 2) -
-                            25500 * pow(qsi[1], 3) + 46530 * pow(qsi[1], 4) -
-                            40788 * pow(qsi[1], 5) + 13728 * pow(qsi[1], 6)))) /
-                     9.);
-                phi(currentFuncPos, 1) =
-
-                    (-((-9 + 16 * qsi[0]) *
-                       (-1 + pow(qsi[0], 7) + 56 * qsi[1] -
-                        756 * pow(qsi[1], 2) + 4200 * pow(qsi[1], 3) -
-                        11550 * pow(qsi[1], 4) + 16632 * pow(qsi[1], 5) -
-                        12012 * pow(qsi[1], 6) + 3432 * pow(qsi[1], 7) +
-                        7 * pow(qsi[0], 6) * (-1 + 8 * qsi[1]) +
-                        21 * pow(qsi[0], 5) *
-                            (1 - 16 * qsi[1] + 36 * pow(qsi[1], 2)) +
-                        35 * pow(qsi[0], 4) *
-                            (-1 + 24 * qsi[1] - 108 * pow(qsi[1], 2) +
-                             120 * pow(qsi[1], 3)) +
-                        35 * pow(qsi[0], 3) *
-                            (1 - 32 * qsi[1] + 216 * pow(qsi[1], 2) -
-                             480 * pow(qsi[1], 3) + 330 * pow(qsi[1], 4)) +
-                        21 * pow(qsi[0], 2) *
-                            (-1 + 40 * qsi[1] - 360 * pow(qsi[1], 2) +
-                             1200 * pow(qsi[1], 3) - 1650 * pow(qsi[1], 4) +
-                             792 * pow(qsi[1], 5)) +
-                        7 * qsi[0] *
-                            (1 - 48 * qsi[1] + 540 * pow(qsi[1], 2) -
-                             2400 * pow(qsi[1], 3) + 4950 * pow(qsi[1], 4) -
-                             4752 * pow(qsi[1], 5) + 1716 * pow(qsi[1], 6)))) /
-                     9.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (-16 *
-                     (-1 + pow(qsi[0], 7) + 56 * qsi[1] - 756 * pow(qsi[1], 2) +
-                      4200 * pow(qsi[1], 3) - 11550 * pow(qsi[1], 4) +
-                      16632 * pow(qsi[1], 5) - 12012 * pow(qsi[1], 6) +
-                      3432 * pow(qsi[1], 7) +
-                      7 * pow(qsi[0], 6) * (-1 + 8 * qsi[1]) +
-                      21 * pow(qsi[0], 5) *
-                          (1 - 16 * qsi[1] + 36 * pow(qsi[1], 2)) +
+                    (qsi[1] *
+                     (-65 + 16 * pow(qsi[0], 7) + 2072 * qsi[1] -
+                      20916 * pow(qsi[1], 2) + 96600 * pow(qsi[1], 3) -
+                      233310 * pow(qsi[1], 4) + 304920 * pow(qsi[1], 5) -
+                      204204 * pow(qsi[1], 6) + 54912 * pow(qsi[1], 7) +
+                      7 * pow(qsi[0], 6) * (-23 + 128 * qsi[1]) +
+                      126 * pow(qsi[0], 5) *
+                          (5 - 52 * qsi[1] + 96 * pow(qsi[1], 2)) +
                       35 * pow(qsi[0], 4) *
-                          (-1 + 24 * qsi[1] - 108 * pow(qsi[1], 2) +
-                           120 * pow(qsi[1], 3)) +
-                      35 * pow(qsi[0], 3) *
-                          (1 - 32 * qsi[1] + 216 * pow(qsi[1], 2) -
-                           480 * pow(qsi[1], 3) + 330 * pow(qsi[1], 4)) +
-                      21 * pow(qsi[0], 2) *
-                          (-1 + 40 * qsi[1] - 360 * pow(qsi[1], 2) +
-                           1200 * pow(qsi[1], 3) - 1650 * pow(qsi[1], 4) +
-                           792 * pow(qsi[1], 5)) +
-                      7 * qsi[0] *
-                          (1 - 48 * qsi[1] + 540 * pow(qsi[1], 2) -
-                           2400 * pow(qsi[1], 3) + 4950 * pow(qsi[1], 4) -
-                           4752 * pow(qsi[1], 5) + 1716 * pow(qsi[1], 6))));
+                          (-37 + 552 * qsi[1] - 1980 * pow(qsi[1], 2) +
+                           1920 * pow(qsi[1], 3)) +
+                      140 * pow(qsi[0], 3) *
+                          (11 - 212 * qsi[1] + 1116 * pow(qsi[1], 2) -
+                           2130 * pow(qsi[1], 3) + 1320 * pow(qsi[1], 4)) +
+                      63 * pow(qsi[0], 2) *
+                          (-17 + 400 * qsi[1] - 2760 * pow(qsi[1], 2) +
+                           7800 * pow(qsi[1], 3) - 9570 * pow(qsi[1], 4) +
+                           4224 * pow(qsi[1], 5)) +
+                      14 * qsi[0] *
+                          (29 - 804 * qsi[1] + 6840 * pow(qsi[1], 2) -
+                           25500 * pow(qsi[1], 3) + 46530 * pow(qsi[1], 4) -
+                           40788 * pow(qsi[1], 5) + 13728 * pow(qsi[1], 6)))) /
+                    9.;
+                phi(currentFuncPos, 1) =
+                    -((-9 + 16 * qsi[0]) *
+                      (-1 + pow(qsi[0], 7) + 56 * qsi[1] -
+                       756 * pow(qsi[1], 2) + 4200 * pow(qsi[1], 3) -
+                       11550 * pow(qsi[1], 4) + 16632 * pow(qsi[1], 5) -
+                       12012 * pow(qsi[1], 6) + 3432 * pow(qsi[1], 7) +
+                       7 * pow(qsi[0], 6) * (-1 + 8 * qsi[1]) +
+                       21 * pow(qsi[0], 5) *
+                           (1 - 16 * qsi[1] + 36 * pow(qsi[1], 2)) +
+                       35 * pow(qsi[0], 4) *
+                           (-1 + 24 * qsi[1] - 108 * pow(qsi[1], 2) +
+                            120 * pow(qsi[1], 3)) +
+                       35 * pow(qsi[0], 3) *
+                           (1 - 32 * qsi[1] + 216 * pow(qsi[1], 2) -
+                            480 * pow(qsi[1], 3) + 330 * pow(qsi[1], 4)) +
+                       21 * pow(qsi[0], 2) *
+                           (-1 + 40 * qsi[1] - 360 * pow(qsi[1], 2) +
+                            1200 * pow(qsi[1], 3) - 1650 * pow(qsi[1], 4) +
+                            792 * pow(qsi[1], 5)) +
+                       7 * qsi[0] *
+                           (1 - 48 * qsi[1] + 540 * pow(qsi[1], 2) -
+                            2400 * pow(qsi[1], 3) + 4950 * pow(qsi[1], 4) -
+                            4752 * pow(qsi[1], 5) + 1716 * pow(qsi[1], 6)))) /
+                    9.;
+                curlPhiHat(0, currentFuncPos) =
+                    -16 * (-1 + pow(qsi[0], 7) + 56 * qsi[1] -
+                           756 * pow(qsi[1], 2) + 4200 * pow(qsi[1], 3) -
+                           11550 * pow(qsi[1], 4) + 16632 * pow(qsi[1], 5) -
+                           12012 * pow(qsi[1], 6) + 3432 * pow(qsi[1], 7) +
+                           7 * pow(qsi[0], 6) * (-1 + 8 * qsi[1]) +
+                           21 * pow(qsi[0], 5) *
+                               (1 - 16 * qsi[1] + 36 * pow(qsi[1], 2)) +
+                           35 * pow(qsi[0], 4) *
+                               (-1 + 24 * qsi[1] - 108 * pow(qsi[1], 2) +
+                                120 * pow(qsi[1], 3)) +
+                           35 * pow(qsi[0], 3) *
+                               (1 - 32 * qsi[1] + 216 * pow(qsi[1], 2) -
+                                480 * pow(qsi[1], 3) + 330 * pow(qsi[1], 4)) +
+                           21 * pow(qsi[0], 2) *
+                               (-1 + 40 * qsi[1] - 360 * pow(qsi[1], 2) +
+                                1200 * pow(qsi[1], 3) - 1650 * pow(qsi[1], 4) +
+                                792 * pow(qsi[1], 5)) +
+                           7 * qsi[0] *
+                               (1 - 48 * qsi[1] + 540 * pow(qsi[1], 2) -
+                                2400 * pow(qsi[1], 3) + 4950 * pow(qsi[1], 4) -
+                                4752 * pow(qsi[1], 5) + 1716 * pow(qsi[1], 6)));
                 currentFuncPos--;
             case 7:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (25 + 7 * pow(qsi[0], 6) - 609 * qsi[1] +
-                        4620 * pow(qsi[1], 2) - 15540 * pow(qsi[1], 3) +
-                        25830 * pow(qsi[1], 4) - 20790 * pow(qsi[1], 5) +
-                        6468 * pow(qsi[1], 6) +
-                        6 * pow(qsi[0], 5) * (-10 + 49 * qsi[1]) +
-                        15 * pow(qsi[0], 4) *
-                            (13 - 119 * qsi[1] + 196 * pow(qsi[1], 2)) +
-                        40 * pow(qsi[0], 3) *
-                            (-8 + 105 * qsi[1] - 336 * pow(qsi[1], 2) +
-                             294 * pow(qsi[1], 3)) +
-                        15 * pow(qsi[0], 2) *
-                            (19 - 322 * qsi[1] + 1512 * pow(qsi[1], 2) -
-                             2604 * pow(qsi[1], 3) + 1470 * pow(qsi[1], 4)) +
-                        6 * qsi[0] *
-                            (-22 + 455 * qsi[1] - 2800 * pow(qsi[1], 2) +
-                             7140 * pow(qsi[1], 3) - 7980 * pow(qsi[1], 4) +
-                             3234 * pow(qsi[1], 5)))) /
-                     4.);
-                phi(currentFuncPos, 1) =
-
-                    (((-4 + 7 * qsi[0]) *
-                      (1 + pow(qsi[0], 6) - 42 * qsi[1] + 420 * pow(qsi[1], 2) -
-                       1680 * pow(qsi[1], 3) + 3150 * pow(qsi[1], 4) -
-                       2772 * pow(qsi[1], 5) + 924 * pow(qsi[1], 6) +
-                       6 * pow(qsi[0], 5) * (-1 + 7 * qsi[1]) +
+                    -(qsi[1] *
+                      (25 + 7 * pow(qsi[0], 6) - 609 * qsi[1] +
+                       4620 * pow(qsi[1], 2) - 15540 * pow(qsi[1], 3) +
+                       25830 * pow(qsi[1], 4) - 20790 * pow(qsi[1], 5) +
+                       6468 * pow(qsi[1], 6) +
+                       6 * pow(qsi[0], 5) * (-10 + 49 * qsi[1]) +
                        15 * pow(qsi[0], 4) *
-                           (1 - 14 * qsi[1] + 28 * pow(qsi[1], 2)) +
-                       20 * pow(qsi[0], 3) *
-                           (-1 + 21 * qsi[1] - 84 * pow(qsi[1], 2) +
-                            84 * pow(qsi[1], 3)) +
+                           (13 - 119 * qsi[1] + 196 * pow(qsi[1], 2)) +
+                       40 * pow(qsi[0], 3) *
+                           (-8 + 105 * qsi[1] - 336 * pow(qsi[1], 2) +
+                            294 * pow(qsi[1], 3)) +
                        15 * pow(qsi[0], 2) *
-                           (1 - 28 * qsi[1] + 168 * pow(qsi[1], 2) -
-                            336 * pow(qsi[1], 3) + 210 * pow(qsi[1], 4)) +
+                           (19 - 322 * qsi[1] + 1512 * pow(qsi[1], 2) -
+                            2604 * pow(qsi[1], 3) + 1470 * pow(qsi[1], 4)) +
                        6 * qsi[0] *
-                           (-1 + 35 * qsi[1] - 280 * pow(qsi[1], 2) +
-                            840 * pow(qsi[1], 3) - 1050 * pow(qsi[1], 4) +
-                            462 * pow(qsi[1], 5)))) /
-                     4.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (14 *
+                           (-22 + 455 * qsi[1] - 2800 * pow(qsi[1], 2) +
+                            7140 * pow(qsi[1], 3) - 7980 * pow(qsi[1], 4) +
+                            3234 * pow(qsi[1], 5)))) /
+                    4.;
+                phi(currentFuncPos, 1) =
+                    ((-4 + 7 * qsi[0]) *
                      (1 + pow(qsi[0], 6) - 42 * qsi[1] + 420 * pow(qsi[1], 2) -
                       1680 * pow(qsi[1], 3) + 3150 * pow(qsi[1], 4) -
                       2772 * pow(qsi[1], 5) + 924 * pow(qsi[1], 6) +
@@ -2599,153 +2444,157 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       6 * qsi[0] *
                           (-1 + 35 * qsi[1] - 280 * pow(qsi[1], 2) +
                            840 * pow(qsi[1], 3) - 1050 * pow(qsi[1], 4) +
-                           462 * pow(qsi[1], 5))));
+                           462 * pow(qsi[1], 5)))) /
+                    4.;
+                curlPhiHat(0, currentFuncPos) =
+                    14 *
+                    (1 + pow(qsi[0], 6) - 42 * qsi[1] + 420 * pow(qsi[1], 2) -
+                     1680 * pow(qsi[1], 3) + 3150 * pow(qsi[1], 4) -
+                     2772 * pow(qsi[1], 5) + 924 * pow(qsi[1], 6) +
+                     6 * pow(qsi[0], 5) * (-1 + 7 * qsi[1]) +
+                     15 * pow(qsi[0], 4) *
+                         (1 - 14 * qsi[1] + 28 * pow(qsi[1], 2)) +
+                     20 * pow(qsi[0], 3) *
+                         (-1 + 21 * qsi[1] - 84 * pow(qsi[1], 2) +
+                          84 * pow(qsi[1], 3)) +
+                     15 * pow(qsi[0], 2) *
+                         (1 - 28 * qsi[1] + 168 * pow(qsi[1], 2) -
+                          336 * pow(qsi[1], 3) + 210 * pow(qsi[1], 4)) +
+                     6 * qsi[0] *
+                         (-1 + 35 * qsi[1] - 280 * pow(qsi[1], 2) +
+                          840 * pow(qsi[1], 3) - 1050 * pow(qsi[1], 4) +
+                          462 * pow(qsi[1], 5)));
                 currentFuncPos--;
             case 6:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-37 + 12 * pow(qsi[0], 5) + 660 * qsi[1] -
-                       3570 * pow(qsi[1], 2) + 8120 * pow(qsi[1], 3) -
-                       8190 * pow(qsi[1], 4) + 3024 * pow(qsi[1], 5) +
-                       5 * pow(qsi[0], 4) * (-17 + 72 * qsi[1]) +
-                       20 * pow(qsi[0], 3) *
-                           (11 - 87 * qsi[1] + 126 * pow(qsi[1], 2)) +
-                       30 * pow(qsi[0], 2) *
-                           (-9 + 102 * qsi[1] - 287 * pow(qsi[1], 2) +
-                            224 * pow(qsi[1], 3)) +
-                       20 * qsi[0] *
-                           (8 - 117 * qsi[1] + 483 * pow(qsi[1], 2) -
-                            742 * pow(qsi[1], 3) + 378 * pow(qsi[1], 4)))) /
-                     7.);
+                    (qsi[1] *
+                     (-37 + 12 * pow(qsi[0], 5) + 660 * qsi[1] -
+                      3570 * pow(qsi[1], 2) + 8120 * pow(qsi[1], 3) -
+                      8190 * pow(qsi[1], 4) + 3024 * pow(qsi[1], 5) +
+                      5 * pow(qsi[0], 4) * (-17 + 72 * qsi[1]) +
+                      20 * pow(qsi[0], 3) *
+                          (11 - 87 * qsi[1] + 126 * pow(qsi[1], 2)) +
+                      30 * pow(qsi[0], 2) *
+                          (-9 + 102 * qsi[1] - 287 * pow(qsi[1], 2) +
+                           224 * pow(qsi[1], 3)) +
+                      20 * qsi[0] *
+                          (8 - 117 * qsi[1] + 483 * pow(qsi[1], 2) -
+                           742 * pow(qsi[1], 3) + 378 * pow(qsi[1], 4)))) /
+                    7.;
                 phi(currentFuncPos, 1) =
-
-                    (-((-7 + 12 * qsi[0]) *
-                       (-1 + pow(qsi[0], 5) + 30 * qsi[1] -
-                        210 * pow(qsi[1], 2) + 560 * pow(qsi[1], 3) -
-                        630 * pow(qsi[1], 4) + 252 * pow(qsi[1], 5) +
-                        5 * pow(qsi[0], 4) * (-1 + 6 * qsi[1]) +
-                        10 * pow(qsi[0], 3) *
-                            (1 - 12 * qsi[1] + 21 * pow(qsi[1], 2)) +
-                        10 * pow(qsi[0], 2) *
-                            (-1 + 18 * qsi[1] - 63 * pow(qsi[1], 2) +
-                             56 * pow(qsi[1], 3)) +
-                        5 * qsi[0] *
-                            (1 - 24 * qsi[1] + 126 * pow(qsi[1], 2) -
-                             224 * pow(qsi[1], 3) + 126 * pow(qsi[1], 4)))) /
-                     7.);
+                    -((-7 + 12 * qsi[0]) *
+                      (-1 + pow(qsi[0], 5) + 30 * qsi[1] -
+                       210 * pow(qsi[1], 2) + 560 * pow(qsi[1], 3) -
+                       630 * pow(qsi[1], 4) + 252 * pow(qsi[1], 5) +
+                       5 * pow(qsi[0], 4) * (-1 + 6 * qsi[1]) +
+                       10 * pow(qsi[0], 3) *
+                           (1 - 12 * qsi[1] + 21 * pow(qsi[1], 2)) +
+                       10 * pow(qsi[0], 2) *
+                           (-1 + 18 * qsi[1] - 63 * pow(qsi[1], 2) +
+                            56 * pow(qsi[1], 3)) +
+                       5 * qsi[0] *
+                           (1 - 24 * qsi[1] + 126 * pow(qsi[1], 2) -
+                            224 * pow(qsi[1], 3) + 126 * pow(qsi[1], 4)))) /
+                    7.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (-12 * (-1 + pow(qsi[0], 5) + 30 * qsi[1] -
-                            210 * pow(qsi[1], 2) + 560 * pow(qsi[1], 3) -
-                            630 * pow(qsi[1], 4) + 252 * pow(qsi[1], 5) +
-                            5 * pow(qsi[0], 4) * (-1 + 6 * qsi[1]) +
-                            10 * pow(qsi[0], 3) *
-                                (1 - 12 * qsi[1] + 21 * pow(qsi[1], 2)) +
-                            10 * pow(qsi[0], 2) *
-                                (-1 + 18 * qsi[1] - 63 * pow(qsi[1], 2) +
-                                 56 * pow(qsi[1], 3)) +
-                            5 * qsi[0] *
-                                (1 - 24 * qsi[1] + 126 * pow(qsi[1], 2) -
-                                 224 * pow(qsi[1], 3) + 126 * pow(qsi[1], 4))));
+                    -12 * (-1 + pow(qsi[0], 5) + 30 * qsi[1] -
+                           210 * pow(qsi[1], 2) + 560 * pow(qsi[1], 3) -
+                           630 * pow(qsi[1], 4) + 252 * pow(qsi[1], 5) +
+                           5 * pow(qsi[0], 4) * (-1 + 6 * qsi[1]) +
+                           10 * pow(qsi[0], 3) *
+                               (1 - 12 * qsi[1] + 21 * pow(qsi[1], 2)) +
+                           10 * pow(qsi[0], 2) *
+                               (-1 + 18 * qsi[1] - 63 * pow(qsi[1], 2) +
+                                56 * pow(qsi[1], 3)) +
+                           5 * qsi[0] *
+                               (1 - 24 * qsi[1] + 126 * pow(qsi[1], 2) -
+                                224 * pow(qsi[1], 3) + 126 * pow(qsi[1], 4)));
                 currentFuncPos--;
             case 5:
                 phi(currentFuncPos, 0) =
-
-                    (-(qsi[1] *
-                       (13 + 5 * pow(qsi[0], 4) - 160 * qsi[1] +
-                        570 * pow(qsi[1], 2) - 770 * pow(qsi[1], 3) +
-                        350 * pow(qsi[1], 4) +
-                        4 * pow(qsi[0], 3) * (-7 + 25 * qsi[1]) +
-                        18 * pow(qsi[0], 2) *
-                            (3 - 20 * qsi[1] + 25 * pow(qsi[1], 2)) +
-                        4 * qsi[0] *
-                            (-11 + 105 * qsi[1] - 255 * pow(qsi[1], 2) +
-                             175 * pow(qsi[1], 3)))) /
-                     3.);
+                    -(qsi[1] * (13 + 5 * pow(qsi[0], 4) - 160 * qsi[1] +
+                                570 * pow(qsi[1], 2) - 770 * pow(qsi[1], 3) +
+                                350 * pow(qsi[1], 4) +
+                                4 * pow(qsi[0], 3) * (-7 + 25 * qsi[1]) +
+                                18 * pow(qsi[0], 2) *
+                                    (3 - 20 * qsi[1] + 25 * pow(qsi[1], 2)) +
+                                4 * qsi[0] *
+                                    (-11 + 105 * qsi[1] - 255 * pow(qsi[1], 2) +
+                                     175 * pow(qsi[1], 3)))) /
+                    3.;
                 phi(currentFuncPos, 1) =
-
-                    (((-3 + 5 * qsi[0]) *
-                      (1 + pow(qsi[0], 4) - 20 * qsi[1] + 90 * pow(qsi[1], 2) -
-                       140 * pow(qsi[1], 3) + 70 * pow(qsi[1], 4) +
-                       4 * pow(qsi[0], 3) * (-1 + 5 * qsi[1]) +
-                       pow(qsi[0], 2) *
-                           (6 - 60 * qsi[1] + 90 * pow(qsi[1], 2)) +
-                       4 * qsi[0] *
-                           (-1 + 15 * qsi[1] - 45 * pow(qsi[1], 2) +
-                            35 * pow(qsi[1], 3)))) /
-                     3.);
-                curlPhiHat(0, currentFuncPos) =
-
-                    (10 *
+                    ((-3 + 5 * qsi[0]) *
                      (1 + pow(qsi[0], 4) - 20 * qsi[1] + 90 * pow(qsi[1], 2) -
                       140 * pow(qsi[1], 3) + 70 * pow(qsi[1], 4) +
                       4 * pow(qsi[0], 3) * (-1 + 5 * qsi[1]) +
                       pow(qsi[0], 2) * (6 - 60 * qsi[1] + 90 * pow(qsi[1], 2)) +
                       4 * qsi[0] *
                           (-1 + 15 * qsi[1] - 45 * pow(qsi[1], 2) +
-                           35 * pow(qsi[1], 3))));
+                           35 * pow(qsi[1], 3)))) /
+                    3.;
+                curlPhiHat(0, currentFuncPos) =
+                    10 *
+                    (1 + pow(qsi[0], 4) - 20 * qsi[1] + 90 * pow(qsi[1], 2) -
+                     140 * pow(qsi[1], 3) + 70 * pow(qsi[1], 4) +
+                     4 * pow(qsi[0], 3) * (-1 + 5 * qsi[1]) +
+                     pow(qsi[0], 2) * (6 - 60 * qsi[1] + 90 * pow(qsi[1], 2)) +
+                     4 * qsi[0] *
+                         (-1 + 15 * qsi[1] - 45 * pow(qsi[1], 2) +
+                          35 * pow(qsi[1], 3)));
                 currentFuncPos--;
             case 4:
                 phi(currentFuncPos, 0) =
-
-                    ((qsi[1] *
-                      (-17 + 8 * pow(qsi[0], 3) + 132 * qsi[1] -
-                       270 * pow(qsi[1], 2) + 160 * pow(qsi[1], 3) +
-                       pow(qsi[0], 2) * (-33 + 96 * qsi[1]) +
-                       6 * qsi[0] * (7 - 38 * qsi[1] + 40 * pow(qsi[1], 2)))) /
-                     5.);
+                    (qsi[1] *
+                     (-17 + 8 * pow(qsi[0], 3) + 132 * qsi[1] -
+                      270 * pow(qsi[1], 2) + 160 * pow(qsi[1], 3) +
+                      pow(qsi[0], 2) * (-33 + 96 * qsi[1]) +
+                      6 * qsi[0] * (7 - 38 * qsi[1] + 40 * pow(qsi[1], 2)))) /
+                    5.;
                 phi(currentFuncPos, 1) =
-
-                    (-((-5 + 8 * qsi[0]) *
-                       (-1 + pow(qsi[0], 3) + 12 * qsi[1] -
-                        30 * pow(qsi[1], 2) + 20 * pow(qsi[1], 3) +
-                        3 * pow(qsi[0], 2) * (-1 + 4 * qsi[1]) +
-                        3 * qsi[0] * (1 - 8 * qsi[1] + 10 * pow(qsi[1], 2)))) /
-                     5.);
+                    -((-5 + 8 * qsi[0]) *
+                      (-1 + pow(qsi[0], 3) + 12 * qsi[1] - 30 * pow(qsi[1], 2) +
+                       20 * pow(qsi[1], 3) +
+                       3 * pow(qsi[0], 2) * (-1 + 4 * qsi[1]) +
+                       3 * qsi[0] * (1 - 8 * qsi[1] + 10 * pow(qsi[1], 2)))) /
+                    5.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (-8 *
-                     (-1 + pow(qsi[0], 3) + 12 * qsi[1] - 30 * pow(qsi[1], 2) +
-                      20 * pow(qsi[1], 3) +
-                      3 * pow(qsi[0], 2) * (-1 + 4 * qsi[1]) +
-                      3 * qsi[0] * (1 - 8 * qsi[1] + 10 * pow(qsi[1], 2))));
+                    -8 * (-1 + pow(qsi[0], 3) + 12 * qsi[1] -
+                          30 * pow(qsi[1], 2) + 20 * pow(qsi[1], 3) +
+                          3 * pow(qsi[0], 2) * (-1 + 4 * qsi[1]) +
+                          3 * qsi[0] * (1 - 8 * qsi[1] + 10 * pow(qsi[1], 2)));
                 currentFuncPos--;
             case 3:
                 phi(currentFuncPos, 0) =
-                    (-(qsi[1] *
-                       (5 + 3 * pow(qsi[0], 2) - 21 * qsi[1] +
-                        18 * pow(qsi[1], 2) + 2 * qsi[0] * (-4 + 9 * qsi[1]))) /
-                     2.);
+                    -(qsi[1] *
+                      (5 + 3 * pow(qsi[0], 2) - 21 * qsi[1] +
+                       18 * pow(qsi[1], 2) + 2 * qsi[0] * (-4 + 9 * qsi[1]))) /
+                    2.;
                 phi(currentFuncPos, 1) =
-
-                    (((-2 + 3 * qsi[0]) *
-                      (1 + pow(qsi[0], 2) - 6 * qsi[1] + 6 * pow(qsi[1], 2) +
-                       qsi[0] * (-2 + 6 * qsi[1]))) /
-                     2.);
+                    ((-2 + 3 * qsi[0]) *
+                     (1 + pow(qsi[0], 2) - 6 * qsi[1] + 6 * pow(qsi[1], 2) +
+                      qsi[0] * (-2 + 6 * qsi[1]))) /
+                    2.;
                 curlPhiHat(0, currentFuncPos) =
-
-                    (6 * (1 + pow(qsi[0], 2) - 6 * qsi[1] + 6 * pow(qsi[1], 2) +
-                          qsi[0] * (-2 + 6 * qsi[1])));
+                    6 * (1 + pow(qsi[0], 2) - 6 * qsi[1] + 6 * pow(qsi[1], 2) +
+                         qsi[0] * (-2 + 6 * qsi[1]));
                 currentFuncPos--;
             case 2:
                 phi(currentFuncPos, 0) =
-                    ((qsi[1] * (-5 + 4 * qsi[0] + 8 * qsi[1])) / 3.);
+                    (qsi[1] * (-5 + 4 * qsi[0] + 8 * qsi[1])) / 3.;
                 phi(currentFuncPos, 1) =
-
-                    (-((-3 + 4 * qsi[0]) * (-1 + qsi[0] + 2 * qsi[1])) / 3.);
-                curlPhiHat(0, currentFuncPos) =
-                    (-4 * (-1 + qsi[0] + 2 * qsi[1]));
+                    -((-3 + 4 * qsi[0]) * (-1 + qsi[0] + 2 * qsi[1])) / 3.;
+                curlPhiHat(0, currentFuncPos) = -4 * (-1 + qsi[0] + 2 * qsi[1]);
                 currentFuncPos--;
             case 1:
-                phi(currentFuncPos, 0) = (-qsi[1]);
-                phi(currentFuncPos, 1) = (-1 + qsi[0]);
-                curlPhiHat(0, currentFuncPos) = (2);
+                phi(currentFuncPos, 0) = -qsi[1];
+                phi(currentFuncPos, 1) = -1 + qsi[0];
+                curlPhiHat(0, currentFuncPos) = 2;
                 break;
             default:
                 DebugStop(); // polynomial order not implemented!
             }
             break;
+
         case firstSide + 3: // internal functions
             switch (pOrder) {
             case 15:
@@ -45648,7 +45497,6 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                 break;
             case 1:
                 break;
-
             default:
                 DebugStop(); // polynomial order not implemented!
             }

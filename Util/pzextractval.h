@@ -8,7 +8,7 @@
 
 #ifndef ExtractVal_h
 #define ExtractVal_h
-
+#include "pzreal.h"
 class TPZExtractVal
 {
 public:

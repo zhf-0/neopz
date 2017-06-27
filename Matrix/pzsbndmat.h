@@ -128,20 +128,20 @@ public:
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
+    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    int SolveEigenProblem(TPZVec < std::complex<double> > &w);
+    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w);
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    int SolveGeneralisedEigenProblem(TPZSBMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    int SolveGeneralisedEigenProblem(TPZSBMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
     
     /** @} */
 #endif

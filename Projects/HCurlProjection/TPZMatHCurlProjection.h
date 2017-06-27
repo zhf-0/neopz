@@ -12,8 +12,8 @@
 
 
 const REAL M_C  (299792458); //velocidade da luz no vacuo
-const REAL M_UZERO  (4*M_PI*1e-7);//permeabilidade do meio livre
-const REAL M_EZERO  (1./(M_UZERO * M_C * M_C));//permissividade do meio livre
+const REAL M_UZERO  (1.256637061435917e-6);//permeabilidade do meio livre
+const REAL M_EZERO  (8.85418781762039e-12);//permissividade do meio livre
 #ifdef STATE_COMPLEX
 const STATE imaginary(0.,1.);//unidade imaginaria
 #endif
