@@ -185,18 +185,21 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
             if (std::abs(iT->first) < 1e-2)
                 continue;
             std::cout << iT->first << std::endl;
-            i++;
             fileEigenValues << iT->first << std::endl;
-            if (i >= nSolutions)
+			if (i >= nSolutions){
                 break;
+			}
+			i++;
         } else {
             fileEigenValues << iT->first << std::endl;
-            i++;
-            if (i >= nSolutions)
+			if (i >= nSolutions){
                 continue;
-            if (i > 50)
+			}
+			if (i > 50){
                 break;
+			}
             std::cout << iT->first << std::endl;
+			i++;
         }
     }
     if (isCutOff) {
@@ -212,7 +215,6 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
         fileName.append(".csv");
         std::ofstream fileA(fileName.c_str());
         char number[256];
-        std::cout << eigenValuesRe.begin()->first << std::endl;
         for (int i = 0; i < eigenValuesRe.begin()->second.Rows(); i++) {
             for (int j = 0; j < eigenValuesRe.begin()->second.Cols(); j++) {
                 sprintf(number, "%32.32Lf",
