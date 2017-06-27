@@ -120,9 +120,8 @@ struct SimulationCase {
     }
 };
 
-#define Solution1
-
-//#define Solution2
+//#define Solution1
+#define Solution2
 
 
 static void Analytic(const TPZVec<REAL> &x, TPZVec<STATE> &u,TPZFMatrix<STATE> &gradu);
@@ -250,16 +249,12 @@ void ComputeApproximation(SimulationCase & sim_data){
         convergence << " Polynomial order  =  " << p << std::endl;
         convergence << setw(5)  << " h" << setw(25) << " ndof" << setw(25) << " ndof_cond" << setw(25) << " assemble_time (msec)" << setw(25) << " solving_time (msec)" << setw(25) << " error_time (msec)" << setw(25) << " Primal l2 error" << setw(25) << " Dual l2 error "  << setw(25) << " H1 error " << endl;
         
-        int h_base = 0; // start with one element
+        int h_base = 1; // start with 8 elements
         for (int h = 0; h <= n_h_levels; h++) {
             
             // Compute the geometry
             TPZGeoMesh * gmesh;
             gmesh = GeomtricMesh(h_base, sim_data);
-//            REAL angle = 45;
-//            RotateGeomesh(gmesh, angle, 0);
-//            RotateGeomesh(gmesh, angle, 1);
-//            RotateGeomesh(gmesh, angle, 2);
     
 #ifdef PZDEBUG
             TPZCheckGeom check(gmesh);
@@ -431,9 +426,9 @@ void Analytic(const TPZVec<REAL> &p, TPZVec<STATE> &u,TPZFMatrix<STATE> &gradu){
     
     u[0] = sin(M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l);
     
-    STATE dudx  = M_PI*l*(sin(2.0*M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l));
-    STATE dudy  = M_PI*l*(sin(M_PI*x*l)*sin(M_PI*x*l) * sin(2.0*M_PI*y*l)*sin(M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l));
-    STATE dudz  = M_PI*l*(sin(M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(2.0*M_PI*z*l)*sin(M_PI*z*l));
+    STATE dudx  = M_PI*l*(sin(2.0*M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l));
+    STATE dudy  = M_PI*l*(sin(M_PI*x*l)*sin(M_PI*x*l) * sin(2.0*M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l));
+    STATE dudz  = M_PI*l*(sin(M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(2.0*M_PI*z*l));
     
     gradu(0,0) = -1.0*(dudx);
     gradu(1,0) = -1.0*(dudy);
