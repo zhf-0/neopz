@@ -1,9 +1,14 @@
 /**
  * @file
- * @brief Afirst attempt at a multi physics hcurl/h1 formulation
- * @details Adequadte for problems with longitudinal axis symmetry
- * such as some setions of waveguides (closed waveguides).
- * it uses hcurl for tranverse componentes and h1 for longitudinal components
+ * @brief Performs modal analysis in an electromagnetic waveguide.
+ * @details This project is aimed at electromagnetic analysis
+ * of waveguides, but it is not restricted to it. More generally, 
+ * it could be a starting point for problems with longitudinal axis symmetry.
+ * The problem is stated as a generalised eigenvalue problem, as seen in
+ * Jin, Jian-Ming. The finite element method in electromagnetics.(contd.)
+ * John Wiley & Sons, 2015 (Chapter 8).
+ * The transverse field components are approximated using H(curl,\Omega) functions,
+ * and the longitudinal field components are approximated using H^1(\Omega) functions.
  *
  * @author Francisco Orlandini
  * @since 2015
@@ -26,7 +31,7 @@
 #include "pzfstrmatrix.h"
 #include "pzbuildmultiphysicsmesh.h"
 
-#include "TPZMatMFHCurlH1.h"
+#include "TPZMatModalAnalysis.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
@@ -103,8 +108,8 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
     CreateCMesh(meshVec,gmesh, pOrder, ur, er, f0,
               isCutOff); // funcao para criar a malha computacional
     TPZCompMesh *cmeshMF = meshVec[0];
-    TPZMatMFHCurlH1 *matPointer =
-        dynamic_cast<TPZMatMFHCurlH1 *>(cmeshMF->MaterialVec()[1]);
+    TPZMatModalAnalysis *matPointer =
+        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->MaterialVec()[1]);
     TPZVec<TPZCompMesh *> temporalMeshVec(2);
     temporalMeshVec[matPointer->H1Index()] = meshVec[1 + matPointer->H1Index()];
     temporalMeshVec[matPointer->HCurlIndex()] =
@@ -131,8 +136,8 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
     step.SetDirect(ECholesky); // caso simetrico
     an.SetSolver(step);
     int matId = 1;
-    TPZMatMFHCurlH1 *matAlias =
-        dynamic_cast<TPZMatMFHCurlH1 *>(cmeshMF->FindMaterial(matId));
+    TPZMatModalAnalysis *matAlias =
+        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->FindMaterial(matId));
 
     matAlias->SetMatrixA();
 	std::cout << "entrando no assemble matrix A" << std::endl;
@@ -329,8 +334,8 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 
     int nHCurlEquations = 0, nH1Equations = 0;
     long nEq = 0;
-    TPZMatMFHCurlH1 *mat =
-        dynamic_cast<TPZMatMFHCurlH1 *>(cmeshMF->FindMaterial(1));
+    TPZMatModalAnalysis *mat =
+        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->FindMaterial(1));
     for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
         bool isH1;
         if (boundConnects.find(iCon) == boundConnects.end()) {
@@ -517,14 +522,14 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh, int pOrde
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
-    TPZMatMFHCurlH1 *matMultiPhysics = NULL;
+    TPZMatModalAnalysis *matMultiPhysics = NULL;
     TPZVec<TPZCompMesh *> meshVec(2);
     if (isCutOff) {
         TPZMatWaveguideCutOffAnalysis *dummy =
             new TPZMatWaveguideCutOffAnalysis(matId, f0, ur, er);
         matMultiPhysics = dummy;
     } else {
-        TPZMatMFHCurlH1 *dummy = new TPZMatMFHCurlH1(matId, f0, ur, er);
+        TPZMatModalAnalysis *dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
         matMultiPhysics = dummy;
     }
     meshVec[matMultiPhysics->H1Index()] = cmeshH1;

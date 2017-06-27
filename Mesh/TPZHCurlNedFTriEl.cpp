@@ -73,13 +73,15 @@ TPZHCurlNedFTriEl::TPZHCurlNedFTriEl()
 TPZHCurlNedFTriEl::~TPZHCurlNedFTriEl() {}
 
 TPZHCurlNedFTriEl *TPZHCurlNedFTriEl::Clone(TPZCompMesh &mesh) const {
-    DebugStop();
+	std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
+	DebugStop();
 }
 
 TPZHCurlNedFTriEl *
 TPZHCurlNedFTriEl::ClonePatchEl(TPZCompMesh &mesh,
                                 std::map<long, long> &gl2lcConMap,
                                 std::map<long, long> &gl2lcElMap) const {
+	std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
     DebugStop();
 }
 
@@ -130,7 +132,7 @@ int TPZHCurlNedFTriEl::NSideConnects(int side) const {
     if (TPZShapeTriang::SideDimension(side) == Dimension())
         return 1; // internal connects
     return -1;
-} // TODO: TRANSFER TO LINEAR EL
+}
 
 int TPZHCurlNedFTriEl::SideConnectLocId(int con, int side) const {
 #ifdef PZDEBUG
@@ -172,7 +174,8 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const {
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point,
                                           TPZFMatrix<REAL> &phi,
                                           TPZFMatrix<REAL> &dphi) {
-    DebugStop();
+    std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
+	DebugStop();
 }
 
 void TPZHCurlNedFTriEl::SetIntegrationRule(int ord) {
@@ -199,7 +202,10 @@ void TPZHCurlNedFTriEl::SetPreferredOrder(int order) {
     fPreferredOrder = order;
 }
 
-void TPZHCurlNedFTriEl::GetInterpolationOrder(TPZVec<int> &ord) { DebugStop(); }
+void TPZHCurlNedFTriEl::GetInterpolationOrder(TPZVec<int> &ord) {
+	std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
+	DebugStop();
+}
 
 int TPZHCurlNedFTriEl::PreferredSideOrder(int side) {
     if (TPZShapeTriang::SideDimension(side) < Dimension() - 1) {
@@ -295,6 +301,7 @@ void TPZHCurlNedFTriEl::SetSideOrder(int side, int order) {
 }
 
 TPZTransform TPZHCurlNedFTriEl::TransformSideToElement(int side) {
+	std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
     DebugStop();
 }
 
@@ -395,10 +402,10 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
 }
 
 void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
-                                        TPZFMatrix<REAL> &phi,
-                                        TPZFMatrix<REAL> &dphix,
+                                        TPZFMatrix<REAL> &phiHCurlAxes,
+                                        TPZFMatrix<REAL> &curlPhiDAxes,
                                         const TPZFMatrix<REAL> &axes,
-                                        TPZSolVec &sol, TPZGradSolVec &dsol) {
+                                        TPZSolVec &sol, TPZGradSolVec &curlSol) {
     const int dim = axes.Cols();
     const int nVar = this->Material()->NStateVariables();
     const int nCon = this->NConnects();
@@ -413,27 +420,17 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
 #endif
 
     sol.Resize(numberSol);
-    dsol.Resize(numberSol);
+    curlSol.Resize(numberSol);
 
     for (long iSol = 0; iSol < numberSol; iSol++) {
         sol[iSol].Resize(dim, nVar);
         sol[iSol].Fill(0);
-        dsol[iSol].Redim(dim, nVar);
-        dsol[iSol].Zero();
+        curlSol[iSol].Redim(dim, nVar);
+        curlSol[iSol].Zero();
     }
 
-    // calculate shape functions
-    TPZFMatrix<REAL> phiHat, phiHCurlAxes, phiHCurl;
-    TPZFMatrix<REAL> curlPhiHat, curlPhiDAxes, curlPhi;
-
-    TPZFMatrix<REAL> jacobian, jacinv, axesDummy;
-    REAL detjac;
-
-    this->Reference()->Jacobian(qsi, jacobian, axesDummy, detjac, jacinv);
-    this->Shape(qsi, phiHat, curlPhiHat);
-    this->ShapeTransform(phiHat, jacinv, phiHCurlAxes);
-    this->CurlTransform(curlPhiHat, jacinv, curlPhiDAxes);
-
+	TPZFMatrix<REAL> phiHCurl;
+	TPZFMatrix<REAL> curlPhi;
     TPZAxesTools<REAL>::Axes2XYZ(phiHCurlAxes, phiHCurl, axes, false);
 
     TPZManVector<REAL, 3> ax1(3), ax2(3), elNormal(3);
@@ -463,7 +460,7 @@ void TPZHCurlNedFTriEl::ComputeSolution(TPZVec<REAL> &qsi,
                 for (int coord = 0; coord < dim; coord++) {
                     sol[iSol][coord] +=
                         (STATE)meshSol(pos + jShape, iSol) * phiHCurl(ishape, coord);
-                    dsol[iSol](coord, nVar - 1) +=
+                    curlSol[iSol](coord, nVar - 1) +=
                         (STATE)meshSol(pos + jShape, iSol) * curlPhi(coord, ishape);
                 }
                 ishape++;

@@ -9,12 +9,12 @@
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "TPZMatMFHCurlH1.h"
+#include "TPZMatModalAnalysis.h"
 /**
  * @ingroup material
  * @brief This class implements the weak statement of the model problem from Oden's book, Chapter 1, within the PZ environment
  */
-class  TPZMatWaveguideCutOffAnalysis : public TPZMatMFHCurlH1
+class  TPZMatWaveguideCutOffAnalysis : public TPZMatModalAnalysis
 {
     
 public:

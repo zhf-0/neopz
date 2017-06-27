@@ -12,14 +12,7 @@ using namespace pzshape;
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFTriEl"));
 #endif
-/**
-Method to get shape functions values transferred to TPZCompEl::CalcStiff
-variables. Shape functions are calculated according to INSERT REFERENCE HERE.
 
-@param qsi [in] coordinates in reference element
-@param phi [out] shape function vec
-@param dphidxi [out] shape function derivatives vec
-*/
 void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                              TPZFMatrix<REAL> &curlPhiHat) {
    // EvaluateShapeF(qsi, phi, curlPhiHat);

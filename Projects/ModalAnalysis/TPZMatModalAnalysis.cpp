@@ -1,4 +1,4 @@
-#include "TPZMatMFHCurlH1.h"
+#include "TPZMatModalAnalysis.h"
 
 #include "pzbndcond.h"
 #include "pzlog.h"
@@ -10,7 +10,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 
-TPZMatMFHCurlH1::TPZMatMFHCurlH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
 TPZVecL2(id), fUr(ur), fEr(er)
 {
     isTesting = false;
@@ -18,7 +18,7 @@ TPZVecL2(id), fUr(ur), fEr(er)
     fW = 2.*M_PI*freq;
 }
 
-TPZMatMFHCurlH1::TPZMatMFHCurlH1(int id) : TPZVecL2(id), fUr(urDefault),
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id) : TPZVecL2(id), fUr(urDefault),
 fEr(erDefault)
 {
     isTesting = false;
@@ -27,7 +27,7 @@ fEr(erDefault)
 }
 
 /** @brief Default constructor */
-TPZMatMFHCurlH1::TPZMatMFHCurlH1() : TPZVecL2(), fUr(urDefault),
+TPZMatModalAnalysis::TPZMatModalAnalysis() : TPZVecL2(), fUr(urDefault),
 fEr(erDefault)
 {
     isTesting = false;
@@ -36,7 +36,7 @@ fEr(erDefault)
 }
 
 
-TPZMatMFHCurlH1::TPZMatMFHCurlH1(const TPZMatMFHCurlH1 &mat) : TPZVecL2(mat), fUr(mat.fUr),
+TPZMatModalAnalysis::TPZMatModalAnalysis(const TPZMatModalAnalysis &mat) : TPZVecL2(mat), fUr(mat.fUr),
 fEr(mat.fEr)
 {
     isTesting = false;
@@ -44,12 +44,12 @@ fEr(mat.fEr)
     fW = mat.fW;
 }
 
-TPZMatMFHCurlH1::~TPZMatMFHCurlH1()
+TPZMatModalAnalysis::~TPZMatModalAnalysis()
 {
     
 }
 
-void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysis::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     if( isTesting == false ){
         DebugStop();
@@ -152,12 +152,12 @@ void TPZMatMFHCurlH1::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datav
 }
 
 
-void TPZMatMFHCurlH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysis::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     DebugStop();
 }
 
-void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     isTesting = false;
     if( isTesting == true ){
@@ -297,21 +297,21 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     }
 }
 
-void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef)
 {
     DebugStop();
 }
 
-void TPZMatMFHCurlH1::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
+void TPZMatModalAnalysis::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     DebugStop();
 }
 
-void TPZMatMFHCurlH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
     DebugStop();
 }
 
-void TPZMatMFHCurlH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatModalAnalysis::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
     if( isTesting ) return;
     
@@ -387,23 +387,23 @@ void TPZMatMFHCurlH1::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight
 
 }
 
-void TPZMatMFHCurlH1::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
+void TPZMatModalAnalysis::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef)
 {
     DebugStop();
 }
 
-void TPZMatMFHCurlH1::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
+void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
     DebugStop();
 }
 
-int TPZMatMFHCurlH1::IntegrationRuleOrder(int elPMaxOrder) const
+int TPZMatModalAnalysis::IntegrationRuleOrder(int elPMaxOrder) const
 {
     return 2+elPMaxOrder*2;
 }
 
 
-int TPZMatMFHCurlH1::VariableIndex(const std::string &name)
+int TPZMatModalAnalysis::VariableIndex(const std::string &name)
 {
     if( strcmp(name.c_str(), "Et") == 0) return 0;
     if( strcmp(name.c_str(), "Ez") == 0) return 1;
@@ -415,7 +415,7 @@ int TPZMatMFHCurlH1::VariableIndex(const std::string &name)
  * @brief Returns the number of variables associated with the variable indexed by var.
  * @param var Index variable into the solution, is obtained by calling VariableIndex
  */
-int TPZMatMFHCurlH1::NSolutionVariables(int var)
+int TPZMatModalAnalysis::NSolutionVariables(int var)
 {
     switch (var) {
         case 0: //Et
@@ -431,7 +431,7 @@ int TPZMatMFHCurlH1::NSolutionVariables(int var)
 }
 
 /** @brief Returns the solution associated with the var index based on the finite element approximation */
-void TPZMatMFHCurlH1::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
+void TPZMatModalAnalysis::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout)
 {
     
     DebugStop();
@@ -439,7 +439,7 @@ void TPZMatMFHCurlH1::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
 
 
 /** @brief Returns the solution associated with the var index based on the finite element approximation */
-void TPZMatMFHCurlH1::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
+void TPZMatModalAnalysis::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout)
 {
     
     TPZVec<STATE> et(3,0.);

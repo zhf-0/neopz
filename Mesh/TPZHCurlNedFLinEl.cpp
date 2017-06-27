@@ -287,7 +287,7 @@ void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,
 void TPZHCurlNedFLinEl::CurlTransform(const TPZFMatrix<REAL> &curlPhiHat,
                                       const TPZFMatrix<REAL> &jacinv,
                                       TPZFMatrix<REAL> &curlPhi) {
-    return; // The curl wont be calculated in boundary elements for now.
+    return; // The curl wont be calculated in boundary elements
 }
 
 void TPZHCurlNedFLinEl::CreateGraphicalElement(TPZGraphMesh &grafgrid,

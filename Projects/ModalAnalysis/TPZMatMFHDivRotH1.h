@@ -9,7 +9,7 @@
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
-#include "TPZMatMFHCurlH1.h"
+#include "TPZMatModalAnalysis.h"
 #include "TPZMatHCurlProjection.h"
 
 /**
@@ -19,7 +19,7 @@
  * It used a 2D Hcurl space for the transversal components of the electric field and an 1D
  * H1 space for the longitudinal component.
  */
-class  TPZMatMFHDivRotH1 : public TPZMatMFHCurlH1
+class  TPZMatMFHDivRotH1 : public TPZMatModalAnalysis
 {
     
 public:

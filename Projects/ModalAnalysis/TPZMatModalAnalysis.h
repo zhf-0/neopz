@@ -1,10 +1,10 @@
 /**
- * @file TPZMatMFHCurlH1.h
- * @brief Header file for class TPZMatMFHCurlH1.\n
+ * @file TPZMatModalAnalysis.h
+ * @brief Header file for class TPZMatModalAnalysis.\n
  */
 
-#ifndef TPZMATMFHCURLH1_H
-#define TPZMATMFHCURLH1_H
+#ifndef TPZMATMODALANALYSIS_H
+#define TPZMATMODALANALYSIS_H
 
 #include "TPZVecL2.h"
 #include "pzaxestools.h"
@@ -18,7 +18,7 @@
  * It used a 2D Hcurl space for the transversal components of the electric field and an 1D
  * H1 space for the longitudinal component.
  */
-class  TPZMatMFHCurlH1 : public TPZVecL2
+class  TPZMatModalAnalysis : public TPZVecL2
 {
     
 protected:
@@ -34,21 +34,21 @@ protected:
     
 public:
     
-    TPZMatMFHCurlH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatModalAnalysis(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
     
-    TPZMatMFHCurlH1(int id);
+    TPZMatModalAnalysis(int id);
     
     /** @brief Default constructor */
-    TPZMatMFHCurlH1();
+    TPZMatModalAnalysis();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
     /** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatMFHCurlH1(const TPZMatMFHCurlH1 &mat);
+    TPZMatModalAnalysis(const TPZMatModalAnalysis &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatMFHCurlH1();
+    virtual ~TPZMatModalAnalysis();
     
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatMFHCurlH1"; }
+    virtual std::string Name() { return "TPZMatModalAnalysis"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}

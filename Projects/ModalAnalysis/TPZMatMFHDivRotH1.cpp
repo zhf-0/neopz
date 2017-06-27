@@ -11,21 +11,21 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 TPZMatMFHDivRotH1::TPZMatMFHDivRotH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
-TPZMatMFHCurlH1(id,freq,ur,er)
+TPZMatModalAnalysis(id,freq,ur,er)
 {
 }
 
-TPZMatMFHDivRotH1::TPZMatMFHDivRotH1(int id) : TPZMatMFHCurlH1(id)
+TPZMatMFHDivRotH1::TPZMatMFHDivRotH1(int id) : TPZMatModalAnalysis(id)
 {
 }
 
 /** @brief Default constructor */
-TPZMatMFHDivRotH1::TPZMatMFHDivRotH1() : TPZMatMFHCurlH1()
+TPZMatMFHDivRotH1::TPZMatMFHDivRotH1() : TPZMatModalAnalysis()
 {
 }
 
 
-TPZMatMFHDivRotH1::TPZMatMFHDivRotH1(const TPZMatMFHDivRotH1 &mat) : TPZMatMFHCurlH1(mat){
+TPZMatMFHDivRotH1::TPZMatMFHDivRotH1(const TPZMatMFHDivRotH1 &mat) : TPZMatModalAnalysis(mat){
 }
 
 TPZMatMFHDivRotH1::~TPZMatMFHDivRotH1()

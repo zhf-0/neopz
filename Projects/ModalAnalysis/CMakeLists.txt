@@ -8,5 +8,5 @@ file(GLOB sources *.cpp ../HCurlProjection/TPZMatHCurlProjection.cpp)
 
 
 set(main_SRCS ${sources} ${headers})
-add_executable(MFHCurlH1 ${main_SRCS})
-target_link_libraries(MFHCurlH1 pz)
+add_executable(ModalAnalysis ${main_SRCS})
+target_link_libraries(ModalAnalysis pz)
