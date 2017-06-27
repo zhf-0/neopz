@@ -383,7 +383,7 @@ void TPZPlaneFractureKernel::RunThisFractureGeometry()
     TPZAnalysis * an = new TPZAnalysis(this->fmphysics);
     
     /** Convergence test */
-    //CheckConv();
+//    CheckConv();
     /**********************/
     
     int nEq = this->fmphysics->NEquations();
@@ -431,8 +431,8 @@ void TPZPlaneFractureKernel::RunThisFractureGeometry()
         std::cout << "\n-> Método de Newton\n";
         
         REAL normRes = 1.;
-        REAL stripeTol = 1.E-2;
-        REAL tolRes = 1.E-3;
+        REAL stripeTol = 1.E-1;
+        REAL tolRes = 1.E-1;
         int maxit = 15;
         int nit = 0;
         while(normRes > tolRes && nit < maxit)
@@ -487,12 +487,12 @@ void TPZPlaneFractureKernel::RunThisFractureGeometry()
                 this->AssembleStiffMatrixLoadVec(an, matK, matRes_partial, whoBlock);
                 matRes_total = matRes_partial + matMass;
                 
-                std::cout << "normRes = " << normRes << std::endl;
+                std::cout << "||res|| = " << normRes << std::endl;
                 normRes = 1.;
             }
             else
             {
-                std::cout << "normRes = " << normRes << std::endl;
+                std::cout << "||res|| = " << normRes << std::endl;
                 nit++;
             }
         }///end of Newton
@@ -801,13 +801,14 @@ void TPZPlaneFractureKernel::CheckConv()
     int nsteps = 10;
     
     this->ApplyInitialCondition(globLayerStruct.GetHigherPreStress());
+
     TPZFMatrix<STATE> xIni = this->fmphysics->Solution();
-    //    for(long i = 0; i < xIni.Rows(); i++)
-    //    {
-    //        REAL val = (double)(rand())*(1.e-8);
-    //        xIni(i,0) = val;
-    //    }
-    //    xIni(posBlock) = 1.;
+    for(long i = 0; i < xIni.Rows(); i++)
+    {
+        STATE val = (STATE)(rand())*(1.e-8);
+        xIni(i,0) = val;
+    }
+    xIni(posBlock) = 1.;
     
     TPZAnalysis *an = new TPZAnalysis(this->fmphysics);
     an->LoadSolution(xIni);
@@ -1192,6 +1193,8 @@ REAL TPZPlaneFractureKernel::IntegrateW(bool & thereIsNegW, REAL & negVol)
 {
     thereIsNegW = false;
     negVol = 0.;
+    
+    this->fmeshVec[0]->LoadReferences();
     
     REAL integralW = 0.;
     for(int c = 0; c < this->fmeshVec[0]->NElements(); c++)

@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     bool l2error = false;// TODO: implement error analysis
     const int nThreads = 0; // TODO: fix multithread issue
     bool optimizeBandwidth = true;
-    bool filterEquations = false;
+    bool filterEquations = true;
 
     int nDiv = 4;
     const int nSim = 2;
@@ -116,13 +116,15 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
 
     TPZAutoPointer<TPZFStructMatrix> fmtrx;
 
     fmtrx = new TPZFStructMatrix(cmeshMF);
     fmtrx->SetNumThreads(nThreads);
-    fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+	if(filterEquations){
+		FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+		fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+	}
     an.SetStructuralMatrix(fmtrx);
 
     TPZStepSolver<STATE> step;
@@ -201,7 +203,6 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
         std::cout << "FINISHED!" << std::endl;
         return;
     }
-    std::cout << "Post Processing..." << std::endl;
 
     {
         std::string fileName("../evectors");
@@ -234,6 +235,7 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
         fileA.close();
     }
     if (genVTK) {
+		std::cout << "Post Processing..." << std::endl;
         TPZFMatrix<STATE> solMat(neqOriginal, 1, 0.);
 
         TPZStack<std::string> scalnames, vecnames;
@@ -362,32 +364,17 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
     TPZManVector<int, 3> nx(3, 0);
     TPZManVector<REAL, 3> llCoord(3, 0.), ulCoord(3, 0.), urCoord(3, 0.),
         lrCoord(3, 0.);
-    llCoord[0] = -wDomain / 2;
-    llCoord[1] = -hDomain / 2;
+    llCoord[0] = 0.;
+	llCoord[1] = 0.;
 
-    ulCoord[0] = -wDomain / 2;
-    ulCoord[1] = hDomain / 2;
+	ulCoord[0] = 0.;
+    ulCoord[1] = hDomain;
 
-    urCoord[0] = wDomain / 2;
-    urCoord[1] = hDomain / 2;
+    urCoord[0] = wDomain;
+    urCoord[1] = hDomain;
 
-    lrCoord[0] = wDomain / 2;
-    lrCoord[1] = -hDomain / 2;
-
-    const REAL theta = 0.2;
-    const REAL sinT = sin(theta), cosT = cos(theta);
-
-    llCoord[0] = cosT * (-wDomain / 2) - sinT * (-hDomain / 2);
-    llCoord[1] = sinT * (-wDomain / 2) + cosT * (-hDomain / 2);
-
-    ulCoord[0] = cosT * (-wDomain / 2) - sinT * (hDomain / 2);
-    ulCoord[1] = sinT * (-wDomain / 2) + cosT * (hDomain / 2);
-
-    urCoord[0] = cosT * (wDomain / 2) - sinT * (hDomain / 2);
-    urCoord[1] = sinT * (wDomain / 2) + cosT * (hDomain / 2);
-
-    lrCoord[0] = cosT * (wDomain / 2) - sinT * (-hDomain / 2);
-    lrCoord[1] = sinT * (wDomain / 2) + cosT * (-hDomain / 2);
+    lrCoord[0] = wDomain;
+	lrCoord[1] = 0.;
 
     nx[0] = xDiv;
     nx[1] = yDiv;
@@ -592,5 +579,5 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh, int pOrde
     std::cout << "cmeshMF->NEquations()"
               << "\t" << cmeshMF->NEquations() << std::endl;
     std::cout << "------\t----------\t-------" << std::endl;
-    return meshVecOut;
+    return;
 }

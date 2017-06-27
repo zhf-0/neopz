@@ -201,7 +201,7 @@ void TPZMatMFHCurlH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
     const STATE muR =  fUr(x);
     const STATE epsilonR = fEr(x);
-    REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
+    const REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
     /*****************ACTUAL COMPUTATION OF CONTRIBUTION****************/
     
 	const int nHCurlFunctions  = phiHCurl.Rows();
