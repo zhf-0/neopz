@@ -164,6 +164,9 @@ TPZGeoMesh * TPZHierarquicalGrid::ComputeExtrusion(REAL t, REAL dt, int n)
         }
     }
     
+    nodeId--;
+    fComputedGeomesh->SetMaxNodeId(nodeId);
+    
 //    int fbasedim = fBase->Dimension();
     
     int elid=0;
@@ -174,6 +177,8 @@ TPZGeoMesh * TPZHierarquicalGrid::ComputeExtrusion(REAL t, REAL dt, int n)
         CreateGeometricElement(n,iel,ielDim,ielMatId,elid);
     }
     
+    elid--;
+    fComputedGeomesh->SetMaxElementId(elid);
     fComputedGeomesh->BuildConnectivity();
     return fComputedGeomesh;
     

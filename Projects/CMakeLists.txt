@@ -185,6 +185,9 @@ ENABLE_TESTING()
 			#GPU project
 			add_subdirectory(GPU)
 
+			#GPU Poisson equation
+			add_subdirectory(GPU_poisson)
+
 			#Projeto Pablo
 			add_subdirectory(CreepStokes)
 			
