@@ -12,30 +12,16 @@
 
 #include "pzlog.h"
 #include "tpzautopointer.h"
-#include "TPZRefPatternTools.h"
+
 
 #include "tpzhierarquicalgrid.h"
-#include "TPZReadGIDGrid.h"
 #include "TPZRefPattern.h"
+#include "TPZRefPatternTools.h"
 #include "tpzgeoelrefpattern.h"
 #include "TPZRefPatternDataBase.h"
-#include "TPZRefPatternTools.h"
 #include "pzgeopoint.h"
-#include "TPZGeoLinear.h"
-#include "TPZGeoCube.h"
-#include "tpztriangle.h"
-#include "pzgeoquad.h"
-#include "pzgeoelside.h"
-#include "tpzgeoblend.h"
-#include "tpzarc3d.h"
 #include "pzgeotetrahedra.h"
 #include "pzgeoelrefless.h"
-#include "tpzquadraticquad.h"
-#include "tpzquadraticline.h"
-#include "TPZQuadSphere.h"
-#include "TPZTriangleSphere.h"
-#include "tpzquadraticquad.h"
-#include "tpzarc3d.h"
 
 #include "pzcondensedcompel.h"
 #include "pzelementgroup.h"
@@ -43,15 +29,9 @@
 #include "TPZRefPattern.h"
 #include "tpzgeoelrefpattern.h"
 #include "pzfunction.h"
-#include "tpzchangeel.h"
-
-#include "pzpoisson3d.h"
-#include "mixedpoisson.h"
 
 #include "TPZPrimalPoisson.h"
-#include "TPZDualPoisson.h"
 #include "pzbndcond.h"
-#include "pzbuildmultiphysicsmesh.h"
 
 #include "TPZCompMeshTools.h"
 
@@ -64,7 +44,6 @@
 #include "pzgmesh.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzcheckmesh.h"
-#include "TPZGmshReader.h"
 
 #ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -120,8 +99,9 @@ struct SimulationCase {
     }
 };
 
-//#define Solution1
-#define Solution2
+#define Solution1D
+//#define Solution2D
+//#define Solution3D
 
 
 static void Analytic(const TPZVec<REAL> &x, TPZVec<STATE> &u,TPZFMatrix<STATE> &gradu);
@@ -187,7 +167,7 @@ int main()
     
     // Primal Formulation over the solid sphere
     struct SimulationCase H1Case_1 = common;
-    H1Case_1.domain_type = "cube"; // domain_type = {line, plane, otherwise -> cube}
+    H1Case_1.domain_type = "line"; // domain_type = {line, plane, otherwise -> cube}
     H1Case_1.dump_folder = "H1_" + H1Case_1.domain_type;
     simulations.Push(H1Case_1);
     
@@ -249,7 +229,7 @@ void ComputeApproximation(SimulationCase & sim_data){
         convergence << " Polynomial order  =  " << p << std::endl;
         convergence << setw(5)  << " h" << setw(25) << " ndof" << setw(25) << " ndof_cond" << setw(25) << " assemble_time (msec)" << setw(25) << " solving_time (msec)" << setw(25) << " error_time (msec)" << setw(25) << " Primal l2 error" << setw(25) << " Dual l2 error "  << setw(25) << " H1 error " << endl;
         
-        int h_base = 1; // start with 8 elements
+        int h_base = 2; // start with 2 levels
         for (int h = 0; h <= n_h_levels; h++) {
             
             // Compute the geometry
@@ -311,7 +291,6 @@ void ComputeApproximation(SimulationCase & sim_data){
             analysis->LoadSolution();
             cmesh->Solution() *= -1.0; /* @omar::consequence of newton correction */
             analysis->LoadSolution(cmesh->Solution());
-            TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvec, cmesh);
 
             // PostProccessing
             std::stringstream sol_vtk_name;
@@ -349,7 +328,6 @@ void ComputeApproximation(SimulationCase & sim_data){
         ComputeConvergenceRates(p_error,p_conv);
         ComputeConvergenceRates(d_error,d_conv);
         ComputeConvergenceRates(h_error,h_conv);
-        
         
         // print convergence summary
         convergence << std::endl;
@@ -404,25 +382,47 @@ void Analytic(const TPZVec<REAL> &p, TPZVec<STATE> &u,TPZFMatrix<STATE> &gradu){
     y = p[1];
     z = p[2];
    
-#ifdef Solution1
+    REAL l = 3.0;
     
-    u[0] = x*x + y*y + z*z;
+#ifdef Solution1D
     
-    STATE dudx  = 2.0*x;
-    STATE dudy  = 2.0*y;
-    STATE dudz  = 2.0*z;
+
+    u[0] = sin(M_PI*x*l)*sin(M_PI*x*l);
+    
+    STATE dudx  = M_PI*l*sin(2.0*M_PI*x*l);
+    STATE dudy  = 0.0;
+    STATE dudz  = 0.0;
     
     gradu(0,0) = -1.0*(dudx);
     gradu(1,0) = -1.0*(dudy);
     gradu(2,0) = -1.0*(dudz);
     
-    gradu(3,0) = -6.0;
+    REAL f1 = cos(2.0*M_PI*x*l);
+    
+    gradu(3,0) = - 2.0 * M_PI * M_PI * l * l * f1;
+    
+#endif
+  
+#ifdef Solution2D
+    
+    u[0] = sin(M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l);
+    
+    STATE dudx  = M_PI*l*(sin(2.0*M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l));
+    STATE dudy  = M_PI*l*(sin(M_PI*x*l)*sin(M_PI*x*l) * sin(2.0*M_PI*y*l));
+    STATE dudz  = 0.0;
+    
+    gradu(0,0) = -1.0*(dudx);
+    gradu(1,0) = -1.0*(dudy);
+    gradu(2,0) = -1.0*(dudz);
+    
+    REAL f1 = cos(2.0*M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l);
+    REAL f2 = sin(M_PI*x*l)*sin(M_PI*x*l) * cos(2.0*M_PI*y*l);
+    
+    gradu(3,0) = - 2.0 * M_PI * M_PI * l * l * (f1 + f2);
     
 #endif
     
-#ifdef Solution2
-    
-    REAL l = 1.0;
+#ifdef Solution3D
     
     u[0] = sin(M_PI*x*l)*sin(M_PI*x*l) * sin(M_PI*y*l)*sin(M_PI*y*l) * sin(M_PI*z*l)*sin(M_PI*z*l);
     
