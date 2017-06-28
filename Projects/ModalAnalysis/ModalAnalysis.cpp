@@ -23,14 +23,15 @@
 #include "TPZVTKGeoMesh.h"
 #include "pzbndcond.h"
 #include "pzlog.h"
-#include "TPZTimer.h"
 #include "pzanalysis.h"
 #include "pzstrmatrix.h"
 #include "pzstepsolver.h"
 #include "pzl2projection.h"
 #include "pzfstrmatrix.h"
 #include "pzbuildmultiphysicsmesh.h"
-
+#ifdef USING_BOOST
+#include "boost/date_time/posix_time/posix_time.hpp"
+#endif
 #include "TPZMatModalAnalysis.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 
@@ -57,8 +58,6 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
                  const REAL wDomain, const int xDiv, const int zDiv);
 
 int main(int argc, char *argv[]) {
-
-    HDivPiola = 1; // use piola mapping
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
@@ -71,14 +70,14 @@ int main(int argc, char *argv[]) {
     bool isCutOff = false;
     const enum meshTypeE meshType = createTriangular;
     int pOrder = 2; // polynomial order of basis functions
-    bool genVTK = false;
+    bool genVTK = false;//generate vtk for fields visualisation
     bool l2error = false;// TODO: implement error analysis
     const int nThreads = 0; // TODO: fix multithread issue
     bool optimizeBandwidth = true;
     bool filterEquations = true;
 
-    int nDiv = 4;
-    const int nSim = 2;
+    int nDiv = 10;
+    const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
         RunSimulation(isCutOff, meshType, pOrder, nDiv, hDomain, wDomain, f0,
@@ -94,9 +93,7 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
 				   REAL hDomain, REAL wDomain, REAL f0, bool genVTK,
 				   bool l2error, const int nThreads, bool optimizeBandwidth,
 				   bool filterEquations) {
-    TPZTimer timer;
-
-    timer.start();
+	
 
     int xDiv = nDiv;
     int zDiv = nDiv;
@@ -107,15 +104,15 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
 	TPZVec<TPZCompMesh *> meshVec(1);
     CreateCMesh(meshVec,gmesh, pOrder, ur, er, f0,
               isCutOff); // funcao para criar a malha computacional
-    TPZCompMesh *cmeshMF = meshVec[0];
+    TPZCompMesh *cmesh = meshVec[0];
     TPZMatModalAnalysis *matPointer =
-        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->MaterialVec()[1]);
+        dynamic_cast<TPZMatModalAnalysis *>(cmesh->MaterialVec()[1]);
     TPZVec<TPZCompMesh *> temporalMeshVec(2);
     temporalMeshVec[matPointer->H1Index()] = meshVec[1 + matPointer->H1Index()];
     temporalMeshVec[matPointer->HCurlIndex()] =
         meshVec[1 + matPointer->HCurlIndex()];
 
-    TPZAnalysis an(cmeshMF, optimizeBandwidth);
+    TPZAnalysis an(cmesh, optimizeBandwidth);
     //configuring analysis object
 	
     TPZManVector<long, 1000> activeEquations;
@@ -124,7 +121,7 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
 
     TPZAutoPointer<TPZFStructMatrix> fmtrx;
 
-    fmtrx = new TPZFStructMatrix(cmeshMF);
+    fmtrx = new TPZFStructMatrix(cmesh);
     fmtrx->SetNumThreads(nThreads);
 	if(filterEquations){
 		FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
@@ -137,31 +134,41 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
     an.SetSolver(step);
     int matId = 1;
     TPZMatModalAnalysis *matAlias =
-        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->FindMaterial(matId));
-
+        dynamic_cast<TPZMatModalAnalysis *>(cmesh->FindMaterial(matId));
+	
+	std::cout << "Assembling..." << std::endl;
+#ifdef USING_BOOST
+	boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::local_time();
+#endif
     matAlias->SetMatrixA();
-	std::cout << "entrando no assemble matrix A" << std::endl;
     an.Assemble();
 	
     TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
     stiffAPtr = new TPZFMatrix<STATE>(
         *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().Matrix().operator->()));
-	
-    matAlias->SetMatrixB();
-    std::cout << "entrando no assemble matrix B" << std::endl;
-    an.Assemble();
+
+	matAlias->SetMatrixB();
+	an.Assemble();
+#ifdef USING_BOOST
+	boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::local_time();
+#endif
+	std::cout << "Finished assembly." << std::endl;
 	
     stiffBPtr = new TPZFMatrix<STATE>(
         *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().Matrix().operator->()));
-    std::cout << "saindo do assemble" << std::endl;
 
     TPZVec<STATE> eValues;
     TPZFMatrix<STATE> eVectors;
-    std::cout << "entrando no calculo dos autovalores" << std::endl;
+    std::cout << "Solving..." << std::endl;
+#ifdef USING_BOOST
+	boost::posix_time::ptime t3 = boost::posix_time::microsec_clock::local_time();
+#endif
     stiffAPtr->SolveGeneralisedEigenProblem(*stiffBPtr, eValues, eVectors);
-    std::cout << "saindo do calculo dos autovalores" << std::endl;
-    timer.stop();
-
+#ifdef USING_BOOST
+	boost::posix_time::ptime t4 = boost::posix_time::microsec_clock::local_time();
+	std::cout << "Time for assembly " << t2-t1 << " Time for solving " << t4-t3 << std::endl;
+#endif
+	
     std::set<std::pair<REAL, TPZFMatrix<STATE>>> eigenValuesRe;
     TPZFMatrix<STATE> eVector(eVectors.Rows(), 1);
     std::pair<REAL, TPZFMatrix<STATE>> duplet;
@@ -266,7 +273,7 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
             }
             an.LoadSolution(solMat);
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
-                                                               cmeshMF);
+                                                               cmesh);
             an.PostProcess(postProcessResolution);
             iT++;
         }
@@ -280,15 +287,13 @@ void RunSimulation(bool isCutOff, const int meshType, int pOrder, int nDiv,
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
                              TPZVec<long> &activeEquations, int &neq,
                              int &neqOriginal) {
-    TPZCompMesh *cmeshMF = meshVec[0];
-    TPZCompMesh *cmeshHCurl = meshVec[1];
-    TPZCompMesh *cmeshH1 = meshVec[2];
+    TPZCompMesh *cmesh = meshVec[0];
 
     TPZManVector<long, 1000> allConnects;
     std::set<long> boundConnects;
 
-    for (int iel = 0; iel < cmeshMF->NElements(); iel++) {
-        TPZCompEl *cel = cmeshMF->ElementVec()[iel];
+    for (int iel = 0; iel < cmesh->NElements(); iel++) {
+        TPZCompEl *cel = cmesh->ElementVec()[iel];
         if (cel == NULL) {
             continue;
         }
@@ -311,14 +316,14 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
             }
         }
     }
-    for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
+    for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
         if (boundConnects.find(iCon) == boundConnects.end()) {
-            TPZConnect &con = cmeshMF->ConnectVec()[iCon];
+            TPZConnect &con = cmesh->ConnectVec()[iCon];
             if (con.HasDependency())
                 continue;
             int seqnum = con.SequenceNumber();
-            int pos = cmeshMF->Block().Position(seqnum);
-            int blocksize = cmeshMF->Block().Size(seqnum);
+            int pos = cmesh->Block().Position(seqnum);
+            int blocksize = cmesh->Block().Size(seqnum);
             if (blocksize == 0)
                 continue;
 
@@ -330,38 +335,39 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
         }
     }
 
-    neqOriginal = cmeshMF->NEquations();
-
-    int nHCurlEquations = 0, nH1Equations = 0;
-    long nEq = 0;
-    TPZMatModalAnalysis *mat =
-        dynamic_cast<TPZMatModalAnalysis *>(cmeshMF->FindMaterial(1));
-    for (int iCon = 0; iCon < cmeshMF->NConnects(); iCon++) {
-        bool isH1;
-        if (boundConnects.find(iCon) == boundConnects.end()) {
-            if (cmeshMF->ConnectVec()[iCon].HasDependency())
-                continue;
-            int seqnum = cmeshMF->ConnectVec()[iCon].SequenceNumber();
-            int blocksize = cmeshMF->Block().Size(seqnum);
-            if (mat->H1Index() == 0 && iCon < cmeshH1->NConnects()) {
-                isH1 = true;
-            } else if (mat->H1Index() == 1 && iCon >= cmeshHCurl->NConnects()) {
-                isH1 = true;
-            } else {
-                isH1 = false;
-            }
-            for (int ieq = 0; ieq < blocksize; ieq++) {
-                nEq++;
-                isH1 == true ? nH1Equations++ : nHCurlEquations++;
-            }
-        }
-    }
-    std::cout << "------\tactive eqs\t-------" << std::endl;
-    std::cout << "# H1 equations: " << nH1Equations << std::endl;
-    std::cout << "# HCurl equations: " << nHCurlEquations << std::endl;
-    std::cout << "# equations: " << nEq << std::endl;
-    std::cout << "------\t----------\t-------" << std::endl;
-    neq = nEq;
+    neqOriginal = cmesh->NEquations();
+    neq = 0;
+	TPZCompMesh *cmeshHCurl = meshVec[1];
+	TPZCompMesh *cmeshH1 = meshVec[2];
+	int nHCurlEquations = 0, nH1Equations = 0;
+	TPZMatModalAnalysis *mat =
+		dynamic_cast<TPZMatModalAnalysis *>(cmesh->FindMaterial(1));
+	for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
+		bool isH1;
+		if (boundConnects.find(iCon) == boundConnects.end()) {
+			if (cmesh->ConnectVec()[iCon].HasDependency())
+				continue;
+			int seqnum = cmesh->ConnectVec()[iCon].SequenceNumber();
+			int blocksize = cmesh->Block().Size(seqnum);
+			if (mat->H1Index() == 0 && iCon < cmeshH1->NConnects()) {
+				isH1 = true;
+			} else if (mat->H1Index() == 1 &&
+					   iCon >= cmeshHCurl->NConnects()) {
+				isH1 = true;
+			} else {
+				isH1 = false;
+			}
+			for (int ieq = 0; ieq < blocksize; ieq++) {
+				neq++;
+				isH1 == true ? nH1Equations++ : nHCurlEquations++;
+			}
+		}
+	}
+	std::cout << "------\tactive eqs\t-------" << std::endl;
+	std::cout << "# H1 equations: " << nH1Equations << std::endl;
+	std::cout << "# HCurl equations: " << nHCurlEquations << std::endl;
+	std::cout << "# equations: " << neq << std::endl;
+	std::cout << "------\t----------\t-------" << std::endl;
     return;
 }
 
@@ -578,13 +584,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh, int pOrde
     meshVecOut[1 + matMultiPhysics->H1Index()] = cmeshH1;
     meshVecOut[1 + matMultiPhysics->HCurlIndex()] = cmeshHCurl;
 
-    std::cout << "------\t----------\t-------" << std::endl;
-    std::cout << "cmeshH1->NEquations()"
-              << "\t" << cmeshH1->NEquations() << std::endl;
-    std::cout << "cmeshHCurl->NEquations()"
-              << "\t" << cmeshHCurl->NEquations() << std::endl;
-    std::cout << "cmeshMF->NEquations()"
-              << "\t" << cmeshMF->NEquations() << std::endl;
-    std::cout << "------\t----------\t-------" << std::endl;
+//    std::cout << "------\t----------\t-------" << std::endl;
+//    std::cout << "cmeshH1->NEquations()"
+//              << "\t" << cmeshH1->NEquations() << std::endl;
+//    std::cout << "cmeshHCurl->NEquations()"
+//              << "\t" << cmeshHCurl->NEquations() << std::endl;
+//    std::cout << "cmeshMF->NEquations()"
+//              << "\t" << cmeshMF->NEquations() << std::endl;
+//    std::cout << "------\t----------\t-------" << std::endl;
     return;
 }

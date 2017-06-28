@@ -8,9 +8,8 @@
 #ifndef TPZHCURLNEDFTRIEL_H
 #define TPZHCURLNEDFTRIEL_H
 
-#define HCURL_HIERARCHICAL
-//#define HCURL_HIERARCHICAL_SCALED //yet to be thoroughly tested!
-//#define HCURL_NON_HIERARCHICAL
+//#define HCURL_HIERARCHICAL
+#define HCURL_HIERARCHICAL_SCALED
 
 #include "pzintel.h"
 #include "pzshapetriang.h"

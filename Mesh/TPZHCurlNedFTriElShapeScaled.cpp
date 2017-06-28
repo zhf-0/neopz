@@ -2,8 +2,8 @@
  * @file
  * @brief Contains the implementation of the TPZHCurlNedFTriEl::Shape method.
  */
-#include "TPZHCurlNedFTriEl.h"
 
+#include "TPZHCurlNedFTriEl.h"
 #ifdef HCURL_HIERARCHICAL_SCALED
 #include "pzshapetriang.h"
 
@@ -587,9 +587,10 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                 curlPhiHat(0, currentFuncPos) = 2;
                 break;
             default:
-                DebugStop(); // polynomial order not implemented!
+                DebugStop();
+                break;
             }
-            break;
+			break;
         case firstSide + 1:
             switch (pOrder) {
             case 15:
@@ -620,7 +621,7 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       5889312 * pow(qsi[0], 7) * pow(qsi[1], 6) *
                           (-7 + 30 * qsi[1]) +
                       98 * pow(qsi[0], 13) * (-1 + 30 * qsi[1]))) /
-                    (4. * sqrt(2));
+                    8.;
                 phi(currentFuncPos, 1) =
                     (qsi[0] *
                      (15 * pow(qsi[0], 14) +
@@ -648,26 +649,25 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       736164 * pow(qsi[0], 7) * pow(qsi[1], 6) *
                           (49 + 240 * qsi[1]) -
                       7 * pow(qsi[0], 13) * (1 + 420 * qsi[1]))) /
-                    (4. * sqrt(2));
+                    8.;
                 curlPhiHat(0, currentFuncPos) =
-                    30 * sqrt(2) *
-                    (pow(qsi[0], 14) - 196 * pow(qsi[0], 13) * qsi[1] +
-                     8281 * pow(qsi[0], 12) * pow(qsi[1], 2) -
-                     132496 * pow(qsi[0], 11) * pow(qsi[1], 3) +
-                     1002001 * pow(qsi[0], 10) * pow(qsi[1], 4) -
-                     4008004 * pow(qsi[0], 9) * pow(qsi[1], 5) +
-                     9018009 * pow(qsi[0], 8) * pow(qsi[1], 6) -
-                     11778624 * pow(qsi[0], 7) * pow(qsi[1], 7) +
-                     9018009 * pow(qsi[0], 6) * pow(qsi[1], 8) -
-                     4008004 * pow(qsi[0], 5) * pow(qsi[1], 9) +
-                     1002001 * pow(qsi[0], 4) * pow(qsi[1], 10) -
-                     132496 * pow(qsi[0], 3) * pow(qsi[1], 11) +
-                     8281 * pow(qsi[0], 2) * pow(qsi[1], 12) -
-                     196 * qsi[0] * pow(qsi[1], 13) + pow(qsi[1], 14));
+                    30 * (pow(qsi[0], 14) - 196 * pow(qsi[0], 13) * qsi[1] +
+                          8281 * pow(qsi[0], 12) * pow(qsi[1], 2) -
+                          132496 * pow(qsi[0], 11) * pow(qsi[1], 3) +
+                          1002001 * pow(qsi[0], 10) * pow(qsi[1], 4) -
+                          4008004 * pow(qsi[0], 9) * pow(qsi[1], 5) +
+                          9018009 * pow(qsi[0], 8) * pow(qsi[1], 6) -
+                          11778624 * pow(qsi[0], 7) * pow(qsi[1], 7) +
+                          9018009 * pow(qsi[0], 6) * pow(qsi[1], 8) -
+                          4008004 * pow(qsi[0], 5) * pow(qsi[1], 9) +
+                          1002001 * pow(qsi[0], 4) * pow(qsi[1], 10) -
+                          132496 * pow(qsi[0], 3) * pow(qsi[1], 11) +
+                          8281 * pow(qsi[0], 2) * pow(qsi[1], 12) -
+                          196 * qsi[0] * pow(qsi[1], 13) + pow(qsi[1], 14));
                 currentFuncPos--;
             case 14:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (28 * pow(qsi[0], 13) +
                       (13 - 28 * qsi[1]) * pow(qsi[1], 12) -
                       20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
@@ -693,73 +693,72 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       169 * pow(qsi[0], 12) * (-1 + 28 * qsi[1]))) /
                     15.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (28 * pow(qsi[0], 13) -
-                       20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
-                           (1 + 4 * qsi[1]) +
-                       676 * qsi[0] * pow(qsi[1], 11) * (18 + 7 * qsi[1]) +
-                       2208492 * pow(qsi[0], 5) * pow(qsi[1], 7) *
-                           (8 + 21 * qsi[1]) +
-                       81796 * pow(qsi[0], 3) * pow(qsi[1], 9) *
-                           (25 + 28 * qsi[1]) -
-                       pow(qsi[1], 12) * (169 + 28 * qsi[1]) +
-                       408980 * pow(qsi[0], 9) * pow(qsi[1], 3) *
-                           (2 + 35 * qsi[1]) +
-                       1472328 * pow(qsi[0], 7) * pow(qsi[1], 5) *
-                           (9 + 56 * qsi[1]) +
-                       2028 * pow(qsi[0], 11) * qsi[1] * (1 + 84 * qsi[1]) -
-                       2028 * pow(qsi[0], 2) * pow(qsi[1], 10) *
-                           (121 + 84 * qsi[1]) -
-                       102245 * pow(qsi[0], 4) * pow(qsi[1], 8) *
-                           (81 + 140 * qsi[1]) -
-                       184041 * pow(qsi[0], 8) * pow(qsi[1], 4) *
-                           (25 + 252 * qsi[1]) -
-                       7436 * pow(qsi[0], 10) * pow(qsi[1], 2) *
-                           (9 + 308 * qsi[1]) -
-                       13 * pow(qsi[0], 12) * (1 + 364 * qsi[1]))) /
+                    (qsi[0] *
+                     (-28 * pow(qsi[0], 13) +
+                      20612592 * pow(qsi[0], 6) * pow(qsi[1], 6) *
+                          (1 + 4 * qsi[1]) -
+                      676 * qsi[0] * pow(qsi[1], 11) * (18 + 7 * qsi[1]) -
+                      2208492 * pow(qsi[0], 5) * pow(qsi[1], 7) *
+                          (8 + 21 * qsi[1]) -
+                      81796 * pow(qsi[0], 3) * pow(qsi[1], 9) *
+                          (25 + 28 * qsi[1]) +
+                      pow(qsi[1], 12) * (169 + 28 * qsi[1]) -
+                      408980 * pow(qsi[0], 9) * pow(qsi[1], 3) *
+                          (2 + 35 * qsi[1]) -
+                      1472328 * pow(qsi[0], 7) * pow(qsi[1], 5) *
+                          (9 + 56 * qsi[1]) -
+                      2028 * pow(qsi[0], 11) * qsi[1] * (1 + 84 * qsi[1]) +
+                      2028 * pow(qsi[0], 2) * pow(qsi[1], 10) *
+                          (121 + 84 * qsi[1]) +
+                      102245 * pow(qsi[0], 4) * pow(qsi[1], 8) *
+                          (81 + 140 * qsi[1]) +
+                      184041 * pow(qsi[0], 8) * pow(qsi[1], 4) *
+                          (25 + 252 * qsi[1]) +
+                      7436 * pow(qsi[0], 10) * pow(qsi[1], 2) *
+                          (9 + 308 * qsi[1]) +
+                      13 * pow(qsi[0], 12) * (1 + 364 * qsi[1]))) /
                     15.;
                 curlPhiHat(0, currentFuncPos) =
-                    -28 * sqrt(2) *
-                    (pow(qsi[0], 13) - 169 * pow(qsi[0], 12) * qsi[1] +
-                     6084 * pow(qsi[0], 11) * pow(qsi[1], 2) -
-                     81796 * pow(qsi[0], 10) * pow(qsi[1], 3) +
-                     511225 * pow(qsi[0], 9) * pow(qsi[1], 4) -
-                     1656369 * pow(qsi[0], 8) * pow(qsi[1], 5) +
-                     2944656 * pow(qsi[0], 7) * pow(qsi[1], 6) -
-                     2944656 * pow(qsi[0], 6) * pow(qsi[1], 7) +
-                     1656369 * pow(qsi[0], 5) * pow(qsi[1], 8) -
-                     511225 * pow(qsi[0], 4) * pow(qsi[1], 9) +
-                     81796 * pow(qsi[0], 3) * pow(qsi[1], 10) -
-                     6084 * pow(qsi[0], 2) * pow(qsi[1], 11) +
-                     169 * qsi[0] * pow(qsi[1], 12) - pow(qsi[1], 13));
+                    -28 * (pow(qsi[0], 13) - 169 * pow(qsi[0], 12) * qsi[1] +
+                           6084 * pow(qsi[0], 11) * pow(qsi[1], 2) -
+                           81796 * pow(qsi[0], 10) * pow(qsi[1], 3) +
+                           511225 * pow(qsi[0], 9) * pow(qsi[1], 4) -
+                           1656369 * pow(qsi[0], 8) * pow(qsi[1], 5) +
+                           2944656 * pow(qsi[0], 7) * pow(qsi[1], 6) -
+                           2944656 * pow(qsi[0], 6) * pow(qsi[1], 7) +
+                           1656369 * pow(qsi[0], 5) * pow(qsi[1], 8) -
+                           511225 * pow(qsi[0], 4) * pow(qsi[1], 9) +
+                           81796 * pow(qsi[0], 3) * pow(qsi[1], 10) -
+                           6084 * pow(qsi[0], 2) * pow(qsi[1], 11) +
+                           169 * qsi[0] * pow(qsi[1], 12) - pow(qsi[1], 13));
                 currentFuncPos--;
             case 13:
                 phi(currentFuncPos, 0) =
-                    -(sqrt(2) * qsi[1] *
-                      (13 * pow(qsi[0], 12) +
-                       pow(qsi[1], 11) * (-6 + 13 * qsi[1]) +
-                       4356 * pow(qsi[0], 2) * pow(qsi[1], 9) *
-                           (-5 + 13 * qsi[1]) +
-                       245025 * pow(qsi[0], 4) * pow(qsi[1], 7) *
-                           (-4 + 13 * qsi[1]) +
-                       853776 * pow(qsi[0], 6) * pow(qsi[1], 5) *
-                           (-3 + 13 * qsi[1]) +
-                       245025 * pow(qsi[0], 8) * pow(qsi[1], 3) *
-                           (-2 + 13 * qsi[1]) +
-                       4356 * pow(qsi[0], 10) * qsi[1] * (-1 + 13 * qsi[1]) -
-                       72 * qsi[0] * pow(qsi[1], 10) * (-11 + 26 * qsi[1]) -
-                       24200 * pow(qsi[0], 3) * pow(qsi[1], 8) *
-                           (-9 + 26 * qsi[1]) -
-                       313632 * pow(qsi[0], 5) * pow(qsi[1], 6) *
-                           (-7 + 26 * qsi[1]) -
-                       313632 * pow(qsi[0], 7) * pow(qsi[1], 4) *
-                           (-5 + 26 * qsi[1]) -
-                       24200 * pow(qsi[0], 9) * pow(qsi[1], 2) *
-                           (-3 + 26 * qsi[1]) -
-                       72 * pow(qsi[0], 11) * (-1 + 26 * qsi[1]))) /
+                    (qsi[1] *
+                     (-13 * pow(qsi[0], 12) +
+                      (6 - 13 * qsi[1]) * pow(qsi[1], 11) -
+                      4356 * pow(qsi[0], 2) * pow(qsi[1], 9) *
+                          (-5 + 13 * qsi[1]) -
+                      245025 * pow(qsi[0], 4) * pow(qsi[1], 7) *
+                          (-4 + 13 * qsi[1]) -
+                      853776 * pow(qsi[0], 6) * pow(qsi[1], 5) *
+                          (-3 + 13 * qsi[1]) -
+                      245025 * pow(qsi[0], 8) * pow(qsi[1], 3) *
+                          (-2 + 13 * qsi[1]) -
+                      4356 * pow(qsi[0], 10) * qsi[1] * (-1 + 13 * qsi[1]) +
+                      72 * qsi[0] * pow(qsi[1], 10) * (-11 + 26 * qsi[1]) +
+                      24200 * pow(qsi[0], 3) * pow(qsi[1], 8) *
+                          (-9 + 26 * qsi[1]) +
+                      313632 * pow(qsi[0], 5) * pow(qsi[1], 6) *
+                          (-7 + 26 * qsi[1]) +
+                      313632 * pow(qsi[0], 7) * pow(qsi[1], 4) *
+                          (-5 + 26 * qsi[1]) +
+                      24200 * pow(qsi[0], 9) * pow(qsi[1], 2) *
+                          (-3 + 26 * qsi[1]) +
+                      72 * pow(qsi[0], 11) * (-1 + 26 * qsi[1]))) /
                     7.;
                 phi(currentFuncPos, 1) =
-                    (sqrt(2) * qsi[0] *
+                    (qsi[0] *
                      (13 * pow(qsi[0], 12) +
                       pow(qsi[1], 11) * (72 + 13 * qsi[1]) +
                       1452 * pow(qsi[0], 2) * pow(qsi[1], 9) *
@@ -783,22 +782,21 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       6 * pow(qsi[0], 11) * (1 + 312 * qsi[1]))) /
                     7.;
                 curlPhiHat(0, currentFuncPos) =
-                    26 * sqrt(2) *
-                    (pow(qsi[0], 12) - 144 * pow(qsi[0], 11) * qsi[1] +
-                     4356 * pow(qsi[0], 10) * pow(qsi[1], 2) -
-                     48400 * pow(qsi[0], 9) * pow(qsi[1], 3) +
-                     245025 * pow(qsi[0], 8) * pow(qsi[1], 4) -
-                     627264 * pow(qsi[0], 7) * pow(qsi[1], 5) +
-                     853776 * pow(qsi[0], 6) * pow(qsi[1], 6) -
-                     627264 * pow(qsi[0], 5) * pow(qsi[1], 7) +
-                     245025 * pow(qsi[0], 4) * pow(qsi[1], 8) -
-                     48400 * pow(qsi[0], 3) * pow(qsi[1], 9) +
-                     4356 * pow(qsi[0], 2) * pow(qsi[1], 10) -
-                     144 * qsi[0] * pow(qsi[1], 11) + pow(qsi[1], 12));
+                    26 * (pow(qsi[0], 12) - 144 * pow(qsi[0], 11) * qsi[1] +
+                          4356 * pow(qsi[0], 10) * pow(qsi[1], 2) -
+                          48400 * pow(qsi[0], 9) * pow(qsi[1], 3) +
+                          245025 * pow(qsi[0], 8) * pow(qsi[1], 4) -
+                          627264 * pow(qsi[0], 7) * pow(qsi[1], 5) +
+                          853776 * pow(qsi[0], 6) * pow(qsi[1], 6) -
+                          627264 * pow(qsi[0], 5) * pow(qsi[1], 7) +
+                          245025 * pow(qsi[0], 4) * pow(qsi[1], 8) -
+                          48400 * pow(qsi[0], 3) * pow(qsi[1], 9) +
+                          4356 * pow(qsi[0], 2) * pow(qsi[1], 10) -
+                          144 * qsi[0] * pow(qsi[1], 11) + pow(qsi[1], 12));
                 currentFuncPos--;
             case 12:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (24 * pow(qsi[0], 11) +
                       (11 - 24 * qsi[1]) * pow(qsi[1], 10) +
                       217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
@@ -820,39 +818,38 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       121 * pow(qsi[0], 10) * (-1 + 24 * qsi[1]))) /
                     13.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (24 * pow(qsi[0], 11) +
-                       217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
-                           (2 + 3 * qsi[1]) +
-                       1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
-                           (1 + 4 * qsi[1]) -
-                       9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
-                           (9 + 8 * qsi[1]) +
-                       217800 * pow(qsi[0], 7) * pow(qsi[1], 3) *
-                           (1 + 12 * qsi[1]) +
-                       242 * qsi[0] * pow(qsi[1], 9) * (25 + 12 * qsi[1]) -
-                       27225 * pow(qsi[0], 8) * pow(qsi[1], 2) *
-                           (1 + 24 * qsi[1]) -
-                       pow(qsi[1], 10) * (121 + 24 * qsi[1]) +
-                       1210 * pow(qsi[0], 9) * qsi[1] * (1 + 60 * qsi[1]) -
-                       21780 * pow(qsi[0], 4) * pow(qsi[1], 6) *
-                           (49 + 120 * qsi[1]) -
-                       30492 * pow(qsi[0], 6) * pow(qsi[1], 4) *
-                           (25 + 168 * qsi[1]) -
-                       11 * pow(qsi[0], 10) * (1 + 264 * qsi[1]))) /
+                    (qsi[0] *
+                     (-24 * pow(qsi[0], 11) -
+                      217800 * pow(qsi[0], 3) * pow(qsi[1], 7) *
+                          (2 + 3 * qsi[1]) -
+                      1280664 * pow(qsi[0], 5) * pow(qsi[1], 5) *
+                          (1 + 4 * qsi[1]) +
+                      9075 * pow(qsi[0], 2) * pow(qsi[1], 8) *
+                          (9 + 8 * qsi[1]) -
+                      217800 * pow(qsi[0], 7) * pow(qsi[1], 3) *
+                          (1 + 12 * qsi[1]) -
+                      242 * qsi[0] * pow(qsi[1], 9) * (25 + 12 * qsi[1]) +
+                      27225 * pow(qsi[0], 8) * pow(qsi[1], 2) *
+                          (1 + 24 * qsi[1]) +
+                      pow(qsi[1], 10) * (121 + 24 * qsi[1]) -
+                      1210 * pow(qsi[0], 9) * qsi[1] * (1 + 60 * qsi[1]) +
+                      21780 * pow(qsi[0], 4) * pow(qsi[1], 6) *
+                          (49 + 120 * qsi[1]) +
+                      30492 * pow(qsi[0], 6) * pow(qsi[1], 4) *
+                          (25 + 168 * qsi[1]) +
+                      11 * pow(qsi[0], 10) * (1 + 264 * qsi[1]))) /
                     13.;
                 curlPhiHat(0, currentFuncPos) =
-                    -24 * sqrt(2) *
-                    (pow(qsi[0], 11) - 121 * pow(qsi[0], 10) * qsi[1] +
-                     3025 * pow(qsi[0], 9) * pow(qsi[1], 2) -
-                     27225 * pow(qsi[0], 8) * pow(qsi[1], 3) +
-                     108900 * pow(qsi[0], 7) * pow(qsi[1], 4) -
-                     213444 * pow(qsi[0], 6) * pow(qsi[1], 5) +
-                     213444 * pow(qsi[0], 5) * pow(qsi[1], 6) -
-                     108900 * pow(qsi[0], 4) * pow(qsi[1], 7) +
-                     27225 * pow(qsi[0], 3) * pow(qsi[1], 8) -
-                     3025 * pow(qsi[0], 2) * pow(qsi[1], 9) +
-                     121 * qsi[0] * pow(qsi[1], 10) - pow(qsi[1], 11));
+                    -24 * (pow(qsi[0], 11) - 121 * pow(qsi[0], 10) * qsi[1] +
+                           3025 * pow(qsi[0], 9) * pow(qsi[1], 2) -
+                           27225 * pow(qsi[0], 8) * pow(qsi[1], 3) +
+                           108900 * pow(qsi[0], 7) * pow(qsi[1], 4) -
+                           213444 * pow(qsi[0], 6) * pow(qsi[1], 5) +
+                           213444 * pow(qsi[0], 5) * pow(qsi[1], 6) -
+                           108900 * pow(qsi[0], 4) * pow(qsi[1], 7) +
+                           27225 * pow(qsi[0], 3) * pow(qsi[1], 8) -
+                           3025 * pow(qsi[0], 2) * pow(qsi[1], 9) +
+                           121 * qsi[0] * pow(qsi[1], 10) - pow(qsi[1], 11));
                 currentFuncPos--;
             case 11:
                 phi(currentFuncPos, 0) =
@@ -874,7 +871,7 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       7200 * pow(qsi[0], 7) * pow(qsi[1], 2) *
                           (-3 + 22 * qsi[1]) +
                       50 * pow(qsi[0], 9) * (-1 + 22 * qsi[1]))) /
-                    (3. * sqrt(2));
+                    6.;
                 phi(currentFuncPos, 1) =
                     (qsi[0] *
                      (11 * pow(qsi[0], 10) +
@@ -894,22 +891,21 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       900 * pow(qsi[0], 7) * pow(qsi[1], 2) *
                           (9 + 176 * qsi[1]) -
                       5 * pow(qsi[0], 9) * (1 + 220 * qsi[1]))) /
-                    (3. * sqrt(2));
+                    6.;
                 curlPhiHat(0, currentFuncPos) =
-                    22 * sqrt(2) *
-                    (pow(qsi[0], 10) - 100 * pow(qsi[0], 9) * qsi[1] +
-                     2025 * pow(qsi[0], 8) * pow(qsi[1], 2) -
-                     14400 * pow(qsi[0], 7) * pow(qsi[1], 3) +
-                     44100 * pow(qsi[0], 6) * pow(qsi[1], 4) -
-                     63504 * pow(qsi[0], 5) * pow(qsi[1], 5) +
-                     44100 * pow(qsi[0], 4) * pow(qsi[1], 6) -
-                     14400 * pow(qsi[0], 3) * pow(qsi[1], 7) +
-                     2025 * pow(qsi[0], 2) * pow(qsi[1], 8) -
-                     100 * qsi[0] * pow(qsi[1], 9) + pow(qsi[1], 10));
+                    22 * (pow(qsi[0], 10) - 100 * pow(qsi[0], 9) * qsi[1] +
+                          2025 * pow(qsi[0], 8) * pow(qsi[1], 2) -
+                          14400 * pow(qsi[0], 7) * pow(qsi[1], 3) +
+                          44100 * pow(qsi[0], 6) * pow(qsi[1], 4) -
+                          63504 * pow(qsi[0], 5) * pow(qsi[1], 5) +
+                          44100 * pow(qsi[0], 4) * pow(qsi[1], 6) -
+                          14400 * pow(qsi[0], 3) * pow(qsi[1], 7) +
+                          2025 * pow(qsi[0], 2) * pow(qsi[1], 8) -
+                          100 * qsi[0] * pow(qsi[1], 9) + pow(qsi[1], 10));
                 currentFuncPos--;
             case 10:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (20 * pow(qsi[0], 9) + (9 - 20 * qsi[1]) * pow(qsi[1], 8) -
                       79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
                           (-1 + 4 * qsi[1]) +
@@ -926,53 +922,51 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       81 * pow(qsi[0], 8) * (-1 + 20 * qsi[1]))) /
                     11.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (20 * pow(qsi[0], 9) -
-                       79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
-                           (1 + 4 * qsi[1]) +
-                       324 * qsi[0] * pow(qsi[1], 7) * (8 + 5 * qsi[1]) +
-                       21168 * pow(qsi[0], 5) * pow(qsi[1], 3) *
-                           (2 + 15 * qsi[1]) +
-                       7056 * pow(qsi[0], 3) * pow(qsi[1], 5) *
-                           (9 + 20 * qsi[1]) -
-                       pow(qsi[1], 8) * (81 + 20 * qsi[1]) +
-                       648 * pow(qsi[0], 7) * qsi[1] * (1 + 40 * qsi[1]) -
-                       432 * pow(qsi[0], 2) * pow(qsi[1], 6) *
-                           (49 + 60 * qsi[1]) -
-                       1008 * pow(qsi[0], 6) * pow(qsi[1], 2) *
-                           (9 + 140 * qsi[1]) -
-                       9 * pow(qsi[0], 8) * (1 + 180 * qsi[1]))) /
+                    (qsi[0] *
+                     (-20 * pow(qsi[0], 9) +
+                      79380 * pow(qsi[0], 4) * pow(qsi[1], 4) *
+                          (1 + 4 * qsi[1]) -
+                      324 * qsi[0] * pow(qsi[1], 7) * (8 + 5 * qsi[1]) -
+                      21168 * pow(qsi[0], 5) * pow(qsi[1], 3) *
+                          (2 + 15 * qsi[1]) -
+                      7056 * pow(qsi[0], 3) * pow(qsi[1], 5) *
+                          (9 + 20 * qsi[1]) +
+                      pow(qsi[1], 8) * (81 + 20 * qsi[1]) -
+                      648 * pow(qsi[0], 7) * qsi[1] * (1 + 40 * qsi[1]) +
+                      432 * pow(qsi[0], 2) * pow(qsi[1], 6) *
+                          (49 + 60 * qsi[1]) +
+                      1008 * pow(qsi[0], 6) * pow(qsi[1], 2) *
+                          (9 + 140 * qsi[1]) +
+                      9 * pow(qsi[0], 8) * (1 + 180 * qsi[1]))) /
                     11.;
                 curlPhiHat(0, currentFuncPos) =
-                    -20 * sqrt(2) *
-                    (pow(qsi[0], 9) - 81 * pow(qsi[0], 8) * qsi[1] +
-                     1296 * pow(qsi[0], 7) * pow(qsi[1], 2) -
-                     7056 * pow(qsi[0], 6) * pow(qsi[1], 3) +
-                     15876 * pow(qsi[0], 5) * pow(qsi[1], 4) -
-                     15876 * pow(qsi[0], 4) * pow(qsi[1], 5) +
-                     7056 * pow(qsi[0], 3) * pow(qsi[1], 6) -
-                     1296 * pow(qsi[0], 2) * pow(qsi[1], 7) +
-                     81 * qsi[0] * pow(qsi[1], 8) - pow(qsi[1], 9));
+                    -20 * (pow(qsi[0], 9) - 81 * pow(qsi[0], 8) * qsi[1] +
+                           1296 * pow(qsi[0], 7) * pow(qsi[1], 2) -
+                           7056 * pow(qsi[0], 6) * pow(qsi[1], 3) +
+                           15876 * pow(qsi[0], 5) * pow(qsi[1], 4) -
+                           15876 * pow(qsi[0], 4) * pow(qsi[1], 5) +
+                           7056 * pow(qsi[0], 3) * pow(qsi[1], 6) -
+                           1296 * pow(qsi[0], 2) * pow(qsi[1], 7) +
+                           81 * qsi[0] * pow(qsi[1], 8) - pow(qsi[1], 9));
                 currentFuncPos--;
             case 9:
                 phi(currentFuncPos, 0) =
-                    -(sqrt(2) * qsi[1] *
-                      (9 * pow(qsi[0], 8) +
-                       pow(qsi[0], 7) * (32 - 576 * qsi[1]) +
-                       2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
-                           (-1 + 3 * qsi[1]) -
-                       4704 * pow(qsi[0], 5) * pow(qsi[1], 2) *
-                           (-1 + 6 * qsi[1]) +
-                       pow(qsi[1], 7) * (-4 + 9 * qsi[1]) +
-                       4900 * pow(qsi[0], 4) * pow(qsi[1], 3) *
-                           (-2 + 9 * qsi[1]) +
-                       784 * pow(qsi[0], 6) * qsi[1] * (-1 + 9 * qsi[1]) -
-                       32 * qsi[0] * pow(qsi[1], 6) * (-7 + 18 * qsi[1]) -
-                       1568 * pow(qsi[0], 3) * pow(qsi[1], 4) *
-                           (-5 + 18 * qsi[1]))) /
+                    (qsi[1] *
+                     (-9 * pow(qsi[0], 8) + (4 - 9 * qsi[1]) * pow(qsi[1], 7) -
+                      2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
+                          (-1 + 3 * qsi[1]) +
+                      4704 * pow(qsi[0], 5) * pow(qsi[1], 2) *
+                          (-1 + 6 * qsi[1]) -
+                      4900 * pow(qsi[0], 4) * pow(qsi[1], 3) *
+                          (-2 + 9 * qsi[1]) -
+                      784 * pow(qsi[0], 6) * qsi[1] * (-1 + 9 * qsi[1]) +
+                      32 * qsi[0] * pow(qsi[1], 6) * (-7 + 18 * qsi[1]) +
+                      1568 * pow(qsi[0], 3) * pow(qsi[1], 4) *
+                          (-5 + 18 * qsi[1]) +
+                      32 * pow(qsi[0], 7) * (-1 + 18 * qsi[1]))) /
                     5.;
                 phi(currentFuncPos, 1) =
-                    (sqrt(2) * qsi[0] *
+                    (qsi[0] *
                      (9 * pow(qsi[0], 8) +
                       2352 * pow(qsi[0], 2) * pow(qsi[1], 5) *
                           (2 + 3 * qsi[1]) +
@@ -988,18 +982,17 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       4 * pow(qsi[0], 7) * (1 + 144 * qsi[1]))) /
                     5.;
                 curlPhiHat(0, currentFuncPos) =
-                    18 * sqrt(2) *
-                    (pow(qsi[0], 8) - 64 * pow(qsi[0], 7) * qsi[1] +
-                     784 * pow(qsi[0], 6) * pow(qsi[1], 2) -
-                     3136 * pow(qsi[0], 5) * pow(qsi[1], 3) +
-                     4900 * pow(qsi[0], 4) * pow(qsi[1], 4) -
-                     3136 * pow(qsi[0], 3) * pow(qsi[1], 5) +
-                     784 * pow(qsi[0], 2) * pow(qsi[1], 6) -
-                     64 * qsi[0] * pow(qsi[1], 7) + pow(qsi[1], 8));
+                    18 * (pow(qsi[0], 8) - 64 * pow(qsi[0], 7) * qsi[1] +
+                          784 * pow(qsi[0], 6) * pow(qsi[1], 2) -
+                          3136 * pow(qsi[0], 5) * pow(qsi[1], 3) +
+                          4900 * pow(qsi[0], 4) * pow(qsi[1], 4) -
+                          3136 * pow(qsi[0], 3) * pow(qsi[1], 5) +
+                          784 * pow(qsi[0], 2) * pow(qsi[1], 6) -
+                          64 * qsi[0] * pow(qsi[1], 7) + pow(qsi[1], 8));
                 currentFuncPos--;
             case 8:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (16 * pow(qsi[0], 7) +
                       pow(qsi[0], 6) * (49 - 784 * qsi[1]) +
                       (7 - 16 * qsi[1]) * pow(qsi[1], 6) +
@@ -1013,27 +1006,26 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                           (-3 + 16 * qsi[1]))) /
                     9.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (16 * pow(qsi[0], 7) +
-                       4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
-                           (1 + 4 * qsi[1]) +
-                       98 * qsi[0] * pow(qsi[1], 5) * (9 + 8 * qsi[1]) -
-                       pow(qsi[1], 6) * (49 + 16 * qsi[1]) +
-                       294 * pow(qsi[0], 5) * qsi[1] * (1 + 24 * qsi[1]) -
-                       147 * pow(qsi[0], 2) * pow(qsi[1], 4) *
-                           (25 + 48 * qsi[1]) -
-                       245 * pow(qsi[0], 4) * pow(qsi[1], 2) *
-                           (9 + 80 * qsi[1]) -
-                       7 * pow(qsi[0], 6) * (1 + 112 * qsi[1]))) /
+                    (qsi[0] *
+                     (-16 * pow(qsi[0], 7) -
+                      4900 * pow(qsi[0], 3) * pow(qsi[1], 3) *
+                          (1 + 4 * qsi[1]) -
+                      98 * qsi[0] * pow(qsi[1], 5) * (9 + 8 * qsi[1]) +
+                      pow(qsi[1], 6) * (49 + 16 * qsi[1]) -
+                      294 * pow(qsi[0], 5) * qsi[1] * (1 + 24 * qsi[1]) +
+                      147 * pow(qsi[0], 2) * pow(qsi[1], 4) *
+                          (25 + 48 * qsi[1]) +
+                      245 * pow(qsi[0], 4) * pow(qsi[1], 2) *
+                          (9 + 80 * qsi[1]) +
+                      pow(qsi[0], 6) * (7 + 784 * qsi[1]))) /
                     9.;
                 curlPhiHat(0, currentFuncPos) =
-                    -16 * sqrt(2) *
-                    (pow(qsi[0], 7) - 49 * pow(qsi[0], 6) * qsi[1] +
-                     441 * pow(qsi[0], 5) * pow(qsi[1], 2) -
-                     1225 * pow(qsi[0], 4) * pow(qsi[1], 3) +
-                     1225 * pow(qsi[0], 3) * pow(qsi[1], 4) -
-                     441 * pow(qsi[0], 2) * pow(qsi[1], 5) +
-                     49 * qsi[0] * pow(qsi[1], 6) - pow(qsi[1], 7));
+                    -16 * (pow(qsi[0], 7) - 49 * pow(qsi[0], 6) * qsi[1] +
+                           441 * pow(qsi[0], 5) * pow(qsi[1], 2) -
+                           1225 * pow(qsi[0], 4) * pow(qsi[1], 3) +
+                           1225 * pow(qsi[0], 3) * pow(qsi[1], 4) -
+                           441 * pow(qsi[0], 2) * pow(qsi[1], 5) +
+                           49 * qsi[0] * pow(qsi[1], 6) - pow(qsi[1], 7));
                 currentFuncPos--;
             case 7:
                 phi(currentFuncPos, 0) =
@@ -1047,7 +1039,7 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                        225 * pow(qsi[0], 4) * qsi[1] * (-1 + 7 * qsi[1]) -
                        200 * pow(qsi[0], 3) * pow(qsi[1], 2) *
                            (-3 + 14 * qsi[1]))) /
-                    (2. * sqrt(2));
+                    4.;
                 phi(currentFuncPos, 1) =
                     (qsi[0] *
                      (7 * pow(qsi[0], 6) + pow(qsi[1], 5) * (18 + 7 * qsi[1]) +
@@ -1056,18 +1048,17 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       45 * pow(qsi[0], 4) * qsi[1] * (2 + 35 * qsi[1]) -
                       50 * pow(qsi[0], 3) * pow(qsi[1], 2) * (9 + 56 * qsi[1]) -
                       3 * pow(qsi[0], 5) * (1 + 84 * qsi[1]))) /
-                    (2. * sqrt(2));
+                    4.;
                 curlPhiHat(0, currentFuncPos) =
-                    14 * sqrt(2) *
-                    (pow(qsi[0], 6) - 36 * pow(qsi[0], 5) * qsi[1] +
-                     225 * pow(qsi[0], 4) * pow(qsi[1], 2) -
-                     400 * pow(qsi[0], 3) * pow(qsi[1], 3) +
-                     225 * pow(qsi[0], 2) * pow(qsi[1], 4) -
-                     36 * qsi[0] * pow(qsi[1], 5) + pow(qsi[1], 6));
+                    14 * (pow(qsi[0], 6) - 36 * pow(qsi[0], 5) * qsi[1] +
+                          225 * pow(qsi[0], 4) * pow(qsi[1], 2) -
+                          400 * pow(qsi[0], 3) * pow(qsi[1], 3) +
+                          225 * pow(qsi[0], 2) * pow(qsi[1], 4) -
+                          36 * qsi[0] * pow(qsi[1], 5) + pow(qsi[1], 6));
                 currentFuncPos--;
             case 6:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (12 * pow(qsi[0], 5) +
                       pow(qsi[0], 4) * (25 - 300 * qsi[1]) +
                       (5 - 12 * qsi[1]) * pow(qsi[1], 4) +
@@ -1077,93 +1068,87 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                       200 * pow(qsi[0], 3) * qsi[1] * (-1 + 6 * qsi[1]))) /
                     7.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (12 * pow(qsi[0], 5) +
-                       100 * qsi[0] * pow(qsi[1], 3) * (2 + 3 * qsi[1]) -
-                       300 * pow(qsi[0], 2) * pow(qsi[1], 2) *
-                           (1 + 4 * qsi[1]) +
-                       100 * pow(qsi[0], 3) * qsi[1] * (1 + 12 * qsi[1]) -
-                       pow(qsi[1], 4) * (25 + 12 * qsi[1]) -
-                       5 * pow(qsi[0], 4) * (1 + 60 * qsi[1]))) /
+                    (qsi[0] *
+                     (-12 * pow(qsi[0], 5) -
+                      100 * qsi[0] * pow(qsi[1], 3) * (2 + 3 * qsi[1]) +
+                      300 * pow(qsi[0], 2) * pow(qsi[1], 2) * (1 + 4 * qsi[1]) -
+                      100 * pow(qsi[0], 3) * qsi[1] * (1 + 12 * qsi[1]) +
+                      pow(qsi[1], 4) * (25 + 12 * qsi[1]) +
+                      5 * pow(qsi[0], 4) * (1 + 60 * qsi[1]))) /
                     7.;
                 curlPhiHat(0, currentFuncPos) =
-                    -12 * sqrt(2) *
-                    (pow(qsi[0], 5) - 25 * pow(qsi[0], 4) * qsi[1] +
-                     100 * pow(qsi[0], 3) * pow(qsi[1], 2) -
-                     100 * pow(qsi[0], 2) * pow(qsi[1], 3) +
-                     25 * qsi[0] * pow(qsi[1], 4) - pow(qsi[1], 5));
+                    -12 * (pow(qsi[0], 5) - 25 * pow(qsi[0], 4) * qsi[1] +
+                           100 * pow(qsi[0], 3) * pow(qsi[1], 2) -
+                           100 * pow(qsi[0], 2) * pow(qsi[1], 3) +
+                           25 * qsi[0] * pow(qsi[1], 4) - pow(qsi[1], 5));
                 currentFuncPos--;
             case 5:
                 phi(currentFuncPos, 0) =
-                    -(sqrt(2) * qsi[1] *
+                    -(qsi[1] *
                       (5 * pow(qsi[0], 4) + pow(qsi[0], 3) * (8 - 80 * qsi[1]) +
                        8 * qsi[0] * (3 - 10 * qsi[1]) * pow(qsi[1], 2) +
                        pow(qsi[1], 3) * (-2 + 5 * qsi[1]) +
                        36 * pow(qsi[0], 2) * qsi[1] * (-1 + 5 * qsi[1]))) /
                     3.;
                 phi(currentFuncPos, 1) =
-                    (sqrt(2) * qsi[0] *
+                    (qsi[0] *
                      (5 * pow(qsi[0], 4) + pow(qsi[1], 3) * (8 + 5 * qsi[1]) +
                       12 * pow(qsi[0], 2) * qsi[1] * (2 + 15 * qsi[1]) -
                       4 * qsi[0] * pow(qsi[1], 2) * (9 + 20 * qsi[1]) -
                       2 * pow(qsi[0], 3) * (1 + 40 * qsi[1]))) /
                     3.;
                 curlPhiHat(0, currentFuncPos) =
-                    10 * sqrt(2) *
-                    (pow(qsi[0], 4) - 16 * pow(qsi[0], 3) * qsi[1] +
-                     36 * pow(qsi[0], 2) * pow(qsi[1], 2) -
-                     16 * qsi[0] * pow(qsi[1], 3) + pow(qsi[1], 4));
+                    10 * (pow(qsi[0], 4) - 16 * pow(qsi[0], 3) * qsi[1] +
+                          36 * pow(qsi[0], 2) * pow(qsi[1], 2) -
+                          16 * qsi[0] * pow(qsi[1], 3) + pow(qsi[1], 4));
                 currentFuncPos--;
             case 4:
                 phi(currentFuncPos, 0) =
-                    (sqrt(2) * qsi[1] *
+                    (qsi[1] *
                      (8 * pow(qsi[0], 3) + pow(qsi[0], 2) * (9 - 72 * qsi[1]) +
                       (3 - 8 * qsi[1]) * pow(qsi[1], 2) +
                       18 * qsi[0] * qsi[1] * (-1 + 4 * qsi[1]))) /
                     5.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] *
-                      (8 * pow(qsi[0], 3) +
-                       18 * qsi[0] * qsi[1] * (1 + 4 * qsi[1]) -
-                       pow(qsi[1], 2) * (9 + 8 * qsi[1]) -
-                       3 * pow(qsi[0], 2) * (1 + 24 * qsi[1]))) /
+                    (qsi[0] * (-8 * pow(qsi[0], 3) -
+                               18 * qsi[0] * qsi[1] * (1 + 4 * qsi[1]) +
+                               pow(qsi[1], 2) * (9 + 8 * qsi[1]) +
+                               pow(qsi[0], 2) * (3 + 72 * qsi[1]))) /
                     5.;
                 curlPhiHat(0, currentFuncPos) =
-                    -8 * sqrt(2) *
-                    (pow(qsi[0], 3) - 9 * pow(qsi[0], 2) * qsi[1] +
-                     9 * qsi[0] * pow(qsi[1], 2) - pow(qsi[1], 3));
+                    -8 * (pow(qsi[0], 3) - 9 * pow(qsi[0], 2) * qsi[1] +
+                          9 * qsi[0] * pow(qsi[1], 2) - pow(qsi[1], 3));
                 currentFuncPos--;
             case 3:
                 phi(currentFuncPos, 0) =
                     (qsi[1] *
                      (-3 * pow(qsi[0], 2) + qsi[1] - 3 * pow(qsi[1], 2) +
                       2 * qsi[0] * (-1 + 6 * qsi[1]))) /
-                    sqrt(2);
+                    2.;
                 phi(currentFuncPos, 1) =
                     (qsi[0] * (3 * pow(qsi[0], 2) + qsi[1] * (2 + 3 * qsi[1]) -
                                qsi[0] * (1 + 12 * qsi[1]))) /
-                    sqrt(2);
+                    2.;
                 curlPhiHat(0, currentFuncPos) =
-                    6 * sqrt(2) *
-                    (pow(qsi[0], 2) - 4 * qsi[0] * qsi[1] + pow(qsi[1], 2));
+                    6 * (pow(qsi[0], 2) - 4 * qsi[0] * qsi[1] + pow(qsi[1], 2));
                 currentFuncPos--;
             case 2:
                 phi(currentFuncPos, 0) =
-                    -(sqrt(2) * qsi[1] * (-1 - 4 * qsi[0] + 4 * qsi[1])) / 3.;
+                    ((1 + 4 * qsi[0] - 4 * qsi[1]) * qsi[1]) / 3.;
                 phi(currentFuncPos, 1) =
-                    -(sqrt(2) * qsi[0] * (-1 + 4 * qsi[0] - 4 * qsi[1])) / 3.;
-                curlPhiHat(0, currentFuncPos) =
-                    -4 * sqrt(2) * (qsi[0] - qsi[1]);
+                    (qsi[0] * (1 - 4 * qsi[0] + 4 * qsi[1])) / 3.;
+                curlPhiHat(0, currentFuncPos) = -4 * qsi[0] + 4 * qsi[1];
                 currentFuncPos--;
             case 1:
-                phi(currentFuncPos, 0) = -(sqrt(2) * qsi[1]);
-                phi(currentFuncPos, 1) = sqrt(2) * qsi[0];
-                curlPhiHat(0, currentFuncPos) = 2 * sqrt(2);
+                phi(currentFuncPos, 0) = -qsi[1];
+                phi(currentFuncPos, 1) = qsi[0];
+                curlPhiHat(0, currentFuncPos) = 2;
                 break;
             default:
-                DebugStop(); // polynomial order not implemented!
+                DebugStop();
+                break;
             }
-            break;
+			break;
         case firstSide + 2:
             switch (pOrder) {
             case 15:
@@ -2584,11 +2569,11 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                 curlPhiHat(0, currentFuncPos) = 2;
                 break;
             default:
-                DebugStop(); // polynomial order not implemented!
+                DebugStop();
+                break;
             }
-            break;
-
-        case firstSide + 3: // internal functions
+			break;
+        case firstSide + 3: // internal
             switch (pOrder) {
             case 15:
                 phi(currentFuncPos, 0) =
@@ -45491,9 +45476,10 @@ void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
             case 1:
                 break;
             default:
-                DebugStop(); // polynomial order not implemented!
+                DebugStop();
+                break;
             }
-            break;
+			break;
         default:
             DebugStop();
             break;
