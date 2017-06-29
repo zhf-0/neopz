@@ -74,8 +74,9 @@ public:
      * Matrices A and B are assembled separatedly.
      */
     virtual void SetMatrixB(){ assembling = B;};
-    
+#ifdef PZDEBUG
     virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+#endif
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
      * @param data [in] stores all input data

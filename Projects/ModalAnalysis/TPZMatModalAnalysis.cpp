@@ -48,7 +48,7 @@ TPZMatModalAnalysis::~TPZMatModalAnalysis()
 {
     
 }
-
+#ifdef PZDEBUG
 void TPZMatModalAnalysis::ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     if( isTesting == false ){
@@ -150,7 +150,7 @@ void TPZMatModalAnalysis::ContributeValidateFunctions(TPZVec<TPZMaterialData> &d
         }
     }
 }
-
+#endif
 
 void TPZMatModalAnalysis::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
@@ -159,11 +159,13 @@ void TPZMatModalAnalysis::Contribute(TPZMaterialData &data, REAL weight, TPZFMat
 
 void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
+#ifdef PZDEBUG
     isTesting = false;
     if( isTesting == true ){
         ContributeValidateFunctions(datavec, weight, ek, ef);
         return;
     }
+#endif
     /*********************CREATE H1 FUNCTIONS****************************/
     TPZFNMatrix<12,REAL> phiH1 = datavec[ h1meshindex ].phi;
     TPZFNMatrix<36,REAL> dphiH1daxes = datavec[ h1meshindex ].dphix;
@@ -313,9 +315,10 @@ void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFM
 
 void TPZMatModalAnalysis::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
+#ifdef PZDEBUG
     if( isTesting ) return;
-    
-    
+#endif
+	
     TPZFMatrix<REAL> &phiHCurl = datavec[hcurlmeshindex].phi;
     TPZFMatrix<REAL> &phiH1 = datavec[h1meshindex].phi;
     const int nHCurlFunctions  = phiHCurl.Rows();

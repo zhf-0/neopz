@@ -180,9 +180,6 @@ ENABLE_TESTING()
 			add_subdirectory(HDiv)
 			add_subdirectory(HDiv_demo)
 
-			# validacaoFranHCurl
-			add_subdirectory(ValidacaoHCurlFran1)
-
 			#Projetos de Thiago Dias dos Santos
 			#add_subdirectory(SantosProjects)
 
