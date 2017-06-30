@@ -34,8 +34,10 @@
 #ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
-#include "tpzarc3d.h"
-#include "tpzgeoblend.h"
+#include "TPZRefPatternDataBase.h"
+#include "tpzgeoelrefpattern.h"
+#include "tpzquadraticline.h"
+#include "tpzquadratictrig.h"
 #include "TPZMatModalAnalysis.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]) {
 	const REAL f0 = 25 * 1e+9;//operation frequency
 	
 	
-    int nDiv = 1;
+    int nDiv = 0;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -503,11 +505,9 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 	 *			   FIX THIS				  *
 	 *			 	 MESH				  *
 	 **************************************/
-	if( nDiv > 0){
-		DebugStop();
-	}
+	DebugStop();
 	
-    const int nNodes = 9;
+    const int nNodes = 4 + 4 + 4 + 1;
     const int matId = 1; // define id para um material(formulacao fraca)
     const int bc0 = -1;  // define id para um material(cond contorno dirichlet)
 
@@ -526,7 +526,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
         nodeId++;
     }
-    // create 4 nodes which will be triangle midsides points
+    // create 4 nodes which will be triangle midsides points @ boundary
     // r arg pi/4, r arg 3pi/4, r arg 5pi/4, r arg 7pi/4
     for (int iNode = 0; iNode < 4; iNode++) {
         TPZManVector<REAL, 3> node(3, M_SQRT1_2 * rDomain);
@@ -538,6 +538,17 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
         nodeId++;
     }
+	// create 4 nodes which will be triangle midsides points @ interior
+	// r/2 arg 0, r/2 arg pi/2, r/2 arg pi, r/2 arg 3pi/2
+	for (int iNode = 0; iNode < 4; iNode++) {
+		TPZManVector<REAL, 2> node(3, 0.);
+		const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);
+		const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);
+		node[0] = c0*rDomain/2;
+		node[1] = c1*rDomain/2;
+		gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
+		nodeId++;
+	}
     // create center node
 	{
 		TPZManVector<REAL, 3> node(3, 0.);
@@ -546,15 +557,23 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 
     int elementid = 0;
     TPZManVector<long, 3> nodesIdVec(3, 0.0);
-
+	gRefDBase.InitializeUniformRefPattern(MElementType::ETriangle);
+	TPZAutoPointer<TPZRefPattern> uniformTri = gRefDBase.GetUniformRefPattern(MElementType::ETriangle);
+	gRefDBase.InitializeUniformRefPattern(MElementType::EOned);
+	TPZAutoPointer<TPZRefPattern> uniformArc = gRefDBase.GetUniformRefPattern(MElementType::EOned);
     // creates volumetric elements
+	nodesIdVec.resize(6);
     for (int iTri = 0; iTri < 4; iTri++) {
         nodesIdVec[0] = (iTri) % 4;
         nodesIdVec[1] = (iTri + 1) % 4;
-        nodesIdVec[2] = 8;
-        new TPZGeoElRefPattern<pzgeom::TPZGeoBlend<pzgeom::TPZGeoTriangle>>(
+        nodesIdVec[2] = 12;
+		nodesIdVec[3] = 4 + iTri;//midside side 3
+		nodesIdVec[4] = 8 + (iTri) % 4;//midside side 4
+		nodesIdVec[5] = 8 + (iTri + 1) % 4;//midside side 5
+        new TPZGeoElRefPattern<pzgeom::TPZQuadraticTrig>(
             elementid, nodesIdVec, matId, *gmesh);
 		gmesh->ElementVec()[elementid]->Initialize();
+		gmesh->ElementVec()[elementid]->SetRefPattern(uniformTri);
         elementid++;
     }
     // creates boundary elements
@@ -563,14 +582,13 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         nodesIdVec[0] = (iArc) % 4;
         nodesIdVec[1] = (iArc + 1) % 4;
         nodesIdVec[2] = iArc + 4;
-		new TPZGeoElRefPattern<pzgeom::TPZArc3D>(elementid, nodesIdVec, bc0,
+		new TPZGeoElRefPattern<pzgeom::TPZQuadraticLine>(elementid, nodesIdVec, bc0,
                                                  *gmesh);
 		gmesh->ElementVec()[elementid]->Initialize();
+		gmesh->ElementVec()[elementid]->SetRefPattern(uniformArc);
         elementid++;
     }
 	
-	gRefDBase.InitializeUniformRefPattern(MElementType::ETriangle);
-	gRefDBase.InitializeUniformRefPattern(MElementType::EOned);
     gmesh->BuildConnectivity();
 	
     TPZManVector<TPZGeoEl *, 3> sons;
