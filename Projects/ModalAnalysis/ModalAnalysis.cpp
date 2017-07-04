@@ -134,7 +134,22 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 
     TPZAnalysis an(cmesh, optimizeBandwidth);
     // configuring analysis object
+#ifdef PZDEBUG
+    {
+        TPZStack<std::string> scalnames, vecnames;
+        scalnames.Push("Ez"); // setando para imprimir u
+        vecnames.Push("Et");
+        std::string plotfile = "../waveguideModes.vtk"; // arquivo de saida que
+                                                        // estara na pasta debug
+        int dim = 2;
+        an.DefineGraphMesh(dim, scalnames, vecnames,
+                           plotfile);  // define malha grafica
+        int postProcessResolution = 2; // define resolucao do pos processamento
+        
+        an.PostProcess(postProcessResolution);
 
+    }
+#endif
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
@@ -505,7 +520,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 	 *			   FIX THIS				  *
 	 *			 	 MESH				  *
 	 **************************************/
-	DebugStop();
+//	DebugStop();
 	
     const int nNodes = 4 + 4 + 4 + 1;
     const int matId = 1; // define id para um material(formulacao fraca)
@@ -518,7 +533,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
     // r arg 0, r arg pi/2, r arg pi, r arg 3pi/2
     int nodeId = 0;
     for (int iNode = 0; iNode < 4; iNode++) {
-        TPZManVector<REAL, 2> node(3, 0.);
+        TPZManVector<REAL, 3> node(3, 0.);
 		const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);
 		const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);
 		node[0] = c0*rDomain;
@@ -541,7 +556,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 	// create 4 nodes which will be triangle midsides points @ interior
 	// r/2 arg 0, r/2 arg pi/2, r/2 arg pi, r/2 arg 3pi/2
 	for (int iNode = 0; iNode < 4; iNode++) {
-		TPZManVector<REAL, 2> node(3, 0.);
+		TPZManVector<REAL, 3> node(3, 0.);
 		const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);
 		const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);
 		node[0] = c0*rDomain/2;
@@ -556,7 +571,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 	}
 
     int elementid = 0;
-    TPZManVector<long, 3> nodesIdVec(3, 0.0);
+    TPZManVector<long, 6> nodesIdVec(3, 0.0);
 	gRefDBase.InitializeUniformRefPattern(MElementType::ETriangle);
 	TPZAutoPointer<TPZRefPattern> uniformTri = gRefDBase.GetUniformRefPattern(MElementType::ETriangle);
 	gRefDBase.InitializeUniformRefPattern(MElementType::EOned);
@@ -568,8 +583,8 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         nodesIdVec[1] = (iTri + 1) % 4;
         nodesIdVec[2] = 12;
 		nodesIdVec[3] = 4 + iTri;//midside side 3
-		nodesIdVec[4] = 8 + (iTri) % 4;//midside side 4
-		nodesIdVec[5] = 8 + (iTri + 1) % 4;//midside side 5
+		nodesIdVec[5] = 8 + (iTri) % 4;//midside side 4
+		nodesIdVec[4] = 8 + (iTri + 1) % 4;//midside side 5
         new TPZGeoElRefPattern<pzgeom::TPZQuadraticTrig>(
             elementid, nodesIdVec, matId, *gmesh);
 		gmesh->ElementVec()[elementid]->Initialize();
@@ -615,6 +630,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
     gmesh->Print(outTXT);
     outTXT.close();
     outVTK.close();
+
 #ifdef PZDEBUG
 	TPZCheckGeom * Geometrytest = new TPZCheckGeom(gmesh);
 	int isBadMeshQ = Geometrytest->PerformCheck();
