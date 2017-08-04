@@ -6,15 +6,15 @@
 //
 //
 
-#ifndef __PZ__pzsandlerextPV__
-#define __PZ__pzsandlerextPV__
+#ifndef TPZSANDLEREXTENDEDPV_H
+#define TPZSANDLEREXTENDEDPV_H
 
 #include <iostream>
 #include "TPZTensor.h"
 #include "TPZElasticResponse.h"
 #include "TPZPlasticState.h"
 
-class TPZSandlerExtended {
+class TPZSandlerExtendedPV {
 public:
 
     enum {
@@ -22,13 +22,13 @@ public:
     };
 
     /// Constructor, with all parameters which define the Sandler DiMaggio model
-    TPZSandlerExtended(STATE A, STATE B, STATE C, STATE D, STATE K, STATE G, STATE W, STATE R, STATE Phi, STATE N, STATE Psi);
+    TPZSandlerExtendedPV(STATE A, STATE B, STATE C, STATE D, STATE K, STATE G, STATE W, STATE R, STATE Phi, STATE N, STATE Psi);
     /// Copy constructor
-    TPZSandlerExtended(const TPZSandlerExtended & copy);
+    TPZSandlerExtendedPV(const TPZSandlerExtendedPV & copy);
     /// Empty constructor
-    TPZSandlerExtended();
+    TPZSandlerExtendedPV();
 
-    TPZSandlerExtended & operator=(const TPZSandlerExtended & source) {
+    TPZSandlerExtendedPV & operator=(const TPZSandlerExtendedPV & source) {
         fA = source.fA;
         fB = source.fB;
         fC = source.fC;
@@ -48,7 +48,7 @@ public:
     }
 
     /// Desctructor
-    virtual ~TPZSandlerExtended();
+    virtual ~TPZSandlerExtendedPV();
 
     STATE GetX(STATE k);
 
@@ -254,10 +254,10 @@ public:
 
 public:
     void SetUp(STATE A, STATE B, STATE C, STATE D, STATE K, STATE G, STATE W, STATE R, STATE Phi, STATE N, STATE Psi);
-    static void MCormicRanchSand(TPZSandlerExtended &mat);
-    static void ReservoirSandstone(TPZSandlerExtended &mat);
-    static void SalemLimestone(TPZSandlerExtended &mat);
-    static void PreSMat(TPZSandlerExtended &mat); // em MPa
+    static void MCormicRanchSand(TPZSandlerExtendedPV &mat);
+    static void ReservoirSandstone(TPZSandlerExtendedPV &mat);
+    static void SalemLimestone(TPZSandlerExtendedPV &mat);
+    static void PreSMat(TPZSandlerExtendedPV &mat); // em MPa
 
     STATE A() {
         return fA;
@@ -314,4 +314,4 @@ private:
 };
 
 
-#endif /* defined(__PZ__pzsandlerextPV__) */
+#endif /* defined(TPZSANDLEREXTENDEDPV_H) */

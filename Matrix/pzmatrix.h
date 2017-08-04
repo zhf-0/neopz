@@ -538,6 +538,8 @@ public:
 	
 	/** @brief Compute Eigenvalues and Eigenvectors of this matrix. \n
 	 * This method is efficient only for small matrices.
+         * The Jacobi's method is used to find the eigenvalues and the inverse 
+         * iteration method is used to find the eigenvectors.
 	 * @param numiterations The number of interations for the process.
 	 * @param tol The tolerance value.
 	 * @param Eigenvalues ordered from big to small
@@ -888,16 +890,16 @@ inline long TPZMatrix<TVar>::Dim() const{
 
 template<class TVar>
 inline int TPZMatrix<TVar>::Solve_LU( TPZFMatrix<TVar>*B, std::list<long> &singular) {
-	if ( IsSimetric() )
-        Error( "LU decomposition is a not symetric decomposition" );
-	return ( ( !Decompose_LU(singular) )?  0 : Substitution( B )  );
+    if ( IsSimetric() )
+    Error( "LU decomposition is a not symetric decomposition" );
+    return (Decompose_LU(singular) && Substitution(B));
 }
 
 template<class TVar>
 inline int TPZMatrix<TVar>::Solve_LU( TPZFMatrix<TVar>*B ) {
-	if ( IsSimetric() )
-        Error( "LU decomposition is a not symetric decomposition" );
-	return ( ( !Decompose_LU() )?  0 : Substitution( B )  );
+    if ( IsSimetric() )
+    Error( "LU decomposition is a not symetric decomposition" );
+    return (Decompose_LU() && Substitution(B));
 }
 /**********************/
 /*** Solve Cholesky ***/
@@ -908,16 +910,12 @@ inline int TPZMatrix<TVar>::Solve_LU( TPZFMatrix<TVar>*B ) {
 template<class TVar>
 inline int TPZMatrix<TVar>::Solve_Cholesky( TPZFMatrix<TVar>* B )
 {
-	return(
-		   ( !Decompose_Cholesky() )?  0 :( Subst_Forward( B ) && Subst_Backward( B ) )
-		   );
+    return(Decompose_Cholesky() && Subst_Forward(B) && Subst_Backward(B));
 }
 
 template<class TVar>
 inline int TPZMatrix<TVar>::Solve_Cholesky( TPZFMatrix<TVar>* B, std::list<long> &singular ) {
-	return(
-		   ( !Decompose_Cholesky(singular) )?  0 :( Subst_Forward( B ) && Subst_Backward( B ) )
-		   );
+    return (Decompose_Cholesky(singular) && Subst_Forward(B) && Subst_Backward(B));
 }
 
 /******************/
@@ -925,11 +923,7 @@ inline int TPZMatrix<TVar>::Solve_Cholesky( TPZFMatrix<TVar>* B, std::list<long>
 
 template<class TVar>
 inline int TPZMatrix<TVar>::Solve_LDLt( TPZFMatrix<TVar>* B ) {
-	
-	return(
-		   ( !Decompose_LDLt() )? 0 :
-		   ( Subst_LForward( B ) && Subst_Diag( B ) && Subst_LBackward( B ) )
-		   );
+    return (Decompose_LDLt() && Subst_LForward(B) && Subst_Diag(B) && Subst_LBackward(B));
 }
 
 

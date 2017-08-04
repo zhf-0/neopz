@@ -406,29 +406,23 @@ void TPZCompMesh::ExpandSolution() {
 }
 
 void TPZCompMesh::LoadSolution(const TPZFMatrix<STATE> &mat){
-	
-	long nrow = mat.Rows();
-	long ncol = mat.Cols();
+    long nrow = mat.Rows();
+    long ncol = mat.Cols();
     long solrow = fSolution.Rows();
     fSolution.Resize(solrow, ncol);
-	long i,j;
-    STATE val;
-	for(j=0;j<ncol;j++)
-    {
-        for(i=0;i<nrow;i++)
-        {
-            val = (mat.GetVal(i,j));
-            fSolution(i,j) =  val;
+    long i, j;
+    for (j = 0; j < ncol; ++j) {
+        for (i = 0; i < nrow; ++i) {
+            fSolution(i, j) = (mat.GetVal(i, j));
         }
-        
     }
-	long nelem = NElements();
-	TPZCompEl *cel;
-	for(i=0; i<nelem; i++) {
-		cel = fElementVec[i];
-		if(!cel) continue;
-		cel->LoadSolution();
-	}
+    long nelem = NElements();
+    TPZCompEl *cel;
+    for (i = 0; i < nelem; i++) {
+        cel = fElementVec[i];
+        if (!cel) continue;
+        cel->LoadSolution();
+    }
 }
 
 void TPZCompMesh::TransferMultiphysicsSolution()

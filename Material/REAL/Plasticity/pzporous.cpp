@@ -8,7 +8,7 @@
 #include "pzbndcond.h"
 #include "TPZLadeKim.h"  
 #include "TPZSandlerDimaggio.h"
-#include "pzelastoplastic.h"
+#include "TPZMatElastoPlastic.h"
 #include "TPZYCDruckerPrager.h"
 #include "TPZThermoForceA.h"
 #include "TPZElasticResponse.h"

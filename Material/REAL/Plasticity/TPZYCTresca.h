@@ -27,12 +27,12 @@ public:
     
 	int GetForceYield()
 	{
-		return 0; // nothing to be done in this yield criterium
+		return 0; // nothing to be done in this yield criterion
 	}
 	
 	void SetForceYield(const int forceYield)
 	{
-		// nothing to be done in this yield criterium
+		// nothing to be done in this yield criterion
 	}
 	
 	/**
@@ -44,7 +44,7 @@ public:
 	 */
 	void SetYieldStatusMode(const TPZTensor<REAL> & sigma, const REAL & A)
 	{
-		// nothing to be done in this yield criterium
+		// nothing to be done in this yield criterion
 	}
 	
   /**
@@ -101,7 +101,7 @@ public:
 
 protected:
   /**
-   * @brief Compute the inverse angle of the tresca yield criterium formula and the related data
+   * @brief Compute the inverse angle of the tresca yield criterion formula and the related data
    * @param sigma [in] stress tensor
    * @param theta [out] one third of the asin of the inverse angle
    * @param gradtheta [out] gradient of the inverse angle
@@ -109,11 +109,11 @@ protected:
   template <class T>
   void GradTheta(const TPZTensor<T> & sigma,T & theta,TPZTensor<T> & gradtheta) const;
 
-  /** @brief Computes the inverse angle of the tresca yield criterium formula */
+  /** @brief Computes the inverse angle of the tresca yield criterion formula */
   template <class T>
   T InverseAngle(const TPZTensor<T> &deviatoric) const;
 
-  /** @brief Computes the derivative of the inverse angle of the tresca yield criterium formula */
+  /** @brief Computes the derivative of the inverse angle of the tresca yield criterion formula */
   template <class T>
   void GradInverseAngle(const TPZTensor<T> &sigma, TPZTensor<T> &grad) const;
  

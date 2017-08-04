@@ -15,7 +15,7 @@
 #include "pzdiscgal.h"
 #include "pzvec.h"
 #include "pzfmatrix.h"
-#include "pzelastoplastic2D.h"
+#include "TPZMatElastoPlastic2D.h"
 
 #include "pznlfluidstructureData.h"
 

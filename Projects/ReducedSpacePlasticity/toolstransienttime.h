@@ -19,7 +19,7 @@
 #include "TPZPlasticStepPV.h"
 #include "TPZYCMohrCoulombPV.h"
 #include "pzpostprocanalysis.h"
-#include "pzsandlerextPV.h"
+#include "TPZSandlerExtendedPV.h"
 
 class TPZElastoPlasticAnalysis;
 class TPZNonLinearAnalysis;
@@ -269,8 +269,8 @@ public:
 	
 #ifdef PlasticSDi
   
-  TPZPlasticFrac2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> , TPZElastoPlasticMem> * fCouplingMaterial1;
-  TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> fPlasticStepPV;
+  TPZPlasticFrac2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> , TPZElastoPlasticMem> * fCouplingMaterial1;
+  TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> fPlasticStepPV;
   
 #endif
   /// Cohesive Material

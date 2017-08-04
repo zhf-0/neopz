@@ -40,7 +40,7 @@ public:
 	
 protected:
 	/**
-	 * @brief Compute the inverse angle of the tresca yield criterium formula and
+	 * @brief Compute the inverse angle of the tresca yield criterion formula and
 	 * the related data
 	 * @param[in] sigma stress tensor
 	 * @param[out] theta one third of the asin of the inverse angle

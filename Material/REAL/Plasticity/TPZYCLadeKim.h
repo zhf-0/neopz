@@ -20,7 +20,7 @@ static LoggerPtr loggerYCLadeKim(Logger::getLogger("plasticity.LadeKim"));
 #endif
 
 /**
- * @brief Implementa as funções de potencial plástico e yield criterium do 
+ * @brief Implementa as funções de potencial plástico e yield criterion do 
  * modelo constitutivo de Lade Kim para solo e rochas brandas
  */
 class TPZYCLadeKim {

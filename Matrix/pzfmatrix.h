@@ -106,6 +106,15 @@ public:
     CLONEDEF(TPZFMatrix<TVar>)
     TPZFMatrix(const TPZMatrix<TVar> & refmat);
     
+    /**
+     * Constructs a matrix to be used as the representation of the dyadic product
+     * between v1 and v2.
+     * mat[i,j] = v1[i]*v2[j]
+     * @param v1 First vector in the dyadic product.
+     * @param v2 Second vector in the dyadic product.
+     */
+    inline TPZFMatrix(const TPZVec<TVar> &v1, const TPZVec<TVar> &v2);
+    
     /** @brief Simple destructor */
     virtual  ~TPZFMatrix();
     
@@ -441,6 +450,22 @@ inline TPZFMatrix<TVar>::TPZFMatrix(const long rows,const long cols,const TVar &
     if ( fElem == NULL && size) Error( "Constructor <memory allocation error>." );
 #endif
     for(long i=0;i<size;i++) fElem[i] = val;
+}
+
+template<class TVar>
+inline TPZFMatrix<TVar>::TPZFMatrix(const TPZVec<TVar> &v1, const TPZVec<TVar> &v2)
+: TPZMatrix<TVar>( v1.size(), v2.size() ), fElem(0), fGiven(0), fSize(0) {
+    long size = this->Rows()*this->Cols();
+    if(!size) return;
+    fElem=new TVar[size];
+#ifdef PZDEBUG
+    if ( fElem == NULL && size) Error( "Constructor <memory allocation error>." );
+#endif
+    for (unsigned long i = 0; i < this->Rows(); ++i) {
+        for (unsigned long j = 0; j < this->Cols(); ++j) {
+            fElem[i*this->Rows()+j] = v1[i] * v2[j];
+        }
+    }
 }
 
 template<class TVar>

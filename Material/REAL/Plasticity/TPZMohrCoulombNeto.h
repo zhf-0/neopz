@@ -206,7 +206,7 @@ public:
         TPZTensor<T> sigma;
         sigma = SigmaElast(epslocal);
         typename TPZTensor<T>::TPZDecomposed sigma_trial;
-        sigma.EigenSystem(sigma_trial);
+        sigma.EigenSystemJacobi(sigma_trial);
         
 #ifdef LOG4CXX
         if (loggerMohrCoulomb->isDebugEnabled()) {

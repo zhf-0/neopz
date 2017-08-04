@@ -1588,125 +1588,139 @@ bool TPZMatrix<TFad<6,REAL> >::SolveEigensystemJacobi(long &numiterations, REAL 
     DebugStop();
     return false;
 }
+template<>
+bool TPZMatrix<Fad<float> >::SolveEigensystemJacobi(long &numiterations, REAL & tol, TPZVec<Fad<float> > & Eigenvalues, TPZFMatrix<Fad<float> > & Eigenvectors) const{
+    DebugStop();
+    return false;
+}
+template<>
+bool TPZMatrix<Fad<double> >::SolveEigensystemJacobi(long &numiterations, REAL & tol, TPZVec<Fad<double> > & Eigenvalues, TPZFMatrix<Fad<double> > & Eigenvectors) const{
+    DebugStop();
+    return false;
+}
+template<>
+bool TPZMatrix<Fad<long double> >::SolveEigensystemJacobi(long &numiterations, REAL & tol, TPZVec<Fad<long double> > & Eigenvalues, TPZFMatrix<Fad<long double> > & Eigenvectors) const{
+    DebugStop();
+    return false;
+}
 
 #endif
 
 template <class TVar>
-bool TPZMatrix<TVar>::SolveEigensystemJacobi(long &numiterations, REAL & tol, TPZVec<TVar> & Eigenvalues, TPZFMatrix<TVar> & Eigenvectors) const{
-	
-	long NumIt = numiterations;
-	REAL tolerance = tol;
-	
+bool TPZMatrix<TVar>::SolveEigensystemJacobi(long &numiterations, REAL & tolerance, TPZVec<TVar> & Eigenvalues, TPZFMatrix<TVar> & Eigenvectors) const{
+
+    long NumIt = numiterations;
+
 #ifdef PZDEBUG2
-	if (this->Rows() != this->Cols())
-	{
-		PZError << __PRETTY_FUNCTION__ <<
-		" - Jacobi method of computing eigensystem requires a symmetric square matrix. this->Rows = " << this->Rows() << " - this->Cols() = " << this->Cols() << endl;
-		return false;
-	}
-	
-	if (this->VerifySymmetry(1.e-8) == false)
-	{
-		PZError << __PRETTY_FUNCTION__ <<
-		" - Jacobi method of computing eigensystem requires a symmetric square matrix. This matrix is not symmetric." << endl;
-		return false;
-	}
+    if (this->Rows() != this->Cols()) {
+        PZError << __PRETTY_FUNCTION__ <<
+                " - Jacobi method of computing eigensystem requires a symmetric square matrix. this->Rows = " << this->Rows() << " - this->Cols() = " << this->Cols() << endl;
+        return false;
+    }
+
+    if (this->VerifySymmetry(1.e-8) == false) {
+        PZError << __PRETTY_FUNCTION__ <<
+                " - Jacobi method of computing eigensystem requires a symmetric square matrix. This matrix is not symmetric." << endl;
+        return false;
+    }
 #endif
-	
-	const long size = this->Rows();
-	
-	/** Making a copy of this */
-	TPZFNMatrix<9,TVar> Matrix(size,size); //fast constructor in case of this is a stress or strain tensor.
-	for(long i = 0; i < size; i++) for(long j = 0; j < size; j++) Matrix(i,j) = this->Get(i,j);
-	
-	/** Compute Eigenvalues *//////////////////////////////////////
-	bool result = Matrix.SolveEigenvaluesJacobi(numiterations, tol, &Eigenvalues);
-	if (result == false) return false;
-	
-	/** Compute Eigenvectors *//////////////////////////////////////
-	TPZFNMatrix<3, TVar> VecIni(size,1,0.), VecIni_cp(size,1,0.);
-	
-	Eigenvectors.Resize(size, size);
-	Eigenvectors.Zero();
-	for(long eigen = 0; eigen < size; eigen++)
-	{
-        for(long i = 0; i < size; i++) VecIni.PutVal(i,0,rand());
-		
-        TPZFNMatrix<9,TVar> Matrix(*this);
-		
-        TVar answ = ReturnNearestValue(Eigenvalues[eigen], Eigenvalues,1.E-5);
-        TVar exp = answ - Eigenvalues[eigen];
-        if((REAL)(fabs(exp)) > 1.E-5)
-        {
-            for(long i = 0; i < size; i++) Matrix.PutVal(i,i, this->GetVal(i,i) - (TVar)(Eigenvalues[eigen] - (TVar)(0.01 * fabs(exp))) );
+
+    const long size = this->Rows();
+
+    if (!size) return true;
+    
+    /** Making a copy of this */
+    TPZFNMatrix<9, TVar> Matrix(size, size); //fast constructor in case of this is a stress or strain tensor.
+    for (long i = 0; i < size; i++) for (long j = 0; j < size; j++) Matrix(i, j) = this->Get(i, j);
+
+    REAL old_tolerance(tolerance);
+    
+    /** Compute Eigenvalues *//////////////////////////////////////
+    if (!Matrix.SolveEigenvaluesJacobi(numiterations, tolerance, &Eigenvalues)){
+        return false;
+    }
+            
+    tolerance = old_tolerance;
+
+    /** Compute Eigenvectors *//////////////////////////////////////
+    TPZFNMatrix<3, TVar> eigenvector(size, 1, 0.), previous_estimate(size, 1, 0.);
+
+    Eigenvectors.Resize(size, size);
+    Eigenvectors.Zero();
+    if (IsZero(Eigenvalues[0])) {
+        Eigenvectors.Identity();
+        return true;
+    }
+    for (long lambda = 0; lambda < size; lambda++) {
+        for (long i = 0; i < size; i++) {
+            eigenvector.PutVal(i, 0, rand());
         }
-        else
-        {
-            for(long i = 0; i < size; i++) Matrix.PutVal(i,i, this->GetVal(i,i) - (Eigenvalues[eigen] - TVar(0.01)) );
+
+        TPZFNMatrix<9, TVar> Matrix(*this);
+
+        TVar &thisEigenvalue(Eigenvalues[lambda]);
+        
+        TVar nearestOtherEigenValue = ReturnNearestValue(thisEigenvalue, Eigenvalues, tolerance);
+        REAL exp = (REAL) fabs(nearestOtherEigenValue - thisEigenvalue);
+        if (exp > tolerance*100) {
+            for (long i = 0; i < size; i++) {
+                Matrix.PutVal(i, i, this->GetVal(i, i) - (TVar) (thisEigenvalue - (TVar) (0.01 * exp)));
+            }
+        } else {
+            for (long i = 0; i < size; i++) {
+                Matrix.PutVal(i, i, this->GetVal(i, i) - (thisEigenvalue - TVar(0.01)));
+            }
         }
-		
+        
+        
+        // Here Matrix = A-lI, where l is an approximation for the eigenvalue lambda.
+
         /** Normalizing Initial Eigenvec */
-        REAL norm1 = 0.;
-        for(long i = 0; i < size; i++) norm1 += fabs(VecIni(i,0)) * fabs(VecIni(i,0)); norm1 = sqrt(norm1);
-        for(long i = 0; i < size; i++) VecIni(i,0) = VecIni(i,0)/(TVar)norm1;
-		
-        long count = 0;
-        double dif = 10., difTemp = 0.;
-		
-        while(dif > tolerance && count <= NumIt)
-        {
-			for(long i = 0; i < size; i++) VecIni_cp(i,0) = VecIni(i,0);
-			
-			/** Estimating Eigenvec */
-			Matrix.Solve_LU(&VecIni);
-			
-			/** Normalizing Final Eigenvec */
-			REAL norm2 = 0.;
-			for(long i = 0; i < size; i++) norm2 += fabs(VecIni(i,0)) * fabs(VecIni(i,0));
-			norm2 = sqrt(norm2);
-			
-			difTemp = 0.;
-			for(long i = 0; i < size; i++)
-			{
-                VecIni(i,0) = VecIni(i,0)/(TVar)norm2;
-                TVar exp = (VecIni_cp(i,0) - VecIni(i,0)) * (VecIni_cp(i,0) - VecIni(i,0));
-                difTemp += fabs(exp);
-			}
-			dif = sqrt(difTemp);
-			count++;
+        eigenvector *= 1./Norm(eigenvector);
+        unsigned int i;
+        for (i = 0; i < NumIt; ++i) {
+            previous_estimate = eigenvector;
+            if (!Matrix.Solve_LU(&eigenvector)){
+                PZError << "Singular matrix in SolveEigensystemJacobi!" << std::endl;
+                Matrix.Print(PZError);
+                return false;
+            }
+            eigenvector *= 1./Norm(eigenvector);
+            if (Norm(previous_estimate-eigenvector) <= tolerance){
+                break;
+            }
         }
-		
-        /** Copy values from AuxVector to Eigenvectors */
-        for(long i = 0; i < size; i++)
-        {
-			TVar val = VecIni(i,0);
-			if((REAL)(fabs(val)) < 1.E-5) val = 0.;
-			Eigenvectors(eigen,i) = val;
-        }
-		
+        
 #ifdef PZDEBUG2
-        double norm = 0.;
-        for(long i = 0; i < size; i++) norm += fabs(VecIni(i,0)) * fabs(VecIni(i,0));
-        if (fabs(norm - 1.) > 1.e-10)
-        {
-            PZError << __PRETTY_FUNCTION__ << endl;
-        }
-        if(count > NumIt-1)// O metodo nao convergiu !!!
-        {
+        if (i == NumIt) {// O metodo nao convergiu !!!
             PZError << __PRETTY_FUNCTION__ << endl;
 #ifdef LOG4CXX
             {
                 std::stringstream sout;
-                Print("Matrix for SolveEigensystemJacobi did not converge",sout);
-                LOGPZ_DEBUG(logger,sout.str());
+                Print("Matrix for SolveEigensystemJacobi did not converge", sout);
+                LOGPZ_DEBUG(logger, sout.str());
             }
 #endif
         }
+        REAL norm = Norm(eigenvector);
+        if (fabs(norm - 1.) > 1.e-10) {
+            PZError << __PRETTY_FUNCTION__ << endl;
+        }
 #endif
-	}
-	
-	return true;
-	
+        
+        if (i == NumIt) {// O metodo nao convergiu !!!
+            return false;
+        }
+
+        /** Copy values from AuxVector to Eigenvectors */
+        for (long i = 0; i < size; i++) {
+            TVar val = eigenvector(i, 0);
+            if ((REAL) (fabs(val)) < 1.E-5) val = 0.;
+            Eigenvectors(lambda, i) = val;
+        }
+    }
+
+    return true;
 }//method
 
 template <>
@@ -1749,93 +1763,91 @@ bool TPZMatrix<TVar>::SolveEigenvaluesJacobi(long &numiterations, REAL & tol, TP
 		return false;
 	}
 #endif
-	
-	long iter = 0;
-	TVar res = (TVar)2. * (TVar)tol;
-	const long size = this->Rows();
-	long i, j;
-	long p = -1, q = -1;
-	TVar maxval, theta, cost, sint, aux, aux2, Spp, Sqq, Spq;
-	while (iter < numiterations){
-		/** First of all find the max value off diagonal */
-		maxval = 0.;
-		for(i = 0; i < size; i++){
-			for(j = 0; j < i; j++) {
-				if( fabs(this->operator ( )(i,j) ) > fabs(maxval) ) {
-					p = i;
-					q = j;
-					maxval = fabs( this->operator ( )(i,j) );
-				}//if
-			}//for j
-		}//for i
-		
-		/** Check if max value off diagonal is lesser than required tolerance */
-		res = maxval;
-		if ((REAL)(fabs(res)) < tol) break;
-		
-		/** Compute angle of rotation */
-		theta = 0.5 * atan((TVar)2. * this->operator ( )(p,q) / (this->operator ( )(q,q) - this->operator ( )(p,p) ) );
-		cost = cos(theta);
-		sint = sin(theta);
-		
-		/** Apply rotation */
-		for(i = 0; i < size; i++){
-			if (i != p && i != q){
-				
-				aux = this->operator ( )(i,p) * (TVar)cost - this->operator ( )(i,q) * (TVar)sint;
-				aux2 = this->operator ( )(i,p) * (TVar)sint + this->operator ( )(i,q) * (TVar)cost;
-				
-				this->operator ( )(i,p) = aux;
-				this->operator ( )(p,i) = aux;
-				
-				this->operator ( )(i,q) = aux2;
-				this->operator ( )(q,i) = aux2;
-				
-			}//if
-		}//for i
-		
-		Spp = this->operator ( )(p,p) * cost * cost -(TVar)2. * this->operator ( )(p,q) * sint * cost + this->operator ( )(q,q) * sint * sint;
-		Sqq = this->operator ( )(p,p) * sint * sint +(TVar)2. * this->operator ( )(p,q) * sint * cost + this->operator ( )(q,q) * cost * cost;
-		Spq = ( this->operator ( )(p,p) - this->operator ( )(q,q) ) * cost * sint + this->operator ( )(p,q)*( cost*cost - sint*sint );
-		
-		this->operator ( )(p,p) = Spp;
-		this->operator ( )(q,q) = Sqq;
-		this->operator ( )(p,q) = Spq;
-		this->operator ( )(q,p) = Spq;
-		
-		iter++;
-	}//while
-	
-	/** Sorting */
-	if (Sort){
-		multiset< REAL > myset;
-		for(i = 0; i < size; i++)
-        {   TVar exps = this->operator ( )(i,i);
-            myset.insert( (TPZExtractVal::val(exps)) );
+
+    long iter = 0;
+    TVar res = (TVar) 2. * (TVar) tol;
+    const long size = this->Rows();
+    long i, j;
+    long p = -1, q = -1;
+    TVar maxval, theta, cost, sint, aux, aux2, Spp, Sqq, Spq;
+    while (iter < numiterations) {
+        /** First of all find the max value off diagonal */
+        maxval = 0.;
+        for (i = 0; i < size; i++) {
+            for (j = 0; j < i; j++) {
+                if (fabs(this->operator( )(i, j)) > fabs(maxval)) {
+                    p = i;
+                    q = j;
+                    maxval = fabs(this->operator( )(i, j));
+                }//if
+            }//for j
+        }//for i
+
+        /** Check if max value off diagonal is smaller than required tolerance */
+        res = maxval;
+        if ((REAL) (fabs(res)) < tol) break;
+
+        /** Compute angle of rotation */
+        theta = 0.5 * atan((TVar) 2. * this->operator( )(p, q) / (this->operator( )(q, q) - this->operator( )(p, p)));
+        cost = cos(theta);
+        sint = sin(theta);
+
+        /** Apply rotation */
+        for (i = 0; i < size; i++) {
+            if (i != p && i != q) {
+
+                aux = this->operator( )(i, p) * (TVar) cost - this->operator( )(i, q) * (TVar) sint;
+                aux2 = this->operator( )(i, p) * (TVar) sint + this->operator( )(i, q) * (TVar) cost;
+
+                this->operator( )(i, p) = aux;
+                this->operator( )(p, i) = aux;
+
+                this->operator( )(i, q) = aux2;
+                this->operator( )(q, i) = aux2;
+
+            }//if
+        }//for i
+
+        Spp = this->operator( )(p, p) * cost * cost - (TVar) 2. * this->operator( )(p, q) * sint * cost + this->operator( )(q, q) * sint * sint;
+        Sqq = this->operator( )(p, p) * sint * sint + (TVar) 2. * this->operator( )(p, q) * sint * cost + this->operator( )(q, q) * cost * cost;
+        Spq = (this->operator( )(p, p) - this->operator( )(q, q)) * cost * sint + this->operator( )(p, q)*(cost * cost - sint * sint);
+
+        this->operator( )(p, p) = Spp;
+        this->operator( )(q, q) = Sqq;
+        this->operator( )(p, q) = Spq;
+        this->operator( )(q, p) = Spq;
+
+        iter++;
+    }//while
+
+    /** Sorting */
+    if (Sort) {
+        multiset< REAL > myset;
+        for (i = 0; i < size; i++) {
+            TVar exps = this->operator( )(i, i);
+            myset.insert((TPZExtractVal::val(exps)));
         }
-		
+
 #ifdef PZDEBUG2
-		if ((long)myset.size() != size) PZError << __PRETTY_FUNCTION__ << " - ERROR!" << endl;
+            if ((long)myset.size() != size) PZError << __PRETTY_FUNCTION__ << " - ERROR!" << endl;
 #endif
-		
-		Sort->Resize(size);
-		multiset< REAL >::iterator w, e = myset.end();
-		for(i = size - 1, w = myset.begin(); w != e; w++, i--){
-			Sort->operator [ ](i) = *w;
-		}//for
-	}//if (Sort)
-	
-	
-	if ((REAL)(fabs(res)) < tol){
-		tol = fabs(res);
-		numiterations = iter;
-		return true;
-	}
-	
-	tol = fabs(res);
-	numiterations = iter;
-	return false;
-	
+
+        Sort->Resize(size);
+        multiset< REAL >::iterator w, e = myset.end();
+        for (i = size - 1, w = myset.begin(); w != e; w++, i--) {
+            Sort->operator[ ](i) = *w;
+        }//for
+    }//if (Sort)
+
+    if ((REAL) (fabs(res)) < tol) {
+        tol = fabs(res);
+        numiterations = iter;
+        return true;
+    }
+
+    tol = fabs(res);
+    numiterations = iter;
+    return false;
 }//method
 
 #ifdef _AUTODIFF
@@ -1848,66 +1860,70 @@ TFad<6,REAL> TPZMatrix<TFad<6,REAL> >::MatrixNorm(int p, long numiter, REAL tol)
 #endif
 
 template <class TVar>
-TVar TPZMatrix<TVar>::MatrixNorm(int p, long numiter, REAL tol) const{
-	const long n = this->Rows();
-	if (!n) return 0.;
-	if (n != this->Cols()){
-		PZError << __PRETTY_FUNCTION__
-		<< " - matrix must be square - Rows() = "
-		<< this->Rows() << " - Cols() = "
-		<< this->Cols() << std::endl;
-	}
-	switch(p){
-		case 0:{
-			TVar max = 0.;
-			long i, j;
-			for(i = 0; i < n; i++){
-				REAL sum = 0.;
-				for(j = 0; j < n; j++) sum += fabs( this->Get(i,j) );
-				if (sum > fabs(max)) max = sum;
-			}
-			return max;
-		}
-		case 1:{
-			TVar max = 0.;
-			long i, j;
-			for(i = 0; i < n; i++){
-				REAL sum = 0.;
-				for(j = 0; j < n; j++) sum += fabs( this->Get(j,i) );
-				if (sum > fabs(max)) max = sum;
-			}
-			return max;
-		}
-		case 2:{
-			TPZFMatrix<TVar> transp(n,n);
-			long i, j, k;
-			//TRANSPOSE
-			for(i = 0; i < n; i++) for(j = 0; j < n; j++) transp(i,j) = this->Get(j,i);
-			//MULTIPLY transp = transp.this
-			TPZVec<TVar> ROW(n);
-			for(i = 0; i < n; i++){
-				for(j = 0; j < n; j++) ROW[j] = transp(i,j);
-				for(j = 0; j < n; j++){
-					TVar sum = 0.;
-					for(k = 0; k < n; k++){
-						sum += ROW[k] * this->Get(k,j);
-					}//for k
-					transp(i,j) = sum;
-				}//for j
-			}//for i
-			
-			TPZVec<TVar> EigenVal;
-			bool result = transp.SolveEigenvaluesJacobi(numiter, tol, &EigenVal);
-			if (result == false) PZError << __PRETTY_FUNCTION__
-				<< " - it was not possible to find Eigenvalues. Iterations = "
-				<< numiter << " - error found = " << tol << std::endl;
-			return sqrt(EigenVal[0]);
-		}//case 2
-		default:{
-			PZError << __PRETTY_FUNCTION__ << " p = " << p << " is not a correct option" << std::endl;
-		}
-	}//switch
-	return 0.;
+TVar TPZMatrix<TVar>::MatrixNorm(int p, long numiter, REAL tol) const {
+    const long n = this->Rows();
+    if (!n) return 0.;
+    if (n != this->Cols()) {
+        PZError << __PRETTY_FUNCTION__
+                << " - matrix must be square - Rows() = "
+                << this->Rows() << " - Cols() = "
+                << this->Cols() << std::endl;
+    }
+    switch (p) {
+        case 0:
+        {
+            TVar max = 0.;
+            long i, j;
+            for (i = 0; i < n; i++) {
+                REAL sum = 0.;
+                for (j = 0; j < n; j++) sum += fabs(this->Get(i, j));
+                if (sum > fabs(max)) max = sum;
+            }
+            return max;
+        }
+        case 1:
+        {
+            TVar max = 0.;
+            long i, j;
+            for (i = 0; i < n; i++) {
+                REAL sum = 0.;
+                for (j = 0; j < n; j++) sum += fabs(this->Get(j, i));
+                if (sum > fabs(max)) max = sum;
+            }
+            return max;
+        }
+        case 2:
+        {
+            TPZFMatrix<TVar> transp(n, n);
+            long i, j, k;
+            //TRANSPOSE
+            for (i = 0; i < n; i++) for (j = 0; j < n; j++) transp(i, j) = this->Get(j, i);
+            //MULTIPLY transp = transp.this
+            TPZVec<TVar> ROW(n);
+            for (i = 0; i < n; i++) {
+                for (j = 0; j < n; j++) ROW[j] = transp(i, j);
+                for (j = 0; j < n; j++) {
+                    TVar sum = 0.;
+                    for (k = 0; k < n; k++) {
+                        sum += ROW[k] * this->Get(k, j);
+                    }//for k
+                    transp(i, j) = sum;
+                }//for j
+            }//for i
+
+            TPZVec<TVar> EigenVal;
+            bool result = transp.SolveEigenvaluesJacobi(numiter, tol, &EigenVal);
+            if (result == false) PZError << __PRETTY_FUNCTION__
+                    << " - it was not possible to find Eigenvalues. Iterations = "
+                    << numiter << " - error found = " << tol << std::endl;
+            return sqrt(EigenVal[0]);
+        }//case 2
+        default:
+        {
+            PZError << __PRETTY_FUNCTION__ << " p = " << p << " is not a correct option" << std::endl;
+        }
+    }//switch
+    return 0.;
 }//method
 
 template <class TVar>

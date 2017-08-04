@@ -66,9 +66,9 @@ public:
 	    REAL hardening = 1000.; //Modulo de hardening da coesao equivante 1 Mpa a cada 0.1% de deformacao
 	    REAL young = 20000.;
 	    REAL poisson = 0.2;
-        material.fYC.SetUp(phi);
-		material.fTFA.SetUp(cohesion, hardening);
-		material.fER.SetUp(young, poisson);
+        material.fYieldCriterion.SetUp(phi);
+		material.fThermodynamicalForce.SetUp(cohesion, hardening);
+		material.fElasticResponse.SetUp(young, poisson);
 	}
     
     static void TaludeMaterial(TPZMohrCoulomb & material)
@@ -79,16 +79,16 @@ public:
 	    REAL hardening = 10.; //Modulo de hardening da coesao equivante 0.01 Mpa a cada 0.1% de deformacao
 	    REAL young = 20000.;//E em KPa
 	    REAL poisson = 0.49;
-        material.fYC.SetUp(phi);
-		material.fTFA.SetUp(cohesion, hardening);
-		material.fER.SetUp(young, poisson);
+        material.fYieldCriterion.SetUp(phi);
+		material.fThermodynamicalForce.SetUp(cohesion, hardening);
+		material.fElasticResponse.SetUp(young, poisson);
 	}
 	
 	void SetUp(REAL & cohesion, REAL & phi, REAL & hardening, REAL &young, REAL &poisson)
 	{
-		MOHRCOULOMBPARENT::fYC.SetUp(phi);
-		MOHRCOULOMBPARENT::fTFA.SetUp(cohesion, hardening);
-		MOHRCOULOMBPARENT::fER.SetUp(young, poisson);
+		MOHRCOULOMBPARENT::fYieldCriterion.SetUp(phi);
+		MOHRCOULOMBPARENT::fThermodynamicalForce.SetUp(cohesion, hardening);
+		MOHRCOULOMBPARENT::fElasticResponse.SetUp(young, poisson);
 	}
 	
     virtual void SetUp(const TPZTensor<REAL> & epsTotal) {
@@ -111,22 +111,22 @@ public:
 	{
 		MOHRCOULOMBPARENT::Write(buf);
 				
-		buf. Write(&fYC.fPhi, 1);
+		buf. Write(&fYieldCriterion.fPhi, 1);
 		
-        buf. Write(&fER.fLambda, 1);
-        buf. Write(&fER.fMu, 1);	
+        buf. Write(&fElasticResponse.fLambda, 1);
+        buf. Write(&fElasticResponse.fMu, 1);	
         
-        buf.Write(&fTFA.fSigmaYield0, 1);
-        buf.Write(&fTFA.fK, 1);
+        buf.Write(&fThermodynamicalForce.fSigmaYield0, 1);
+        buf.Write(&fThermodynamicalForce.fK, 1);
 
-        buf. Write(&fResTol, 1);
-        buf. Write(&fIntegrTol, 1);
-        buf. Write(&fMaxNewton, 1);
+        buf. Write(&fResidualTol, 1);
+        buf. Write(&fIntegrationTol, 1);
+        buf. Write(&fMaxNewtonIterations, 1);
         buf. Write(&fMinLambda, 1);
 		
-        buf. Write(&fN.fEpsT.fData[0], 6);
-        buf. Write(&fN.fEpsP.fData[0], 6);
-        buf. Write(&fN.fAlpha, 1);
+        buf. Write(&fPlasticState.fEpsT.fData[0], 6);
+        buf. Write(&fPlasticState.fEpsP.fData[0], 6);
+        buf. Write(&fPlasticState.fAlpha, 1);
 	
 	   // fPlasticMem does not need to be stored
 		
@@ -136,22 +136,22 @@ public:
 	{
 	   MOHRCOULOMBPARENT::Read(buf);
 
-        buf. Read(&fYC.fPhi, 1);
+        buf. Read(&fYieldCriterion.fPhi, 1);
 		
-        buf. Read(&fER.fLambda, 1);
-        buf. Read(&fER.fMu, 1);	
+        buf. Read(&fElasticResponse.fLambda, 1);
+        buf. Read(&fElasticResponse.fMu, 1);	
 		
-        buf. Read(&fTFA.fSigmaYield0, 1);
-        buf. Read(&fTFA.fK, 1);	
+        buf. Read(&fThermodynamicalForce.fSigmaYield0, 1);
+        buf. Read(&fThermodynamicalForce.fK, 1);	
 		
-        buf. Read(&fResTol, 1);
-        buf. Read(&fIntegrTol, 1);
-        buf. Read(&fMaxNewton, 1);
+        buf. Read(&fResidualTol, 1);
+        buf. Read(&fIntegrationTol, 1);
+        buf. Read(&fMaxNewtonIterations, 1);
         buf. Read(&fMinLambda, 1);
 		
-        buf. Read(&fN.fEpsT.fData[0], 6);
-        buf. Read(&fN.fEpsP.fData[0], 6);
-        buf. Read(&fN.fAlpha, 1);
+        buf. Read(&fPlasticState.fEpsT.fData[0], 6);
+        buf. Read(&fPlasticState.fEpsP.fData[0], 6);
+        buf. Read(&fPlasticState.fAlpha, 1);
 		
         fPlasticMem.Resize(0);
 	}	

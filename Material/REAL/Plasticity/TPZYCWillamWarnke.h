@@ -59,12 +59,12 @@ public:
 	
 	int GetForceYield()
 	{
-		return 0; //nothing to be done in this yield criterium
+		return 0; //nothing to be done in this yield criterion
 	}
 	
 	void SetForceYield(const int forceYield)
 	{
-		//nothing to be done in this yield criterium
+		//nothing to be done in this yield criterion
 	}
 	
 	/**
@@ -76,7 +76,7 @@ public:
 	 */
 	void SetYieldStatusMode(const TPZTensor<REAL> & sigma, const REAL & A)
 	{
-		// nothing to be done in this yield criterium
+		// nothing to be done in this yield criterion
 	}
 	
     /**

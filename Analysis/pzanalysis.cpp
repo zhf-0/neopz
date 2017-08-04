@@ -411,10 +411,10 @@ void TPZAnalysis::Solve() {
 
 }
 
-void TPZAnalysis::LoadSolution() {	
-	if(fCompMesh) {
-		fCompMesh->LoadSolution(fSolution);
-	}
+void TPZAnalysis::LoadSolution() {
+    if (fCompMesh) {
+        fCompMesh->LoadSolution(fSolution);
+    }
 }
 
 void TPZAnalysis::Print( const std::string &name, std::ostream &out) {

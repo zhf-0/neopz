@@ -33,7 +33,7 @@
 #include "TPZTensor.h"
 #include "pzpostprocmat.h"
 #include "pzpostprocanalysis.h"
-#include "pzelastoplastic2D.h"
+#include "TPZMatElastoPlastic2D.h"
 //Plasticidade
 
 #include "pzlog.h"
@@ -1609,7 +1609,7 @@ TPZCompMesh * ToolsTransient::CMeshElastoPlastic(TPZGeoMesh *gmesh, REAL SigmaN)
     REAL W = 0.006605;
     SD.SetUp(poisson, elast, A, B, C, R, D, W);
     SD.SetResidualTolerance(1.e-10);
-    SD.fIntegrTol = 10.;
+    SD.fIntegrationTol = 10.;
     
     TPZMatElastoPlastic2D<TPZSandlerDimaggio<SANDLERDIMAGGIOSTEP2> > * PlasticSD = new TPZMatElastoPlastic2D<TPZSandlerDimaggio<SANDLERDIMAGGIOSTEP2> > (globReservMatId1,planestrain);
     

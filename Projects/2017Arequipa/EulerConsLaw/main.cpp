@@ -677,8 +677,8 @@ int run(std::istream & input, std::ostream & output)
 	 if(logger->isDebugEnabled())
 	 {
 	 std::stringstream sout;
-	 sout << "Linear system criterium tol " << 1.e-8 << "\nMax number of GMRES iterations " << 100 << endl;
-	 sout << "Newton criterium tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
+	 sout << "Linear system criterion tol " << 1.e-8 << "\nMax number of GMRES iterations " << 100 << endl;
+	 sout << "Newton criterion tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
 	 sout << "Maximum number of steps " << MaxIter;
 	 LOGPZ_DEBUG(logger,sout.str().c_str());
 	 }
@@ -761,8 +761,8 @@ int run(std::istream & input, std::ostream & output)
 	 if(logger->isDebugEnabled())
 	 {
 	 std::stringstream sout;
-	 sout << "Linear system criterium tol " << 1.e-8 << "\nMax number of GMRES iterations " << 100 << endl;
-	 sout << "Newton criterium tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
+	 sout << "Linear system criterion tol " << 1.e-8 << "\nMax number of GMRES iterations " << 100 << endl;
+	 sout << "Newton criterion tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
 	 sout << "Maximum number of steps " << MaxIter;
 	 LOGPZ_DEBUG(logger,sout.str().c_str());
 	 }
@@ -788,8 +788,8 @@ int run(std::istream & input, std::ostream & output)
 	if(logger->isDebugEnabled())
 	{
 		std::stringstream sout;
-		sout << "Linear system criterium tol " << linsystol << "\nMax number of GMRES iterations " << maxiter << endl;
-		sout << "Newton criterium tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
+		sout << "Linear system criterion tol " << linsystol << "\nMax number of GMRES iterations " << maxiter << endl;
+		sout << "Newton criterion tol " << NewtonTol << "\nMax number of Newton iterations " << numnewton << endl;
 		sout << "Maximum number of steps " << MaxIter;
 		LOGPZ_DEBUG(logger,sout.str().c_str());
 	}

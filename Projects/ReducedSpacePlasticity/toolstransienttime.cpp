@@ -36,7 +36,7 @@
 #include "TPZTensor.h"
 #include "pzpostprocmat.h"
 #include "pzpostprocanalysis.h"
-#include "pzelastoplastic2D.h"
+#include "TPZMatElastoPlastic2D.h"
 //Plasticidade
 
 //Teste CohesiveBC
@@ -95,7 +95,7 @@ ToolsTransient::ToolsTransient(int pOrder) : fPostprocess(), flastElastSol()
 #endif
   
 #ifdef PlasticSDi
-  fCouplingMaterial1 = new TPZPlasticFrac2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> , TPZElastoPlasticMem>(globMultiFisicMatId1,dim, globFractInputData.E1(), globFractInputData.Poisson1(), globFractInputData.Visc());
+  fCouplingMaterial1 = new TPZPlasticFrac2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> , TPZElastoPlasticMem>(globMultiFisicMatId1,dim, globFractInputData.E1(), globFractInputData.Poisson1(), globFractInputData.Visc());
 #endif
   
   fCouplingMaterialH1 = new TPZH1PlasticFrac2D<TPZPlasticStepPV<TPZYCMohrCoulombPV,TPZElasticResponse> , TPZElastoPlasticMem>(globMultiFisicMatId1,dim, globFractInputData.E1(), globFractInputData.Poisson1(), globFractInputData.Visc());
@@ -123,10 +123,10 @@ ToolsTransient::ToolsTransient(int pOrder) : fPostprocess(), flastElastSol()
 void ToolsTransient::SetMohrCoulombParameters(REAL poisson, REAL elast, REAL cohesion, REAL Phi, REAL Psi)
 {
 #ifdef PlasticMC
-  TPZElasticResponse ER;
-  ER.SetUp(elast,poisson);
-  fPlasticStepPV.fYC.SetUp(Phi, Psi, cohesion, ER);
-  fPlasticStepPV.fER.SetUp(elast,poisson);
+  TPZElasticResponse elasticResponse;
+  elasticResponse.SetUp(elast,poisson);
+  fPlasticStepPV.fYieldCriterion.SetUp(Phi, Psi, cohesion, elasticResponse);
+  fPlasticStepPV.fElasticResponse.SetUp(elast,poisson);
 #endif
 }
 
@@ -147,8 +147,8 @@ void ToolsTransient::SetSandlerParameters()
   STATE G=elast/(2.*(1.+poisson));
   STATE K=elast/(3.*(1.-2*poisson));
   STATE phi=0,psi=1.,N=0.;
-  fPlasticStepPV.fYC.SetUp( A,  B, C,  D, K, G, W, R, phi, N, psi);
-  fPlasticStepPV.fER.SetUp(elast,poisson);
+  fPlasticStepPV.fYieldCriterion.SetUp( A,  B, C,  D, K, G, W, R, phi, N, psi);
+  fPlasticStepPV.fElasticResponse.SetUp(elast,poisson);
 #endif
 }
 
@@ -1393,7 +1393,7 @@ TPZCompMesh * ToolsTransient::CMeshElasticH1ForPostProc(){
   material1->SetPlasticity(fPlasticStepPV);
 #endif
 #ifdef PlasticSDi
-  TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse>, TPZElastoPlasticMem> *material1 = new TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> , TPZElastoPlasticMem>(globReservMatId1,1);
+  TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse>, TPZElastoPlasticMem> *material1 = new TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> , TPZElastoPlasticMem>(globReservMatId1,1);
   material1->SetPlasticity(fPlasticStepPV);
 #endif
   
@@ -2947,7 +2947,7 @@ TPZCompMesh * ToolsTransient::CMeshElastoPlastic(TPZGeoMesh *gmesh, REAL SigmaN)
   REAL W = 0.006605;
   SD.SetUp(poisson, elast, A, B, C, R, D, W);
   SD.SetResidualTolerance(1.e-10);
-  SD.fIntegrTol = 10.;
+  SD.fIntegrationTol = 10.;
   
   TPZMatElastoPlastic2D<TPZSandlerDimaggio<SANDLERDIMAGGIOSTEP2> > * PlasticSD = new TPZMatElastoPlastic2D<TPZSandlerDimaggio<SANDLERDIMAGGIOSTEP2> > (globReservMatId1,planestrain);
   
@@ -3351,7 +3351,7 @@ void ToolsTransient::CreatePostProcessingMesh()
   TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZYCMohrCoulombPV,TPZElasticResponse> , TPZElastoPlasticMem> *plasticmat = dynamic_cast<TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZYCMohrCoulombPV,TPZElasticResponse> , TPZElastoPlasticMem> *>(mat);
 #endif
 #ifdef PlasticSDi
-  TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> , TPZElastoPlasticMem> *plasticmat = dynamic_cast<TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended,TPZElasticResponse> , TPZElastoPlasticMem> *>(mat);
+  TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> , TPZElastoPlasticMem> *plasticmat = dynamic_cast<TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtendedPV,TPZElasticResponse> , TPZElastoPlasticMem> *>(mat);
   
 #endif
   if (!plasticmat) {

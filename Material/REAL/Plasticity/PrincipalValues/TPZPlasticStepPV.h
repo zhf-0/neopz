@@ -11,18 +11,15 @@
 #include "pzfmatrix.h"
 #include "TPZPlasticState.h"
 #include "TPZPlasticIntegrMem.h"
-#include "TPZPlasticStep.h"
 #include "pzlog.h"
 #include "pzstepsolver.h"
 #include "TPZElasticResponse.h"
+#include "TPZPlasticBase.h"
 
 #include <set>
 #include <ostream>
 
-// Metodos para deixar o prog mais "encapsulado"
-REAL NormVecOfMat(TPZFNMatrix <9> mat);
-REAL InnerVecOfMat(TPZFMatrix<REAL> &m1, TPZFMatrix<REAL> &m2);
-TPZFMatrix<REAL> ProdT(TPZManVector<REAL,3> &v1, TPZManVector<REAL,3> &v2);
+// Metodos para deixar o programa mais "encapsulado"
 TPZFNMatrix <6> FromMatToVoight(TPZFNMatrix <9> mat);
 
 /*
@@ -38,7 +35,7 @@ TPZFNMatrix <6> FromMatToVoight(TPZFNMatrix <9> mat);
 /**
  * @brief Classe que efetua avanco de um passo de plastificacao utilizando o metodo de Newton
  */
-template <class YC_t, class ER_t>
+template <class YieldCriterion_type, class ElasticResponse_type = TPZElasticResponse>
 class TPZPlasticStepPV : public TPZPlasticBase
 {
 public:
@@ -49,9 +46,9 @@ public:
      * @param[in] alpha damage variable
      */
 
-  TPZPlasticStepPV(REAL alpha=0.):fYC(), fER(), fResTol(1.e-12), fMaxNewton(30), fN()
+  TPZPlasticStepPV(REAL alpha=0.):fYieldCriterion(), fElasticResponse(), fResidualTol(1.e-12), fMaxNewtonIterations(30), fPlasticState()
 	{ 
-        fN.fAlpha = alpha;
+        fPlasticState.fAlpha = alpha;
     }
 
     /**
@@ -61,11 +58,11 @@ public:
      */
 	TPZPlasticStepPV(const TPZPlasticStepPV & source)
 	{
-        fYC = source.fYC;
-        fER = source.fER;
-        fResTol = source.fResTol;
-        fMaxNewton = source.fMaxNewton;
-        fN = source.fN;
+        fYieldCriterion = source.fYieldCriterion;
+        fElasticResponse = source.fElasticResponse;
+        fResidualTol = source.fResidualTol;
+        fMaxNewtonIterations = source.fMaxNewtonIterations;
+        fPlasticState = source.fPlasticState;
     }
 
     /**
@@ -75,11 +72,11 @@ public:
      */
 	TPZPlasticStepPV & operator=(const TPZPlasticStepPV & source)
 	{
-        fYC = source.fYC;
-        fER = source.fER;
-        fResTol = source.fResTol;
-        fMaxNewton = source.fMaxNewton;
-        fN = source.fN;
+        fYieldCriterion = source.fYieldCriterion;
+        fElasticResponse = source.fElasticResponse;
+        fResidualTol = source.fResidualTol;
+        fMaxNewtonIterations = source.fMaxNewtonIterations;
+        fPlasticState = source.fPlasticState;
 
         return *this;
     }
@@ -95,18 +92,18 @@ public:
 	virtual void Print(std::ostream & out) const
 	{
         out << "\n" << this->Name();
-        out << "\n YC_t:";
+        out << "\n YieldCriterion:";
         //fYC.Print(out); FAZER O PRINT
-        out << "\n ER_t:";
-        fER.Print(out);
+        out << "\n ElasticResponse:";
+        fElasticResponse.Print(out);
         out << "\nTPZPlasticStepPV Internal members:";
-        out << "\n fResTol = " << fResTol;
-        out << "\n fMaxNewton = " << fMaxNewton;
-        out << "\n fN = "; // PlasticState
-        fN.Print(out);
+        out << "\n fResidualTol = " << fResidualTol;
+        out << "\n fMaxNewtonIterations = " << fMaxNewtonIterations;
+        out << "\n fPlasticState = "; // PlasticState
+        fPlasticState.Print(out);
     }
 
-    typedef YC_t fNYields;
+    typedef YieldCriterion_type fNYields;
 
     /**
      * Imposes the specified strain tensor, evaluating the plastic integration if necessary.
@@ -123,13 +120,9 @@ public:
      */
     virtual void ApplyStrainComputeSigma(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma);
 
-
-
-    //virtual void ApplySigmaComputeStrain(const TPZTensor<REAL> &sigma, TPZTensor<REAL> &epsTotal);
-
     /**
-     * Imposes the specified strain tensor and returns the corresp. stress state and tangent
-     * stiffness matrix.
+     * Imposes the specified strain tensor and returns the correspondent
+     * stress state and tangent stiffness matrix.
      *
      * @param[in] epsTotal Imposed total strain tensor
      * @param[out] sigma Resultant stress
@@ -160,22 +153,22 @@ public:
 
     virtual TPZElasticResponse GetElasticResponse() const
     {
-        return fER;
+        return fElasticResponse;
     }
 
     /**
-     * @brief Update the damage values
-     * @param[in] state Plastic state proposed
+     * @brief Updates the damage values
+     * @param[in] state New plastic state
      */
     virtual void SetState(const TPZPlasticState<REAL> &state);
 
 
     //void CopyFromFNMatrixToTensor(TPZFNMatrix<6> FNM,TPZTensor<STATE> &copy);
-    void CopyFromTensorToFMatrix(TPZTensor<STATE> tensor, TPZFMatrix<STATE> &copy);
+    void CopyFromTensorToFMatrix(TPZTensor<STATE> tensor, TPZFMatrix<STATE> &copy) const;
 
 
     //void CopyFromTensorToFNMatrix(TPZTensor<STATE> tensor,TPZFNMatrix<6> &copy);
-    void CopyFromFMatrixToTensor(TPZFMatrix<STATE> FNM, TPZTensor<STATE> &copy);
+    void CopyFromFMatrixToTensor(TPZFMatrix<STATE> FNM, TPZTensor<STATE> &copy) const;
 
 
 
@@ -197,13 +190,9 @@ public:
 
     REAL ComputeNFromTaylorCheck(REAL alpha1, REAL alpha2, TPZFMatrix<REAL> &error1Mat, TPZFMatrix<REAL> &error2Mat);
 
-
-
-public:
-
 	void SetResidualTolerance(STATE tol)
 	{
-        fResTol = tol;
+        fResidualTol = tol;
     }
 
     void ResetPlasticMem()
@@ -214,31 +203,27 @@ public:
     //virtual void Write(TPZStream &buf) const;
 
     //virtual void Read(TPZStream &buf);
-public:
 
-    /** @brief Object which represents the yield criterium */
-    YC_t fYC;
+    /** @brief Object which represents the yield criterion */
+    YieldCriterion_type fYieldCriterion;
 
     /** @brief Object representing the elastic response */
-    ER_t fER;
+    ElasticResponse_type fElasticResponse;
 
+    /** @brief Plastic State Variables (EpsT, EpsP, Alpha) at the current time step */
+    TPZPlasticState<STATE> fPlasticState;
+
+    int fYield;
 protected:
 
     /** @brief Residual tolerance accepted in the plastic loop processes */
-    REAL fResTol;
+    REAL fResidualTol;
 
     /** @brief Maximum number of Newton interations allowed in the nonlinear solvers */
-    int fMaxNewton; // COLOCAR = 30 (sugestao do erick!)
+    int fMaxNewtonIterations; // COLOCAR = 30 (sugestao do erick!)
 
 
-
-public:
-
-    /** @brief Plastic State Variables (EpsT, EpsP, Alpha) at the current time step */
-    TPZPlasticState<STATE> fN;
-
-    int fYield;
-
+void ApplyStrain(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma);
 
 };
 

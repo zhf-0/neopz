@@ -10,7 +10,7 @@
 #include "TRMBuildTransfers.h"
 
 #include "tpzintpoints.h"
-#include "pzmatwithmem.h"
+#include "TPZMatWithMem.h"
 #include "TRMMemory.h"
 #include "TRMMixedDarcy.h"
 #include "pzmaterial.h"

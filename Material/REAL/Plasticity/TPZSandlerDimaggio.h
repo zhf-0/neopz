@@ -15,111 +15,104 @@
 #include "pzsave.h"
 #include "TPZPlasticStepID.h"
 
-#define SANDLERDIMAGGIOSTEP1 TPZPlasticStep<TPZYCSandlerDimaggioL, TPZSandlerDimaggioThermoForceA, TPZElasticResponse>
-#define SANDLERDIMAGGIOSTEP2 TPZPlasticStep<TPZYCSandlerDimaggioL2, TPZSandlerDimaggioThermoForceA, TPZElasticResponse>
-
+#define SANDLERDIMAGGIOSTEP1 TPZPlasticStep<TPZYCSandlerDimaggioL, TPZSandlerDimaggioThermoForceA>
+#define SANDLERDIMAGGIOSTEP2 TPZPlasticStep<TPZYCSandlerDimaggioL2, TPZSandlerDimaggioThermoForceA>
 
 template<class SANDLERDIMAGGIOPARENT>
-class TPZSandlerDimaggio : public SANDLERDIMAGGIOPARENT  {
+class TPZSandlerDimaggio : public SANDLERDIMAGGIOPARENT {
+public:
+
+    enum {
+        NYield = TPZYCSandlerDimaggio::NYield
+    };
 
 public:
 
-  enum {NYield = TPZYCSandlerDimaggio::NYield};
-
-public:
-
-    TPZSandlerDimaggio(REAL alpha=0./*-1.e-9*/):SANDLERDIMAGGIOPARENT(alpha) // avoiding nan
+    TPZSandlerDimaggio(REAL alpha = 0./*-1.e-9*/) : SANDLERDIMAGGIOPARENT(alpha) // avoiding nan
     {
-		this->fMaterialTensionSign = 1;//Quando este numero for positivo carremento de compressao e negativo
-        
+        this->fMaterialTensionSign = 1; //Quando este numero for positivo carremento de compressao e negativo
+
     }
 
-    TPZSandlerDimaggio(const TPZSandlerDimaggio & source):SANDLERDIMAGGIOPARENT(source)
-    {
-		this->fMaterialTensionSign = 1;
+    TPZSandlerDimaggio(const TPZSandlerDimaggio & source) : SANDLERDIMAGGIOPARENT(source) {
+        this->fMaterialTensionSign = 1;
     }
 
-    TPZSandlerDimaggio & operator=(const TPZSandlerDimaggio & source)
-    {
-		this->fMaterialTensionSign = 1;
-		SANDLERDIMAGGIOPARENT::operator=(source);
-		
-		return *this;
+    TPZSandlerDimaggio & operator=(const TPZSandlerDimaggio & source) {
+        this->fMaterialTensionSign = 1;
+        SANDLERDIMAGGIOPARENT::operator=(source);
+
+        return *this;
     }
-	
-	virtual const char * Name() const
-	{
-	   return "TPZSandlerDimaggio";	
-	}
-	
-	virtual void Print(std::ostream & out) const
-	{
-		out << "\n" << this->Name();
-		out << "\n Base Class Data:\n";
-		SANDLERDIMAGGIOPARENT::Print(out);
-		out << "\nTPZSandlerDimaggio internal members: None";		
-	}
-	
-	virtual int ClassId() const
-	{
-		return TPZSANDLERDIMAGGIO_ID;	
-	}
-	
-	virtual void Write(TPZStream &buf) const
-	{
-	   SANDLERDIMAGGIOPARENT::Write(buf);
-		
-	   buf. Write(&this->fYC.fA, 1);
-	   buf. Write(&this->fYC.fB, 1);
-	   buf. Write(&this->fYC.fC, 1);
-	   buf. Write(&this->fYC.fD, 1);
-	   buf. Write(&this->fYC.fR, 1);
-	   buf. Write(&this->fYC.fW, 1);	
-		
-	   buf. Write(&this->fER.fLambda, 1);
-	   buf. Write(&this->fER.fMu, 1);	
 
-	   buf. Write(&this->fResTol, 1);
-	   buf. Write(&this->fIntegrTol, 1);
-	   buf. Write(&this->fMaxNewton, 1);
-	   buf. Write(&this->fMinLambda, 1);
-		
-	   buf. Write(&this->fN.fEpsT.fData[0], 6);
-	   buf. Write(&this->fN.fEpsP.fData[0], 6);
-	   buf. Write(&this->fN.fAlpha, 1);
-		
-	   // fPlasticMem does not need to be stored
-			
-	}
+    virtual const char * Name() const {
+        return "TPZSandlerDimaggio";
+    }
 
-	virtual void Read(TPZStream &buf)
-	{
-	   SANDLERDIMAGGIOPARENT::Read(buf);
-		
-	   buf. Read(&this->fYC.fA, 1);
-	   buf. Read(&this->fYC.fB, 1);
-	   buf. Read(&this->fYC.fC, 1);
-       buf. Read(&this->fYC.fD, 1);
-	   buf. Read(&this->fYC.fR, 1);
-	   buf. Read(&this->fYC.fW, 1);	
-		
-	   buf. Read(&this->fER.fLambda, 1);
-	   buf. Read(&this->fER.fMu, 1);	
-		
-	   buf. Read(&this->fResTol, 1);
-	   buf. Read(&this->fIntegrTol, 1);
-	   buf. Read(&this->fMaxNewton, 1);
-	   buf. Read(&this->fMinLambda, 1);
-		
-	   buf. Read(&this->fN.fEpsT.fData[0], 6);
-	   buf. Read(&this->fN.fEpsP.fData[0], 6);
-	   buf. Read(&this->fN.fAlpha, 1);
-		
-	   this->fPlasticMem.Resize(0);
-	}	
+    virtual void Print(std::ostream & out) const {
+        out << "\n" << this->Name();
+        out << "\n Base Class Data:\n";
+        SANDLERDIMAGGIOPARENT::Print(out);
+        out << "\nTPZSandlerDimaggio internal members: None";
+    }
+
+    virtual int ClassId() const {
+        return TPZSANDLERDIMAGGIO_ID;
+    }
+
+    virtual void Write(TPZStream &buf) const {
+        SANDLERDIMAGGIOPARENT::Write(buf);
+
+        buf. Write(&this->fYieldCriterion.fA, 1);
+        buf. Write(&this->fYieldCriterion.fB, 1);
+        buf. Write(&this->fYieldCriterion.fC, 1);
+        buf. Write(&this->fYieldCriterion.fD, 1);
+        buf. Write(&this->fYieldCriterion.fR, 1);
+        buf. Write(&this->fYieldCriterion.fW, 1);
+
+        buf. Write(&this->fElasticResponse.fLambda, 1);
+        buf. Write(&this->fElasticResponse.fMu, 1);
+
+        buf. Write(&this->fResidualTol, 1);
+        buf. Write(&this->fIntegrationTol, 1);
+        buf. Write(&this->fMaxNewtonIterations, 1);
+        buf. Write(&this->fMinLambda, 1);
+
+        buf. Write(&this->fPlasticState.fEpsT.fData[0], 6);
+        buf. Write(&this->fPlasticState.fEpsP.fData[0], 6);
+        buf. Write(&this->fPlasticState.fAlpha, 1);
+
+        // fPlasticMem does not need to be stored
+
+    }
+
+    virtual void Read(TPZStream &buf) {
+        SANDLERDIMAGGIOPARENT::Read(buf);
+
+        buf. Read(&this->fYieldCriterion.fA, 1);
+        buf. Read(&this->fYieldCriterion.fB, 1);
+        buf. Read(&this->fYieldCriterion.fC, 1);
+        buf. Read(&this->fYieldCriterion.fD, 1);
+        buf. Read(&this->fYieldCriterion.fR, 1);
+        buf. Read(&this->fYieldCriterion.fW, 1);
+
+        buf. Read(&this->fElasticResponse.fLambda, 1);
+        buf. Read(&this->fElasticResponse.fMu, 1);
+
+        buf. Read(&this->fResidualTol, 1);
+        buf. Read(&this->fIntegrationTol, 1);
+        buf. Read(&this->fMaxNewtonIterations, 1);
+        buf. Read(&this->fMinLambda, 1);
+
+        buf. Read(&this->fPlasticState.fEpsT.fData[0], 6);
+        buf. Read(&this->fPlasticState.fEpsP.fData[0], 6);
+        buf. Read(&this->fPlasticState.fAlpha, 1);
+
+        this->fPlasticMem.Resize(0);
+    }
 
     /**
-    SetUp feeds all the parameters necessary to the method, distributing its values
+    Feeds all the parameters necessary to the method, distributing its values
     inside the aggregation hierarchy and computing the correct initial plasticity 
     parameter to ensure the irreversibility effect of plastic deformations.
     Elastic Mudulus:    E, poisson
@@ -127,24 +120,23 @@ public:
     Plastic Potential:  A, B, C, R
     Hardening Function: D, W
     Yield Function:     associative
-    */
+     */
     void SetUp(REAL poisson, REAL E,
-               REAL A, REAL B, REAL C, REAL R,
-               REAL D, REAL W)
-    {
-       SANDLERDIMAGGIOPARENT::fYC.SetUp(A, B, C, D, R, W);
-        SANDLERDIMAGGIOPARENT::fN.fAlpha = this->fYC.InitialDamage();        
-        SANDLERDIMAGGIOPARENT::fER.SetUp(E, poisson);
+            REAL A, REAL B, REAL C, REAL R,
+            REAL D, REAL W) {
+        SANDLERDIMAGGIOPARENT::fYieldCriterion.SetUp(A, B, C, D, R, W);
+        SANDLERDIMAGGIOPARENT::fPlasticState.fAlpha = this->fYieldCriterion.InitialDamage();
+        SANDLERDIMAGGIOPARENT::fElasticResponse.SetUp(E, poisson);
     }
+
     virtual void SetUp(const TPZTensor<REAL> & epsTotal) {
         SANDLERDIMAGGIOPARENT::SetUp(epsTotal);
     }
 
     /**
     Retrieve the plastic state variables
-    */
-    virtual TPZPlasticState<REAL> GetState() const
-    {
+     */
+    virtual TPZPlasticState<REAL> GetState() const {
         return SANDLERDIMAGGIOPARENT::GetState();
     }
 
@@ -153,306 +145,292 @@ public:
     This function returns the inverse of function void Sigma(...) using a Newton's scheme.
     @param[in] sigma stress tensor
     @param[out] epsTotal deformation tensor
-    */
-    virtual void ApplyLoad(const TPZTensor<REAL> & sigma, TPZTensor<REAL> &epsTotal)
-    {
-       SANDLERDIMAGGIOPARENT::ApplyLoad_Internal(sigma, epsTotal);
+     */
+    virtual void ApplyLoad(const TPZTensor<REAL> & sigma, TPZTensor<REAL> &epsTotal) {
+        SANDLERDIMAGGIOPARENT::ApplyLoad_Internal(sigma, epsTotal);
     }
 
     /**
-    * Load the converged solution, updating the damage variables
-    */
-    virtual void ApplyStrain(const TPZTensor<REAL> &epsTotal)
-    {
+     * Load the converged solution, updating the damage variables
+     */
+    virtual void ApplyStrain(const TPZTensor<REAL> &epsTotal) {
         SANDLERDIMAGGIOPARENT::ApplyStrain_Internal(epsTotal);
     }
 
-	/**
-    * Imposes the specified strain tensor and performs plastic integration when necessary.
-	*
-    */
-    virtual void ApplyStrainComputeDep(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma, TPZFMatrix<REAL> &Dep)
-	{
+    /**
+     * Imposes the specified strain tensor and performs plastic integration when necessary.
+     *
+     */
+    virtual void ApplyStrainComputeDep(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma, TPZFMatrix<REAL> &Dep) {
 
-		SANDLERDIMAGGIOPARENT::ApplyStrainComputeDep_Internal(epsTotal, sigma, Dep);
-		
-	}
-	
-    virtual void ApplyStrainComputeSigma(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma)
-	{
-		SANDLERDIMAGGIOPARENT::ApplyStrainComputeSigma_Internal(epsTotal, sigma);
-	}
+        SANDLERDIMAGGIOPARENT::ApplyStrainComputeDep_Internal(epsTotal, sigma, Dep);
+
+    }
+
+    virtual void ApplyStrainComputeSigma(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma) {
+        SANDLERDIMAGGIOPARENT::ApplyStrainComputeSigma_Internal(epsTotal, sigma);
+    }
 
     /**
     return the value of the yield functions for the given deformation
      * @param[in] epsTotal deformation tensor (total deformation
      * @param[out] phi vector of yield functions
-    */
-    virtual void Phi(const TPZTensor<REAL> &epsTotal, TPZVec<REAL> &phi) const
-    {
+     */
+    virtual void Phi(const TPZTensor<REAL> &epsTotal, TPZVec<REAL> &phi) const {
         SANDLERDIMAGGIOPARENT::Phi_Internal(epsTotal, phi);
     }
-	
-protected:
-	/**
-	* Evaluates the constitutive matrix (DSigma/DEpsT) based on the data from the plastic
-	* integration history without modifying it.
-	*
-	* @param [out] sigma resultant stress tensor
-	* @param [out] Dep Incremental constitutive relation
-    */
-    virtual void ComputeDep(TPZTensor<REAL> & sigma, TPZFMatrix<REAL> &Dep)
-	{
-		const int nyield = this->fYC.NYield;
-		
-		SANDLERDIMAGGIOPARENT::ComputeDep(sigma, Dep);
 
-		TPZManVector<REAL,3> plastifLen(nyield, 0.);
-		int n = this->fPlasticMem.NElements();
-		REAL deltaAlpha = fabs(this->fPlasticMem[n-1].fPlasticState.fAlpha - this->fPlasticMem[1].fPlasticState.fAlpha); 
-		
-		this->IntegrationOverview(plastifLen);
-		
-		// if the plastification ocurred mainly in the first (0th) yield function, which is
-		// perfectly plastic, then the stiffness matrix may be singular.
-		if(  (plastifLen[0] > 0.9 && plastifLen[1] < 0.1) ||
-		     (plastifLen[0] < 1.e-10 && plastifLen[1] > 0.9 && deltaAlpha < 1.e-10) )
-		{
-			TPZFNMatrix<6*6> D(6,6,0.);
-			
-			SANDLERDIMAGGIOPARENT::fER.ElasticMat(D);
-			
-			Dep.ZAXPY(0.01, D);
-			
-			#ifdef LOG4CXX_PLASTICITY
-				{
-				  LoggerPtr logger(Logger::getLogger("plasticity.SandlerDimaggio"));
-				  std::stringstream sout;
-				  sout << "*** TPZYCSandlerDimaggio::ComputeDep *** Superimposing a fraction of the Elastic Stiffness Matrix on a perfectly plastic load";
-				  cout << "\nfPlasticLen = " << plastifLen << " deltaAlpha = " << deltaAlpha;
-				  LOGPZ_WARN(logger,sout.str().c_str());
-				}
-			#endif
-		}
-	
-	}
+protected:
+
+    /**
+     * Evaluates the constitutive matrix (DSigma/DEpsT) based on the data from the plastic
+     * integration history without modifying it.
+     *
+     * @param [out] sigma resultant stress tensor
+     * @param [out] Dep Incremental constitutive relation
+     */
+    virtual void ComputeDep(TPZTensor<REAL> & sigma, TPZFMatrix<REAL> &Dep) {
+        const int nyield = this->fYieldCriterion.NYield;
+
+        SANDLERDIMAGGIOPARENT::ComputeDep(sigma, Dep);
+
+        TPZManVector<REAL, 3> plastifLen(nyield, 0.);
+        int n = this->fPlasticMem.NElements();
+        REAL deltaAlpha = fabs(this->fPlasticMem[n - 1].fPlasticState.fAlpha - this->fPlasticMem[1].fPlasticState.fAlpha);
+
+        this->IntegrationOverview(plastifLen);
+
+        // if the plastification ocurred mainly in the first (0th) yield function, which is
+        // perfectly plastic, then the stiffness matrix may be singular.
+        if ((plastifLen[0] > 0.9 && plastifLen[1] < 0.1) ||
+                (plastifLen[0] < 1.e-10 && plastifLen[1] > 0.9 && deltaAlpha < 1.e-10)) {
+            TPZFNMatrix<6 * 6> D(6, 6, 0.);
+
+            SANDLERDIMAGGIOPARENT::fElasticResponse.ElasticMat(D);
+
+            Dep.ZAXPY(0.01, D);
+
+#ifdef LOG4CXX_PLASTICITY
+            {
+                LoggerPtr logger(Logger::getLogger("plasticity.SandlerDimaggio"));
+                std::stringstream sout;
+                sout << "*** TPZYCSandlerDimaggio::ComputeDep *** Superimposing a fraction of the Elastic Stiffness Matrix on a perfectly plastic load";
+                cout << "\nfPlasticLen = " << plastifLen << " deltaAlpha = " << deltaAlpha;
+                LOGPZ_WARN(logger, sout.str().c_str());
+            }
+#endif
+        }
+
+    }
 
 public:
 
 
-// The following static members load test data from article 
-// setup with data from McCormic Ranch Sand
-// Dimaggio, Frank L. Sandler, Ivan S. Material model for granular soils
-// J. of the Eng. Mech. Div. vol. 97 n0 EM3 
-// pp 935-949,1971
+    // The following static members load test data from article 
+    // setup with data from McCormic Ranch Sand
+    // Dimaggio, Frank L. Sandler, Ivan S. Material model for granular soils
+    // J. of the Eng. Mech. Div. vol. 97 n0 EM3 
+    // pp 935-949,1971
 
-static void McCormicRanchSand(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 100, //ksi = 689 MPa
-			poisson = /*0.25;*/ 0.25; // In the 1971 article, although
-			          // the authors documented a poisson coeff. of 0.25
-					  // they seem to have used a poisson of 0.40, as
-					  // calculated in the unloading cycle of the uniaxial
-					  // strain test.
-       TPZYCSandlerDimaggio::McCormicRanchSand(material.fYC);
-       material.fER.SetUp(E, poisson);
-		
-	   material.fResTol = 1.e-12;
-	   material.fIntegrTol = 1.e-6;
+    static void McCormicRanchSand(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
 
-    }
+        REAL E = 100, //ksi = 689 MPa
+                poisson = /*0.25;*/ 0.25; // In the 1971 article, although
+        // the authors documented a poisson coeff. of 0.25
+        // they seem to have used a poisson of 0.40, as
+        // calculated in the unloading cycle of the uniaxial
+        // strain test.
+        TPZYCSandlerDimaggio::McCormicRanchSand(material.fYieldCriterion);
+        material.fElasticResponse.SetUp(E, poisson);
 
-    static void McCormicRanchSandMod(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 100, //ksi
-			poisson = /*0.25;*/ 0.40; // In the 1971 article, although
-			          // the authors documented a poisson coeff. of 0.25
-					  // they seem to have used a poisson of 0.40, as
-					  // calculated in the unloading cycle of the uniaxial
-					  // strain test.
-       TPZYCSandlerDimaggio::McCormicRanchSand(material.fYC);
-       material.fER.SetUp(E, poisson);
+        material.fResidualTol = 1.e-12;
+        material.fIntegrationTol = 1.e-6;
 
     }
 
-    static void McCormicRanchSandMod2(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 100, //ksi
-			poisson = /*0.25;*/ 0.40; // In the 1971 article, although
-			          // the authors documented a poisson coeff. of 0.25
-					  // they seem to have used a poisson of 0.40, as
-					  // calculated in the unloading cycle of the uniaxial
-					  // strain test.
+    static void McCormicRanchSandMod(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
 
-       material.fER.SetUp(E, poisson);
+        REAL E = 100, //ksi
+                poisson = /*0.25;*/ 0.40; // In the 1971 article, although
+        // the authors documented a poisson coeff. of 0.25
+        // they seem to have used a poisson of 0.40, as
+        // calculated in the unloading cycle of the uniaxial
+        // strain test.
+        TPZYCSandlerDimaggio::McCormicRanchSand(material.fYC);
+        material.fElasticResponse.SetUp(E, poisson);
 
-	   REAL A = 0.25,
-        B = 0.67,
-        C = 0.18,
-        D = 0.67 / 2., //letting the material behave stronger to enable higher loads without too much volumetric plastic strain 
-        R = 2.5,
-        W = 0.066;
-	
-       material.fYC.SetUp(A, B, C, D, R, W);
-	}
-	
-   static void UncDeepSandRes(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 1305, //ksi (9000MPa)
-	   poisson = 0.25;
+    }
 
-       material.fER.SetUp(E, poisson);
+    static void McCormicRanchSandMod2(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::McCormicRanchSand ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
 
-        REAL A = 2.61, //ksi  = 18 in MPa
-        B = 0.169, // ksi   0.0245 in MPa
-        C = 2.57, // ksi   = 17.7  in MPa
-        D = 0.05069, //  = 0.00735 in MPa
-        R = 1.5,
-        W = 0.0908;
-	
-       material.fYC.SetUp(A, B, C, D, R, W);
-	}
-	
-    static void UncDeepSandTest(TPZSandlerDimaggio & material)
-    {
+        REAL E = 100, //ksi
+                poisson = /*0.25;*/ 0.40; // In the 1971 article, although
+        // the authors documented a poisson coeff. of 0.25
+        // they seem to have used a poisson of 0.40, as
+        // calculated in the unloading cycle of the uniaxial
+        // strain test.
+
+        material.fElasticResponse.SetUp(E, poisson);
+
+        REAL A = 0.25,
+                B = 0.67,
+                C = 0.18,
+                D = 0.67 / 2., //letting the material behave stronger to enable higher loads without too much volumetric plastic strain 
+                R = 2.5,
+                W = 0.066;
+
+        material.fYC.SetUp(A, B, C, D, R, W);
+    }
+
+    static void UncDeepSandRes(TPZSandlerDimaggio & material) {
 #ifdef LOG4CXX_PLASTICITY
         LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
         {
             std::stringstream sout;
             sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
-            LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
         }
 #endif
-		
-        REAL E = 1305, //ksi (9000MPa)
-        poisson = 0.25;
-        
-//        material.fER.SetUp(E, poisson);
-        
-        REAL A = 10.,//2.61, //ksi  = 18 in MPa
-        B = 0.169, // ksi   0.0245 in MPa
-        C = 2.57, // ksi   = 17.7  in MPa
-        D = 0.05069, //  = 0.00735 in MPa
-        R = 1.5,
-        W = 0.0908;
-        
-//        material.fYC.SetUp(A, B, C, D, R, W);
-        material.SetUp(poisson, E, A, B, C, R, D, W);
-	}
-	
-	static void UncDeepSandResPSI(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 1305000, //psi (9000MPa)
-	   poisson = 0.25;
 
-       material.fER.SetUp(E, poisson);
+        REAL E = 1305, //ksi (9000MPa)
+                poisson = 0.25;
+
+        material.fElasticResponse.SetUp(E, poisson);
+
+        REAL A = 2.61, //ksi  = 18 in MPa
+                B = 0.169, // ksi   0.0245 in MPa
+                C = 2.57, // ksi   = 17.7  in MPa
+                D = 0.05069, //  = 0.00735 in MPa
+                R = 1.5,
+                W = 0.0908;
+
+        material.fYC.SetUp(A, B, C, D, R, W);
+    }
+
+    static void UncDeepSandTest(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
+
+        REAL E = 1305, //ksi (9000MPa)
+                poisson = 0.25;
+
+        //        material.fElasticResponse.SetUp(E, poisson);
+
+        REAL A = 10., //2.61, //ksi  = 18 in MPa
+                B = 0.169, // ksi   0.0245 in MPa
+                C = 2.57, // ksi   = 17.7  in MPa
+                D = 0.05069, //  = 0.00735 in MPa
+                R = 1.5,
+                W = 0.0908;
+
+        //        material.fYC.SetUp(A, B, C, D, R, W);
+        material.SetUp(poisson, E, A, B, C, R, D, W);
+    }
+
+    static void UncDeepSandResPSI(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
+
+        REAL E = 1305000, //psi (9000MPa)
+                poisson = 0.25;
+
+        material.fER.SetUp(E, poisson);
 
         REAL A = 2610, //psi  = 18 in MPa
-        B = 0.000169, // psi   0.0245 in MPa
-        C = 2570, // psi    = 17.7  in MPa
-        D = 0.00005069, //  = 0.00735 in MPa
-        R = 1.5,
-        W = 0.0908;
-	
-       material.fYC.SetUp(A, B, C, D, R, W);
-	}
+                B = 0.000169, // psi   0.0245 in MPa
+                C = 2570, // psi    = 17.7  in MPa
+                D = 0.00005069, //  = 0.00735 in MPa
+                R = 1.5,
+                W = 0.0908;
 
-	static void UncDeepSandResMPa(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 9000, 
-	   poisson = 0.25;
+        material.fYC.SetUp(A, B, C, D, R, W);
+    }
 
-       material.fER.SetUp(E, poisson);
+    static void UncDeepSandResMPa(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::Unconsolidated Deep Sandstone Reservoir ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
 
-        REAL A = 18, 
-        B = 0.0245, 
-        C = 17.7, 
-        D = 0.00735, 
-        R = 1.5,
-        W = 0.0908;
-	
-       material.fYC.SetUp(A, B, C, D, R, W);
-	}
-	
-	static void PRSMatMPa(TPZSandlerDimaggio & material)
-    {
-       #ifdef LOG4CXX_PLASTICITY
-       LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
-       {
-          std::stringstream sout;
-          sout << ">>> TPZSandlerDimaggio::PRSMat MPa ***";
-          LOGPZ_INFO(loggerSandlerDimaggio,sout.str().c_str());
-	   }
-       #endif
-		
-	   REAL E = 29269.,
-	   poisson = 0.203;
+        REAL E = 9000,
+                poisson = 0.25;
 
-       material.fER.SetUp(E, poisson);
+        material.fER.SetUp(E, poisson);
 
-        REAL A = 116.67, 
-        B = 0.0036895, 
-        C = 111.48, 
-        D = 0.018768, 
-        R = 0.91969,
-        W = 0.006605;
-	
-       material.fYC.SetUp(A, B, C, D, R, W);
-	}
+        REAL A = 18,
+                B = 0.0245,
+                C = 17.7,
+                D = 0.00735,
+                R = 1.5,
+                W = 0.0908;
+
+        material.fYC.SetUp(A, B, C, D, R, W);
+    }
+
+    static void PRSMatMPa(TPZSandlerDimaggio & material) {
+#ifdef LOG4CXX_PLASTICITY
+        LoggerPtr loggerSandlerDimaggio(Logger::getLogger("plasticity.SandlerDimaggio"));
+        {
+            std::stringstream sout;
+            sout << ">>> TPZSandlerDimaggio::PRSMat MPa ***";
+            LOGPZ_INFO(loggerSandlerDimaggio, sout.str().c_str());
+        }
+#endif
+
+        REAL E = 29269.,
+                poisson = 0.203;
+
+        material.fElasticResponse.SetUp(E, poisson);
+
+        REAL A = 116.67,
+                B = 0.0036895,
+                C = 111.48,
+                D = 0.018768,
+                R = 0.91969,
+                W = 0.006605;
+
+        material.fYieldCriterion.SetUp(A, B, C, D, R, W);
+    }
 
 public:
 

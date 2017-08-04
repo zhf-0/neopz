@@ -5,4 +5,6 @@ install(FILES ${headers} DESTINATION ${NEOPZ_INCLUDE})
 
 file(GLOB sources *.cpp)
 
-set(pzmaterial_Plasticity_SRCS ${headers} ${sources} PARENT_SCOPE)
+add_subdirectory(PrincipalValues)
+
+set(pzmaterial_Plasticity_SRCS ${headers} ${sources} ${pzmaterial_Plasticity_PrincipalValues_SRCS} PARENT_SCOPE)
