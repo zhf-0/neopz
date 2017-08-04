@@ -6,9 +6,6 @@
 #ifndef TPZMATWAVEGUIDECUTOFFANALYSIS_H
 #define TPZMATWAVEGUIDECUTOFFANALYSIS_H
 
-#include "TPZVecL2.h"
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
 #include "TPZMatModalAnalysis.h"
 
 class  TPZMatWaveguideCutOffAnalysis : public TPZMatModalAnalysis

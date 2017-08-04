@@ -6,9 +6,6 @@
 #ifndef TPZMATMFHDIVROTH1_H
 #define TPZMATMFHDIVROTH1_H
 
-#include "TPZVecL2.h"
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
 #include "TPZMatModalAnalysis.h"
 #include "TPZMatHCurlProjection.h"
 

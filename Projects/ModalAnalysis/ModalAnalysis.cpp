@@ -15,10 +15,8 @@
  * @author Francisco Orlandini
  * @since 2015
  */
-
-#include <iostream>
+#include <stddef.h>               // for NULL
 #include <fstream>
-#include <string>
 #include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
@@ -38,8 +36,8 @@
 #include "tpzgeoelrefpattern.h"
 #include "tpzquadraticline.h"
 #include "tpzquadratictrig.h"
-#include "TPZMatModalAnalysis.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
+#include "TPZMatModalAnalysis.h"
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
 

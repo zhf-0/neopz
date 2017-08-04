@@ -6,9 +6,6 @@
 #ifndef TPZMATMODALANALYSIS_H
 #define TPZMATMODALANALYSIS_H
 
-#include "TPZVecL2.h"
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
 #include "TPZMatHCurlProjection.h"
 
 /**
