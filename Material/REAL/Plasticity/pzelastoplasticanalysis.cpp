@@ -137,13 +137,12 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, TPZAutoPointe
     
     fSolution.Zero();
     LoadSolution();
-	
-    out << "Iterative process using the linear stiffness matrix\n";
-    
-	TPZFMatrix<REAL> prevsol(fSolution);
-	if(prevsol.Rows() != numeq) prevsol.Redim(numeq,1);
-    
-    
+
+    out << "Iterative process using the linear stiffness matrix" << std::endl;
+
+    TPZFMatrix<REAL> previous_solution(fSolution);
+    if (previous_solution.Rows() != numeq) previous_solution.Redim(numeq, 1);
+
 #ifdef LOG4CXX
     if(EPAnalysisLogger->isDebugEnabled())
     {
@@ -152,69 +151,63 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, TPZAutoPointe
         LOGPZ_DEBUG(EPAnalysisLogger, sout.str())
     }
 #endif
-	
-    TPZAnalysis::AssembleResidual();
-    REAL RhsNormPrev = Norm(fRhs);
-    
-//    std::cout << __LINE__ << " Norm prevsol " << Norm(prevsol) << std::endl;
-	bool linesearchconv=true;
-	while(error > tol && iter < numiter) {
-		
-		//fSolution.Redim(0,0);
-        REAL RhsNormResult = 0.;
-		Solve();
-        TPZFMatrix<STATE> solkeep(fSolution);
-		if (linesearch){
+
+    AssembleResidual();
+    REAL previous_rhs_norm = Norm(fRhs);
+
+    bool linesearchconv = true;
+    for (unsigned int iter = 0; iter < numiter && error > tol; ++iter) {
+        REAL current_rhs_norm = 0.;
+        Solve();
+        TPZFMatrix<STATE> solution_bkp(fSolution);
+        if (linesearch) {
             {
-                TPZFMatrix<STATE> nextsol(prevsol);
-                nextsol += solkeep;
-                TPZNonLinearAnalysis::LoadSolution(nextsol);
+                TPZFMatrix<STATE> next_solution(previous_solution);
+                next_solution += solution_bkp;
+                TPZNonLinearAnalysis::LoadSolution(next_solution);
                 AssembleResidual();
-                RhsNormResult = Norm(fRhs);
+                current_rhs_norm = Norm(fRhs);
             }
-            if (RhsNormResult > tol && RhsNormResult > RhsNormPrev) {
-                fSolution = prevsol;
+            if (current_rhs_norm > tol && current_rhs_norm > previous_rhs_norm) {
+                fSolution = previous_solution;
                 LoadSolution();
-                TPZFMatrix<REAL> nextSol;
 #ifdef LOG4CXX
                 if (EPAnalysisLogger->isDebugEnabled()) {
                     std::stringstream sout;
-                    std::cout << __LINE__ << " Norm prevsol " << Norm(prevsol) << std::endl;
+                    std::cout << __LINE__ << " Norm prevsol " << Norm(previous_solution) << std::endl;
                     LOGPZ_DEBUG(EPAnalysisLogger, sout.str())
                 }
 #endif
-                const int niter = 2;
-                this->LineSearch(prevsol, solkeep, nextSol, RhsNormPrev, RhsNormResult, niter,linesearchconv);
-                fSolution = nextSol;
+
+                const int n_iterations_line_search = 2;
+                TPZFMatrix<REAL> next_solution;
+                this->LineSearch(previous_solution, solution_bkp, next_solution, previous_rhs_norm, current_rhs_norm, n_iterations_line_search, linesearchconv);
+                fSolution = next_solution;
             }
-            else
-            {
-            }
-		}
-		else{
-			fSolution += prevsol;
+        } else {
+            fSolution += previous_solution;
             LoadSolution();
             AssembleResidual();
-            RhsNormResult = Norm(fRhs);
-		}
-		
-		prevsol -= fSolution;
-		REAL normDeltaSol = Norm(prevsol);
-		prevsol = fSolution;
-		REAL norm = RhsNormResult;
-        
+            current_rhs_norm = Norm(fRhs);
+        }
+
+        previous_solution -= fSolution;
+        REAL normDeltaSol = Norm(previous_solution);
+        previous_solution = fSolution;
+        REAL norm = current_rhs_norm;
+
 #ifdef PZDEBUG
         {
             LoadSolution();
             AssembleResidual();
             REAL rhsnorm = Norm(fRhs);
-            std::cout << "Norm rhs reported " << RhsNormResult << " now computed " << rhsnorm << std::endl;
+            std::cout << "Norm rhs reported " << current_rhs_norm << " now computed " << rhsnorm << std::endl;
         }
 #endif
-        
-        RhsNormPrev = RhsNormResult;
-		//       out << "Iteracao n : " << (iter+1) << " : norma da solucao |Delta(Un)|: " << norm << endl;
-        std::cout << "Iteracao n : " << (iter+1) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << RhsNormResult << endl;
+
+        previous_rhs_norm = current_rhs_norm;
+        //       out << "Iteracao n : " << (iter+1) << " : norma da solucao |Delta(Un)|: " << norm << endl;
+        std::cout << "Iteracao n : " << (iter + 1) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << current_rhs_norm << endl;
         //        std::cout << "Iteracao n : " << (iter+1) << " : fRhs : " << fRhs << endl;
 		
 		if(norm < tol) {

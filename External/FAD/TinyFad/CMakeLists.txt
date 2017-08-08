@@ -1,7 +1,11 @@
 # @file neopz/External/FAD/TinyFad/CMakeLists.txt
 
 file(GLOB headers *.h)
-install(FILES ${headers} DESTINATION ${NEOPZ_INCLUDE})
+
+INSTALL(DIRECTORY Specializations
+  DESTINATION ${NEOPZ_INCLUDE}/TinyFad/
+  FILES_MATCHING PATTERN "*.h"
+  )
 
 file(GLOB sources *.cpp)
 

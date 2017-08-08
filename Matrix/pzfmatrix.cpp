@@ -19,8 +19,8 @@
 #include "pzlog.h"
 
 #ifdef _AUTODIFF
-#include "tfad.h"
-#include "fad.h"
+#include "TinyFadET/tfad.h"
+#include "Fad/fad.h"
 #endif
 
 #ifdef PZDEBUG
@@ -3102,7 +3102,7 @@ template class TPZRestoreClass< TPZFMatrix<float> , TPZFMATRIX_FLOAT_ID>;
 template class TPZRestoreClass< TPZFMatrix<long double> , TPZFMATRIX_LONG_DOUBLE_ID>;
 
 #ifdef _AUTODIFF
-#include "fad.h"
+#include "Fad/fad.h"
 template class TPZFMatrix<TFad<6,REAL> >;
 template class TPZFMatrix<Fad<double> >;
 template class TPZFMatrix<Fad<float> >;

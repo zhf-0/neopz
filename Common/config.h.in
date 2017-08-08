@@ -2,11 +2,11 @@
 // It holds all definitions (-D**, libraries, etc) passed to compiler when building this library
 
 #ifndef PZSOURCEDIR
-#define PZSOURCEDIR @PZSOURCEDIR@
+#define PZSOURCEDIR "@PZSOURCEDIR@"
 #endif
 
 #ifndef REFPATTERNDIR
-#define REFPATTERNDIR @REFPATTERNDIR@
+#define REFPATTERNDIR "@REFPATTERNDIR@"
 #endif
 
 #ifndef LOG4CXX

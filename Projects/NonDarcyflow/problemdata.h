@@ -16,7 +16,7 @@
 #include <math.h>
 
 #ifdef _AUTODIFF
-#include "fad.h"
+#include "Fad/fad.h"
 
 /** @brief State: Stiffness or Mass Matrix Calculations */
 enum EState { ELastState = 0, ECurrentState = 1 };

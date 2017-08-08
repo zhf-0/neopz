@@ -6,9 +6,9 @@
 
 //using namespace std;
 
-#include "fad.h"
-#include "tinyfad.h"
-#include "tfad.h" // tinyFadET
+#include "Fad/fad.h"
+#include "TinyFad/tinyfad.h"
+#include "TinyFadET/tfad.h" // tinyFadET
 
 
 #include "pzreal.h"

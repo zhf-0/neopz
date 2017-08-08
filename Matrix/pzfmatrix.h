@@ -18,8 +18,8 @@
 #include "pzmatrixid.h"
 
 #ifdef _AUTODIFF
-#include "tfad.h"
-#include "fad.h"
+#include "TinyFadET/tfad.h"
+#include "Fad/fad.h"
 #include "pzextractval.h"
 #endif
 

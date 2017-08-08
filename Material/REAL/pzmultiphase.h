@@ -12,7 +12,7 @@
 #include "pzmaterial.h"
 #include "pzdiscgal.h"
 #ifdef _AUTODIFF
-#include "fad.h"
+#include "Fad/fad.h"
 #endif
 #include <iostream>
 #include <fstream>

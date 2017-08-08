@@ -18,7 +18,7 @@
 
 #ifdef _AUTODIFF
 #include "fadType.h"
-#include "fad.h"
+#include "Fad/fad.h"
 #endif
 
 #include <sstream>

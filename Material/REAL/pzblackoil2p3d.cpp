@@ -10,7 +10,7 @@ using namespace std;
 
 #ifdef _AUTODIFF
 
-#include "fad.h"
+#include "Fad/fad.h"
 
 TPZBlackOil2P3D::EState TPZBlackOil2P3D::gState = ELastState;
 
