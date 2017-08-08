@@ -1,6 +1,13 @@
 # @file neopz/CMakeList.txt  -- First file to read for CMake
 
-cmake_minimum_required (VERSION 2.8.0)
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+
+find_program(IWYU_PATH NAMES include-what-you-use iwyu)
+if(NOT IWYU_PATH)
+  message(FATAL_ERROR "Could not find the program include-what-you-use")
+endif()
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
+set(CMAKE_C_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
 
 project (PZ)
 
