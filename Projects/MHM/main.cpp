@@ -156,7 +156,7 @@ int const bc3=-3;
 int const bc4=-4;
 int const bc5=-5;
 
-static void DirichletValidacao(const TPZVec<REAL> &loc, TPZVec<STATE> &result){
+static void DirichletValidacao(const TPZVec<REAL> &loc, TPZVec<STATE> &result, TPZFMatrix<STATE> &gradres){
     result[0] = loc[0];
 }
 
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
     TExceptionManager except;
     
 #ifdef _AUTODIFF
-    example = new TLaplaceExample1;
+//    example = new TLaplaceExample1;
 #endif
     
     TRunConfig Configuration;
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
     // (1) - compute MHM H1 mesh and compute MHM(div) mesh
     int ComputationType = 1;
     /// numhdiv - number of h-refinements
-    Configuration.numHDivisions = 3;
+    Configuration.numHDivisions = 2;
     /// PolynomialOrder - p-order
     Configuration.pOrderInternal = 2;
     
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
         Configuration.nelycoarse = 8;
     }
     Configuration.Hybridize = 0;
-    if (argc == 7)
+    if (argc == 8)
     {
         std::cout << "Executing using command line arguments\n";
         Configuration.nelxcoarse = atoi(argv[1]);
@@ -211,6 +211,7 @@ int main(int argc, char *argv[])
         Configuration.pOrderInternal = atoi(argv[4]);
         Configuration.numDivSkeleton = atoi(argv[5]);
         Configuration.pOrderSkeleton = atoi(argv[6]);
+        Configuration.newline = atoi(argv[7]);
     }
     
     // to avoid singular internal matrices
@@ -382,10 +383,8 @@ int main(int argc, char *argv[])
     else if(!example)
     {
         // verifying differences between the MHM-original and MHM with mixed approximations
-        int nelx = 16;
-        int nely = 4;
-        Configuration.nelxcoarse = nelx;
-        Configuration.nelycoarse = nely;
+        int nelx = Configuration.nelxcoarse;
+        int nely = Configuration.nelycoarse;
         {
             std::ofstream out("DiffResults.nb",std::ios::app);
             out << "(* Running quadrilateral mesh with numsubdomains " << nelx << ", " << nely << " *)\n";
@@ -436,7 +435,9 @@ int main(int argc, char *argv[])
         TPZMHMeshControl &meshcontrol = *mhm;
         MHM->SwitchLagrangeMultiplierSign(true);
 
-        meshcontrol.SetLagrangeAveragePressure(true);
+        if (Configuration.LagrangeMult) {
+            meshcontrol.SetLagrangeAveragePressure(true);
+        }
         
         InsertMaterialObjects(meshcontrol);
 
@@ -451,7 +452,7 @@ int main(int argc, char *argv[])
             meshcontrol.Hybridize(secondskeleton, matpressure);
         }
         
-        bool substructure = true;
+        bool substructure = (bool) Configuration.Condensed;
         meshcontrol.BuildComputationalMesh(substructure);
 #ifdef PZDEBUG
         if(0)
@@ -508,7 +509,7 @@ int main(int argc, char *argv[])
             
         }
         
-        bool substructure = true;
+        bool substructure = (bool) Configuration.Condensed;
         meshcontrol.BuildComputationalMesh(substructure);
 #ifdef PZDEBUG
         if(1)
@@ -551,11 +552,23 @@ int main(int argc, char *argv[])
         sout << "H" << Configuration.numHDivisions << "-P" << Configuration.pOrderInternal;
         configuration = sout.str();
     }
+    std::stringstream MHMPref, MHMMixedPref;
+    MHMPref << "MHM";
+    MHMMixedPref << "MHMixed";
+    if(Configuration.LagrangeMult)
+    {
+        MHMPref << "_Lagr";
+        MHMMixedPref << "_Lagr";
+    }
+    if (Configuration.Hybridize) {
+        MHMPref << "_Hybr";
+        MHMMixedPref << "_Hybr";
+    }
     // compute the MHM solution
-    SolveProblem(MHM->CMesh(), MHM->GetMeshes(), example, "MHM", Configuration);
+    SolveProblem(MHM->CMesh(), MHM->GetMeshes(), example, MHMPref.str(), Configuration);
     
     // compute the MHM H(div) solution
-    SolveProblem(MHMixed->CMesh(), MHMixed->GetMeshes(), example, "MHMixed", Configuration);
+    SolveProblem(MHMixed->CMesh(), MHMixed->GetMeshes(), example, MHMMixedPref.str(), Configuration);
     
 //    CopySolution(MHMixed->CMesh().operator->(), MHM->CMesh().operator->());
     
@@ -571,7 +584,7 @@ int main(int argc, char *argv[])
     }
     
 //    ComputeDifferencesBySubmesh(Configuration, MHM, MHMixed, "DiffResults.nb");
-    if(0)
+    if(!example)
     {
         TPZManVector<STATE,10> square_errors(3,0.);
         TPZCompMeshTools::ComputeDifferenceNorm(MHMixed->CMesh().operator->(), MHM->CMesh().operator->(), square_errors);
