@@ -321,7 +321,7 @@ void TPZHCurlNedFTriEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
     } // if
 #endif
     TPZFMatrix<REAL> phiHat;
-
+    
     ref->Jacobian(intpoint, jacobian, axes, detjac, jacinv);
     this->Shape(intpoint, phiHat, curlPhiHat);
     this->ShapeTransform(phiHat, jacinv, phi);
@@ -476,3 +476,29 @@ void TPZHCurlNedFTriEl::InitMaterialData(TPZMaterialData &data){
 TPZCompEl *CreateHCurlNedFTriEl(TPZGeoEl *gel, TPZCompMesh &mesh, long &index) {
     return new TPZHCurlNedFTriEl(mesh, gel, index);
 }
+
+//void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+//                              TPZFMatrix<REAL> &curlPhiHat) {
+//    // EvaluateShapeF(qsi, phi, curlPhiHat);
+//    // return;
+//    const int dim = Dimension();
+//    const int nCon = NConnects();
+//    const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
+//
+//    TPZManVector<int, 4> firstConFuncPos(nCon, 0);
+//    for (int iCon = 1; iCon < nCon; iCon++) {
+//        firstConFuncPos[iCon] = firstConFuncPos[iCon - 1] +
+//                                NConnectShapeF(iCon - 1, ConnectOrder(iCon));
+//    }
+//    int lastFuncPos = firstConFuncPos[nCon - 1] +
+//                      NConnectShapeF(nCon - 1, ConnectOrder(nCon - 1)) - 1;
+//
+//    phi.Resize(lastFuncPos + 1, dim);
+//    curlPhiHat.Resize(1, lastFuncPos + 1);
+//}
+
+ #ifdef HCURL_HIERARCHICAL_SCALED
+ #include "TPZHCurlNedFTriElShapeScaled.cpp"
+ #else
+ #include "TPZHCurlNedFTriElShape.cpp"
+ #endif

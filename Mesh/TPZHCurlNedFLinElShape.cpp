@@ -9,10 +9,6 @@
 
 using namespace pzshape;
 
-#ifdef LOG4CXX
-static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFLinEl"));
-#endif
-
 void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                               TPZFMatrix<REAL> &curlPhiHat) {
     const int nCon = NConnects();

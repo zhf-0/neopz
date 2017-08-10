@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     bool genVTK = false;      // generate vtk for fields visualisation
     bool l2error = false;     // TODO: implement error analysis
     bool exportEigen = false; // export eigen values
-    const int nThreads = 0;   // TODO: fix multithread issue
+    const int nThreads = 1;   // TODO: fix multithread issue
     bool optimizeBandwidth = true; //whether to renumber equations (OFF for debugging purposes)
     bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
 	
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 	else{
 		geoParams.Resize(1, 0.);
         geoParams[0] = 0.01;//radius
-        fOp = 25e+9;
+        fOp = 9e+9;
 	}
 	
 	
@@ -607,7 +607,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         }
     }
     else{
-        TPZGmshReader meshReader;        
+        TPZGmshReader meshReader;
         gmesh = meshReader.GeometricGmshMesh("../circlequad.msh");
     }
 #ifdef PZDEBUG

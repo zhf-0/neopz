@@ -301,3 +301,9 @@ void TPZHCurlNedFLinEl::CreateGraphicalElement(TPZGraphMesh &grafgrid,
 TPZCompEl *CreateHCurlNedFLinEl(TPZGeoEl *gel, TPZCompMesh &mesh, long &index) {
     return new TPZHCurlNedFLinEl(mesh, gel, index);
 }
+
+#ifdef HCURL_HIERARCHICAL_SCALED
+#include "TPZHCurlNedFLinElShapeScaled.cpp"
+#else
+#include "TPZHCurlNedFLinElShape.cpp"
+#endif

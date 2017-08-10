@@ -3,20 +3,13 @@
  * @brief Contains the implementation of the TPZHCurlNedFTriEl::Shape method.
  */
 
-#include "TPZHCurlNedFTriEl.h"
 #ifdef HCURL_HIERARCHICAL_SCALED
 #include "pzshapetriang.h"
 
 using namespace pzshape;
 
-#ifdef LOG4CXX
-static LoggerPtr logger(Logger::getLogger("pz.mesh.TPZHCurlNedFTriEl"));
-#endif
-
 void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
                               TPZFMatrix<REAL> &curlPhiHat) {
-    // EvaluateShapeF(qsi, phi, curlPhiHat);
-    // return;
     const int dim = Dimension();
     const int nCon = NConnects();
     const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
