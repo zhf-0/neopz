@@ -603,53 +603,49 @@ inline bool IsZero( T a ) {
 }
 #endif
 /** @brief Returns if the value a is close Zero as the allowable tolerance */
-//template<>
-inline bool IsZero( long double a ) {
+
 #ifdef WIN32
-	return ( fabs( a ) < 1.e-12 );
+inline bool IsZero( long double a, long double tol = 1.e-12) {
 #else
-	return ( std::fabs( a ) < 1.e-16 );
+inline bool IsZero( long double a, long double tol = 1.e-16) {
 #endif
+    return ( fabs( a ) < tol );
 }
-//template<>
-inline bool IsZero( double a ) {
+
 #ifdef WIN32
-	return ( fabs( a ) < 1.e-10 );
+inline bool IsZero( double a, double tol = 1.e-10 ) {
 #else
-	return ( fabs( a ) < 1.e-12 );
+inline bool IsZero( double a, double tol = 1.e-12 ) {
 #endif
+    return ( fabs( a ) < tol );
 }
-//template<>
-inline bool IsZero( float a ) {
-#ifdef WIN32
-	return ( fabs( a ) < 1.e-6 );
-#else
-	return ( fabs( a ) < 1.e-6 );
-#endif
+
+inline bool IsZero( float a, float tol = 1.e-6 ) {
+    return ( fabs( a ) < 1.e-6 );
 }
-//template<>
-inline bool IsZero( std::complex<long double> a ) {
+
 #ifdef WIN32
-	return ( fabs( a ) < 1.e-12 );
+inline bool IsZero( std::complex<long double> a, double tol = 1.e-12 ) {
 #else
-	return ( fabs( a ) < 1.e-16 );
+inline bool IsZero( std::complex<long double> a, double tol = 1.e-16 ) {
 #endif
+    return ( fabs( a ) < tol );
 }
-//template<>
-inline bool IsZero( std::complex<double> a ) {
+
 #ifdef WIN32
-	return ( fabs( a ) < 1.e-9 );
+inline bool IsZero( std::complex<double> a, double tol = 1.e-9 ) {
 #else
-	return ( fabs( a ) < 1.e-12 );
+inline bool IsZero( std::complex<double> a, double tol = 1.e-12 ) {
 #endif
+    return ( fabs( a ) < tol );
 }
-//template<>
-inline bool IsZero( std::complex<float> a ) {
+
 #ifdef WIN32
-	return ( fabs( a ) < 1.e-5 );
+inline bool IsZero( std::complex<float> a, float tol = 1.e-5 ) {
 #else
-	return ( fabs( a ) < 1.e-7 );
+inline bool IsZero( std::complex<float> a, float tol = 1.e-7 ) {
 #endif
+    return ( fabs( a ) < tol );
 }
 //template<>
 inline bool IsZero( int a ) {

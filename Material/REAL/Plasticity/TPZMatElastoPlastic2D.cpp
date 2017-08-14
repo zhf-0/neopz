@@ -274,15 +274,6 @@ void TPZMatElastoPlastic2D<T, TMEM>::Contribute(TPZMaterialData &data, REAL weig
     TPZFNMatrix<6> Stress(6, 1);
     int ptindex = data.intGlobPtIndex;
 
-
-    //	feclearexcept(FE_ALL_EXCEPT);
-    //	int res = fetestexcept(FE_ALL_EXCEPT);
-    //	if(res)
-    //	{
-    //		std::cout << " \n " << __PRETTY_FUNCTION__ <<"\n NAN DETECTED \n";
-    //		DebugStop();
-    //	}
-    //
     if (TPZMatWithMem<TMEM>::fUpdateMem && data.sol.size() > 0) {
         // Loop over the solutions if update memory is true
         TPZFNMatrix<9> Dep(3, 3);
@@ -303,14 +294,6 @@ void TPZMatElastoPlastic2D<T, TMEM>::Contribute(TPZMaterialData &data, REAL weig
         this->ApplyDeltaStrain(data, DeltaStrain, Stress);
         //        this->ApplyDeltaStrainComputeDep(data, DeltaStrain, Stress, Dep);
     }
-#ifdef MACOS
-    feclearexcept(FE_ALL_EXCEPT);
-    if (fetestexcept(/*FE_DIVBYZERO*/ FE_ALL_EXCEPT)) {
-        std::cout << "division by zero reported\n";
-        DebugStop();
-    }
-#endif
-
 #ifdef LOG4CXX
     if (elastoplasticLogger->isDebugEnabled()) {
         std::stringstream sout;
@@ -327,15 +310,6 @@ void TPZMatElastoPlastic2D<T, TMEM>::Contribute(TPZMaterialData &data, REAL weig
         LOGPZ_DEBUG(elastoplasticLogger, sout.str().c_str());
     }
 #endif
-    /*
-     //NAN detector
-     res = fetestexcept(FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW );
-     if(res)
-     {
-     std::cout << " \n " << __PRETTY_FUNCTION__ <<"\n NAN DETECTED \n";
-     DebugStop();
-     }
-     */
     ptindex = 0;
     int nstate = NStateVariables();
     REAL val;

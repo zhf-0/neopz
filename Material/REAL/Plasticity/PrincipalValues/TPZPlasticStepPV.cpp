@@ -64,10 +64,7 @@ void TPZPlasticStepPV<YieldCriterion_type, ElasticResponse_type>::ApplyStrainCom
     TPZTensor<REAL>::TPZDecomposed DecompSig; // It may be SigTr or SigPr Decomposition, it depends on the part of this method
     TPZTensor<REAL> sigtr;
 
-    TPZTensor<REAL> epsTr, epsPN, epsElaNp1;
-    epsPN = fPlasticState.fEpsP;
-    epsTr = epsTotal;
-    epsTr -= epsPN; // Porque soh tem implementado o operator -=
+    TPZTensor<REAL> epsTr(epsTotal - fPlasticState.fEpsP);
 
     // Compute and Decomposition of SigTrial
     fElasticResponse.Compute(epsTr, sigtr); // sigma = lambda Tr(E)I + 2 mu E
@@ -90,11 +87,10 @@ void TPZPlasticStepPV<YieldCriterion_type, ElasticResponse_type>::ApplyStrainCom
     DecompSig.fEigenvalues = sigprvec; // CHANGING THE EIGENVALUES FOR THE ONES OF SIGMAPR
     sigma = TPZTensor<REAL>(DecompSig);
 
+    TPZTensor<REAL> epsElaNp1;
     fElasticResponse.ComputeDeformation(sigma, epsElaNp1);
     fPlasticState.fEpsT = epsTotal;
-    epsPN = epsTotal;
-    epsPN -= epsElaNp1; // Transforma epsPN em epsPNp1
-    fPlasticState.fEpsP = epsPN;
+    fPlasticState.fEpsP = epsTotal - epsElaNp1; // Transforma epsPN em epsPNp1
 }
 
 template <class YieldCriterion_type, class ElasticResponse_type>

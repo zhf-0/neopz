@@ -1668,7 +1668,8 @@ bool TPZMatrix<TVar>::SolveEigensystemJacobi(long &numiterations, REAL & toleran
             }
         } else {
             for (long i = 0; i < size; i++) {
-                Matrix.PutVal(i, i, this->GetVal(i, i) - (thisEigenvalue - TVar(0.01)));
+                Matrix.PutVal(i, i, this->GetVal(i, i) - (TVar) (thisEigenvalue - (TVar) (0.1 * exp)));
+                //Matrix.PutVal(i, i, this->GetVal(i, i) - (thisEigenvalue - TVar(0.01)));
             }
         }
         

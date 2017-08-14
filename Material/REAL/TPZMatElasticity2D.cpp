@@ -173,12 +173,20 @@ void TPZMatElasticity2D::Contribute(TPZMaterialData &data, REAL weight, TPZFMatr
                 else
                 {
                     /* Plain Strain State */
+                    // v1, u1
+                    // (lambda + 2mu)*(partial v1/partial x)*(partial u1/partial x) + mu*(partial v1/partial y)*(partial u1/partial y)
                     ek(2*iu + FirstU,2*ju + FirstU)         += weight*	((LambdaL + 2*MuL)*du(0,0)*du(0,1)	+ (MuL)*du(1,0)*du(1,1));
                     
+                    // v1, u2
+                    // lambda*(partial v1/partial x)*(partial u2/partial y) + mu*(partial v1/partial y)*(partial u2/partial x)
                     ek(2*iu + FirstU,2*ju+1 + FirstU)       += weight*	(LambdaL*du(0,0)*du(1,1)			+ (MuL)*du(1,0)*du(0,1));
                     
+                    // v2, u1
+                    // lambda*(partial v2/partial y)*(partial u1/partial x) + mu*(partial v2/partial x)*(partial u1/partial y)
                     ek(2*iu+1 + FirstU,2*ju + FirstU)       += weight*	(LambdaL*du(1,0)*du(0,1)			+ (MuL)*du(0,0)*du(1,1));
                     
+                    // v2, u2
+                    // (lambda + 2mu)*(partial v2/partial y)*(partial u2/partial y) + mu*(partial v2/partial x)*(partial u2/partial x)
                     ek(2*iu+1 + FirstU,2*ju+1 + FirstU)     += weight*	((LambdaL + 2*MuL)*du(1,0)*du(1,1)	+ (MuL)*du(0,0)*du(0,1));
                     
                 }

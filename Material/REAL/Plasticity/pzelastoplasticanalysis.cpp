@@ -5,7 +5,6 @@
 #include "pzmanvector.h"
 #include "checkconv.h"
 #include "pzstrmatrix.h"
-#include "TPZMatElastoPlastic.h"
 #include "tpzautopointer.h"
 #include "pzcompelwithmem.h"
 #include "pzelastoplasticmem.h"
@@ -16,7 +15,6 @@
 #include "pzstepsolver.h"
 #include "pzmaterial.h"
 #include "pzbndcond.h"
-#include "TPZMatElastoPlastic2D.h"
 
 #include "pzbuildmultiphysicsmesh.h"
 
@@ -28,6 +26,8 @@
 #include "pzsolve.h"
 
 #include "pzlog.h"
+#include "TPZMatWithMem.h"
+#include "pzporoelastoplasticmem.h"
 
 #ifdef LOG4CXX
 static LoggerPtr EPAnalysisLogger(Logger::getLogger("pz.analysis.elastoplastic"));
@@ -119,23 +119,22 @@ REAL TPZElastoPlasticAnalysis::LineSearch(const TPZFMatrix<REAL> &Wn, const TPZF
     } else {
         converging = true;
     }
-
     return scalefactor;
+
 }//void
 
 /// Iterative process using the linear elastic material as tangent matrix
 
 void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, TPZAutoPointer<TPZMatrix<STATE> > linearmatrix, REAL tol, int numiter, bool linesearch) {
-    REAL error = 1.e10;
-    int numeq = fCompMesh->NEquations();
+    out << "Iterative process using the linear stiffness matrix" << std::endl;
 
     fSolution.Zero();
     LoadSolution();
 
-    out << "Iterative process using the linear stiffness matrix" << std::endl;
-
-    TPZFMatrix<REAL> prevsol(fSolution);
-    if (prevsol.Rows() != numeq) prevsol.Redim(numeq, 1);
+    TPZFMatrix<REAL> previous_solution(fSolution.Rows(), fSolution.Cols(), 0.);
+    
+    auto numeq = fCompMesh->NEquations();
+    if (previous_solution.Rows() != numeq) previous_solution.Redim(numeq, 1);
 
 #ifdef LOG4CXX
     if (EPAnalysisLogger->isDebugEnabled()) {
@@ -145,75 +144,70 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, TPZAutoPointe
     }
 #endif
 
-    TPZAnalysis::AssembleResidual();
-    REAL RhsNormPrev = Norm(fRhs);
-
-    //    std::cout << __LINE__ << " Norm prevsol " << Norm(prevsol) << std::endl;
+    AssembleResidual();
+    REAL previous_rhs_norm = Norm(fRhs);
+linesearch = false;
     bool linesearchconv = true;
-    for (unsigned int iter = 0; iter < numiter && error > tol; ++iter) {
-        REAL RhsNormResult = 0.;
+    REAL norm_last_iteration = std::numeric_limits<REAL>::max();
+    for (unsigned int iter = 0; iter < numiter && norm_last_iteration > tol; ++iter) {
         Solve();
-        TPZFMatrix<STATE> solkeep(fSolution);
+        REAL current_rhs_norm;
         if (linesearch) {
+            TPZFMatrix<STATE> solution_bkp(fSolution);
             {
-                TPZFMatrix<STATE> nextsol(prevsol);
-                nextsol += solkeep;
-                TPZNonLinearAnalysis::LoadSolution(nextsol);
+                TPZFMatrix<STATE> next_solution(previous_solution);
+                next_solution += fSolution;
+                TPZNonLinearAnalysis::LoadSolution(next_solution);
                 AssembleResidual();
-                RhsNormResult = Norm(fRhs);
+                current_rhs_norm = Norm(fRhs);
             }
-            if (RhsNormResult > tol && RhsNormResult > RhsNormPrev) {
-                fSolution = prevsol;
+            if (current_rhs_norm > tol && current_rhs_norm > previous_rhs_norm) {
+                fSolution = previous_solution;
                 LoadSolution();
-                TPZFMatrix<REAL> nextSol;
 #ifdef LOG4CXX
                 if (EPAnalysisLogger->isDebugEnabled()) {
                     std::stringstream sout;
-                    std::cout << __LINE__ << " Norm prevsol " << Norm(prevsol) << std::endl;
+                    std::cout << __LINE__ << " Norm prevsol " << Norm(previous_solution) << std::endl;
                     LOGPZ_DEBUG(EPAnalysisLogger, sout.str())
                 }
 #endif
-                const int niter = 2;
-                this->LineSearch(prevsol, solkeep, nextSol, RhsNormPrev, RhsNormResult, niter, linesearchconv);
-                fSolution = nextSol;
+
+                const int n_iterations_line_search = 2;
+                TPZFMatrix<REAL> next_solution;
+                this->LineSearch(previous_solution, solution_bkp, next_solution, previous_rhs_norm, current_rhs_norm, n_iterations_line_search, linesearchconv);
+                fSolution = next_solution;
             }
         } else {
-            fSolution += prevsol;
+            fSolution += previous_solution;
             LoadSolution();
             AssembleResidual();
-            RhsNormResult = Norm(fRhs);
+            current_rhs_norm = Norm(fRhs);
         }
 
-        prevsol -= fSolution;
-        REAL normDeltaSol = Norm(prevsol);
-        prevsol = fSolution;
-        REAL norm = RhsNormResult;
+        REAL normDeltaSol = Norm(previous_solution - fSolution);
+        previous_solution = fSolution;
+        REAL norm = current_rhs_norm;
 
 #ifdef PZDEBUG
-        {
-            LoadSolution();
-            AssembleResidual();
-            REAL rhsnorm = Norm(fRhs);
-            std::cout << "Norm rhs reported " << RhsNormResult << " now computed " << rhsnorm << std::endl;
-        }
-#endif
+        LoadSolution();
+        AssembleResidual();
+        REAL rhsnorm = Norm(fRhs);
+        std::cout << "Norm rhs reported " << current_rhs_norm << " now computed " << rhsnorm << std::endl;
 
-        RhsNormPrev = RhsNormResult;
-        //       out << "Iteracao n : " << (iter+1) << " : norma da solucao |Delta(Un)|: " << norm << endl;
-        std::cout << "Iteracao n : " << (iter + 1) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << RhsNormResult << endl;
-        //        std::cout << "Iteracao n : " << (iter+1) << " : fRhs : " << fRhs << endl;
+        std::cout << "Iteracao n : " << (iter + 1) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << current_rhs_norm << endl;
 
         if (norm < tol) {
             std::cout << "\nTolerancia atingida na iteracao : " << (iter + 1) << endl;
             std::cout << "\n\nNorma da solucao |Delta(Un)|  : " << norm << endl << endl;
             out << "Tolerance obtained at Iteration No : " << (iter + 1) << endl;
             out << "Solution Norm |Delta(Un)|  : " << norm << endl;
-
-        } else if ((norm - error) > 1.e-9) {
+        } else if ((norm - norm_last_iteration) > 1.e-9) {
             std::cout << "\nDivergent Method\n";
             out << "Divergent Method norm = " << norm << "\n";
         }
-        error = norm;
+#endif
+        previous_rhs_norm = current_rhs_norm;
+        norm_last_iteration = norm;
         out.flush();
     }
 }
@@ -221,12 +215,9 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, TPZAutoPointe
 void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, REAL tol, int numiter, bool linesearch, bool checkconv, bool &ConvOrDiverg) {
 
     int iter = 0;
-    REAL error = 1.e10;
     int numeq = fCompMesh->NEquations();
     Mesh()->Solution().Zero();
     fSolution.Zero();
-
-
 
     TPZFMatrix<REAL> prevsol(fSolution);
     if (prevsol.Rows() != numeq) {
@@ -266,6 +257,7 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out, REAL tol, int
     //    }
     bool linesearchconv = true;
 
+    REAL error = 1.e10;
     while (error > tol && iter < numiter) {
 
         if (iter != 0) {
@@ -473,6 +465,7 @@ void TPZElastoPlasticAnalysis::LoadSolution() {
     if (this->IsMultiPhysicsConfiguration()) {
         TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(fMeshVec, fMultiPhysics);
     }
+
 }
 
 void TPZElastoPlasticAnalysis::CheckConv(std::ostream &out, REAL range) {
