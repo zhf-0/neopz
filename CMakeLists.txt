@@ -34,6 +34,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/Material"
 	"${PROJECT_SOURCE_DIR}/Material/REAL"
 	"${PROJECT_SOURCE_DIR}/Material/REAL/Plasticity"
+	"${PROJECT_SOURCE_DIR}/Material/REAL/Plasticity/PrincipalValues"
 	"${PROJECT_SOURCE_DIR}/Material/Complex"
 	"${PROJECT_SOURCE_DIR}/Multigrid"
 	"${PROJECT_SOURCE_DIR}/Mesh"
@@ -128,6 +129,7 @@ endif(USING_BOOST)
 
 option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
 
+
 if(USING_FAD)
 	#Adding a variable to hold this definition
 	set(_AUTODIFF _AUTODIFF)
@@ -142,7 +144,7 @@ if(USING_LOG4CXX)
 	set(LOG4CXX LOG4CXX)
 	add_definitions(-D${LOG4CXX})
 	find_path(LOG4CXX_INCLUDE log4cxx PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../log4cxx ${PROJECT_SOURCE_DIR}/../log4cxx_src/include ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src/include)
-	find_library(LOG4CXX_LIB NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib/${CMAKE_CONFIGURATION_TYPE})
+                  find_library(LOG4CXX_LIB NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib/${CMAKE_CONFIGURATION_TYPE})
 	if(LOG4CXX_INCLUDE-NOTFOUND)
 		set (LOG4CXX_INCLUDE "" CACHE PATH "Directory where log4cxx header files can be found")
 	else()
@@ -396,12 +398,11 @@ if(USING_QWT)
         add_definitions(-DUSING_QWT)
 
 		if (WIN32)
-			set(QWT_ROOT "C:/Qwt-6.1.3")
+			set(QWT_ROOT "C:/Qwt-6.1.3")			
 		else()
 			set(QWT_ROOT "" CACHE PATH "Root directory where the QWT library is istalled")
 		endif()
 endif(USING_QWT)
-
 
 #To enable unit test using boost UnitTest framework
 option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
@@ -581,6 +582,7 @@ if(BUILD_PROJECTS OR BUILD_TUTORIAL)
 	add_subdirectory(Projects)
 endif()
 
+
 if(BUILD_UNITTESTING)
 	add_subdirectory(UnitTest_PZ)
 endif()
@@ -609,3 +611,4 @@ add_custom_target(DOXYGEN_Files SOURCES  ${doxyfiles})
 #SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
 set_target_properties(pz PROPERTIES XCODE_ATTRIBUTE_WARNING_CFLAGS "")
+
