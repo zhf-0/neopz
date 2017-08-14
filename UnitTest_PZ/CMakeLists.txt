@@ -12,6 +12,7 @@ if(BUILD_UNITTESTING)
 		add_subdirectory(TestMesh)
 		add_subdirectory(TestMaterial)
 		add_subdirectory(TestIntegNum)
+		add_subdirectory(TestTensor)
 
 		source_group(UnitTestTopology FILES ${pztesttopology})
 		source_group(UnitTestMatrix FILES ${pztestmatrix})
