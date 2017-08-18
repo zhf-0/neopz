@@ -43,6 +43,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/Frontal"
 	"${PROJECT_SOURCE_DIR}/Pre"
 	"${PROJECT_SOURCE_DIR}/Post"
+	# "${PROJECT_SOURCE_DIR}/PythonCAPI"
 	"${PROJECT_SOURCE_DIR}/Analysis"
 	"${PROJECT_SOURCE_DIR}/SubStruct"
 	"${PROJECT_SOURCE_DIR}/LinearSolvers"
@@ -444,6 +445,50 @@ if(BUILD_TUTORIAL)
 	add_definitions(-DBUILD_TUTORIAL)
 endif()
 
+# ----------------------- Enabling Python/C API interface -----------------------
+option(BUILD_PYTHON_CAPI "Whether the Python/C API will be linked with the library" OFF)
+if(BUILD_PYTHON_CAPI)
+  add_definitions(-DUSE_PYTHON)
+  find_package( PythonLibs 2.7 REQUIRED ) # It also works with Python3, but Python2 is more robust (April-2016)
+
+  if(NOT PYTHONLIBS_FOUND)
+    message(FATAL_ERROR "Python not found!")
+  endif()
+
+  # Python include dirs need to be changed to the one from macports
+  if(APPLE) # still looking for a better way to do that
+    set(PYTHON_INCLUDE_DIRS /opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7)
+  endif()
+endif()
+
+# ----------------------- Enabling Boost Python Module -----------------------
+option(BUILD_BOOST_PYTHON "Whether the Boost Python package will be linked with the library" OFF)
+if(BUILD_BOOST_PYTHON)
+  find_package( PythonLibs 2.7 REQUIRED ) # It also works with Python3, but Python2 is more robust (Aug-2017)
+  find_package( Boost COMPONENTS python )
+  # To make boost compiled with gcc with macports use:
+  # % sudo port -ns upgrade --force boost configure.compiler=macports-gcc-5
+  # Otherwise it will be appleClang (LLVM) by default
+
+  if(NOT Boost_FOUND OR NOT PYTHONLIBS_FOUND)
+    message(FATAL_ERROR "Boost-python or Pythonlibs not found!\n")
+  endif()
+  message(WARNING "=> BE AWARE: python and python-boost are very sensitive to versions and compilers, "
+    "thus try to be sure that you are using same compilers and same version of python for everything. "
+    "A common mistake is compiling boost with other compiler or with a different python version. "
+    "You can set all of these configurations with macports or apt-get.")
+  # if (APPLE)
+  #   message(WARNING "A commom mistake in apple is forgetting to use the macports python on your python"
+  #     " script by using #!/opt/local/bin/python on the header of the python file")
+  # endif()
+
+  # Python include dirs need to be changed to the one from macports
+  if(APPLE) # still looking for a better way to do that
+    set(PYTHON_INCLUDE_DIRS /opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7)
+  endif()
+  include_directories( ${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} )
+endif()
+
 #To building several examples for training and experimentation PZ
 option(BUILD_BROKEN "To build projects which are broken" OFF)
 
@@ -602,7 +647,7 @@ add_subdirectory(StrMatrix)
 add_subdirectory(Pre)
 add_subdirectory(SubStruct)
 add_subdirectory(Publications)
-
+# add_subdirectory(PythonCAPI)
 
 add_subdirectory(lib)
 

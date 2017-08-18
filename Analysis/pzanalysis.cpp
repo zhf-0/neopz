@@ -98,6 +98,16 @@ fGeoMesh(0), fCompMesh(0), fRhs(), fSolution(), fSolver(0), fStep(0), fTime(0.),
     this->SetCompMesh(mesh, mustOptimizeBandwidth);
 }
 
+TPZAnalysis::TPZAnalysis(TPZCompMesh mesh, bool mustOptimizeBandwidth, std::ostream &out) :
+fGeoMesh(0), fCompMesh(0), fRhs(), fSolution(), fSolver(0), fStep(0), fTime(0.), fStructMatrix(0), fRenumber(new RENUMBER), fGuiInterface(NULL),  fTable()
+{
+  fGraphMesh[0] = 0;
+  fGraphMesh[1] = 0;
+  fGraphMesh[2] = 0;
+  this->SetCompMesh(&mesh, mustOptimizeBandwidth);
+}
+
+
 TPZAnalysis::TPZAnalysis(TPZAutoPointer<TPZCompMesh> mesh, bool mustOptimizeBandwidth, std::ostream &out) :
 fGeoMesh(0), fCompMesh(0), fRhs(), fSolution(), fSolver(0), fStep(0), fTime(0.), fStructMatrix(0), fRenumber(new RENUMBER), fGuiInterface(NULL),  fTable()
 {
@@ -248,14 +258,25 @@ int TPZAnalysis::ComputeNumberofLoadCases()
     {
         return res;
     }
+    std::cout << "toqui" << std::endl;
     std::map<int, TPZMaterial *>::iterator it;
     // compute the maximum number of load cases for all material objects
     for( it = fCompMesh->MaterialVec().begin(); it != fCompMesh->MaterialVec().end(); it++)
     {
+        std::cout << "Mat\n" << std::endl;
         TPZMaterial *mat = it->second;
+        if (mat) {
+          mat->Print();
+        }
+        else{
+          std::cout << "SOMETHING ODD\n" << std::endl;
+          continue;
+        }
+    
         int matnumstate = mat->MinimumNumberofLoadCases();
         res = res < matnumstate ? matnumstate : res;
     }
+    std::cout << "toqui2" << std::endl;
     // set the number of load cases for all material objects
     for( it = fCompMesh->MaterialVec().begin(); it != fCompMesh->MaterialVec().end(); it++)
     {
@@ -301,13 +322,19 @@ void TPZAnalysis::Assemble()
 #endif
 		return;
 	}
-    int numloadcases = ComputeNumberofLoadCases();
+  
+  std::cout << "im here" << std::endl;
+  int numloadcases = ComputeNumberofLoadCases();
+  std::cout << "im here2" << std::endl;
 	long sz = fCompMesh->NEquations();
+  
 	fRhs.Redim(sz,numloadcases);
 	if(fSolver->Matrix() && fSolver->Matrix()->Rows()==sz)
 	{
 		fSolver->Matrix()->Zero();
+  
 		fStructMatrix->Assemble(*(fSolver->Matrix().operator ->()),fRhs,fGuiInterface);
+  
 	}
 	else
 	{

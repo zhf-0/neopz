@@ -243,6 +243,10 @@ ENABLE_TESTING()
 			add_subdirectory(MatLib)
 
 			add_subdirectory(MHM)
+			
+			#add_subdirectory(PythonCAPI)
+
+			add_subdirectory(BoostPython)
 
 			if(USING_MKL)
 				add_subdirectory(PardisoSample)

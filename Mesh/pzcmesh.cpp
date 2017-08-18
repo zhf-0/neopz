@@ -278,6 +278,25 @@ TPZMaterial * TPZCompMesh::FindMaterial(int matid){	// find the material object 
 	return result;
 }
 
+void TPZCompMesh::printMat(int matid) {
+  TPZMaterial * result = 0;
+  std::map<int, TPZMaterial * >::iterator mit;
+  mit = fMaterialVec.find(matid);
+  if(mit != fMaterialVec.end())
+  {
+    result = mit->second;
+    std::cout << "found!" << endl;
+  }
+  if(result){
+    result->Print();
+  }
+  else{
+    std::cout << "null ptr" << endl;
+    DebugStop();
+  }
+  
+}
+
 void TPZCompMesh::AutoBuild(const std::set<int> *MaterialIDs) {
 #ifdef PZDEBUG
     {

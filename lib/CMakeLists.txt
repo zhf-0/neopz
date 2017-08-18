@@ -24,6 +24,7 @@ source_group("Substruct" FILES ${pzsubstruct_STAT_SRCS})
 source_group(Integral FILES ${pzintegral_STAT_SRCS})
 source_group(External FILES ${pzexternal_STAT_SRCS})
 source_group(Publications FILES ${pzpublications_STAT_SRCS})
+source_group(PythonCAPI FILES ${pzpythoncapi_STAT_SRCS})
 source_group(External\\Sloan FILES ${sloan_SRCS})
 source_group(External\\FAD FILES ${FAD_SRCS})
 source_group(External\\FAD\\Fad FILES ${FAD_fad_SRCS})
@@ -55,6 +56,7 @@ set(pzsources
 	${pzsubstruct_STAT_SRCS}
         ${pztopology_STAT_SRCS} 
 	${pzutil_STAT_SRCS} 
+  ${pzpythoncapi_STAT_SRCS}
 	)
 
 #creating target pz library and installing it
@@ -109,6 +111,11 @@ endif()
 
 if (USING_HWLOC)
   target_link_libraries(pz ${HWLOC_LIB})
+endif()
+
+# Linking Python
+if (BUILD_PYTHON_CAPI)
+  target_link_libraries(pz ${PYTHON_LIBRARIES})  
 endif()
 
 # Linking matlab libs to pz

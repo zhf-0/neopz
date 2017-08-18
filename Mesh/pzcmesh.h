@@ -163,8 +163,11 @@ public:
 	
 	/** @brief Number of materials */
 	int NMaterials() const {return fMaterialVec.size();}
-	
-	//@}
+  
+  void printMat(int matid);
+  
+  
+  //@}
 	
 	/**
 	 * @name Access_Internal_Data_Structures
