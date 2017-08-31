@@ -127,10 +127,16 @@ void DarcyPTest::Run(int Space, int pOrder, int nx, int ny, double hx, double hy
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     
-//    TPZSkylineStructMatrix matskl(cmesh_m); //caso simetrico ***
-
+#ifdef USING_MKL
     
     TPZSymetricSpStructMatrix matskl(cmesh_m); //caso simetrico ***
+    
+#else
+    
+    TPZSkylineStructMatrix matskl(cmesh_m); //caso simetrico ***
+    
+#endif
+    
     
     matskl.SetNumThreads(numthreads);
     an.SetStructuralMatrix(matskl);

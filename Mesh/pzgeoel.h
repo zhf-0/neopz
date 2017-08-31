@@ -505,8 +505,9 @@ public:
     /** @brief Compute a decomposition of the gradient of the mapping function, as a rotation matrix (Jacobian) and orthonormal basis (axes)  */
     void JacobianXYZ(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const;
 
-    /** @brief Compute a QR facotrization of the gradient of the mapping function, Q = Jacobian and R = axes  */
-	static void Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv);
+    /** @brief Compute a QR facotrization of the gradient of the mapping function, Q = axes and R = Jacobian  */
+    template<class T>
+	static void Jacobian(const TPZFMatrix<T> &gradx, TPZFMatrix<T> &jac,TPZFMatrix<T> &axes,T &detjac,TPZFMatrix<T> &jacinv);
     
     /** @brief Compute Jacobian matrix for afine mappings */    
 	static void JacobianXYZ(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axesXYZ,REAL &detjac,TPZFMatrix<REAL> &jacinv);
@@ -523,6 +524,9 @@ public:
     
     /** @brief Return the gradient of the transformation at the given coordinate */
     virtual void GradX(TPZVec<Fad<REAL> > &qsi, TPZFMatrix<Fad<REAL> > &gradx) const = 0;
+    
+    void Jacobian(TPZVec<Fad<REAL> > &qsi,TPZFMatrix<Fad<REAL> > &jac,TPZFMatrix<Fad<REAL> > &axes, Fad<REAL> &detjac,TPZFMatrix<Fad<REAL> > &jacinv) const;
+    
 #endif
     
 //	void ComputeNormals(TPZMatrix<REAL> &normal);

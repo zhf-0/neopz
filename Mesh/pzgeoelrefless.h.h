@@ -476,7 +476,7 @@ void TPZGeoElRefLess<TGeo>::Directions(int side, TPZVec<REAL> &pt, TPZFMatrix<RE
         }
     }
 //    gradxt.Transpose(&gradx);
-    TGeo::ComputeDirections(side, gradx, directions, sidevectors);
+//    TGeo::ComputeDirections(side, gradx, directions, sidevectors);
     
 //    TPZStack<int> lowdim;
 //	LowerDimensionSides(side,lowdim);
@@ -489,29 +489,42 @@ void TPZGeoElRefLess<TGeo>::Directions(int side, TPZVec<REAL> &pt, TPZFMatrix<RE
 template<class TGeo>
 void TPZGeoElRefLess<TGeo>::Directions(TPZVec<REAL> &pt, TPZFMatrix<REAL> &directions, int ConstrainedFace)
 {
+    
+#ifdef _AUTODIFF
+    
+    TPZFNMatrix<9,Fad<REAL> > jac(TGeo::Dimension,TGeo::Dimension), jacinv(TGeo::Dimension,TGeo::Dimension), axes(TGeo::Dimension,3), gradx(3,TGeo::Dimension,0.), directions_fad(3,TGeo::Dimension,0.);
+    Fad<REAL> detjac;
+    
+    TPZVec<Fad<REAL> > Fad_pt(pt.size());
+    for (int i = 0; i < pt.size(); i++) {
+        Fad<REAL> element(pt[i]);
+        Fad_pt[i] = element;
+    }
+    
+    GradX(Fad_pt, gradx);
+    Jacobian(gradx, jac, axes, detjac, jacinv);
+    
+//    TGeo::ComputeDirections(gradx, detjac, directions_fad);
+    
+    if (TGeo::Type() == EPiramide) {
+        DebugStop();
+    }
+    
+#else
+    
     TPZFNMatrix<9,REAL> jac(TGeo::Dimension,TGeo::Dimension), jacinv(TGeo::Dimension,TGeo::Dimension), axes(TGeo::Dimension,3), gradx(3,TGeo::Dimension,0.);
     REAL detjac;
     
     this->Jacobian(pt,jac,axes,detjac,jacinv);
-
-    // ou eh isso?   grad =  (jac  * axes)ˆT
-    TPZFNMatrix<9> gradxt(TGeo::Dimension,3,0.);
-    for (int il=0; il<TGeo::Dimension; il++)
-    {
-        for (int jc=0; jc<3; jc++)
-        {
-            for (int i = 0 ; i<TGeo::Dimension; i++)
-            {
-                gradx(jc,il) += jac(i,il) * axes(i,jc);
-            }
-        }
-    }
-    //    gradxt.Transpose(&gradx);
+    GradX(pt, gradx);
+    
     TGeo::ComputeDirections(gradx, detjac, directions);
     
     if (TGeo::Type() == EPiramide) {
         pztopology::TPZPyramid::AdjustTopDirections(ConstrainedFace-13, gradx, detjac, directions);
     }
+    
+#endif
     
 }
 

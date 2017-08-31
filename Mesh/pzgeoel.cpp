@@ -1097,11 +1097,21 @@ void TPZGeoEl::MidSideNodeIndices(int side,TPZVec<long> &indices) const {
 }
 
 /** @brief Compute a decomposition of the gradient of the mapping function, as a rotation matrix (Jacobian) and orthonormal basis (axes)  */
-void TPZGeoEl::Jacobian(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const{
+void TPZGeoEl::Jacobian(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const {
     TPZFNMatrix<9,REAL> gradx;
     GradX(qsi, gradx);
     Jacobian(gradx, jac, axes, detjac, jacinv);
 }
+
+#ifdef _AUTODIFF
+
+void TPZGeoEl::Jacobian(TPZVec<Fad<REAL>> &qsi,TPZFMatrix<Fad<REAL>> &jac,TPZFMatrix<Fad<REAL>> &axes,Fad<REAL> &detjac,TPZFMatrix<Fad<REAL>> &jacinv) const {
+    TPZFNMatrix<9,Fad<REAL>> gradx;
+    GradX(qsi, gradx);
+    Jacobian(gradx, jac, axes, detjac, jacinv);
+}
+
+#endif
 
 /** @brief Compute a decomposition of the gradient of the mapping function, as a rotation matrix (Jacobian) and orthonormal basis (axes)  */
 void TPZGeoEl::JacobianXYZ(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const{
@@ -1110,8 +1120,8 @@ void TPZGeoEl::JacobianXYZ(TPZVec<REAL> &qsi,TPZFMatrix<REAL> &jac,TPZFMatrix<RE
     JacobianXYZ(gradx, jac, axes, detjac, jacinv);
 }
 
-
-void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv){
+template<class T>
+void TPZGeoEl::Jacobian(const TPZFMatrix<T> &gradx, TPZFMatrix<T> &jac,TPZFMatrix<T> &axes,T &detjac,TPZFMatrix<T> &jacinv){
 
     int nrows = gradx.Rows();
     int ncols = gradx.Cols();
@@ -1126,13 +1136,13 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
             jac.Zero();
             
             /**  Definitions: v1 -> is the xi_direction of the Gradient */
-            TPZManVector<REAL,3> v_1(3,0.);
+            TPZManVector<T,3> v_1(3,0.);
             
             for (int i = 0; i < nrows; i++) {
                 v_1[i]  = gradx.GetVal(i,0);
             }
             
-            REAL norm_v_1 = 0.;
+            T norm_v_1 = 0.;
             for(int i = 0; i < nrows; i++) {
                 norm_v_1 += v_1[i]*v_1[i];
             }
@@ -1168,19 +1178,19 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
             jac.Zero();
             
             /**  Definitions: v1 -> is the xi_direction of the Gradient, v2 -> is the eta_direction of the Gradient */
-            TPZManVector<REAL,3> v_1(3,0.), v_2(3,0.);
+            TPZManVector<T,3> v_1(3,0.), v_2(3,0.);
             
             /**  Definitions: v_1_til and v_2_til -> asscoiated orthonormal vectors to v_1 and v_2 */
-            TPZManVector<REAL,3> v_1_til(3,0.), v_2_til(3,0.);
+            TPZManVector<T,3> v_1_til(3,0.), v_2_til(3,0.);
 
             for (int i = 0; i < nrows; i++) {
                 v_1[i]  = gradx.GetVal(i,0);
                 v_2[i]  = gradx.GetVal(i,1);
             }
 
-            REAL norm_v_1_til = 0.0;
-            REAL norm_v_2_til = 0.0;
-            REAL v_1_dot_v_2  = 0.0;
+            T norm_v_1_til = 0.0;
+            T norm_v_2_til = 0.0;
+            T v_1_dot_v_2  = 0.0;
 
             for(int i = 0; i < 3; i++) {
                 norm_v_1_til    += v_1[i]*v_1[i];
