@@ -84,18 +84,7 @@ namespace pzgeom {
         void GradX(const TPZGeoEl &gel, TPZVec<T> &loc, TPZFMatrix<T> &gradx) const
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
-            CornerCoordinates(gel, coord);
-//            int nrow = coord.Rows();
-//            int ncol = coord.Cols();
-//            TPZFNMatrix<3*NNodes,T> nodes(nrow,ncol);
-//            for(int i = 0; i < nrow; i++)
-//            {
-//                for(int j = 0; j < ncol; j++)
-//                {
-//                    nodes(i,j) = coord(i,j);
-//                }
-//            }
-            
+            CornerCoordinates(gel, coord);            
             GradX(coord,loc,gradx);
         }
         

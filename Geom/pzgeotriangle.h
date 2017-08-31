@@ -58,8 +58,6 @@ namespace pzgeom {
 		{
 		}
         
-        void Jacobian(const TPZFMatrix<REAL> & coord, TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv);
-        
         static bool IsLinearMapping(int side)
         {
             return true;
@@ -102,17 +100,6 @@ namespace pzgeom {
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
-//            int nrow = coord.Rows();
-//            int ncol = coord.Cols();
-//            TPZFMatrix<T> nodes(nrow,ncol);
-//            for(int i = 0; i < nrow; i++)
-//            {
-//                for(int j = 0; j < ncol; j++)
-//                {
-//                    nodes(i,j) = coord(i,j);
-//                }
-//            }
-            
             GradX(coord,loc,gradx);
         }
         
@@ -124,10 +111,6 @@ namespace pzgeom {
         /** @brief Compute the shape being used to construct the x mapping from local parametric coordinates  */
         template<class T>
         static void TShape(TPZVec<T> &loc,TPZFMatrix<T> &phi,TPZFMatrix<T> &dphi);
-        
-//        /** @brief Compute the jacoabina associated to the x mapping from local parametric coordinates  */
-//        static void Jacobian(const TPZFMatrix<REAL> &nodes,TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,
-//                             TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv);
         
 		/**
 		 * @brief Method which creates a geometric boundary condition 

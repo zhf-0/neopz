@@ -40,8 +40,8 @@
 #include "TPZGmshReader.h"
 
 
-//#define TEST_DOMAINS
-#define APP_CURVE
+#define TEST_DOMAINS
+//#define APP_CURVE
 
 const int SpaceHDiv = 1; //Velocidade em subespaço de H(div)
 const int SpaceContinuous = 2; //Velocidade em subespaço de [H1]ˆ2
@@ -52,7 +52,7 @@ const REAL Pi=M_PI;
 #ifdef TEST_DOMAINS
 
 const REAL visco=1., permeability=1., theta=-1.; //Coeficientes: viscosidade, permeabilidade, fator simetria
-bool DarcyDomain = false, StokesDomain = true, CoupledDomain = false;
+bool DarcyDomain = true, StokesDomain = false, CoupledDomain = false;
 
 int main(int argc, char *argv[])
 {
@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
     //Dados do problema:
     
     
-    int h_level = 8;
+    int h_level = 2;
     
     double hx=1.,hy=1.; //Dimensões em x e y do domínio
     //double hx=Pi,hy=2.; //Dimensões em x e y do domínio (acoplamento)
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 3; //Ordem polinomial de aproximação
+    int pOrder = 1; //Ordem polinomial de aproximação
     
   
     if (DarcyDomain) {

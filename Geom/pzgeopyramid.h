@@ -81,29 +81,8 @@ namespace pzgeom {
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
-//            int nrow = coord.Rows();
-//            int ncol = coord.Cols();
-//            TPZFMatrix<T> nodes(nrow,ncol);
-//            for(int i = 0; i < nrow; i++)
-//            {
-//                for(int j = 0; j < ncol; j++)
-//                {
-//                    nodes(i,j) = coord(i,j);
-//                }
-//            }
-            
             GradX(coord,loc,gradx);
         }
-
-        /* @brief compute the jacobian of the map between the master element and deformed element */
-        void Jacobian(const TPZGeoEl &gel, TPZVec<REAL> &param, TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes, REAL &detjac, TPZFMatrix<REAL> &jacinv) const {
-            TPZFNMatrix<3 * NNodes> coord(3, NNodes);
-            CornerCoordinates(gel, coord);
-            Jacobian(coord, param, jacobian, axes, detjac, jacinv);
-        }
-
-        /** @brief Computes the jacobian*/
-        static void Jacobian(const TPZFMatrix<REAL> & coord, TPZVec<REAL>& par, TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes, REAL &detjac, TPZFMatrix<REAL> &jacinv);
 
         /** @brief Computes the geometric location*/
         template<class T>

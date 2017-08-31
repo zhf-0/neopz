@@ -87,6 +87,8 @@ public:
     TPZManVector<std::pair<int,long> > fVecShapeIndex;
     /// list of normal vectors
     TPZFNMatrix<180> fNormalVec;
+    /// list of gradients of normal vectors
+    TPZManVector<TPZFNMatrix<180> > fGradOfNormalVec;
     /** @} */
     
     

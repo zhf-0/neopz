@@ -112,12 +112,7 @@ namespace pzgeom {
         {
             phi(0,0) = (T)1.;
         }
-        
-		static void Jacobian(const TPZFMatrix<REAL> &nodes,TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian,TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv);
-		
-		static void Jacobian(const TPZFMatrix<REAL> &nodes,TPZVec<REAL> &param,TPZFMatrix<REAL> &jacobian) {
-			jacobian.Redim(nodes.Rows(),0);
-		}
+                
 		static TPZGeoEl *CreateBCGeoEl(TPZGeoEl *gel, int side,int bc);
 		
 	public:

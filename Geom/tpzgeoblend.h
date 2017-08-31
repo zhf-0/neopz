@@ -94,9 +94,6 @@ namespace pzgeom
         /** @brief Get the coordinates of the point at geometric elements from coordinates of the parametric point at the master element */
         template<class T>
 		void X(const TPZGeoEl &gel, TPZVec<T>& par, TPZVec<T> &result) const;
-        
-		/** @brief Computes the Jacobian for parametric point at master element */
-		void Jacobian(const TPZGeoEl &gel, TPZVec<REAL>& par, TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes,REAL &detjac,TPZFMatrix<REAL> &jacinv) const;
 		
 		/** @brief Computes the gradient of the transformation for parametric point at master element */
         template<class T>
