@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     bool genVTK = false;      // generate vtk for fields visualisation
     bool l2error = false;     // TODO: implement error analysis
     bool exportEigen = false; // export eigen values
-    const int nThreads = 1;   // TODO: fix multithread issue
+    const int nThreads = 0;   // TODO: fix multithread issue
     bool optimizeBandwidth = true; //whether to renumber equations (OFF for debugging purposes)
     bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
 	
@@ -97,10 +97,12 @@ int main(int argc, char *argv[]) {
 		geoParams.Resize(1, 0.);
         geoParams[0] = 0.01;//radius
         fOp = 9e+9;
+//        geoParams[0] = 1.00;//radius
+//        fOp = 25e+9;
 	}
 	
 	
-    int nDiv = 0;
+    int nDiv = 3;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
