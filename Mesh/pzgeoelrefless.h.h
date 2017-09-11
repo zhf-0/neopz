@@ -504,7 +504,7 @@ void TPZGeoElRefLess<TGeo>::Directions(TPZVec<REAL> &pt, TPZFMatrix<REAL> &direc
     GradX(Fad_pt, gradx);
     Jacobian(gradx, jac, axes, detjac, jacinv);
     
-//    TGeo::ComputeDirections(gradx, detjac, directions_fad);
+    //TGeo::ComputeDirections(gradx, detjac, directions_fad);
     
     if (TGeo::Type() == EPiramide) {
         DebugStop();

@@ -1192,7 +1192,9 @@ namespace pztopology {
 //        {0,0,1}  // volume
 //    };
 
-    void TPZCube::ComputeDirections(TPZFMatrix<REAL> &gradx, REAL detjac, TPZFMatrix<REAL> &directions)
+
+    template <class T>
+    void TPZCube::ComputeDirections(TPZFMatrix<T> &gradx, T detjac, TPZFMatrix<T> &directions)
     {
         REAL detgrad = gradx(0,0)*gradx(1,1)*gradx(2,2) + gradx(0,1)*gradx(1,2)*gradx(2,0) + gradx(0,2)*gradx(1,0)*gradx(2,1) - gradx(0,2)*gradx(1,1)*gradx(2,0) - gradx(0,0)*gradx(1,2)*gradx(2,1) - gradx(0,1)*gradx(1,0)*gradx(2,2);
         detgrad = fabs(detgrad);
@@ -1285,6 +1287,103 @@ namespace pztopology {
 
     }
 
+
+    
+    void TPZCube::ComputeDirections(TPZFMatrix<REAL> &gradx, REAL detjac, TPZFMatrix<REAL> &directions)
+    {
+        REAL detgrad = gradx(0,0)*gradx(1,1)*gradx(2,2) + gradx(0,1)*gradx(1,2)*gradx(2,0) + gradx(0,2)*gradx(1,0)*gradx(2,1) - gradx(0,2)*gradx(1,1)*gradx(2,0) - gradx(0,0)*gradx(1,2)*gradx(2,1) - gradx(0,1)*gradx(1,0)*gradx(2,2);
+        detgrad = fabs(detgrad);
+        TPZManVector<REAL,3> v1(3),v2(3),v3(3),v1v2(3),v3v1(3),v2v3(3),vec1(3),vec2(3),vec3(3);
+        for (int i=0; i<3; i++) {
+            v1[i] = gradx(i,0);
+            v2[i] = gradx(i,1);
+            v3[i] = gradx(i,2);
+        }
+        
+        
+        TPZNumeric::ProdVetorial(v1,v2,v1v2);
+        TPZNumeric::ProdVetorial(v2,v3,v2v3);
+        TPZNumeric::ProdVetorial(v3,v1,v3v1);
+        
+        REAL Nv1v2 = TPZNumeric::Norma(v1v2);
+        REAL Nv2v3 = TPZNumeric::Norma(v2v3);
+        REAL Nv3v1 = TPZNumeric::Norma(v3v1);
+        
+        /**
+         * @file
+         * @brief Computing mapped vector with scaling factor equal 1.0.
+         * using contravariant piola mapping.
+         */
+        TPZManVector<REAL,3> NormalScales(3,1.);
+        
+        if (HDivPiola == 1)
+        {
+            for (int i=0; i<3; i++) {
+                v1[i] *= 1./detgrad;
+                v2[i] *= 1./detgrad;
+                v3[i] *= 1./detgrad;
+            }
+            
+        }
+        else
+        {
+            for (int i=0; i<3; i++) {
+                v1[i] *= Nv2v3/detgrad;
+                v2[i] *= Nv3v1/detgrad;
+                v3[i] *= Nv1v2/detgrad;
+            }
+        }
+        
+        for (int i=0; i<3; i++) {
+            for (int iv=0; iv<9; iv++) {
+                directions(i,iv)        = -v3[i]*NormalScales[1];
+                directions(i,iv+9)      = -v2[i]*NormalScales[2];
+                directions(i,iv+18)     = v1[i]*NormalScales[1];
+                directions(i,iv+27)     = v2[i]*NormalScales[2];
+                directions(i,iv+36)     = -v1[i]*NormalScales[1];
+                directions(i,iv+45)     = v3[i]*NormalScales[1];
+            }
+            directions(i,54)    = v1[i]*NormalScales[1];
+            directions(i,55)    = v2[i]*NormalScales[2];
+            directions(i,56)    = -v1[i]*NormalScales[1];
+            directions(i,57)    = -v2[i]*NormalScales[2];
+            
+            directions(i,58)    = v3[i]*NormalScales[1];
+            directions(i,59)    = v3[i]*NormalScales[1];
+            directions(i,60)    = v3[i]*NormalScales[1];
+            directions(i,61)    = v3[i]*NormalScales[1];
+            
+            directions(i,62)    = v1[i]*NormalScales[1];
+            directions(i,63)    = v2[i]*NormalScales[2];
+            directions(i,64)    = -v1[i]*NormalScales[1];
+            directions(i,65)    = -v2[i]*NormalScales[2];
+            
+            directions(i,66)    = v1[i]*NormalScales[1];
+            directions(i,67)    = v2[i]*NormalScales[2];
+            
+            directions(i,68)    = v1[i]*NormalScales[1];
+            directions(i,69)    = v3[i]*NormalScales[1];
+            directions(i,70)    = v2[i]*NormalScales[2];
+            directions(i,71)    = v3[i]*NormalScales[1];
+            directions(i,72)    = v1[i]*NormalScales[1];
+            directions(i,73)    = v3[i]*NormalScales[1];
+            directions(i,74)    = v2[i]*NormalScales[2];
+            directions(i,75)    = v3[i]*NormalScales[1];
+            
+            directions(i,76)    = v1[i]*NormalScales[1];
+            directions(i,77)    = v2[i]*NormalScales[2];
+            
+            directions(i,78)    = v1[i]*NormalScales[1];
+            directions(i,79)    = v2[i]*NormalScales[2];
+            directions(i,80)    = v3[i]*NormalScales[1];
+            
+        }
+        
+        
+    }
+    
+
+    
     void TPZCube::ComputeDirections(int side, TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &directions, TPZVec<int> &sidevectors)
     {
         if(gradx.Cols()!=3)

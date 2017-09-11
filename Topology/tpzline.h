@@ -187,7 +187,8 @@ namespace pztopology {
         static void GetSideDirections(TPZVec<int> &sides, TPZVec<int> &dir, TPZVec<int> &bilinearounao, TPZVec<int> &sidevectors);
         
         /// Compute the directions of the HDiv vectors
-        static void ComputeDirections(TPZFMatrix<REAL> &gradx, REAL detjac, TPZFMatrix<REAL> &directions)
+        template<class T>
+        static void ComputeDirections(TPZFMatrix<T> &gradx, T detjac, TPZFMatrix<T> &directions)
         {
             for (int i=0; i<3; i++) {
                 directions(i,0) = -gradx(i,0);
@@ -196,8 +197,16 @@ namespace pztopology {
             }
         }
         
+        /// Compute the directions of the HDiv vectors
+        static void ComputeDirections(TPZFMatrix<REAL> &gradx, REAL detjac, TPZFMatrix<REAL> &directions)
+        {
+            for (int i=0; i<3; i++) {
+                directions(i,0) = -gradx(i,0);
+                directions(i,1) = gradx(i,0);
+                directions(i,2) = gradx(i,0);
+            }
+        }
 
-        
         /**
          * Returns the number of bilinear sides to this shape. Needed to compute the number shapefunctions( NConnectShapeF )
          */
