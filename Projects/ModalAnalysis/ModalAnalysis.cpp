@@ -39,6 +39,7 @@
 #include "tpzquadratictrig.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
+#include "TPZMatMFHDivRotH1.h"
 #include "TPZGmshReader.h"
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
@@ -68,13 +69,14 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
                                   const REAL rDomain, const int nDiv);
 
 const bool usingGMSH = false;
+const bool usingHDivRot = false;
 
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 	
-	bool isRectangularWG = false;//true = rectangular , false = circular
+	bool isRectangularWG = true;//true = rectangular , false = circular
     bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
     const enum meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 3;
+    int nDiv = 6;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -653,7 +655,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     /// criar malha computacional H1
 
     TPZCompMesh *cmeshH1 = new TPZCompMesh(gmesh);
-    cmeshH1->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
+    cmeshH1->SetDefaultOrder(pOrder+1); // seta ordem polimonial de aproximacao
     cmeshH1->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
     const int nState = 1;
@@ -692,8 +694,9 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                                   // contorno de dirichlet
 
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir); // insere material na malha
-
-    cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
+    
+    if(!usingHDivRot)cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
+    else cmeshHCurl->SetAllCreateFunctionsHDiv();
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
@@ -704,7 +707,9 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
             new TPZMatWaveguideCutOffAnalysis(matId, f0, ur, er);
         matMultiPhysics = dummy;
     } else {
-        TPZMatModalAnalysis *dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
+        TPZMatModalAnalysis *dummy = NULL;
+        if(!usingHDivRot) dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
+        else dummy = new TPZMatMFHDivRotH1(matId, f0, ur, er);
         matMultiPhysics = dummy;
     }
     meshVec[matMultiPhysics->H1Index()] = cmeshH1;

@@ -161,7 +161,6 @@ public:
     virtual void FillDataRequirements(TPZMaterialData &data)
     {
         data.SetAllRequirements(false);
-        data.fNeedsNormal = true;
     }
     
     

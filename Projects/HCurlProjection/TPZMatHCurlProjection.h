@@ -21,7 +21,7 @@ inline STATE urDefault( const TPZVec<REAL> & x){
     return 1.;
 }
 inline STATE erDefault( const TPZVec<REAL> & x){
-    return 4.6;//based on FR4 Specs
+    return 1.;
 }
 
 /**
@@ -63,8 +63,6 @@ public:
      * @since April 16, 2007
      */
     virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
-    void ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi );
-    void RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl );
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
      * @param datavec [in] stores all input data
@@ -83,17 +81,6 @@ public:
      */
     virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ef);
     
-    
-    /**
-     * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
-     * @param data [in] stores all input data
-     * @param weight [in] is the weight of the integration rule
-     * @param ek [out] is the stiffness matrix
-     * @param ef [out] is the load vector
-     * @param bc [in] is the boundary condition material
-     * @since October 07, 2011
-     */
-    virtual void ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc);
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one BC integration point.
      * @param data [in] stores all input data

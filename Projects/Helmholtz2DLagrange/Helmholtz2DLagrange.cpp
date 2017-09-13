@@ -45,6 +45,7 @@ enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
 STATE ur( const TPZVec<REAL> & x){
     //return ( 2.-imaginary*0.1 );
     //if(x[0] < M_PI_2 && x[1] < M_PI_2) return 0.01;
+    M_PI
     return 1.;
 }
 STATE er( const TPZVec<REAL> & x){

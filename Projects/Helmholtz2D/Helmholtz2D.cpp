@@ -8,6 +8,7 @@
  */
 
 #include "TPZMatHelmholtz2D.h"
+#include "TPZMatHelmholtz2DHDivRot.h"
 #include "TPZTimer.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
@@ -72,18 +73,19 @@ void RunSimulation(const int nDiv, const int pOrder,
                    const int nThreads, bool genVTK, bool l2error,
                    TPZVec<REAL> &errorVec);
 #undef TESTING_FUNCS
+bool usingHDivRot = false;
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 
-    int pOrder = 1; // ordem polinomial de aproximacao
+    int pOrder = 2; // ordem polinomial de aproximacao
     int nDiv = 4;
 
     bool filterEquations = false;
     bool usingFullMtrx = false;
     bool optimizeBandwidth = true;
-    const int nThreads = 0; // TODO: fix multithread issue
+    const int nThreads = 8; // TODO: fix multithread issue
     bool genVTK = false;
     bool l2error = true;
     const enum meshTypeE meshType = createTriangular;
@@ -218,8 +220,9 @@ void RunSimulation(const int nDiv, const int pOrder,
     if (l2error) {
         an.SetExact(&exactSol);
         errorVec.Resize(2, 0.);
+        an.SetThreadsForError(nThreads);
         an.PostProcessError(errorVec);
-        std::string fileName = "../error";
+        std::string fileName = "../errorHDiv";
         fileName.append(std::to_string(nDiv * nDiv * 2));
 		fileName.append("_p");
 		fileName.append(std::to_string(pOrder));
@@ -403,7 +406,9 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
-    TPZMatHelmholtz2D *matHCurl = new TPZMatHelmholtz2D(matId, constFunc);
+    TPZMatHelmholtz2D *matHCurl = NULL;
+    if (!usingHDivRot) matHCurl = new TPZMatHelmholtz2D(matId, constFunc);
+    else matHCurl = new TPZMatHelmholtz2DHDivRot(matId, constFunc);
     matHCurl->SetForcingFunction(loadVec, 4);
     cmeshHCurl->InsertMaterialObject(matHCurl);
 
@@ -417,6 +422,7 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
 
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir); // insere material na malha
 
-    cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
+    if(!usingHDivRot)cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
+    else cmeshHCurl->SetAllCreateFunctionsHDiv(); // define espaco de aproximacao
     cmeshHCurl->AutoBuild();
 }

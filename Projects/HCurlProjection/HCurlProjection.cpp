@@ -344,48 +344,9 @@ TPZCompMesh *CMesh(TPZGeoMesh *gmesh, int pOrder, void (& func)( const TPZVec<RE
     
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir);//insere material na malha
     
-    cmeshHCurl->SetAllCreateFunctionsHDiv();//define espaco de aproximacao
+    cmeshHCurl->SetAllCreateFunctionsHCurl();//define espaco de aproximacao
     cmeshHCurl->AutoBuild();
+    cmeshHCurl->CleanUpUnconnectedNodes();
     
-    
-    TPZAdmChunkVector< TPZCompEl* > elVec = cmeshHCurl->ElementVec();
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeQuad > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeQuad > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        el->SetSideOrient(4,  1);
-        el->SetSideOrient(5,  1);
-        el->SetSideOrient(6, -1);
-        el->SetSideOrient(7, -1);
-    }
-    
-    for (int i = 0; i < cmeshHCurl->NElements(); i++) {
-        TPZCompElHDiv < pzshape::TPZShapeTriang > *el = dynamic_cast<TPZCompElHDiv <pzshape::TPZShapeTriang > *>( elVec[i] );
-        if ( el == NULL) {
-            continue;
-        }
-        if ( i % 2 == 1) {
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4, -1);
-            el->SetSideOrient(5, -1);
-        }
-        else{
-            el->SetSideOrient(3,  1);
-            el->SetSideOrient(4,  1);
-            el->SetSideOrient(5, -1);
-        }
-    }
-    
-    
-    if (pOrder == 1) {
-        //cmesh->CleanUpUnconnectedNodes();
-        TPZCreateApproximationSpace::MakeRaviartThomas(*cmeshHCurl);
-        cmeshHCurl->CleanUpUnconnectedNodes();
-    }
-    else{//for now only lowest order elements are avaliable
-        DebugStop();
-    }
     return cmeshHCurl;
 }
