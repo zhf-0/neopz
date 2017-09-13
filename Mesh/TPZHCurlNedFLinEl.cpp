@@ -234,7 +234,7 @@ void TPZHCurlNedFLinEl::SetSideOrder(int side, int order) {
     this->SetIntegrationRule(2 * order);
 }
 
-TPZTransform TPZHCurlNedFLinEl::TransformSideToElement(int side) {
+TPZTransform<> TPZHCurlNedFLinEl::TransformSideToElement(int side) {
     DebugStop();
 }
 

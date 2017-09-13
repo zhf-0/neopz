@@ -208,7 +208,7 @@ class TPZHCurlNedFTriEl : public TPZInterpolatedElement {
 	 */
 	virtual void SetSideOrder(int side, int order);
 
-    virtual TPZTransform TransformSideToElement(int side);
+    virtual TPZTransform<> TransformSideToElement(int side);
 	
 	
     /**

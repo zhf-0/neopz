@@ -300,7 +300,7 @@ void TPZHCurlNedFTriEl::SetSideOrder(int side, int order) {
     this->Mesh()->Block().Set(seqnum, nshape * nvar);
 }
 
-TPZTransform TPZHCurlNedFTriEl::TransformSideToElement(int side) {
+TPZTransform<> TPZHCurlNedFTriEl::TransformSideToElement(int side) {
 	std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
     DebugStop();
 }
