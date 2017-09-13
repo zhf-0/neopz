@@ -69,21 +69,21 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
                                   const REAL rDomain, const int nDiv);
 
 const bool usingGMSH = false;
-const bool usingHDivRot = false;
+const bool usingHDivRot = true;
 
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 	
-	bool isRectangularWG = true;//true = rectangular , false = circular
+	bool isRectangularWG = false;//true = rectangular , false = circular
     bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
-    const enum meshTypeE meshType = createTriangular;
+    const meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
     bool genVTK = false;      // generate vtk for fields visualisation
     bool l2error = false;     // TODO: implement error analysis
     bool exportEigen = false; // export eigen values
-    const int nThreads = 0;   // TODO: fix multithread issue
+    const int nThreads = 8;
     bool optimizeBandwidth = true; //whether to renumber equations (OFF for debugging purposes)
     bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
 	
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 6;
+    int nDiv = 3;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -352,8 +352,6 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
     for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
         if (boundConnects.find(iCon) == boundConnects.end()) {
             TPZConnect &con = cmesh->ConnectVec()[iCon];
-            if (con.HasDependency())
-                continue;
             int seqnum = con.SequenceNumber();
             int pos = cmesh->Block().Position(seqnum);
             int blocksize = cmesh->Block().Size(seqnum);
@@ -508,11 +506,6 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         if (meshType != meshTypeE::createTriangular) {
             DebugStop(); // HCurl quadrilateral elements not implemented!
         }
-        /**************************************
-         *			  WE NEED TO			  *
-         *			   FIX THIS				  *
-         *			 	 MESH				  *
-         **************************************/
         
         const int nNodes = 4 + 4 + 4 + 1;
         const int matId = 1; // define id para um material(formulacao fraca)
@@ -599,14 +592,21 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         gmesh->BuildConnectivity();
         
         TPZManVector<TPZGeoEl *, 3> sons;
+        TPZManVector<REAL,3> qsi(3,0.), x(3,0.);
+        qsi[0]= 0.5;
+        qsi[1]= 0.5;
         for (int iref = 0; iref < nDiv; iref++) {
             int nel = gmesh->NElements();
             for (int iel = 0; iel < nel; iel++) {
                 TPZGeoEl *gel = gmesh->ElementVec()[iel];
-                if (gel->HasSubElement()) {
-                    continue;
+                gel->X(qsi, x);//gets center of element
+                const REAL pos = sqrt(x[0]*x[0]+x[1]*x[1]);
+                if(pos>(rDomain-(rDomain/(iref+1)))){
+                    if (gel->HasSubElement()) {
+                        continue;
+                    }
+                    gel->Divide(sons);
                 }
-                gel->Divide(sons);
             }
         }
     }
@@ -655,7 +655,8 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     /// criar malha computacional H1
 
     TPZCompMesh *cmeshH1 = new TPZCompMesh(gmesh);
-    cmeshH1->SetDefaultOrder(pOrder+1); // seta ordem polimonial de aproximacao
+    if(!usingHDivRot) cmeshH1->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
+    else cmeshH1->SetDefaultOrder(pOrder+1);
     cmeshH1->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
     const int nState = 1;

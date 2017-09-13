@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     
     an.LoadSolution();
     TPZStack<std::string> scalnames, vecnames;
-    vecnames.Push("Et");
+    vecnames.Push("E");
     std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
 
     an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
