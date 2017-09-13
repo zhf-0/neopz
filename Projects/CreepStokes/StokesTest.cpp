@@ -121,7 +121,7 @@ void StokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double hy
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     
-    TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso nao simetrico ***
+    TPZFStructMatrix matskl(cmesh_m); //caso nao simetrico ***
     matskl.SetNumThreads(numthreads);
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
@@ -170,7 +170,6 @@ void StokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double hy
     an.PostProcessError(Errors,ErroOut);
     
     
-    
     //Pós-processamento (paraview):
     std::cout << "Post Processing " << std::endl;
     std::string plotfile("Stokes.vtk");
@@ -179,8 +178,7 @@ void StokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double hy
     vecnames.Push("V");
     vecnames.Push("f");
     vecnames.Push("V_exact");
-    vecnames.Push("P_exact");
-    //        vecnames.Push("V_exactBC");
+    scalnames.Push("P_exact");
     
     
     int postProcessResolution = 3; //  keep low as possible

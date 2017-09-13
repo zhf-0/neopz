@@ -12,13 +12,13 @@ set(CMAKE_C_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
 project (PZ)
 
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 # Prevents timespec redefinition problem with Visual Studio 2015
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_STRUCT_TIMESPEC")
 
 IF (NOT WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")#this flag is for preventing errors when casting from double to float
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")#this flag is for preventing errors when casting from double to float
 ENDIF()
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -110,11 +110,20 @@ ENDIF(APPLE)
 
 #enabling Boost library
 option(USING_BOOST "Whether the Boost package will be linked with the library" OFF)
+
+#To enable unit test using boost UnitTest framework
+option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
+if(BUILD_UNITTESTING)
+	add_definitions(-DBUILD_UNITTESTING)
+	set(USING_BOOST ON CACHE BOOL "Whether the Boost package will be linked with the library" FORCE)
+endif()
+
 if(USING_BOOST)
 	IF (WIN32)
 		set(Boost_USE_STATIC_LIBS   ON)
 		set(Boost_USE_MULTITHREADED ON)
 		#add_definitions ( -DBOOST_ALL_NO_LIB )
+		set(BOOST_ROOT "../externallibs/lib/boost_1_65_0")	
 	ENDIF()
 	find_package( Boost COMPONENTS unit_test_framework REQUIRED )
 	add_definitions(-DUSING_BOOST)
@@ -133,6 +142,12 @@ if(USING_BOOST)
    	endif()
 endif(USING_BOOST)
 
+if(BUILD_UNITTESTING)
+	IF (NOT WIN32)
+		link_libraries(${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+	ENDIF()
+endif()
+
 option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
 
 if(USING_FAD)
@@ -149,12 +164,24 @@ if(USING_LOG4CXX)
 	set(LOG4CXX LOG4CXX)
 	add_definitions(-D${LOG4CXX})
 	find_path(LOG4CXX_INCLUDE log4cxx PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../log4cxx ${PROJECT_SOURCE_DIR}/../log4cxx_src/include ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src/include)
-	find_library(LOG4CXX_LIB NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib/${CMAKE_CONFIGURATION_TYPE})
+	find_library(LOG4CXX_LIB_RELEASE
+		         NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a
+				 PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib ./../externallibs/lib/Release
+				)
+	find_library(LOG4CXX_LIB_DEBUG
+				 NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a       # Change name here if debug lib has different name.
+				 PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib ./../externallibs/lib/Debug
+				)
+	set(LOG4CXX_LIB
+	    debug ${LOG4CXX_LIB_DEBUG}
+	    optimized ${LOG4CXX_LIB_RELEASE}
+	   )
 	if(LOG4CXX_INCLUDE-NOTFOUND)
 		set (LOG4CXX_INCLUDE "" CACHE PATH "Directory where log4cxx header files can be found")
 	else()
 		include_directories(${LOG4CXX_INCLUDE})
 	endif()
+
 	if(LOG4CXX_LIB-NOTFOUND)
 		set (LOG4CXX_LIB "" CACHE PATH "Directory where the log4cxx library can be found")
 	endif()
@@ -409,18 +436,6 @@ if(USING_QWT)
 		endif()
 endif(USING_QWT)
 
-
-#To enable unit test using boost UnitTest framework
-option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
-if(BUILD_UNITTESTING)
-	add_definitions(-DBUILD_UNITTESTING)
-	if(USING_BOOST)
-		IF (NOT WIN32)
-			link_libraries(${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-		ENDIF()
-	endif()
-endif()
-
 #To enable Python bindings
 option(BUILD_PYTHON_BINDING "To build the Python bindings" OFF)
 if (BUILD_PYTHON_BINDING)
@@ -454,7 +469,6 @@ option(BUILD_PERF_TESTS "To build the performance test." OFF)
 
 #To building all the plasticity materials
 option(BUILD_PLASTICITY_MATERIALS "To build plasticity materials." OFF)
-
 #To select type of REAL
 set(REALTypesAre "Types are: double, float, long double, pzfpcounter")
 set(REAL_TYPE "double" CACHE STRING "${REALTypesAre}")
@@ -522,10 +536,25 @@ if(WIN32)
 	#disabling All warnings
 	#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W0")
 	#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /W0")
+	#disabling STL warning for std::_Vector_alloc when LOG4CXX is enabled
+	if (USING_LOG4CXX)
+	    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4251")
+	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4251")
+	endif()
 	#define use of pthread static lib.
 	add_definitions(-DPTW32_STATIC_LIB)
     #enabling /bigobj
     add_definitions("/bigobj")
+
+    FOREACH(FLAG_TYPE EXE MODULE SHARED)
+        STRING (REPLACE "INCREMENTAL:YES" "INCREMENTAL" FLAG_TMP "${CMAKE_${FLAG_TYPE}_LINKER_FLAGS_DEBUG}")
+        STRING (REPLACE "INCREMENTAL:NO" "INCREMENTAL" FLAG_TMP ${FLAG_TMP})
+        STRING (REPLACE "INCREMENTAL" "INCREMENTAL:NO" FLAG_TMP ${FLAG_TMP})
+        STRING (REPLACE "/EDITANDCONTINUE" "" FLAG_TMP ${FLAG_TMP})
+        SET(CMAKE_${FLAG_TYPE}_LINKER_FLAGS_DEBUG "${FLAG_TMP}" CACHE STRING "Overriding default debug ${FLAG_TYPE} linker flags." FORCE)
+        MARK_AS_ADVANCED (CMAKE_${FLAG_TYPE}_LINKER_FLAGS_DEBUG)
+    ENDFOREACH ()
+
 endif()
 
 # Begin of config.h part
@@ -587,6 +616,7 @@ add_subdirectory(lib)
 if(BUILD_PROJECTS OR BUILD_TUTORIAL)
 	add_subdirectory(Projects)
 endif()
+
 
 if(BUILD_UNITTESTING)
 	add_subdirectory(UnitTest_PZ)

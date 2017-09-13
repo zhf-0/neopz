@@ -170,7 +170,7 @@ void TPZCouplingDSMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, 
         case 3: //v_exact
         {
             TPZVec<STATE> v;
-            if(this->HasfForcingFunctionExact()){
+            if(this->HasForcingFunctionExact()){
             }
             Solout[0] = v[0]; // vx
             Solout[1] = v[1]; // vy
@@ -180,7 +180,7 @@ void TPZCouplingDSMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, 
         case 4: //p_exact
         {
             TPZVec<STATE> p;
-            if(this->HasfForcingFunctionExact()){
+            if(this->HasForcingFunctionExact()){
                 
             }
             Solout[0] = p[0]; // px
@@ -524,7 +524,6 @@ void TPZCouplingDSMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TP
             
             
             STATE val = phiV2ti(0,0) * phiV2tj(0,0) ;
-            
             
             ek(i2+nshapeV1+nshapeP1,j2+nshapeV1+nshapeP1) += weight * fViscosity * val;
 
