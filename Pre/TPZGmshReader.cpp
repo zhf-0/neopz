@@ -55,6 +55,11 @@ TPZGeoMesh * TPZGmshReader::GeometricGmshMesh(std::string file_name)
         // reading a general mesh information by filter
         std::ifstream read (file_name.c_str());
         
+        if (!read) {
+            std::cout << "Could not find a file named as:  " << file_name <<  std::endl;
+            DebugStop();
+        }
+        
         while(read)
         {
             char buf[1024];
@@ -172,14 +177,14 @@ TPZGeoMesh * TPZGmshReader::GeometricGmshMesh(std::string file_name)
                 }
                 continue;
             }
-            
+
         }
         
     }
-    
-    std::cout << "Read General Mesh Data -> done!" << std::endl;
+
+    std::cout << "Read general gmsh data, complete!" << std::endl;
     gmesh->BuildConnectivity();
-    std::cout << "Geometric Mesh Connectivity -> done!" << std::endl;
+    std::cout << "Geometric mesh connectivity, complete!" << std::endl;
     return gmesh;
     
 }// End Method
