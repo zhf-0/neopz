@@ -63,6 +63,8 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
     
     void ComputeDeformationVector(TPZVec<STATE> &PhiStress,TPZVec<STATE> &APhiStress);
     
+    void ComputeStressVector(TPZVec<STATE> &Deformation,TPZVec<STATE> &Stress);
+    
     void ElasticityModulusTensor(TPZFMatrix<STATE> &MatrixElast);
 	
 	/** @brief Creates a new material from the current object   ??*/
@@ -280,6 +282,8 @@ public:
 				TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &flux,
 				TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);//Cedric
 	
+    virtual void Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors);
+
 	/** @brief Returns the elasticity modulus E */
 	REAL E() {return fE;}
 	

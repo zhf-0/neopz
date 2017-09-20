@@ -120,7 +120,7 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder);
  * @param gmesh malha geometrica
  * @param pOrder ordem polinomial de aproximacao
  */
-TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder);
+TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &Example1);
 
 
 //Função para criar interface entre elmentos:
@@ -181,10 +181,10 @@ int main(int argc, char *argv[])
     TPZManVector<REAL,3> x(3,1.);
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 1;
+    int h_level = 2;
     
     
-    double hx=2.,hy=2.; //Dimensões em x e y do domínio
+    double hx=0.1,hy=0.1; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
     int pOrder = 1; //Ordem polinomial de aproximação
@@ -202,12 +202,13 @@ int main(int argc, char *argv[])
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, filegvtk,true);
 #endif
     
+    TElasticityExample1 Example;
     //Gerando malha computacional:
     
     TPZCompMesh *cmesh_S = CMesh_S(gmesh, pOrder); //Função para criar a malha computacional da tensão
     TPZCompMesh *cmesh_U = CMesh_U(gmesh, pOrder); //Função para criar a malha computacional da deslocamento
     TPZCompMesh *cmesh_P = CMesh_P(gmesh, pOrder); //Função para criar a malha computacional da rotação
-    TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder); //Função para criar a malha computacional multifísica
+    TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder,  Example); //Função para criar a malha computacional multifísica
     
 #ifdef PZDEBUG
     {
@@ -306,10 +307,11 @@ int main(int argc, char *argv[])
     
     //    //Calculo do erro
     //    std::cout << "Comuting Error " << std::endl;
-    //    TPZManVector<REAL,3> Errors;
-    //    ofstream ErroOut("Erro.txt");
-    //    an.SetExact(sol_exact);
-    //    an.PostProcessError(Errors,ErroOut);
+    TPZManVector<REAL,3> Errors;
+    ofstream ErroOut("Erro.txt");
+    an.SetExact(Example.Exact());
+    an.PostProcessError(Errors,ErroOut);
+    
     //
     //
     //
@@ -354,8 +356,8 @@ void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
     f.resize(2);
     
-    STATE xv = x[0];
-    STATE yv = x[1];
+    STATE xv = 1*x[0];
+    STATE yv = 0*x[1];
     
     STATE v_x =  -2.*Pi*cos(2.*Pi*xv)*sin(2.*Pi*yv);
     STATE v_y =  -2.*Pi*cos(2.*Pi*yv)*sin(2.*Pi*xv);
@@ -382,16 +384,16 @@ void solucao_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
     f.resize(3);
     
-    STATE xv = x[0];
+    STATE xv = 1+0.*x[0];
     STATE yv = x[1];
     
-    STATE v_x =  -2.*Pi*cos(2.*Pi*xv)*sin(2.*Pi*yv);
-    STATE v_y =  -2.*Pi*cos(2.*Pi*yv)*sin(2.*Pi*xv);
-    STATE p =  sin(2.*Pi*xv)*sin(2.*Pi*yv);
+    STATE v_x =1+0*x[0];  // -2.*Pi*cos(2.*Pi*xv)*sin(2.*Pi*yv);
+    STATE v_y =0*x[0]; //-2.*Pi*cos(2.*Pi*yv)*sin(2.*Pi*xv);
+    STATE p = 0*x[0]; //sin(2.*Pi*xv)*sin(2.*Pi*yv);
     
-    f[0] = v_x; // x direction
-    f[1] = v_y; // y direction
-    f[2] = p; //
+    f[0] = 0; // x direction
+    f[1] = 0; // y direction
+    f[2] = 0; //                change!!!!
 }
 
 
@@ -416,7 +418,7 @@ void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& ds
     dsol(0,0)= 4.*Pi*Pi*sin(2.*Pi*xv)*sin(2.*Pi*yv);
     dsol(0,1)= -4.*Pi*Pi*cos(2.*Pi*xv)*cos(2.*Pi*yv);
     
-    // vy direction
+    // vy directio1
     dsol(1,0)= -4.*Pi*Pi*cos(2.*Pi*xv)*cos(2.*Pi*yv);
     dsol(1,1)= 4.*Pi*Pi*sin(2.*Pi*xv)*sin(2.*Pi*yv);
     
@@ -446,20 +448,40 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     //Vetor auxiliar para armazenar coordenadas:
     
     TPZVec <REAL> coord (3,0.);
-    
-    
+    TPZVec <REAL> newcoord(3,0.);
+    TPZVec <REAL> gcoord1(4,0.);
+    TPZVec <REAL> gcoord2(4,0.);
+    double theta=M_PI/4;
+    gcoord1[0]=-0.3;
+    gcoord2[0]=0;
+    gcoord1[1]=1.7;
+    gcoord2[1]=0.7;
+    gcoord1[3]=1;
+    gcoord2[3]=1;
+    gcoord1[2]=0;
+    gcoord2[2]=1;
     //Inicialização dos nós:
+    
+    
+    
     
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
-            coord[0] = (j)*hx/(nx - 1)-1;
-            coord[1] = (i)*hy/(ny - 1)-1;
-            //using the same coordinate x for z
+           coord[0] = (j)*hx/(nx - 1)-1;
+           coord[1] = (i)*hy/(ny - 1)-1;
+        //    coord[0]=gcoord1[2*i+j];
+	//    coord[1]=gcoord2[2*i+j];
+	    //using the same coordinate x for z
             coord[2] = 0.;
+         // newcoord[0]=cos(theta)*coord[0]+sin(theta)*coord[1];
+         // newcoord[1]=sin(theta)*coord[0]-cos(theta)*coord[1];
+	    
+	    
             //cout << coord << endl;
             //Get the index in the mesh nodes vector for the new node
             index = gmesh->NodeVec().AllocateNewElement();
+            
             //Set the value of the node in the mesh nodes vector
             gmesh->NodeVec()[index] = TPZGeoNode(id,coord,*gmesh);
         }
@@ -771,7 +793,7 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder)
 }
 
 
-TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
+TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example)
 {
     
     //Criando malha computacional:
@@ -780,9 +802,11 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     cmesh->SetDefaultOrder(pOrder); //Insere ordem polimonial de aproximação
     cmesh->SetDimModel(dim); //Insere dimensão do modelo
     cmesh->SetAllCreateFunctionsMultiphysicElem();
-    TElasticityExample1 example;
-    
+//    TElasticityExample1 example;
+
     // Criando material:
+
+    example.fProblemType = TElasticityExample1::EStretchx;
     
     REAL E = 1.; //* @param E elasticity modulus
     REAL nu=0.; //* @param nu poisson coefficient
@@ -811,7 +835,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     
     TPZFMatrix<REAL> val1(2,2,0.), val2(2,1,0.);
     REAL x;
-    val2(0,0) = 1.0; // vx -> 0
+    val2(0,0) = 0.1; // vx -> 0
     val2(1,0) = 1.0; // vy -> 0
     //val1(0,0) = 100.0;
         
@@ -830,7 +854,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     TPZMaterial * BCond2 = material->CreateBC(material, matBCleft, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno esquerda
     BCond2->SetForcingFunction(example.ValueFunction());
     //BCond2->SetForcingFunction(p_exact1,bc_inte_order);
-    //BCond2->SetForcingFunction(solucao_exact,bc_inte_order);
+    //Cond2->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond2); //Insere material na malha
     
     TPZMaterial * BCond3 = material->CreateBC(material, matBCright, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno direita

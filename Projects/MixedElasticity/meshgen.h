@@ -45,7 +45,12 @@ struct TAnalyticSolution
 
 struct TElasticityExample1 : public TAnalyticSolution
 {
-    static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
+     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear};
+    
+     static EDefState fProblemType;
+    
+
+  static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
     {
         TPZManVector<REAL,3> locforce(2);
         DivSigma(x, locforce);
@@ -99,10 +104,6 @@ struct TElasticityExample1 : public TAnalyticSolution
 
 struct TElasticityExample2 : public TElasticityExample1
 {
-    enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy};
-    
-    static EDefState fProblemType;
-    
     template<class TVar>
     static void uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp);
     

@@ -227,6 +227,18 @@ void TPZElasticityMaterial::ComputeDeformationVector(TPZVec<STATE> &PhiStress,TP
 
 }
 
+void TPZElasticityMaterial::ComputeStressVector(TPZVec<STATE> &Deformation ,TPZVec<STATE> &Stress){
+    STATE gamma;
+    
+    gamma=Deformation[Exy]+Deformation[Eyx];
+    Stress[Exx] = fPreStressXX+fEover1MinNu2*(Deformation[Exx]+fnu*Deformation[Eyy]);
+    Stress[Eyy] = fPreStressYY+fEover1MinNu2*(fnu*Deformation[Exx]+Deformation[Eyy]);
+    Stress[Exy] = fPreStressXY+fE*0.5/(1.+fnu)*gamma;
+    Stress[Eyx] = Stress[Eyx];
+    
+}
+
+
 void TPZElasticityMaterial::Print(std::ostream &out) {
     out << "name of material : " << Name() << "\n";
     out << "properties : \n";
@@ -333,12 +345,12 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     nshapeP = datavec[2].phi.Rows();
     
     TPZVec<double> f(2,0.);
-    TPZFMatrix<STATE> phiSi(fDimension,1,0.),phiSj(fDimension,1,0.);
+    TPZFMatrix<STATE> phiSi(3,1,0.),phiSj(fDimension,1,0.);
     TPZManVector<STATE,2> divSi1x(2,0.),divSi1y(2,0.);
     TPZManVector<STATE,4> phiSi1x(4,0.0),phiSj1x(4,0.0),phiSi1y(4,0.0),phiSj1y(4,0.0),phiPj1x(4,0.0),phiPj1y(4,0.0);
     TPZManVector<STATE,2> phiUi(fDimension,0.0),phiUj(fDimension,0.0),phiUj1x(2,0.0),phiUj1y(2,0.0);
     TPZFMatrix<STATE> phiPi(fDimension,1,0.0),phiPj(fDimension,1,0.0);
-    TPZFNMatrix<3,REAL> ivecS(fDimension,1,0.);
+    TPZFNMatrix<3,REAL> ivecS(3,1,0.);
     
     for(int i = 0; i < nshapeS; i++ )
     {
@@ -348,14 +360,14 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
         
         REAL divSi = 0.;
         
-        for (int e=0; e<fDimension; e++) {
+        for (int e=0; e<3; e++) {
             
             ivecS(e,0) = datavec[0].fNormalVec(e,ivec);
             phiSi(e,0) = phiS(iphi,0)*ivecS(e,0);
 
         }
             TPZFNMatrix<3,REAL> axesvec(fDimension,1,0.);
-            datavec[0].axes.Multiply(ivecS,axesvec,1);
+            datavec[0].axes.Multiply(ivecS,axesvec);
             
         //calculando div(Si)
         for(int f=0; f<fDimension; f++)
@@ -889,8 +901,8 @@ void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL 
         v_2(1,0) = res[1];
      }
      
-     v_2(0,0) = -datavec[0].x[1];
-     v_2(1,0) = datavec[0].x[0];
+    // v_2(0,0) = -datavec[0].x[1];
+    // v_2(1,0) = datavec[0].x[0];
     //Gravity
     STATE rhoi = 900.; //itapopo
     STATE g = 9.81; //itapopo
@@ -1762,6 +1774,123 @@ void TPZElasticityMaterial::Flux(TPZVec<REAL> &x, TPZVec<STATE> &Sol, TPZFMatrix
     }
 }
 
+void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors)
+{
+    //values[0] = 0.;
+    TPZManVector<REAL,4> SigmaV(4,0.),sigma_exactV(4,0.),eps_exactV(4,0.),EPSZV(4,0.);
+    TPZFNMatrix<9,STATE> sigma(3,3,0.),eps(3,3,0.);
+    TPZFNMatrix<4,STATE> eps_exact(2,2,0.);
+    REAL sigx,sigy,sigxy,gamma;
+    REAL lambda = GetLambda();
+    REAL mu = this->GetMU();
+    REAL E = this->fE;
+    
+  
+    //TPZManVector<REAL,4> SIGMA(4,0.) , EPSZ(4,0.), eps_exact(4,0.);
+    int dim = Dimension();
+    for (int i=0; i<dim; i++) {
+        for (int j=0; j<3; j++) {
+            sigma(i,j) = data[0].sol[0][j+i*3];
+        }
+    }
+    ToVoight(sigma,SigmaV);
+    //Sigma[0] = sigma(0,0);
+    //Sigma[1] = sigma(1,1);
+    //Sigma[2] = 0.5*(sigma(0,1)+sigma(1,0));
+    
+    TPZManVector<STATE,2> disp(2);
+    for (int i=0; i<dim; i++) {
+        disp[i] = data[1].sol[0][i];
+    }
+    eps_exact(0,0) = du_exact(0,0);
+    eps_exact(1,0) = 0.5*(du_exact(0,1)+du_exact(1,0));
+    eps_exact(0,1) = 0.5*(du_exact(0,1)+du_exact(1,0));
+    eps_exact(1,1) = du_exact(1,1);
+    ToVoight(eps_exact,eps_exactV);
+    ComputeStressVector(eps_exactV,sigma_exactV);
+    //TPZFMatrix<STATE> du(dudx.Rows(),dudx.Cols());
+    //du(0,0) = dudx(0,0)*axes(0,0)+dudx(1,0)*axes(1,0);
+    //du(1,0) = dudx(0,0)*axes(0,1)+dudx(1,0)*axes(1,1);
+    //du(0,1) = dudx(0,1)*axes(0,0)+dudx(1,1)*axes(1,0);
+    //du(1,1) = dudx(0,1)*axes(0,1)+dudx(1,1)*axes(1,1);
+    
+    //tens�s aproximadas : uma forma
+    //gamma = du(1,0)+du(0,1);
+    //sigma[0] = fPreStressXX+fEover1MinNu2*(du(0,0)+fnu*du(1,1));
+    //sigma[1] = fPreStressYY+fEover1MinNu2*(fnu*du(0,0)+du(1,1));
+    //sigma[2] = fPreStressXY+fE*0.5/(1.+fnu)*gamma;
+    
+    //exata
+    //gamma = du_exact(1,0)+du_exact(0,1);
+    //sigma_exactV[0] = fEover1MinNu2*(du_exact(0,0)+fnu*du_exact(1,1));
+    //sigma_exactV[1] = fEover1MinNu2*(fnu*du_exact(0,0)+du_exact(1,1));
+    //sigma_exactV[2] = fE*0.5/(1.+fnu)*gamma;
+    //sigx  = (SigmaV[0] - sigma_exactV[0]);
+    //sigy  = (SigmaV[1] - sigma_exactV[1]);
+    //sigxy = (SigmaV[2] - sigma_exactV[2]);
+    // L_2 norm error
+    errors[0] = (disp[0]-u_exact[0])*(disp[0]-u_exact[0])+(disp[1]-u_exact[1])*(disp[1]-u_exact[1]);
+    //Energe norm
+    //TPZManVector<REAL,4> SIGMA(4,0.) , EPSZ(4,0.);
+    
+    ToVoight(sigma, SigmaV);
+    
+    ComputeDeformationVector(SigmaV,EPSZV);
+    
+    //FromVoight(EPSZV, eps);
+    
+    //SIGMA[0] = sigx;
+    //SIGMA[1] = sigxy;
+    //SIGMA[2] = sigxy;
+    //SIGMA[3] = sigy;
+    errors[1] =0;
+    for(int i=0; i<4 ;i++)
+    {
+      errors[1]+= (SigmaV[i]-sigma_exactV[i])*(EPSZV[i]-eps_exactV[i]);
+    }
+    
+   //or we can compute as this methods
+   //TPZFMatrix<STATE> MatrixElast(4,4,0.);
+   //ElasticityModulusTensor(MatrixElast);
+   //errors[1] = 0;
+   //for(int i==0; i<4； i++)
+   //{
+   //for(int j=0; j<4; j++)
+   //{
+   //errors[1]+=SIGMA[j]*MatrixElast(j,i);
+   //}
+   //}
+   
+   // SemiH1 norm
+   //TPZFNMatrix<4,REAL> antisym(2,2,0.);
+   //antisym(0,1) = data[2].sol[0][0];
+   //antisym(1,0) = -antisym(0,1);
+   //TPZManVector<REAL,4> P(4,0.),DU(4,0.);
+   //ToVoight(antisym,P);
+   //ToVoight(du_exact,DU);
+   //errors[2]=0;
+ //  for(int i=0;i<4;i++)
+  // {
+   //  errors[2]+=(P[i]+EPSZ[i]-DU[i])*(P[i]+EPSZ[i]-DU[i]);
+  // }
+    //values[0] = calculo do erro estimado em norma Energia
+    //values[0] = fE*(sigx*sigx + sigy*sigy + 2*fnu*sigx*sigy)/(1-fnu*fnu);
+    //values[0] = (values[0] + .5*fE*sigxy*sigxy/(1+fnu));
+    
+    //values[1] : erro em norma L2 em tens�s
+    //values[1] = sigx*sigx + sigy*sigy + sigxy*sigxy;
+    
+    //values[1] : erro em norma L2 em deslocamentos
+    //values[1] = pow((REAL)fabs(u[0] - u_exact[0]),(REAL)2.0)+pow((REAL)fabs(u[1] - u_exact[1]),(REAL)2.0);
+    
+    //values[2] : erro estimado na norma H1
+    //REAL SemiH1 =0.;
+    //for(int i = 0; i < 2; i++) for(int j = 0; j < 2; j++) SemiH1 += (du(i,j) - du_exact(i,j)) * (du(i,j) - du_exact(i,j));
+    //values[2] = values[1] + SemiH1;
+    }
+
+
+
 void TPZElasticityMaterial::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
                                    TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &flux,
                                    TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values) {
@@ -1775,7 +1904,7 @@ void TPZElasticityMaterial::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
     du(1,1) = dudx(0,1)*axes(0,1)+dudx(1,1)*axes(1,1);
     
     //tens�s aproximadas : uma forma
-    gamma = du(1,0)+du(0,1);
+    gamma =  du(1,0)+du(0,1);
     sigma[0] = fPreStressXX+fEover1MinNu2*(du(0,0)+fnu*du(1,1));
     sigma[1] = fPreStressYY+fEover1MinNu2*(fnu*du(0,0)+du(1,1));
     sigma[2] = fPreStressXY+fE*0.5/(1.+fnu)*gamma;
