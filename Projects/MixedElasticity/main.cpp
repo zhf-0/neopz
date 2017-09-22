@@ -58,7 +58,10 @@
 #include "pzmixedelasmat.h"
 #include "pzmultiphysicselement.h"
 #include "pzmultiphysicscompel.h"
+#include "TPZCompElLagrange.h"
 #include "pzbuildmultiphysicsmesh.h"
+#include "pzelementgroup.h"
+#include "pzcondensedcompel.h"
 #include "TPZSpStructMatrix.h"
 #include "pzlog.h"
 #include <iostream>
@@ -123,10 +126,7 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder);
 TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &Example1);
 
 
-//Função para criar interface entre elmentos:
-
-TPZCompEl *CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,int &index);
-
+void CreateCondensedElements(TPZCompMesh *cmesh);
 
 void Error(TPZCompMesh *hdivmesh, std::ostream &out, int p, int ndiv);
 
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
     TPZManVector<REAL,3> x(3,1.);
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 2;
+    int h_level = 10;
     
     
     double hx=0.1,hy=0.1; //Dimensões em x e y do domínio
@@ -209,7 +209,6 @@ int main(int argc, char *argv[])
     TPZCompMesh *cmesh_U = CMesh_U(gmesh, pOrder); //Função para criar a malha computacional da deslocamento
     TPZCompMesh *cmesh_P = CMesh_P(gmesh, pOrder); //Função para criar a malha computacional da rotação
     TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder,  Example); //Função para criar a malha computacional multifísica
-    
 #ifdef PZDEBUG
     {
         std::ofstream filecS("MalhaC_S.txt"); //Impressão da malha computacional da tensão (formato txt)
@@ -229,6 +228,7 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::AddConnects(meshvector, cmesh_m);
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
     cmesh_m->LoadReferences();
+    CreateCondensedElements(cmesh_m);
     
     //    AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
     //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
@@ -247,9 +247,9 @@ int main(int argc, char *argv[])
     //Resolvendo o Sistema:
     int numthreads = 0;
     
-    bool optimizeBandwidth = false; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
+    bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
-    TPZFStructMatrix matskl(cmesh_m); //caso nao simetrico ***
+    TPZSkylineStructMatrix matskl(cmesh_m); //caso nao simetrico ***
     matskl.SetNumThreads(numthreads);
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
@@ -468,10 +468,10 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
-           coord[0] = (j)*hx/(nx - 1)-1;
-           coord[1] = (i)*hy/(ny - 1)-1;
-        //    coord[0]=gcoord1[2*i+j];
-	//    coord[1]=gcoord2[2*i+j];
+          coord[0] = (j)*hx/(nx - 1)-1;
+          coord[1] = (i)*hy/(ny - 1)-1;
+          //  coord[0]=gcoord1[2*i+j];
+	  //  coord[1]=gcoord2[2*i+j];
 	    //using the same coordinate x for z
             coord[2] = 0.;
          // newcoord[0]=cos(theta)*coord[0]+sin(theta)*coord[1];
@@ -806,7 +806,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
 
     // Criando material:
 
-    example.fProblemType = TElasticityExample1::EStretchx;
+    example.fProblemType = TElasticityExample1::Etest;
     
     REAL E = 1.; //* @param E elasticity modulus
     REAL nu=0.; //* @param nu poisson coefficient
@@ -939,3 +939,80 @@ void Error(TPZCompMesh *cmesh, std::ostream &out, int p, int ndiv)
 }
 
 
+void CreateCondensedElements(TPZCompMesh *cmesh)
+{
+    long nel = cmesh->NElements();
+    cmesh->ComputeNodElCon();
+    for(long el = 0; el<nel ; el++)
+    {
+        TPZCompEl *cel = cmesh->Element(el);
+        TPZMultiphysicsElement *mphys = dynamic_cast<TPZMultiphysicsElement *>(cel);
+        if(!mphys) continue;
+        TPZGeoEl *gel = mphys->Reference();
+        if(gel->Dimension() != cmesh->Dimension()) continue;
+        
+        long newconnectindex = cmesh->AllocateNewConnect(4,1,1);
+        cmesh->ConnectVec()[newconnectindex].SetLagrangeMultiplier(2);
+        cmesh->ConnectVec()[newconnectindex].IncrementElConnected();
+        cmesh->ConnectVec()[newconnectindex].IncrementElConnected();
+        REAL delx = abs(gel->Node(1).Coord(0)-gel->Node(0).Coord(0));
+        REAL dely = abs(gel->Node(1).Coord(1)-gel->Node(0).Coord(1));
+        int constridf = 0;
+        if(delx > dely) 
+        {
+            constridf = 1;
+        }
+        int numel = mphys->NumberOfCompElementsInsideThisCompEl();
+        if(numel != 3) DebugStop();
+        TPZManVector<int> numconnects(numel,0);
+        for(int i=0; i<numel; i++) numconnects[i] = mphys->Element(i)->NConnects();
+        TPZManVector<TPZCompElLagrange::TLagrange, 4> EquationDelay(4);
+        EquationDelay[0].fConnect[0] = mphys->ConnectIndex(numconnects[0]);
+        EquationDelay[0].fIdf[0] = 0;
+        EquationDelay[0].fConnect[1] = newconnectindex;
+        EquationDelay[0].fIdf[1] = 0;
+        EquationDelay[1].fConnect[0] = mphys->ConnectIndex(numconnects[0]);
+        EquationDelay[1].fIdf[0] = 1;
+        EquationDelay[1].fConnect[1] = newconnectindex;
+        EquationDelay[1].fIdf[1] = 1;
+        EquationDelay[2].fConnect[0] = mphys->ConnectIndex(numconnects[0]+1);
+        EquationDelay[2].fIdf[0] = constridf;
+        EquationDelay[2].fConnect[1] = newconnectindex;
+        EquationDelay[2].fIdf[1] = 2;
+        EquationDelay[3].fConnect[0] = mphys->ConnectIndex(numconnects[0]+numconnects[1]+gel->NCornerNodes()-1);
+        EquationDelay[3].fIdf[0] = 0;
+        EquationDelay[3].fConnect[1] = newconnectindex;
+        EquationDelay[3].fIdf[1] = 3;
+        long elindex;
+        new TPZCompElLagrange(*cmesh,EquationDelay,elindex);
+        long groupindex;
+        TPZElementGroup *elgr = new TPZElementGroup(*cmesh,groupindex);
+        elgr->AddElement(cel);
+        elgr->AddElement(cmesh->Element(elindex));
+        TPZCondensedCompEl *condensed = new TPZCondensedCompEl(elgr);
+    }
+    cmesh->ExpandSolution();
+}
+
+void CreateCondensedElements2(TPZCompMesh *cmesh)
+{
+    long nel = cmesh->NElements();
+    cmesh->ComputeNodElCon();
+    for(long el = 0; el<nel ; el++)
+    {
+        TPZCompEl *cel = cmesh->Element(el);
+        TPZMultiphysicsElement *mphys = dynamic_cast<TPZMultiphysicsElement *>(cel);
+        if(!mphys) continue;
+        TPZGeoEl *gel = mphys->Reference();
+        if(gel->Dimension() != cmesh->Dimension()) continue;
+        
+        int numel = mphys->NumberOfCompElementsInsideThisCompEl();
+        if(numel != 3) DebugStop();
+        TPZManVector<int> numconnects(numel,0);
+        for(int i=0; i<numel; i++) numconnects[i] = mphys->Element(i)->NConnects();
+        cel->Connect(numconnects[0]).IncrementElConnected();
+        cel->Connect(numconnects[0]+1).IncrementElConnected();
+        cel->Connect(numconnects[0]+numconnects[1]+gel->NCornerNodes()-1).IncrementElConnected();
+        TPZCondensedCompEl *condensed = new TPZCondensedCompEl(cel);
+    }
+}

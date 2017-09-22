@@ -83,41 +83,51 @@ static FADFADREAL FADatan(FADFADREAL x)
 template<class TVar>
 void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
 {
-   
-   // disp[0] = TVar(1./27.)*x[0]*x[0]*x[1]*x[1]*cos(TVar(6.*M_PI)*x[0])*sin(TVar(7.*M_PI)*x[1]);
+        // disp[0] = x[0]*0.;
+    //disp[1] = x[0]*0.;
+   if(fProblemType == Etest)
+   {
+    disp[0] = TVar(1./27.)*x[0]*x[0]*x[1]*x[1]*cos(TVar(6.*M_PI)*x[0])*sin(TVar(7.*M_PI)*x[1]);
 
-   // disp[1] = TVar(0.2)*exp(x[1])*sin(TVar(4.*M_PI)*x[0]);
-    disp[0] = x[0]*0.;
-    disp[1] = x[0]*0.;
+    disp[1] = TVar(0.2)*exp(x[1])*sin(TVar(4.*M_PI)*x[0]);
+   }
+   //  disp[0] = x[0]*0.;
+   //  disp[1] = x[0]*0.;
     if(fProblemType ==ERot)//rotation
-    { 
+    {      disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] = -x[1];
       disp[1] = x[0];
       
     }
     
     else if(fProblemType == EShear)//pure shear
-    {
+    {     disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] += (TVar) x[1];
       disp[1] += (TVar) 0. ;
     }
    else if(fProblemType == EStretchx)//strech x
-    {
+    {     disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] += (TVar) x[0];
       disp[1] += (TVar) 0.;
     }
     else if(fProblemType ==EStretchy)//strech y
-    {
+    {     disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] += (TVar) 0.;
       disp[1] += (TVar) x[1];    
     }
     else if(fProblemType==EDispx)
-    {
+    {     disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] +=   1.;
       disp[0] +=   0.;
     }
     else if(fProblemType==EDispy)
-    {
+    {     disp[0] = x[0]*0.;
+     disp[1] = x[0]*0.;
       disp[0] += (TVar) 0.;
       disp[0] += (TVar) 1.;
     }

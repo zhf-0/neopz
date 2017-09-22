@@ -45,7 +45,7 @@ struct TAnalyticSolution
 
 struct TElasticityExample1 : public TAnalyticSolution
 {
-     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear};
+     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest };
     
      static EDefState fProblemType;
     
