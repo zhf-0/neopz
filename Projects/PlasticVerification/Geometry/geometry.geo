@@ -14,7 +14,7 @@ Mesh.CharacteristicLengthExtendFromBoundary = 1;
 General.ExpertMode = 1;
 
 // Controls 
-WellboreGeometryQ = 1;
+WellboreGeometryQ = 0;
 QuadrilateralMeshQ = 1;
 
 If (WellboreGeometryQ == 1)

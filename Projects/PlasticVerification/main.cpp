@@ -28,6 +28,8 @@
 #include "TPZElasticCriteria.h"
 #include "pzelastoplastic2D.h"
 #include "TPZPlasticStepPV.h"
+#include "pzsandlerextPV.h"
+#include "TPZYCMohrCoulombPV.h"
 
 // PostProcessing Data
 #include "pzpostprocanalysis.h"
@@ -199,15 +201,16 @@ void ComputeApproximation(SimulationControl & sim_ctrl){
     TPZElastoPlasticAnalysis    * analysis = CreateAnalysis(cmesh, sim_ctrl);
     
     REAL epsilon = 1.0e-4;
-    int n_iter  = 10;
+    int n_iter  = 2;
     bool linesearchQ = false;
     bool checkconvQ = false;
-//    bool consistenMatrixQ = false;
+    bool consistenMatrixQ = false;
     
     std::stringstream summary;
     summary << sim_ctrl.dump_folder << "/" "conv" << "_" << sim_ctrl.execution_summary << ".txt";
     std::ofstream report(summary.str().c_str(),std::ios::app);
-    analysis->IterativeProcess(report, epsilon, n_iter, linesearchQ, checkconvQ);
+    analysis->IterativeProcess(report, epsilon, n_iter, linesearchQ, checkconvQ, consistenMatrixQ);
+    analysis->AcceptSolution();
     
     TPZPostProcAnalysis * postpro = CreatePostProAnalysis(cmesh, sim_ctrl);
     PosProcess(postpro, sim_ctrl);
@@ -327,8 +330,8 @@ std::pair<int, TPZVec<STATE> > BcType(int bc_index){
     bc_definition.insert(std::make_pair(3, std::make_pair(1, bc_quantity)));
     
     bc_quantity[0] = 0.0;
-    bc_quantity[1] = -0.5;
-    bc_definition.insert(std::make_pair(4, std::make_pair(0, bc_quantity)));
+    bc_quantity[1] = -10.0e6;
+    bc_definition.insert(std::make_pair(4, std::make_pair(1, bc_quantity)));
     
     bc_quantity[0] = 0.0;
     bc_quantity[1] = 0.0;
@@ -346,23 +349,67 @@ TPZMaterial * MaterialModel(int index, SimulationControl  & sim_ctrl){
     
     bool planestrain = true;
     
+//    /////////////////////////////////////////////////////////////////////////
+//    // Elastic part
+//    REAL Eyoung = 4.3614e9;
+//    REAL nu     = 0.2;
+//    TPZMatElastoPlastic2D<TPZElasticCriteria> * material = new TPZMatElastoPlastic2D< TPZElasticCriteria >(sim_ctrl.Omega_ids[index], planestrain);
+//    
+//    TPZElasticCriteria MatEla;
+//    TPZElasticResponse ER;
+//    ER.SetUp(Eyoung, nu);
+//    MatEla.SetElasticResponse(ER);
+//    material->SetPlasticity(MatEla);
+//    /////////////////////////////////////////////////////////////////////////
+    
+    
     /////////////////////////////////////////////////////////////////////////
-    // Elastic part
+    // Sandler Dimaggio part
     REAL Eyoung = 4.3614e9;
     REAL nu     = 0.2;
-    TPZMatElastoPlastic2D<TPZElasticCriteria> * elastic = new TPZMatElastoPlastic2D< TPZElasticCriteria >(sim_ctrl.Omega_ids[index], planestrain);
+    REAL A = 152.54;
+    REAL B = 0.0015489;
+    REAL C = 146.29;
+    REAL R = 0.91969;
+    REAL D = 0.018768;
+    REAL W = 0.006605;
     
-    TPZElasticCriteria MatEla;
-    TPZElasticResponse ER;
-    ER.SetUp(Eyoung, nu);
-    MatEla.SetElasticResponse(ER);
-    elastic->SetPlasticity(MatEla);
+    // Plastic mathematical components
+    TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> SDPV;
+    STATE G = Eyoung / (2. * (1. + nu));
+    STATE K = Eyoung / (3. * (1. - 2 * nu));
+    STATE phi = 0, psi = 1., N = 0.;
+    SDPV.fYC.SetUp(A, B, C, D, K, G, W, R, phi, N, psi);
+    SDPV.fER.SetUp(Eyoung, nu);
+    
+    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> > * material = new
+    TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
+
+    material->SetPlasticity(SDPV);
     /////////////////////////////////////////////////////////////////////////
     
     
+//    /////////////////////////////////////////////////////////////////////////
+//    // Mohr Coulomb part
+//    REAL Eyoung = 4.3614e9;
+//    REAL nu     = 0.2;
+//    REAL cohesion = 13.;
+//    REAL Phi = 0.52;
+//    
+//    // Plastic mathematical components
+//    TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> MCPV;
+//    TPZElasticResponse ER;
+//    ER.SetUp(Eyoung, nu);
+//    MCPV.fYC.SetUp(Phi, Phi, cohesion, ER);
+//    MCPV.fER.SetUp(Eyoung, nu);
+//    
+//    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> > *material = new TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
+//    
+//    material->SetPlasticity(MCPV);
+//    /////////////////////////////////////////////////////////////////////////
     
     
-    TPZMaterial * plastic(elastic);
+    TPZMaterial * plastic(material);
     return plastic;
 }
 
@@ -374,7 +421,7 @@ TPZElastoPlasticAnalysis * CreateAnalysis(TPZCompMesh * cmesh, SimulationControl
     matrix.SetNumThreads(sim_ctrl.n_threads);
     analysis->SetStructuralMatrix(matrix);
     TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky);
+    step.SetDirect(ELDLt);
     analysis->SetSolver(step);
     return analysis;
     
@@ -391,7 +438,9 @@ TPZPostProcAnalysis * CreatePostProAnalysis(TPZCompMesh * cmesh, SimulationContr
     }
     
     TPZStack<std::string,10> scalnames, vecnames;
-    vecnames.Push("Displacement");
+    scalnames.Push("PlasticSqJ2El");
+    vecnames.Push("DisplacementMem");
+    vecnames.Push("NormalStrain");
     
     TPZStack<std::string> PostProcVars;
     for (int i = 0; i < scalnames.size(); i++) {
@@ -414,14 +463,16 @@ void PosProcess(TPZPostProcAnalysis  * an, SimulationControl & sim_ctrl)
 {
     
     std::stringstream sol_vtk_name;
-    sol_vtk_name << sim_ctrl.dump_folder << "/" "sol" << "_" << sim_ctrl.execution_summary << ".vtk";
+    sol_vtk_name << sim_ctrl.dump_folder << "/" "elasto_plastic" << "_" << sim_ctrl.execution_summary << ".vtk";
     std::string file(sol_vtk_name.str());
     
-    int dim = 2;
+    int dim = an->Mesh()->Reference()->Dimension();
     TPZStack<std::string,10> scalnames, vecnames;
-    int div = 1;
+    int div = 0;
     
-    vecnames.Push("Displacement");
+    scalnames.Push("PlasticSqJ2El");
+    vecnames.Push("DisplacementMem");
+    vecnames.Push("NormalStrain");
     
     an->DefineGraphMesh(dim,scalnames,vecnames,file);
     an->PostProcess(div);

@@ -706,7 +706,7 @@ void TPZSandlerExtended::ProjectF1(const TPZVec<STATE> &sigmatrial, STATE kprev,
 
 #ifdef PZDEBUG
     {
-        if (count >= 30) {
+        if (count >= 100) {
             DebugStop();
         }
     }

@@ -374,10 +374,6 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out,REAL tol,int n
     Assemble();
     REAL RhsNormPrev = Norm(fRhs);
 	bool linesearchconv=false;
-    
-    
-    std::cout<< "matrix dimension " << this->Solver().Matrix()->Rows() << " x " << this->Solver().Matrix()->Cols() <<std::endl;
-    
 	while(error > tol && iter < numiter) {
 		
 //		fSolution.Redim(0,0);
