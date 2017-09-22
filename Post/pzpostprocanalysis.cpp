@@ -170,7 +170,7 @@ void TPZPostProcAnalysis::SetPostProcessVariables(TPZVec<int> & matIds, TPZVec<s
 	pcPostProcMesh->LoadReferred(pcMainMesh);
 }
 
-void TPZPostProcAnalysis::AutoBuildDisc() 
+void TPZPostProcAnalysis::AutoBuildDisc()
 {
 	TPZAdmChunkVector<TPZGeoEl *> &elvec = Mesh()->Reference()->ElementVec();
 	long i, nelem = elvec.NElements();
@@ -268,12 +268,13 @@ void TPZPostProcAnalysis::AutoBuildDisc()
 #endif
 	if(matnotfound.size())
 	{
-		std::cout << "Malha post proc was created without these materials ";
+		std::cout << "Post-processing mesh was created without these materials = { ";
 		std::set<int>::iterator it;
 		for(it = matnotfound.begin(); it!= matnotfound.end(); it++)
 		{
 			std::cout << *it << " ";
 		}
+        std::cout << " }.";
 		std::cout << std::endl;
 	}
 	
