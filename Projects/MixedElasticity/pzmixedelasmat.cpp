@@ -15,7 +15,7 @@
 
 #include "pzlog.h"
 #ifdef LOG4CXX
-static LoggerPtr logdata(Logger::getLogger("pz.material.elasticity.data"));
+static LoggerPtr logdata(Logger::getLogger("pz.mixedelasticity"));
 #endif
 
 #include <fstream>
@@ -234,7 +234,7 @@ void TPZElasticityMaterial::ComputeStressVector(TPZVec<STATE> &Deformation ,TPZV
     Stress[Exx] = fPreStressXX+fEover1MinNu2*(Deformation[Exx]+fnu*Deformation[Eyy]);
     Stress[Eyy] = fPreStressYY+fEover1MinNu2*(fnu*Deformation[Exx]+Deformation[Eyy]);
     Stress[Exy] = fPreStressXY+fE*0.5/(1.+fnu)*gamma;
-    Stress[Eyx] = Stress[Eyx];
+    Stress[Eyx] = Stress[Exy];
     
 }
 
@@ -298,23 +298,16 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     
     
 //    const int vindex = this->VIndex();
-//    const int pindex = this->PIndex();
+    const int pindex = this->PIndex();
     
     if (datavec[0].fVecShapeIndex.size() == 0) {
         FillVecShapeIndex(datavec[0]);
     }
     
     
-    // Setting forcing function
-    /*STATE force = 0.;
-     if(this->fForcingFunction) {
-     TPZManVector<STATE> res(1);
-     fForcingFunction->Execute(datavec[pindex].x,res);
-     force = res[0];
-     }*/
     
     //Gravity
-    STATE rhoi = 900.; //itapopo
+    STATE rhoi =1; //900.; //itapopo
     STATE g = 9.81; //itapopo
     STATE force = rhoi*g;
     
@@ -344,7 +337,7 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     nshapeU = datavec[1].phi.Rows();
     nshapeP = datavec[2].phi.Rows();
     
-    TPZVec<double> f(2,0.);
+    TPZManVector<double,2> f(2,0.);
     TPZFMatrix<STATE> phiSi(3,1,0.),phiSj(fDimension,1,0.);
     TPZManVector<STATE,2> divSi1x(2,0.),divSi1y(2,0.);
     TPZManVector<STATE,4> phiSi1x(4,0.0),phiSj1x(4,0.0),phiSi1y(4,0.0),phiSj1y(4,0.0),phiPj1x(4,0.0),phiPj1y(4,0.0);
@@ -352,6 +345,17 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
     TPZFMatrix<STATE> phiPi(fDimension,1,0.0),phiPj(fDimension,1,0.0);
     TPZFNMatrix<3,REAL> ivecS(3,1,0.);
     
+    if(this->HasForcingFunction()){
+         this->ForcingFunction()->Execute(datavec[0].x, f);
+#ifdef LOG4CXX
+         if(logdata->isDebugEnabled())
+         {
+             std::stringstream sout;
+             sout << " x = " << datavec[0].x << " f = " << f << std::endl;
+             LOGPZ_DEBUG(logdata,sout.str())
+         }
+#endif
+    }
     for(int i = 0; i < nshapeS; i++ )
     {
         int iphi = datavec[0].fVecShapeIndex[i].second;
@@ -391,10 +395,6 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
         divSi1y[1] = divSi;
 
         
-        if(this->HasForcingFunction()){
-            TPZFMatrix<STATE> gradu;
-            this->ForcingFunction()->Execute(datavec[0].x, f,gradu);
-        }
         
         
         // matrix K11 - (Matrix A * stress tensor) x test-funtion stress tensor
@@ -896,7 +896,7 @@ void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL 
         TPZManVector<STATE,3> res(2);
         TPZFNMatrix<4,STATE> tens(2,2);
         bc.ForcingFunction()->Execute(datavec[0].x,res,tens);
-        std::cout << "x = " << datavec[0].x << " res " << res << std::endl;
+   //   std::cout << "x = " << datavec[0].x << " res " << res << std::endl;
         v_2(0,0) = res[0];
         v_2(1,0) = res[1];
      }
@@ -904,7 +904,7 @@ void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL 
     // v_2(0,0) = -datavec[0].x[1];
     // v_2(1,0) = datavec[0].x[0];
     //Gravity
-    STATE rhoi = 900.; //itapopo
+    STATE rhoi = 1;//900.; //itapopo 
     STATE g = 9.81; //itapopo
     STATE force = rhoi*g;
     
@@ -1802,6 +1802,19 @@ void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
     for (int i=0; i<dim; i++) {
         disp[i] = data[1].sol[0][i];
     }
+    
+#ifdef LOG4CXX
+    if(logdata->isDebugEnabled())
+
+    {
+        std::stringstream sout;
+        sout << "DISP*************************** = " <<disp << std::endl;
+        sigma.Print("sigma************************************ = ",sout,EMathematicaInput);
+        LOGPZ_DEBUG(logdata,sout.str())
+    }
+#endif
+
+ 
     eps_exact(0,0) = du_exact(0,0);
     eps_exact(1,0) = 0.5*(du_exact(0,1)+du_exact(1,0));
     eps_exact(0,1) = 0.5*(du_exact(0,1)+du_exact(1,0));

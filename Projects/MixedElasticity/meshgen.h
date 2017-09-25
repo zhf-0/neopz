@@ -45,7 +45,7 @@ struct TAnalyticSolution
 
 struct TElasticityExample1 : public TAnalyticSolution
 {
-     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest };
+     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest1,Etest2 };
     
      static EDefState fProblemType;
     
@@ -56,6 +56,7 @@ struct TElasticityExample1 : public TAnalyticSolution
         DivSigma(x, locforce);
         force[0] = -locforce[0];
         force[1] = -locforce[1];
+        std::cout<<"********************"<<force[0]<<std::endl;
     }
     
     virtual TPZAutoPointer<TPZFunction<STATE> > ForcingFunction();

@@ -744,7 +744,9 @@ void TPZAnalysis::PostProcessErrorSerial(TPZVec<REAL> &ervec, std::ostream &out 
                 for(int ier = 0; ier < nerrors; ier++)
                 {
                     values[ier] += errors[ier] * errors[ier];
+                    
                 }
+                std::cout<<"element error = "<<values<<std::endl;
             }
         }
     }

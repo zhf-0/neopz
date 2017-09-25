@@ -85,71 +85,161 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
 {
         // disp[0] = x[0]*0.;
     //disp[1] = x[0]*0.;
-   if(fProblemType == Etest)
+   if(fProblemType == Etest1)
    {
     disp[0] = TVar(1./27.)*x[0]*x[0]*x[1]*x[1]*cos(TVar(6.*M_PI)*x[0])*sin(TVar(7.*M_PI)*x[1]);
 
     disp[1] = TVar(0.2)*exp(x[1])*sin(TVar(4.*M_PI)*x[0]);
    }
+   else if(fProblemType == Etest2)
+   {
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] =(TVar) x[0]*x[0];
+      disp[1] +=(TVar) 1;
+   }
    //  disp[0] = x[0]*0.;
    //  disp[1] = x[0]*0.;
-    if(fProblemType ==ERot)//rotation
-    {      disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
-      disp[0] = -x[1];
-      disp[1] = x[0];
+    else if(fProblemType ==ERot)//rotation
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] = (TVar)-x[1];
+      disp[1] = (TVar)x[0];
       
     }
     
     else if(fProblemType == EShear)//pure shear
-    {     disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
       disp[0] += (TVar) x[1];
       disp[1] += (TVar) 0. ;
     }
    else if(fProblemType == EStretchx)//strech x
-    {     disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
+    {    
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
       disp[0] += (TVar) x[0];
       disp[1] += (TVar) 0.;
     }
     else if(fProblemType ==EStretchy)//strech y
-    {     disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
       disp[0] += (TVar) 0.;
       disp[1] += (TVar) x[1];    
     }
     else if(fProblemType==EDispx)
-    {     disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
       disp[0] +=   1.;
       disp[0] +=   0.;
     }
     else if(fProblemType==EDispy)
-    {     disp[0] = x[0]*0.;
-     disp[1] = x[0]*0.;
+    {    
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
       disp[0] += (TVar) 0.;
       disp[0] += (TVar) 1.;
+    }
+    else{
+        DebugStop();
     }
 }
 
 template<>
 void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > &disp)
 {
-    FADFADREAL tmp = (FADFADREAL)(1./27.)*x[0]*x[0]*x[1]*x[1];
-    disp[0] = tmp*FADcos((FADFADREAL)(6.*M_PI)*x[0])*FADsin((FADFADREAL)(7.*M_PI)*x[1]);
-    disp[1] = (FADFADREAL)(0.2)*FADexp(x[1])*FADsin((FADFADREAL)(4.*M_PI)*x[0]);
+    std::cout << "x[0] = " << x[0] << std::endl;
+    std::cout << "x[1] = " << x[1] << std::endl;
+    std::cout << "x[0].dx()" << x[0].dx() << std::endl;
+    std::cout << "x[1].dx()" << x[1].dx() << std::endl;
+    std::cout << "x[0].d(0)" << x[0].d(0) << std::endl;
+    std::cout << "x[0].d(1)" << x[0].d(1) << std::endl;
+    std::cout << "x[1].d(0)" << x[1].d(0) << std::endl;
+    std::cout << "x[1].d(1)" << x[1].d(1) << std::endl;
+    std::cout << "x[0].d(0).d(0)" << x[0].d(0).d(0) << std::endl;
+    std::cout << "x[0].d(0).d(1)" << x[0].d(0).d(1) << std::endl;
+    std::cout << "x[0].d(1).d(0)" << x[0].d(1).d(0) << std::endl;
+    std::cout << "x[0].d(1).d(1)" << x[0].d(1).d(1) << std::endl;
+    std::cout << "x[1].d(0).d(0)" << x[1].d(0).d(0) << std::endl;
+    std::cout << "x[1].d(0).d(1)" << x[1].d(0).d(1) << std::endl;
+    std::cout << "x[1].d(1).d(0)" << x[1].d(1).d(0) << std::endl;
+    std::cout << "x[1].d(1).d(1)" << x[1].d(1).d(1) << std::endl;
     
-    disp[0] = -x[1];
-    disp[1] = x[0];
+   if(fProblemType == Etest1)
+   {
+      FADFADREAL tmp = (FADFADREAL)(1./27.)*x[0]*x[0]*x[1]*x[1];
+      disp[0] = tmp*FADcos((FADFADREAL)(6.*M_PI)*x[0])*FADsin((FADFADREAL)(7.*M_PI)*x[1]);
+      disp[1] = (FADFADREAL)(0.2)*FADexp(x[1])*FADsin((FADFADREAL)(4.*M_PI)*x[0]);
+    
+   }
+   else if(fProblemType == Etest2)
+   {
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] = x[0]*x[0];
+      disp[1] += 1;
+   }
+   //  disp[0] = x[0]*0.;
+   //  disp[1] = x[0]*0.;
+   else if(fProblemType ==ERot)//rotation
+    {      
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] =(FADFADREAL)-x[1];
+      disp[1] =(FADFADREAL) x[0];
+      
+    }
+    
+    else if(fProblemType == EShear)//pure shear
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] += (FADFADREAL) x[1];
+      disp[1] += (FADFADREAL) 0. ;
+    }
+   else if(fProblemType == EStretchx)//strech x
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] += (FADFADREAL) x[0];
+      disp[1] += (FADFADREAL) 0.;
+    }
+    else if(fProblemType ==EStretchy)//strech y
+    {    
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] += (FADFADREAL) 0.;
+      disp[1] += (FADFADREAL) x[1];    
+    }
+    else if(fProblemType==EDispx)
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] +=   1.;
+      disp[0] +=   0.;
+    }
+    else if(fProblemType==EDispy)
+    {     
+      disp[0] = x[0]*0.;
+      disp[1] = x[0]*0.;
+      disp[0] += (FADFADREAL) 0.;
+      disp[0] += (FADFADREAL) 1.;
+    }
+    else{
+        DebugStop();
+    }
 }
 
 template<class TVar>
 void TElasticityExample1::Elastic(const TPZVec<TVar> &x, TVar &Elast, TVar &nu)
 {
     Elast = (TVar(100.) * (TVar(1.) + TVar(0.3) * sin(TVar(10 * M_PI) * (x[0] - TVar(0.5))) * cos(TVar(10. * M_PI) * x[1])));
-//    Elast.val() = 1000.;
-    nu = TVar(0.3);
+    Elast = TVar(1.);
+    nu = TVar(0.);
 }
 
 template<>
@@ -157,7 +247,8 @@ void TElasticityExample1::Elastic(const TPZVec<double> &x, double &Elast, double
 {
 //    Elast = 1000.;
     Elast = (100. * (1. + 0.3 * sin(10 * M_PI * (x[0] - 0.5)) * cos(10. * M_PI * x[1])));
-    nu = 0.3;
+    Elast = 1.;
+    nu = 0.;
 }
 
 void TElasticityExample1::ElasticDummy(const TPZVec<REAL> &x, TPZVec<STATE> &result, TPZFMatrix<STATE> &deriv)
@@ -190,6 +281,7 @@ void TElasticityExample1::graduxy(const TPZVec<TVar> &x, TPZFMatrix<TVar> &grad)
     {
         Fad<TVar> temp = Fad<TVar>(2,i,x[i]);
         xfad[i] = temp;
+        
     }
     xfad[2] = x[2];
     TPZManVector<Fad<TVar>,3> result(2);
@@ -201,13 +293,13 @@ void TElasticityExample1::graduxy(const TPZVec<TVar> &x, TPZFMatrix<TVar> &grad)
             grad(i,j) = result[i].d(j);
         }
     }
-//    for(int i=0; i<2; i++)
-//    {
-//        std::cout << "result " << result[i] << " dx " << result[i].dx() << std::endl;
-//        for (int j=0; j<2; j++) {
-//            std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " dx " << grad(i,j).dx() << std::endl;
-//        }
-//    }
+    for(int i=0; i<2; i++)
+    {
+     //   std::cout << "result " << result[i] << " dx " << result[i].dx() << std::endl;
+        for (int j=0; j<2; j++) {
+        std::cout << "i = " << i << " j = " << j << " grad= " << grad(i,j) << std::endl;
+        }
+    }
 }
 
 void TElasticityExample1::GradU(const TPZVec<REAL> &x, TPZVec<STATE> &u, TPZFMatrix<STATE> &gradu)
@@ -227,24 +319,33 @@ void TElasticityExample1::GradU(const TPZVec<REAL> &x, TPZVec<STATE> &u, TPZFMat
     for (int i=0; i<2; i++) {
         for (int j=0; j<2; j++)
         {
-            gradu(i,j) = result[j].d(i);
+//            gradu(i,j) = result[j].d(i);
+//   std::cout<<"E******************"<<u[0]<<"    "<<u[1]<<std::endl;
         }
     }
     
 }
+//////////////////////////////////////////////////////////////////////////
 
-/*
 template<>
 void TElasticityExample1::graduxy(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<REAL> > &grad)
 {
     TPZManVector<Fad<Fad<REAL> >,3> xfad(x.size());
-    for(int i=0; i<2; i++)
-    
-        Fad<Fad<REAL> > temp = Fad<Fad<REAL> >(2,Fad<REAL>(2,0.));
+    for(int i=0; i<3; i++)
+    {
+        Fad<Fad<REAL> > temp = Fad<Fad<REAL> >(3,Fad<REAL>(3,0.));
+      // Fad<REAL> temp = Fad<REAL>(2,i,x[i]);
         temp.val()= x[i];
-        Fad<REAL> temp2(2,1.);
+        Fad<REAL> temp3(3,0.);
+        for(int j=0; j<3; j++)
+        {
+            temp.fastAccessDx(j) = temp3;
+        }
+        Fad<REAL> temp2(3,1.);
         temp.fastAccessDx(i) = temp2;
-        xfad[i] = temp;
+       // Fad<REAL> temp = Fad<REAL>(2,i,x[i]);
+        xfad[i] = temp;    
+    //xfad[i] = temp;
     }
     TPZManVector<Fad<Fad<REAL> >,3> result(2);
     uxy(xfad,result);
@@ -255,15 +356,18 @@ void TElasticityExample1::graduxy(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<RE
             grad(i,j) = result[i].d(j);
         }
     }
-//    for(int i=0; i<2; i++)
-//    {
-//        std::cout << "result " << result[i] << " dx " << result[i].dx() << std::endl;
-//        for (int j=0; j<2; j++) {
-//            std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " dx " << grad(i,j).dx() << std::endl;
-//        }
-//    }
+    for(int i=0; i<2; i++)
+    {
+        std::cout << "uxy[" << i << "] = " << result[i] << std::endl;
+        for (int j=0; j<2; j++) {
+            Fad<REAL> g = grad(i,j);
+            Vector<REAL> deriv = g.dx();
+           std::cout << "graduxy(" << i << "," << j << ").dx() = " /*<< " grad " << grad(i,j) << " dx "*/ <<  deriv << std::endl;
+        }
+    }
+    std::cout.flush();
 }
-*/
+
 template<class TVar>
 void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
 {
@@ -277,12 +381,12 @@ void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
     sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
     sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
     sigma(1,0) = sigma(0,1);
-//    for(int i=0; i<2; i++)
-//    {
-//        for (int j=0; j<2; j++) {
-//            std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " sigma " << sigma(i,j) << std::endl;
-//        }
-//    }
+    for(int i=0; i<2; i++)
+    {
+        for (int j=0; j<2; j++) {
+     //       std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " sigma " << sigma(i,j) << std::endl;
+        }
+    }
 }
 
 template<>
@@ -298,12 +402,13 @@ void TElasticityExample1::Sigma(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<REAL
     sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
     sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
     sigma(1,0) = sigma(0,1);
-//    for(int i=0; i<2; i++)
-//    {
-//        for (int j=0; j<2; j++) {
-//            std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " sigma " << sigma(i,j) << std::endl;
-//        }
-//    }
+    for(int i=0; i<2; i++)
+    {
+        for (int j=0; j<2; j++) {
+        //   std::cout << "i = " << i << " j = " << j << " grad " << grad(i,j) << " sigma " << sigma(i,j) <<" nu=" <<nu<<std::endl;
+       //        std::cout << sigma(i,j).dx() << std::endl;
+        }
+    }
 }
 
 template
@@ -319,16 +424,17 @@ void TElasticityExample1::DivSigma(const TPZVec<TVar> &x, TPZVec<TVar> &divsigma
     }
     TPZFNMatrix<4, Fad<TVar> > sigma(2,2);
     Sigma(xfad,sigma);
-//    for(int i=0; i<2; i++)
-//    {
-//        for (int j=0; j<2; j++) {
-//            std::cout << "i = " << i << " j = " << j <<  " sigma " << sigma(i,j) <<  " " << sigma(i,j).dx() << std::endl;
-//        }
-//    }
+    for(int i=0; i<2; i++)
+    {
+        for (int j=0; j<2; j++) {
+        //    std::cout << "i = " << i << " j = " << j <<  " sigma " << sigma(i,j) << " " << sigma(i,j).dx() << std::endl;
+        //   std::cout<<i<<" "<<j<<" "<<sigma(i,j).dx() << std::endl;
+        }
+    }
 
     divsigma[0] = sigma(0,0).dx(0)+sigma(0,1).dx(1);
     divsigma[1] = sigma(1,0).dx(0)+sigma(1,1).dx(1);
-    //std::cout<<"divsigma"<<divsigma<<std::endl;
+//    std::cout<<"divsigma zero"<<divsigma[0]<<"divsigma one "<<divsigma[1]<<std::endl;
 }
 
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ForcingFunction()

@@ -176,15 +176,16 @@ int main(int argc, char *argv[])
 #endif
     //Dados do problema:
     TElasticityExample1 test;
+    test.fProblemType = TElasticityExample1::Etest2;
     TPZManVector<STATE,2> displ(2), force(2);
     TPZFNMatrix<4,STATE> sigma(2,2);
     TPZManVector<REAL,3> x(3,1.);
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 10;
+    int h_level = 1;
     
     
-    double hx=0.1,hy=0.1; //Dimensões em x e y do domínio
+    double hx=1,hy=1; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
     int pOrder = 1; //Ordem polinomial de aproximação
@@ -308,7 +309,8 @@ int main(int argc, char *argv[])
     //    //Calculo do erro
     //    std::cout << "Comuting Error " << std::endl;
     TPZManVector<REAL,3> Errors;
-    ofstream ErroOut("Erro.txt");
+    ofstream ErroOut("Erro.txt",std::ios::app);
+    ErroOut << "Number of elements " << h_level << std::endl;
     an.SetExact(Example.Exact());
     an.PostProcessError(Errors,ErroOut);
     
@@ -468,8 +470,8 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
-          coord[0] = (j)*hx/(nx - 1)-1;
-          coord[1] = (i)*hy/(ny - 1)-1;
+          coord[0] = (j)*hx/(nx - 1);
+          coord[1] = (i)*hy/(ny - 1);
           //  coord[0]=gcoord1[2*i+j];
 	  //  coord[1]=gcoord2[2*i+j];
 	    //using the same coordinate x for z
@@ -488,8 +490,8 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     }
     
     //Ponto 1
-    //    TPZVec<long> pointtopology(1);
-    //    pointtopology[0] = 0;
+  //      TPZVec<long> pointtopology(1);
+   //     pointtopology[0] = 1;
     //
     //    gmesh->CreateGeoElement(EPoint,pointtopology,matPoint,id);
     
@@ -806,7 +808,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
 
     // Criando material:
 
-    example.fProblemType = TElasticityExample1::Etest;
+    example.fProblemType = TElasticityExample1::EDispx;
     
     REAL E = 1.; //* @param E elasticity modulus
     REAL nu=0.; //* @param nu poisson coefficient
@@ -818,7 +820,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
     
     TPZMaterial * material = new TPZElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
     
-    
+    material->SetForcingFunction(example.ForcingFunction());
     // Inserindo material na malha
     //    TPZAutoPointer<TPZFunction<STATE> > fp = new TPZDummyFunction<STATE> (f_source);
     //    TPZAutoPointer<TPZFunction<STATE> > pp = new TPZDummyFunction<STATE> (p_exact);
