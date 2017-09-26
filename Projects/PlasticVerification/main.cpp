@@ -200,16 +200,16 @@ void ComputeApproximation(SimulationControl & sim_ctrl){
     TPZCompMesh                 * cmesh = ComputationalMesh(gmesh, sim_ctrl);
     TPZElastoPlasticAnalysis    * analysis = CreateAnalysis(cmesh, sim_ctrl);
     
-    REAL epsilon = 1.0e-4;
-    int n_iter  = 2;
+    REAL epsilon = 1.0e-3;
+    int n_iter  = 4;
     bool linesearchQ = false;
     bool checkconvQ = false;
-    bool consistenMatrixQ = false;
+//    bool consistenMatrixQ = false;
     
     std::stringstream summary;
     summary << sim_ctrl.dump_folder << "/" "conv" << "_" << sim_ctrl.execution_summary << ".txt";
     std::ofstream report(summary.str().c_str(),std::ios::app);
-    analysis->IterativeProcess(report, epsilon, n_iter, linesearchQ, checkconvQ, consistenMatrixQ);
+    analysis->IterativeProcess(report, epsilon, n_iter, linesearchQ, checkconvQ);
     analysis->AcceptSolution();
     
     TPZPostProcAnalysis * postpro = CreatePostProAnalysis(cmesh, sim_ctrl);
@@ -323,18 +323,18 @@ std::pair<int, TPZVec<STATE> > BcType(int bc_index){
     
     bc_quantity[0] = 0.0;
     bc_quantity[1] = 0.0;
-    bc_definition.insert(std::make_pair(2, std::make_pair(0, bc_quantity)));
+    bc_definition.insert(std::make_pair(2, std::make_pair(11, bc_quantity)));
     
     bc_quantity[0] = 0.0;
     bc_quantity[1] = 0.0;
-    bc_definition.insert(std::make_pair(3, std::make_pair(1, bc_quantity)));
+    bc_definition.insert(std::make_pair(3, std::make_pair(10, bc_quantity)));
     
     bc_quantity[0] = 0.0;
     bc_quantity[1] = -10.0e6;
     bc_definition.insert(std::make_pair(4, std::make_pair(1, bc_quantity)));
     
     bc_quantity[0] = 0.0;
-    bc_quantity[1] = 0.0;
+    bc_quantity[1] = -1.0e6;
     bc_definition.insert(std::make_pair(5, std::make_pair(1, bc_quantity)));
     
     std::map<int, std::pair<int, TPZVec<STATE> > >::iterator chunk = bc_definition.find(bc_index);
@@ -363,50 +363,50 @@ TPZMaterial * MaterialModel(int index, SimulationControl  & sim_ctrl){
 //    /////////////////////////////////////////////////////////////////////////
     
     
-    /////////////////////////////////////////////////////////////////////////
-    // Sandler Dimaggio part
-    REAL Eyoung = 4.3614e9;
-    REAL nu     = 0.2;
-    REAL A = 152.54;
-    REAL B = 0.0015489;
-    REAL C = 146.29;
-    REAL R = 0.91969;
-    REAL D = 0.018768;
-    REAL W = 0.006605;
-    
-    // Plastic mathematical components
-    TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> SDPV;
-    STATE G = Eyoung / (2. * (1. + nu));
-    STATE K = Eyoung / (3. * (1. - 2 * nu));
-    STATE phi = 0, psi = 1., N = 0.;
-    SDPV.fYC.SetUp(A, B, C, D, K, G, W, R, phi, N, psi);
-    SDPV.fER.SetUp(Eyoung, nu);
-    
-    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> > * material = new
-    TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
-
-    material->SetPlasticity(SDPV);
-    /////////////////////////////////////////////////////////////////////////
-    
-    
 //    /////////////////////////////////////////////////////////////////////////
-//    // Mohr Coulomb part
+//    // Sandler Dimaggio part
 //    REAL Eyoung = 4.3614e9;
 //    REAL nu     = 0.2;
-//    REAL cohesion = 13.;
-//    REAL Phi = 0.52;
+//    REAL A = 152.54;
+//    REAL B = 0.0015489;
+//    REAL C = 146.29;
+//    REAL R = 0.91969;
+//    REAL D = 0.018768;
+//    REAL W = 0.006605;
 //    
 //    // Plastic mathematical components
-//    TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> MCPV;
-//    TPZElasticResponse ER;
-//    ER.SetUp(Eyoung, nu);
-//    MCPV.fYC.SetUp(Phi, Phi, cohesion, ER);
-//    MCPV.fER.SetUp(Eyoung, nu);
+//    TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> SDPV;
+//    STATE G = Eyoung / (2. * (1. + nu));
+//    STATE K = Eyoung / (3. * (1. - 2 * nu));
+//    STATE phi = 0, psi = 1., N = 0.;
+//    SDPV.fYC.SetUp(A, B, C, D, K, G, W, R, phi, N, psi);
+//    SDPV.fER.SetUp(Eyoung, nu);
 //    
-//    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> > *material = new TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
-//    
-//    material->SetPlasticity(MCPV);
+//    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> > * material = new
+//    TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
+//
+//    material->SetPlasticity(SDPV);
 //    /////////////////////////////////////////////////////////////////////////
+    
+    
+    /////////////////////////////////////////////////////////////////////////
+    // Mohr Coulomb part
+    REAL Eyoung = 4.3614e9;
+    REAL nu     = 0.2;
+    REAL cohesion = 200.0*10e6;
+    REAL Phi = 45.0;
+    
+    // Plastic mathematical components
+    TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> MCPV;
+    TPZElasticResponse ER;
+    ER.SetUp(Eyoung, nu);
+    MCPV.fYC.SetUp(Phi, Phi, cohesion, ER);
+    MCPV.fER.SetUp(Eyoung, nu);
+    
+    TPZMatElastoPlastic2D<TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> > *material = new TPZMatElastoPlastic2D< TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> >(sim_ctrl.Omega_ids[index], planestrain);
+    
+    material->SetPlasticity(MCPV);
+    /////////////////////////////////////////////////////////////////////////
     
     
     TPZMaterial * plastic(material);
