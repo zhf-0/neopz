@@ -56,7 +56,6 @@ struct TElasticityExample1 : public TAnalyticSolution
         DivSigma(x, locforce);
         force[0] = -locforce[0];
         force[1] = -locforce[1];
-        std::cout<<"********************"<<force[0]<<std::endl;
     }
     
     virtual TPZAutoPointer<TPZFunction<STATE> > ForcingFunction();

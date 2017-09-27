@@ -77,7 +77,7 @@ void TPZMultiphysicsCompEl<TGeometry>::AffineTransform(TPZVec<TPZTransform<> > &
 	nel=fElementVec.size();
 	trVec.Resize(nel);
 	TPZGeoEl *gelmf = Reference();
-    dimmf = gelmf->Dimension();
+        dimmf = gelmf->Dimension();
 	side = gelmf->NSides()-1;
 	TPZGeoEl  *geoel;
 	for (long i = 0; i<nel; i++) {
@@ -242,7 +242,7 @@ void TPZMultiphysicsCompEl<TGeometry>::Print(std::ostream & out) const {
 	}
 	
 	out << "Number of connects = " << NConnects();
-    out << "Connect indexes : ";
+        out << "Connect indexes : ";
 	int nod;
 	for(nod=0; nod< NConnects(); nod++)
 	{

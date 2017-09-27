@@ -47,7 +47,7 @@ TPZElasticityMaterial::TPZElasticityMaterial() : TPZDiscontinuousGalerkin(0) {
 }
 
 TPZElasticityMaterial::TPZElasticityMaterial(int id) : TPZDiscontinuousGalerkin(id) {
-    fE    = -1.;  // Young modulus
+    fE    =  -1.;  // Young modulus
     fnu    = -1.;   // poisson coefficient
     ff[0]    = 0.; // X component of the body force
     ff[1]    = 0.; // Y component of the body force
@@ -466,13 +466,6 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
             ek(2*i+1,2*j+1+nshapeS*2) += valy;
             
             
-
-            //Vetor de carga f:
-            STATE factfx = weight *phiUj1x[0]*f[0];
-            STATE factfy = weight *phiUj1y[1]*f[1];
-            ef(nshapeS*2+2*j,0) += factfx;
-            ef(nshapeS*2+2*j+1,0) += factfy;
-            
             
         }
         
@@ -509,6 +502,23 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
         
     }
     
+   for (int j = 0; j < nshapeU; j++) {
+            
+            
+            phiUj1x[0] =phiU(j,0);
+            
+            phiUj1y[1] =phiU(j,0);
+            
+
+            //Vetor de carga f:
+            STATE factfx = -weight *phiUj1x[0]*f[0];
+            STATE factfy = -weight *phiUj1y[1]*f[1];
+            ef(nshapeS*2+2*j,0) += factfx;
+            ef(nshapeS*2+2*j+1,0) += factfy;
+            
+            
+   }
+
     std::ofstream filestiff("ek.txt");
     ek.Print("K1 = ",filestiff,EMathematicaInput);
 
@@ -896,7 +906,6 @@ void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL 
         TPZManVector<STATE,3> res(2);
         TPZFNMatrix<4,STATE> tens(2,2);
         bc.ForcingFunction()->Execute(datavec[0].x,res,tens);
-   //   std::cout << "x = " << datavec[0].x << " res " << res << std::endl;
         v_2(0,0) = res[0];
         v_2(1,0) = res[1];
      }
@@ -948,9 +957,11 @@ void TPZElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL 
             for (int iq = 0; iq < nshapeS; iq++)
             {
                 
+                
                 for (int jq = 0; jq < nshapeS; jq++){
                 
-                    
+                    ek(2*iq,2*jq) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
+                    ek(2*iq+1,2*jq+1) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
                 }
                     ef(2*iq,0) += gBigNumber * v_2(0,0) * phiS(iq,0) * weight;        // normal stress in x direction
                     ef(2*iq+1,0) += gBigNumber*  v_2(1,0) * phiS(iq,0) * weight;      // normal stress in y direction
@@ -1277,7 +1288,6 @@ int TPZElasticityMaterial::VariableIndex(const std::string &name){
     if(!strcmp("Rotation",name.c_str()))           return 27; //function P ***
     
     
-    //   cout << "TPZElasticityMaterial::VariableIndex Error\n";
     return TPZMaterial::VariableIndex(name);
 }
 
@@ -1595,7 +1605,7 @@ void TPZElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var, TPZ
     }
     
     
-            // Displacement
+// Displacement
     if(var == 9) {
         Solout[0] = disp[0];
         Solout[1] = disp[1]; //displacement is discountinous. Can we write as it?
@@ -1861,7 +1871,6 @@ void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
     {
       errors[1]+= (SigmaV[i]-sigma_exactV[i])*(EPSZV[i]-eps_exactV[i]);
     }
-    
    //or we can compute as this methods
    //TPZFMatrix<STATE> MatrixElast(4,4,0.);
    //ElasticityModulusTensor(MatrixElast);
@@ -1882,10 +1891,10 @@ void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
    //ToVoight(antisym,P);
    //ToVoight(du_exact,DU);
    //errors[2]=0;
- //  for(int i=0;i<4;i++)
-  // {
-   //  errors[2]+=(P[i]+EPSZ[i]-DU[i])*(P[i]+EPSZ[i]-DU[i]);
-  // }
+   //for(int i=0;i<4;i++)
+   //{
+   //   errors[2]+=(P[i]+EPSZ[i]-DU[i])*(P[i]+EPSZ[i]-DU[i]);
+   //}
     //values[0] = calculo do erro estimado em norma Energia
     //values[0] = fE*(sigx*sigx + sigy*sigy + 2*fnu*sigx*sigy)/(1-fnu*fnu);
     //values[0] = (values[0] + .5*fE*sigxy*sigxy/(1+fnu));
@@ -1950,23 +1959,23 @@ void TPZElasticityMaterial::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
 
 TPZElasticityMaterial::TPZElasticityMaterial(const TPZElasticityMaterial &copy) :
 TPZDiscontinuousGalerkin(copy),
-fE(copy.fE),
-fnu(copy.fnu),
-fEover21PlusNu(copy.fEover21PlusNu),
-fEover1MinNu2(copy.fEover1MinNu2),
-fPreStressXX(copy.fPreStressXX),
-fPreStressYY(copy.fPreStressYY),
-fPreStressXY(copy.fPreStressXY),
-fPreStressZZ(copy.fPreStressZZ)
-{
-    ff[0]=copy.ff[0];
-    ff[1]=copy.ff[1];
-    ff[2]=copy.ff[2];
-    fPlaneStress = copy.fPlaneStress;
+    fE(copy.fE),
+    fnu(copy.fnu),
+    fEover21PlusNu(copy.fEover21PlusNu),
+    fEover1MinNu2(copy.fEover1MinNu2),
+    fPreStressXX(copy.fPreStressXX),
+    fPreStressYY(copy.fPreStressYY),
+    fPreStressXY(copy.fPreStressXY),
+    fPreStressZZ(copy.fPreStressZZ)
+    {
+        ff[0]=copy.ff[0];
+        ff[1]=copy.ff[1];
+        ff[2]=copy.ff[2];
+        fPlaneStress = copy.fPlaneStress;
     // Added by Philippe 2012
     fPostProcIndex = copy.fPostProcIndex;
 
-}
+    }
 
 
 int TPZElasticityMaterial::ClassId() const

@@ -185,10 +185,10 @@ int main(int argc, char *argv[])
     int h_level = 1;
     
     
-    double hx=1,hy=1; //Dimensões em x e y do domínio
+    double hx=2,hy=2; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 1; //Ordem polinomial de aproximação
+    int pOrder = 8; //Ordem polinomial de aproximação
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     //Resolvendo o Sistema:
     int numthreads = 0;
     
-    bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
+    bool optimizeBandwidth = false; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     TPZSkylineStructMatrix matskl(cmesh_m); //caso nao simetrico ***
     matskl.SetNumThreads(numthreads);
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
     an.SetSolver(step);
     
     
-    std::cout << "Assemble matrix with NDoF = " << cmesh_m->NEquations() << std::endl;
+//  std::cout << "Assemble matrix with NDoF = " << cmesh_m->NEquations() << std::endl;
     
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
@@ -287,11 +287,13 @@ int main(int argc, char *argv[])
 
     TPZStack<std::string> scalnames, vecnames;
     scalnames.Push("SigmaX");
+    scalnames.Push("SigmaY");
+    scalnames.Push("TauXY");
     vecnames.Push("Flux");
     vecnames.Push("displacement");
     vecnames.Push("Stress");
     an.DefineGraphMesh(2, scalnames, vecnames, "mixedelast.vtk");
-    an.PostProcess(0);
+    an.PostProcess(2);
     
 #ifdef PZDEBUG
     //Imprimindo vetor solução:
@@ -389,13 +391,13 @@ void solucao_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = 1+0.*x[0];
     STATE yv = x[1];
     
-    STATE v_x =1+0*x[0];  // -2.*Pi*cos(2.*Pi*xv)*sin(2.*Pi*yv);
-    STATE v_y =0*x[0]; //-2.*Pi*cos(2.*Pi*yv)*sin(2.*Pi*xv);
-    STATE p = 0*x[0]; //sin(2.*Pi*xv)*sin(2.*Pi*yv);
+    STATE v_x = 1+0*x[0];  // -2.*Pi*cos(2.*Pi*xv)*sin(2.*Pi*yv);
+    STATE v_y = 0*x[0]; //-2.*Pi*cos(2.*Pi*yv)*sin(2.*Pi*xv);
+    STATE p   = 0*x[0]; //sin(2.*Pi*xv)*sin(2.*Pi*yv);
     
     f[0] = 0; // x direction
     f[1] = 0; // y direction
-    f[2] = 0; //                change!!!!
+    f[2] = 0; // 
 }
 
 
@@ -470,18 +472,15 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
-          coord[0] = (j)*hx/(nx - 1);
-          coord[1] = (i)*hy/(ny - 1);
-          //  coord[0]=gcoord1[2*i+j];
-	  //  coord[1]=gcoord2[2*i+j];
+            coord[0] = (j)*hx/(nx - 1)-1;
+            coord[1] = (i)*hy/(ny - 1)-1;
+//          coord[0]=gcoord1[2*i+j];
+//          coord[1]=gcoord2[2*i+j];
 	    //using the same coordinate x for z
             coord[2] = 0.;
-         // newcoord[0]=cos(theta)*coord[0]+sin(theta)*coord[1];
-         // newcoord[1]=sin(theta)*coord[0]-cos(theta)*coord[1];
-	    
-	    
-            //cout << coord << endl;
-            //Get the index in the mesh nodes vector for the new node
+//          newcoord[0]=cos(theta)*coord[0]+sin(theta)*coord[1];
+//          newcoord[1]=sin(theta)*coord[0]-cos(theta)*coord[1];
+//          Get the index in the mesh nodes vector for the new node
             index = gmesh->NodeVec().AllocateNewElement();
             
             //Set the value of the node in the mesh nodes vector
@@ -489,11 +488,11 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
         }
     }
     
-    //Ponto 1
-  //      TPZVec<long> pointtopology(1);
-   //     pointtopology[0] = 1;
-    //
-    //    gmesh->CreateGeoElement(EPoint,pointtopology,matPoint,id);
+//  Ponto 1
+//  TPZVec<long> pointtopology(1);
+//  pointtopology[0] = 1;
+//
+//  gmesh->CreateGeoElement(EPoint,pointtopology,matPoint,id);
     
     
     //Vetor auxiliar para armazenar as conecções entre elementos:
@@ -808,7 +807,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
 
     // Criando material:
 
-    example.fProblemType = TElasticityExample1::EDispx;
+    example.fProblemType = TElasticityExample1::Etest2;
     
     REAL E = 1.; //* @param E elasticity modulus
     REAL nu=0.; //* @param nu poisson coefficient
@@ -837,8 +836,8 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
     
     TPZFMatrix<REAL> val1(2,2,0.), val2(2,1,0.);
     REAL x;
-    val2(0,0) = 0.1; // vx -> 0
-    val2(1,0) = 1.0; // vy -> 0
+    val2(0,0) = 0; // vx -> 0 //val2 represent norm stress;
+    val2(1,0) = 0; // vy -> 0
     //val1(0,0) = 100.0;
         
     TPZMaterial * BCond0 = material->CreateBC(material, matBCbott, dirichlet, val1, val2); //Cria material que implementa a condição de contorno inferior
