@@ -67,11 +67,11 @@ void TPZFrontStructMatrix<front>::GetNumElConnected(TPZVec <int> &numelconnected
 }
 
 template<class front>
-TPZFrontStructMatrix<front>::TPZFrontStructMatrix() : TPZStructMatrix(), f_quiet(0), fDecomposeType(ENoDecompose) {    
+TPZFrontStructMatrix<front>::TPZFrontStructMatrix() : TPZRegisterClassId(&TPZFrontStructMatrix::ClassId),TPZStructMatrix(), f_quiet(0), fDecomposeType(ENoDecompose) {
 }
 
 template<class front>
-TPZFrontStructMatrix<front>::TPZFrontStructMatrix(TPZCompMesh *mesh): TPZStructMatrix(mesh), f_quiet(0), fDecomposeType(ENoDecompose){ 
+TPZFrontStructMatrix<front>::TPZFrontStructMatrix(TPZCompMesh *mesh): TPZRegisterClassId(&TPZFrontStructMatrix::ClassId), TPZStructMatrix(mesh), f_quiet(0), fDecomposeType(ENoDecompose){
 }
 
 
@@ -692,6 +692,11 @@ void TPZFrontStructMatrix<front>::AdjustSequenceNumbering()
 	}
 #endif
 	fMesh->Permute(permute);
+}
+template<class front>
+int TPZFrontStructMatrix<front>::ClassId() {
+    //CLASSIDFRAN return TPZStructMatrix::ClassId()^front::ClassId()^Hash("TPZFrontStructMatrix");
+	return 666;
 }
 
 template<class TVar>

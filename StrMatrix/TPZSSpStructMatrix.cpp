@@ -31,22 +31,22 @@ static LoggerPtr logger(Logger::getLogger("pz.StrMatrix"));
 
 using namespace std;
 
-TPZStructMatrix * TPZSymetricSpStructMatrix::Clone(){
-    return new TPZSymetricSpStructMatrix(*this);
+TPZStructMatrix * TPZSymmetricSpStructMatrix::Clone(){
+    return new TPZSymmetricSpStructMatrix(*this);
 }
-TPZMatrix<STATE> * TPZSymetricSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,
+TPZMatrix<STATE> * TPZSymmetricSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &rhs,
                                               TPZAutoPointer<TPZGuiInterface> guiInterface){
 	
 #ifdef LOG4CXX
     if (logger->isDebugEnabled())
     {
-        LOGPZ_DEBUG(logger,"TPZSymetricSpStructMatrix::CreateAssemble starting");
+        LOGPZ_DEBUG(logger,"TPZSymmetricSpStructMatrix::CreateAssemble starting");
     }
 #endif
 	
     long neq = fMesh->NEquations();
     if(fMesh->FatherMesh()) {
-		cout << "TPZSymetricSpStructMatrix should not be called with CreateAssemble for a substructure mesh\n";
+		cout << "TPZSymmetricSpStructMatrix should not be called with CreateAssemble for a substructure mesh\n";
 		return new TPZSYsmpMatrix<STATE>(0,0);
     }
     TPZMatrix<STATE> *stiff = Create();//new TPZFYsmpMatrix(neq,neq);
@@ -56,7 +56,7 @@ TPZMatrix<STATE> * TPZSymetricSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &
     TPZTimer before("Assembly of a sparse matrix");
     before.start();
 #ifdef LOG4CXX
-    if(logger->isDebugEnabled()) LOGPZ_DEBUG(logger,"TPZSymetricSpStructMatrix::CreateAssemble calling Assemble()");
+    if(logger->isDebugEnabled()) LOGPZ_DEBUG(logger,"TPZSymmetricSpStructMatrix::CreateAssemble calling Assemble()");
 #endif
 	Assemble(*stiff,rhs,guiInterface);
     mat->ComputeDiagonal();
@@ -68,11 +68,11 @@ TPZMatrix<STATE> * TPZSymetricSpStructMatrix::CreateAssemble(TPZFMatrix<STATE> &
     //    mat->ComputeDiagonal();
     //stiff->Print("Stiffness TPZFYsmpMatrix :: CreateAssemble()");
 #ifdef LOG4CXX
-    if(logger->isDebugEnabled()) LOGPZ_DEBUG(logger,"TPZSymetricSpStructMatrix::CreateAssemble exiting");
+    if(logger->isDebugEnabled()) LOGPZ_DEBUG(logger,"TPZSymmetricSpStructMatrix::CreateAssemble exiting");
 #endif
     return stiff;
 }
-TPZMatrix<STATE> * TPZSymetricSpStructMatrix::Create(){
+TPZMatrix<STATE> * TPZSymmetricSpStructMatrix::Create(){
     long neq = fEquationFilter.NActiveEquations();
     /*    if(fMesh->FatherMesh()) {
      TPZSubCompMesh *smesh = (TPZSubCompMesh *) fMesh;
@@ -245,17 +245,17 @@ TPZMatrix<STATE> * TPZSymetricSpStructMatrix::Create(){
     return mat;
 }
 
-TPZSymetricSpStructMatrix::TPZSymetricSpStructMatrix() : TPZStructMatrix(){
-    
+TPZSymmetricSpStructMatrix::TPZSymmetricSpStructMatrix() : TPZRegisterClassId(&TPZSymmetricSpStructMatrix::ClassId),TPZStructMatrix(){
+
 }
 
-TPZSymetricSpStructMatrix::TPZSymetricSpStructMatrix(TPZCompMesh *mesh) : TPZStructMatrix(mesh)
+TPZSymmetricSpStructMatrix::TPZSymmetricSpStructMatrix(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZSymmetricSpStructMatrix::ClassId),TPZStructMatrix(mesh)
 {}
 
 #ifndef STATE_COMPLEX
 #include "pzmat2dlin.h"
 
-int TPZSymetricSpStructMatrix::main() {
+int TPZSymmetricSpStructMatrix::main() {
 	
 	int refine=5;
 	int order=5;
@@ -325,7 +325,7 @@ int TPZSymetricSpStructMatrix::main() {
 	TPZAnalysis an(&cmesh,true,output);
 	
 	TPZVec<int> numelconnected(cmesh.NEquations(),0);
-	TPZSymetricSpStructMatrix mat(&cmesh);
+	TPZSymmetricSpStructMatrix mat(&cmesh);
 	
 	an.SetStructuralMatrix(mat);
 	
@@ -340,4 +340,10 @@ int TPZSymetricSpStructMatrix::main() {
 	return 0;
 	
 }
+
+int TPZSymmetricSpStructMatrix::ClassId() {
+    //CLASSIDFRANreturn TPZStructMatrix::ClassId()^Hash("TPZSymmetricSpStructMatrix");
+    return 666;
+}
+
 #endif

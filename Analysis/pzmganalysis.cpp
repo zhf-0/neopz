@@ -28,7 +28,9 @@
 
 using namespace std;
 
-TPZMGAnalysis::TPZMGAnalysis(TPZCompMesh *cmesh) : TPZAnalysis(cmesh) {
+TPZMGAnalysis::TPZMGAnalysis(TPZCompMesh *cmesh) :
+		TPZRegisterClassId(&TPZMGAnalysis::ClassId),
+		TPZAnalysis(cmesh) {
 	fMeshes.Push(cmesh);
 	fExact = 0;
 }
@@ -465,4 +467,9 @@ void TPZMGAnalysis::ComputeError(TPZVec<REAL> &error) {
 	fMeshes[nsol-1]->LoadSolution(*fSolutions[nsol-1]);
 	TPZVec<REAL> truerror;
 	MeshError(fMeshes[nsol-1],fMeshes[nsol-2],error,0,truerror);
+}
+
+int TPZMGAnalysis::ClassId() {
+	//CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZMGAnlysis");
+	return 666;
 }

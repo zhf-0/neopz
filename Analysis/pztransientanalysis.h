@@ -92,7 +92,9 @@ public:
 	
 	/** @brief Returns current iteration */
 	int GetCurrentIter();
-    
+	private:
+	static int ClassId();
+public:
 protected:
 	
 	/** @brief Flag indicating whether the problem is linear or not. */
@@ -165,7 +167,7 @@ protected:
 	
 	/** @brief Computes the only the flux contribution for the explicit scheme */
 	void ComputeFluxOnly();
-	
+
 };
 
 template<class TRANSIENTCLASS>

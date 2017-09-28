@@ -48,7 +48,8 @@ static TPZCheckConsistency stiffconsist("ElementStiff");
 static RunStatsTable stat_ass_graph_tbb("-ass_graph_tbb", "Run statistics table for the graph creation, coloring and tbb::flow::graph TPZStructMatrixTBBFlow.");
 
 
-TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZCompMesh *mesh) : fMesh(mesh), fEquationFilter(mesh->NEquations()) {
+TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZStructMatrixTBBFlow::ClassId),
+                                                                     fMesh(mesh), fEquationFilter(mesh->NEquations()) {
     fMesh = mesh;
     this->SetNumThreads(0);
 #ifdef USING_TBB
@@ -56,7 +57,7 @@ TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZCompMesh *mesh) : fMesh(mesh),
 #endif
 }
 
-TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZAutoPointer<TPZCompMesh> cmesh) : fCompMesh(cmesh), fEquationFilter(cmesh->NEquations()) {
+TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZAutoPointer<TPZCompMesh> cmesh) : TPZRegisterClassId(&TPZStructMatrixTBBFlow::ClassId),fCompMesh(cmesh), fEquationFilter(cmesh->NEquations()) {
     fMesh = cmesh.operator->();
     this->SetNumThreads(0);
 #ifdef USING_TBB
@@ -64,7 +65,7 @@ TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(TPZAutoPointer<TPZCompMesh> cmesh
 #endif
 }
 
-TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(const TPZStructMatrixTBBFlow &copy) : fMesh(copy.fMesh), fEquationFilter(copy.fEquationFilter)
+TPZStructMatrixTBBFlow::TPZStructMatrixTBBFlow(const TPZStructMatrixTBBFlow &copy) : TPZRegisterClassId(&TPZStructMatrixTBBFlow::ClassId),fMesh(copy.fMesh), fEquationFilter(copy.fEquationFilter)
 {
     if (copy.fCompMesh) {
         fCompMesh = copy.fCompMesh;

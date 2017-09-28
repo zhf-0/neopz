@@ -17,7 +17,8 @@ template<class TRANSIENTCLASS>
 double TPZTransientAnalysis<TRANSIENTCLASS>::gTime = 0.;
 
 template<class TRANSIENTCLASS>
-TPZTransientAnalysis<TRANSIENTCLASS>::TPZTransientAnalysis(TPZCompMesh *mesh, bool IsLinear, std::ostream &out):/*TPZAnalysis*/TPZNonLinearAnalysis(mesh,out), fSavedSolutionVec(){
+TPZTransientAnalysis<TRANSIENTCLASS>::TPZTransientAnalysis(TPZCompMesh *mesh, bool IsLinear, std::ostream &out):
+		TPZRegisterClassId(&TPZTransientAnalysis::ClassId),TPZNonLinearAnalysis(mesh,out), fSavedSolutionVec(){
 	this->fTimeStep = 0.;
 	this->fCurrentIter = 0;
 	this->SetConvergence(0, 0.);
@@ -426,7 +427,11 @@ void TPZTransientAnalysis<TRANSIENTCLASS>::SaveCurrentSolutionVec(){
 		
 	}
 }
-
+template<class TRANSIENTCLASS>
+int TPZTransientAnalysis<TRANSIENTCLASS>::ClassId() {
+	//CLASSIDFRANreturn TPZNonLinearAnalysis::ClassId()^TRANSIENTCLASS::ClassId()^Hash("TPZTransientAnalysis");
+	return 666;
+}
 //instantiations
 #ifndef STATE_COMPLEX
 #include "pzpoisson3d.h"

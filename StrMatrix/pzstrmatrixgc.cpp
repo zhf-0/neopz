@@ -48,7 +48,8 @@ static TPZCheckConsistency stiffconsist("ElementStiff");
 RunStatsTable stat_ass_graph("-ass_graph", "Run statistics table for the graph creation and coloring TPZStructMatrixGC.");
 
 
-TPZStructMatrixGC::TPZStructMatrixGC(TPZCompMesh *mesh) : TPZStructMatrixBase(mesh) {
+TPZStructMatrixGC::TPZStructMatrixGC(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZStructMatrixGC::ClassId),
+                                                          TPZStructMatrixBase(mesh) {
     stat_ass_graph.start();
     TPZManVector<long> ElementOrder;
     TPZStructMatrixGC::OrderElement(this->Mesh(), ElementOrder);
@@ -56,7 +57,8 @@ TPZStructMatrixGC::TPZStructMatrixGC(TPZCompMesh *mesh) : TPZStructMatrixBase(me
     stat_ass_graph.stop();
 }
 
-TPZStructMatrixGC::TPZStructMatrixGC(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStructMatrixBase(cmesh) {
+TPZStructMatrixGC::TPZStructMatrixGC(TPZAutoPointer<TPZCompMesh> cmesh) : TPZRegisterClassId(&TPZStructMatrixGC::ClassId),
+                                                                          TPZStructMatrixBase(cmesh) {
     stat_ass_graph.start();
     TPZManVector<long> ElementOrder;
     TPZStructMatrixGC::OrderElement(this->Mesh(), ElementOrder);
@@ -64,7 +66,8 @@ TPZStructMatrixGC::TPZStructMatrixGC(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStr
     stat_ass_graph.stop();
 }
 
-TPZStructMatrixGC::TPZStructMatrixGC(const TPZStructMatrixGC &copy) : TPZStructMatrixBase(copy){
+TPZStructMatrixGC::TPZStructMatrixGC(const TPZStructMatrixGC &copy) : TPZRegisterClassId(&TPZStructMatrixGC::ClassId),
+                                                                      TPZStructMatrixBase(copy){
     felSequenceColor = copy.felSequenceColor;
     fnextBlocked = copy.fnextBlocked;
 }

@@ -95,6 +95,9 @@ private:
 							   TPZTransform<> &tr,
 							   void (*f) (const TPZVec<REAL> &loc, TPZVec<STATE> &val, TPZFMatrix<STATE> &deriv),
 							   REAL &truerror);
+	private:
+	static int ClassId();
+public:
 };
 
 #endif //TPZMGANALYSIS_H

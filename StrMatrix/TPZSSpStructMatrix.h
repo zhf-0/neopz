@@ -20,10 +20,10 @@
  * @brief Implements Sparse Structural Matrices. \ref structural "Structural Matrix"
  * @ingroup structural
  */
-class TPZSymetricSpStructMatrix : public TPZStructMatrix {
+class TPZSymmetricSpStructMatrix : public TPZStructMatrix {
 public:    
 	
-    TPZSymetricSpStructMatrix(TPZCompMesh *);
+    TPZSymmetricSpStructMatrix(TPZCompMesh *);
 	
     virtual TPZMatrix<STATE> * Create();
 	
@@ -35,9 +35,11 @@ public:
 	
     /** Used only for testing */
 	static int main();
-	
+	private:
+	static int ClassId();
+public:
 private :
-    TPZSymetricSpStructMatrix();
+    TPZSymmetricSpStructMatrix();
     
     friend TPZPersistenceManager;
 };

@@ -48,7 +48,8 @@ static TPZCheckConsistency stiffconsist("ElementStiff");
 RunStatsTable stat_ass_graph_ot("-ass_graph_ot", "Run statistics table for the graph creation and coloring TPZStructMatrixOT.");
 
 
-TPZStructMatrixOT::TPZStructMatrixOT(TPZCompMesh *mesh) : TPZStructMatrixBase(mesh) {
+TPZStructMatrixOT::TPZStructMatrixOT(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZStructMatrixOT::ClassId),
+                                                          TPZStructMatrixBase(mesh) {
     stat_ass_graph_ot.start();
     TPZManVector<long> ElementOrder;
     
@@ -61,7 +62,8 @@ TPZStructMatrixOT::TPZStructMatrixOT(TPZCompMesh *mesh) : TPZStructMatrixBase(me
 
 }
 
-TPZStructMatrixOT::TPZStructMatrixOT(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStructMatrixBase(cmesh) {
+TPZStructMatrixOT::TPZStructMatrixOT(TPZAutoPointer<TPZCompMesh> cmesh) : TPZRegisterClassId(&TPZStructMatrixOT::ClassId),
+                                                                          TPZStructMatrixBase(cmesh) {
     stat_ass_graph_ot.start();
     TPZManVector<long> ElementOrder;
     TPZStructMatrixOT::OrderElement(this->Mesh(), ElementOrder);
@@ -72,7 +74,8 @@ TPZStructMatrixOT::TPZStructMatrixOT(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStr
     
 }
 
-TPZStructMatrixOT::TPZStructMatrixOT(const TPZStructMatrixOT &copy) : TPZStructMatrixBase(copy) {
+TPZStructMatrixOT::TPZStructMatrixOT(const TPZStructMatrixOT &copy) : TPZRegisterClassId(&TPZStructMatrixOT::ClassId),
+                                                                      TPZStructMatrixBase(copy) {
     fElSequenceColor = copy.fElSequenceColor;
     fElBlocked = copy.fElBlocked;
     fEquationFilter = copy.fEquationFilter;

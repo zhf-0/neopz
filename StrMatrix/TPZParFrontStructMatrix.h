@@ -88,7 +88,9 @@ public:
 	 * It is a 'static void *' to be used by pthread_create
 	 */
 	static void *GlobalAssemble(void *t);
-	
+	private:
+	static int ClassId();
+public:
 private:
 	/** @brief Current computed element*/
 	long fCurrentElement;

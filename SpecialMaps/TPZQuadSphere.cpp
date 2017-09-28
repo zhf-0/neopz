@@ -68,8 +68,13 @@ TPZGeoEl *TPZQuadSphere<GeomQuad>::CreateGeoElement(TPZGeoMesh &mesh, MElementTy
     {
         return false;
     }
-	
-    /** @brief declare geometry as blended element */
+	template<class GeomQuad>
+	int TPZQuadSphere<GeomQuad>::ClassId() {
+		//CLASSIDFRANreturn GeomQuad::ClassId()^Hash("TPZQuadSphere");
+		return 666;
+	}
+
+	/** @brief declare geometry as blended element */
     template<>
     bool TPZQuadSphere<pzgeom::TPZGeoBlend<pzgeom::TPZGeoQuad> >::IsGeoBlendEl() const
     {

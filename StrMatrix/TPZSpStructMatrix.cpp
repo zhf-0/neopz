@@ -255,10 +255,10 @@ TPZMatrix<STATE> * TPZSpStructMatrix::Create(){
     return mat;
 }
 
-TPZSpStructMatrix::TPZSpStructMatrix() : TPZStructMatrix(){
+TPZSpStructMatrix::TPZSpStructMatrix() : TPZRegisterClassId(&TPZSpStructMatrix::ClassId),TPZStructMatrix(){
 }
 
-TPZSpStructMatrix::TPZSpStructMatrix(TPZCompMesh *mesh) : TPZStructMatrix(mesh)
+TPZSpStructMatrix::TPZSpStructMatrix(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZSpStructMatrix::ClassId),TPZStructMatrix(mesh)
 {}
 
 int TPZSpStructMatrix::ClassId(){

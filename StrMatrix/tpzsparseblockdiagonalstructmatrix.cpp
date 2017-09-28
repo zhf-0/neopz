@@ -6,12 +6,14 @@
 #include "tpzsparseblockdiagonalstructmatrix.h"
 
 TPZSparseBlockDiagonalStructMatrix::TPZSparseBlockDiagonalStructMatrix() :
+        TPZRegisterClassId(&TPZSparseBlockDiagonalStructMatrix::ClassId),
 TPZStructMatrix()
 {
 }
 
 TPZSparseBlockDiagonalStructMatrix::TPZSparseBlockDiagonalStructMatrix(TPZCompMesh *mesh) :
-TPZStructMatrix(mesh)
+        TPZRegisterClassId(&TPZSparseBlockDiagonalStructMatrix::ClassId),
+        TPZStructMatrix(mesh)
 {
 }
 
@@ -49,4 +51,9 @@ TPZMatrix<STATE> * TPZSparseBlockDiagonalStructMatrix::Create()
 int TPZSparseBlockDiagonalStructMatrix::NumColors()
 {
     return 0;
+}
+
+int TPZSparseBlockDiagonalStructMatrix::ClassId() {
+    //CLASSIDFRAN return TPZStructMatrix::ClassId()^Hash("TPZSparseBlockDiagonalStructMatrix");
+    return 666;
 }

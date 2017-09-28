@@ -24,28 +24,28 @@ namespace pzgeom {
 	public:
 		
 		/** @brief Constructor with list of nodes */
-		TPZQuadSphere(TPZVec<long> &nodeindexes) : GeomQuad(nodeindexes), fR(0.), fxc(3,0.)
+		TPZQuadSphere(TPZVec<long> &nodeindexes) : TPZRegisterClassId(&TPZQuadSphere::ClassId),GeomQuad(nodeindexes), fR(0.), fxc(3,0.)
 		{
 		}
 		
 		/** @brief Empty constructor */
-		TPZQuadSphere() : GeomQuad(), fR(0.), fxc(3,0.)
+		TPZQuadSphere() : TPZRegisterClassId(&TPZQuadSphere::ClassId),GeomQuad(), fR(0.), fxc(3,0.)
 		{
 		}
 		
 		/** @brief Constructor with node map */
 		TPZQuadSphere(const TPZQuadSphere &cp,
-									std::map<long,long> & gl2lcNdMap) : GeomQuad(cp,gl2lcNdMap), fR(0.), fxc(3,0.)
+									std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZQuadSphere::ClassId),GeomQuad(cp,gl2lcNdMap), fR(0.), fxc(3,0.)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZQuadSphere(const TPZQuadSphere &cp) : GeomQuad(cp), fR(cp.fR), fxc(cp.fxc)
+		TPZQuadSphere(const TPZQuadSphere &cp) : TPZRegisterClassId(&TPZQuadSphere::ClassId),GeomQuad(cp), fR(cp.fR), fxc(cp.fxc)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZQuadSphere(const TPZQuadSphere &cp, TPZGeoMesh &) : GeomQuad(cp), fR(cp.fR), fxc(cp.fxc)
+		TPZQuadSphere(const TPZQuadSphere &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZQuadSphere::ClassId),GeomQuad(cp), fR(cp.fR), fxc(cp.fxc)
 		{
 		}
         
@@ -264,7 +264,9 @@ namespace pzgeom {
             buf.Write(&fR,1);
 		}
 		
-
+        private:
+        static int ClassId();
+    public:
 	};
 	
 	

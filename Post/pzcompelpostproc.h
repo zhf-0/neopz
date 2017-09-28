@@ -156,11 +156,16 @@ public:
 	
 	/** @brief Read the element data from a stream */
 	virtual void Read(TPZStream &buf, void *context);
+
+	private:
+	static int ClassId();
+public:
 	
 };
 
 template<class TCOMPEL>
-inline TPZCompElPostProc<TCOMPEL>::TPZCompElPostProc() : TPZReferredCompEl<TCOMPEL>() {
+inline TPZCompElPostProc<TCOMPEL>::TPZCompElPostProc() :
+		TPZRegisterClassId(&TPZCompElPostProc::ClassId),TPZReferredCompEl<TCOMPEL>() {
 	TPZCompElPostProc<TCOMPEL>::InitializeShapeFunctions();
 }
 
@@ -171,13 +176,15 @@ inline TPZCompElPostProc<TCOMPEL>::~TPZCompElPostProc() {
 
 template<class TCOMPEL>
 inline TPZCompElPostProc<TCOMPEL>::TPZCompElPostProc(TPZCompMesh &mesh, TPZGeoEl *gel, long &index) :
-TPZReferredCompEl<TCOMPEL>(mesh, gel, index){
+		TPZRegisterClassId(&TPZCompElPostProc::ClassId),
+		TPZReferredCompEl<TCOMPEL>(mesh, gel, index){
 	TPZCompElPostProc<TCOMPEL>::InitializeShapeFunctions();
 }
 
 template<class TCOMPEL>
 inline TPZCompElPostProc<TCOMPEL>::TPZCompElPostProc(TPZCompMesh &mesh, const TPZCompElPostProc<TCOMPEL> &copy) :
-TPZReferredCompEl<TCOMPEL>(mesh, copy) {
+		TPZRegisterClassId(&TPZCompElPostProc::ClassId),
+		TPZReferredCompEl<TCOMPEL>(mesh, copy) {
 	TPZCompElPostProc<TCOMPEL>::InitializeShapeFunctions();
 }
 
@@ -186,7 +193,8 @@ inline TPZCompElPostProc<TCOMPEL>::TPZCompElPostProc(TPZCompMesh &mesh,
 													 const TPZCompElPostProc<TCOMPEL> &copy,
 													 std::map<long,long> & gl2lcConMap,
 													 std::map<long,long> & gl2lcElMap):
-TPZReferredCompEl<TCOMPEL>(mesh,copy,gl2lcConMap,gl2lcElMap)
+		TPZRegisterClassId(&TPZCompElPostProc::ClassId),
+		TPZReferredCompEl<TCOMPEL>(mesh,copy,gl2lcConMap,gl2lcElMap)
 {
 	TPZCompElPostProc<TCOMPEL>::InitializeShapeFunctions();
 }
@@ -469,6 +477,11 @@ inline void TPZCompElPostProc<TCOMPEL>::ComputeShape(TPZVec<REAL> &intpoint, TPZ
 	///axes is identity in discontinuous elements
 	axes.Resize(dphix.Rows(), dphix.Rows());
 	axes.Identity();
+}
+template<class TPZCOMPEL>
+int TPZCompElPostProc<TPZCOMPEL>::ClassId() {
+	//CLASSIDFRANreturn TPZReferredCompEl::ClassId()^Hash("TPZCompElPostProc");
+	return 666;
 }
 
 #endif

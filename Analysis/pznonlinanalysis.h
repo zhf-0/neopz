@@ -59,7 +59,10 @@ public:
 	
 	/** @brief Load solution with state as solution. But fSolution is not modified */
 	void LoadState(TPZFMatrix<STATE> &state);
-	
+
+	private:
+	static int ClassId();
+public:
 };
 
 #endif

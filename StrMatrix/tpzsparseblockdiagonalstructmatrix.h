@@ -25,7 +25,9 @@ public:
 	
     virtual TPZStructMatrix* Clone();
     int NumColors();
-    
+	private:
+	static int ClassId();
+public:
 private:
     TPZSparseBlockDiagonalStructMatrix();
 

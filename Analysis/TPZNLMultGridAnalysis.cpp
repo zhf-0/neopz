@@ -43,8 +43,9 @@ TPZCompMesh *TPZNonLinMultGridAnalysis::IMesh(long index){
 	return fMeshes[index];
 }
 
-TPZNonLinMultGridAnalysis::TPZNonLinMultGridAnalysis(TPZCompMesh *cmesh) : 
-TPZAnalysis(cmesh), fBegin(0), fInit(0) {
+TPZNonLinMultGridAnalysis::TPZNonLinMultGridAnalysis(TPZCompMesh *cmesh) :
+		TPZRegisterClassId(&TPZNonLinMultGridAnalysis::ClassId),
+		TPZAnalysis(cmesh), fBegin(0), fInit(0) {
 	cmesh->SetName("* * * MALHA INICIAL * * *");
 	fMeshes.Push(cmesh);
 	TPZStepSolver<STATE> solver;
@@ -750,5 +751,10 @@ void TPZNonLinMultGridAnalysis::TwoGridAlgorithm(std::ostream &out,int nummat){
 		mgiter++;
 	}
 	CoutTime(fInit,"TPZNonLinMultGridAnalysis::SmoothingSolution general time of iterative process");
+}
+
+int TPZNonLinMultGridAnalysis::ClassId() {
+	//CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZNonLinMultGridAnalysis");
+	return 666;
 }
 

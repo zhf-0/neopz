@@ -143,6 +143,9 @@ public:
      * @brief Assembles the coarse dof stiffness matrix
      */
     void GetCoarseStiffness(TPZMatrix<TVar> &stiff, TPZVec<int> &indices);
+	private:
+	static int ClassId();
+public:
 public:
     /**
 	 * @brief It prepares the datas for solving systems for phi and zi

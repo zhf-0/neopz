@@ -18,7 +18,7 @@ typename TPZDohrSubstruct<TVar>::EWeightType TPZDohrSubstruct<TVar>::fWeightType
 
 
 template<class TVar>
-TPZDohrSubstruct<TVar>::TPZDohrSubstruct()
+TPZDohrSubstruct<TVar>::TPZDohrSubstruct() : TPZRegisterClassId(&TPZDohrSubstruct::ClassId)
 {
 	//Inicializacao
 }
@@ -915,12 +915,46 @@ void TPZDohrSubstruct<TVar>::AddInternalSolution(TPZFMatrix<TVar> &sol)
 	
 }
 
+template<>
+int TPZDohrSubstruct<float>::ClassId() {
+	//CLASSIDFRAN return Hash("float")^Hash("TPZDohrSubstruct");
+	return 666;
+}
+
+template<>
+int TPZDohrSubstruct<double>::ClassId() {
+	//CLASSIDFRAN return Hash("double")^Hash("TPZDohrSubstruct");
+	return 666;
+}
+
+template<>
+int TPZDohrSubstruct<long double>::ClassId() {
+	//CLASSIDFRAN return Hash("long double")^Hash("TPZDohrSubstruct");
+	return 666;
+}
+
+template<>
+int TPZDohrSubstruct< std::complex<float> >::ClassId() {
+	//CLASSIDFRAN return Hash("std::complex<float>")^Hash("TPZDohrSubstruct");
+	return 666;
+}
+
+template<>
+int TPZDohrSubstruct< std::complex<double> >::ClassId() {
+	//CLASSIDFRAN return Hash("std::complex<double>")^Hash("TPZDohrSubstruct");
+	return 666;
+}
+
+template<>
+int TPZDohrSubstruct< std::complex<long double> >::ClassId() {
+	//CLASSIDFRAN return Hash("std::complex<long double>")^Hash("TPZDohrSubstruct");
+	return 666;
+}
 template class TPZDohrSubstruct<float>;
 template class TPZDohrSubstruct<double>;
-template class TPZDohrSubstruct<long double>;
 
-//#ifdef STATE_COMPLEX
+template class TPZDohrSubstruct<long double>;
 template class TPZDohrSubstruct<std::complex<float> >;
 template class TPZDohrSubstruct<std::complex<double> >;
+
 template class TPZDohrSubstruct<std::complex<long double> >;
-//#endif

@@ -73,12 +73,14 @@ static void DecomposeBig(TPZAutoPointer<TPZDohrSubstructCondense<STATE> > substr
 static void DecomposeInternal(TPZAutoPointer<TPZDohrSubstructCondense<STATE> > substruct, int numa_node);
 
 TPZDohrStructMatrix::TPZDohrStructMatrix() :
+        TPZRegisterClassId(&TPZDohrStructMatrix::ClassId),
 TPZStructMatrix(), fDohrAssembly(0), fDohrPrecond(0)
 {
 	PZ_PTHREAD_MUTEX_INIT(&fAccessElement, 0, "TPZDohrStructMatrix::TPZDohrStructMatrix()");
 }
 
 TPZDohrStructMatrix::TPZDohrStructMatrix(TPZAutoPointer<TPZCompMesh> cmesh) :
+        TPZRegisterClassId(&TPZDohrStructMatrix::ClassId),
 TPZStructMatrix(cmesh), fDohrAssembly(0),
 fDohrPrecond(0)
 {
@@ -86,6 +88,7 @@ fDohrPrecond(0)
 }
 
 TPZDohrStructMatrix::TPZDohrStructMatrix(const TPZDohrStructMatrix &copy) :
+        TPZRegisterClassId(&TPZDohrStructMatrix::ClassId),
 TPZStructMatrix(copy), fDohrAssembly(copy.fDohrAssembly), fDohrPrecond(copy.fDohrPrecond)
 {
 	PZ_PTHREAD_MUTEX_INIT(&fAccessElement, 0, "TPZDohrStructMatrix::TPZDohrStructMatrix(copy)");
@@ -2044,5 +2047,10 @@ void TPZDohrStructMatrix::CorrectNeighbourDomainIndex(TPZCompMesh *cmesh, TPZVec
             }
         }
     }
+}
+
+int TPZDohrStructMatrix::ClassId() {
+    //CLASSIDFRAN return TPZStructMatrix::ClassId()^Hash("TPZDohrStructMatrix");
+    return 666;
 }
 

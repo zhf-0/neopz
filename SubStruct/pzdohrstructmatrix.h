@@ -101,7 +101,9 @@ public:
     void Write(TPZStream &str);
     
     void Read(TPZStream &str);
-	
+	private:
+	static int ClassId();
+	public:
 	
 protected:
 	

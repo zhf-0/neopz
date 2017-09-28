@@ -11,7 +11,8 @@
 #include "pzmatred.h"
 
 template< class TStructMatrix, class TSparseMatrix>
-TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix() : TPZStructMatrix()
+TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix() : TPZRegisterClassId(&TPZMatRedStructMatrix::ClassId),
+																			  TPZStructMatrix()
 {
 }
 
@@ -31,7 +32,8 @@ void TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::SetMesh(TPZCompMesh *cm
 
 
 template< class TStructMatrix, class TSparseMatrix>
-TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(TPZSubCompMesh *mesh) : TPZStructMatrix(mesh)
+TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(TPZSubCompMesh *mesh) : TPZRegisterClassId(&TPZMatRedStructMatrix::ClassId),
+																								  TPZStructMatrix(mesh)
 {
 	fInternalEqs = mesh->NumInternalEquations();
 }
@@ -42,7 +44,8 @@ TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::~TPZMatRedStructMatrix()
 }
 
 template< class TStructMatrix, class TSparseMatrix>
-TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(const TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix> &copy) : TPZStructMatrix(copy)
+TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::TPZMatRedStructMatrix(const TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix> &copy) : TPZRegisterClassId(&TPZMatRedStructMatrix::ClassId),
+																																			TPZStructMatrix(copy)
 {
 	fInternalEqs = copy.fInternalEqs;
 }
@@ -63,6 +66,11 @@ TPZMatrix<STATE> *TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::Create()
 	TPZMatRed<STATE, TSparseMatrix> *matred = new TPZMatRed<STATE, TSparseMatrix>(neq,fInternalEqs);
 	matred->SetK00(InternalStiff);
 	return matred;
+}
+template< class TStructMatrix, class TSparseMatrix>
+int TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::ClassId() {
+    //CLASSIDFRAN return TPZStructMatrix::ClassId()^TStructMatrix::ClassId()^TSparseMatrix::ClassId()^Hash("TPZMatRedStructMatrix");
+	// return 666;
 }
 
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZVerySparseMatrix<STATE> >;

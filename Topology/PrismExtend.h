@@ -21,7 +21,7 @@ namespace pztopology {
 	 * @brief Defines the Prismatic extension of a topology. \ref topology "Topology"
 	 */
 	template<class TFather>
-	class Pr :
+	class TPZPrismExtend :
 	public TFather
 	{
 	public:
@@ -30,10 +30,10 @@ namespace pztopology {
 		enum {NCornerNodes = 2*TFather::NCornerNodes, NSides = 3*TFather::NSides, Dimension = TFather::Dimension+1};
 		
 		/** @brief Default constructor */
-		Pr();
+		TPZPrismExtend();
 		
 		/** @brief Default destructor */
-		virtual ~Pr();
+		virtual ~TPZPrismExtend();
 		
 		/** @name About sides of the topological element
 		 * @{ */
@@ -149,6 +149,9 @@ namespace pztopology {
 		 * @brief Uses log4cxx to print the results of all methods
 		 */
 		static void Diagnostic();
+		private:
+		static int ClassId();
+	public:
 	};
 	
 }

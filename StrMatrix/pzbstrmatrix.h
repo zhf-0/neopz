@@ -22,7 +22,7 @@ public:
     
     ~TPZBandStructMatrix();
 	
-    TPZBandStructMatrix(const TPZBandStructMatrix &copy) : TPZStructMatrix(copy)
+    TPZBandStructMatrix(const TPZBandStructMatrix &copy) : TPZRegisterClassId(&TPZBandStructMatrix::ClassId),TPZStructMatrix(copy)
     {
     }
 	
@@ -32,6 +32,9 @@ public:
     virtual TPZMatrix<STATE> * CreateAssemble(TPZFMatrix<STATE> &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
 	
     virtual TPZStructMatrix * Clone();
+    private:
+    static int ClassId();
+public:
 	
 public:
 	

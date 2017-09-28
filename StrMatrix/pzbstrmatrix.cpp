@@ -30,10 +30,15 @@ TPZMatrix<STATE> * TPZBandStructMatrix::Create(){
     return new TPZFBMatrix<STATE>(neq,band);
 }
 
-TPZBandStructMatrix::TPZBandStructMatrix(TPZCompMesh *mesh) : TPZStructMatrix(mesh)
+TPZBandStructMatrix::TPZBandStructMatrix(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZBandStructMatrix::ClassId),TPZStructMatrix(mesh)
 {
 }
 
-TPZBandStructMatrix::TPZBandStructMatrix() : TPZStructMatrix()
+TPZBandStructMatrix::TPZBandStructMatrix() : TPZRegisterClassId(&TPZBandStructMatrix::ClassId),TPZStructMatrix()
 {
+}
+
+int TPZBandStructMatrix::ClassId() {
+    //CLASSIDFRANreturn TPZStructMatrix::ClassId()^Hash("TPZBandStructMatrix");
+    return 666;
 }

@@ -59,7 +59,7 @@ public:
      */ 
 	TPZFrontStructMatrix(TPZCompMesh *);
 	
-	TPZFrontStructMatrix(const TPZFrontStructMatrix &copy) : TPZStructMatrix(copy), fElementOrder(copy.fElementOrder),f_quiet(copy.f_quiet), fDecomposeType(copy.fDecomposeType)
+	TPZFrontStructMatrix(const TPZFrontStructMatrix &copy) : TPZRegisterClassId(&TPZFrontStructMatrix::ClassId),TPZStructMatrix(copy), fElementOrder(copy.fElementOrder),f_quiet(copy.f_quiet), fDecomposeType(copy.fDecomposeType)
 	{
 	}
 	
@@ -128,7 +128,9 @@ public:
 	TPZMatrix<STATE> * CreateAssemble(TPZFMatrix<STATE> &rhs, TPZAutoPointer<TPZGuiInterface> guiInterface);
 	
     void SetQuiet(int quiet);
-    
+	private:
+	static int ClassId();
+public:
 private:
     TPZFrontStructMatrix();
 	

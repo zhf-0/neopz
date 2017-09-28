@@ -58,14 +58,16 @@ pthread_cond_t stackfull = PTHREAD_COND_INITIALIZER;
 
 
 template<class front>
-TPZParFrontStructMatrix<front>::TPZParFrontStructMatrix(TPZCompMesh *mesh): TPZFrontStructMatrix<front>(mesh)
+TPZParFrontStructMatrix<front>::TPZParFrontStructMatrix(TPZCompMesh *mesh): TPZRegisterClassId(&TPZParFrontStructMatrix::ClassId),
+																			TPZFrontStructMatrix<front>(mesh)
 {
 	fMaxStackSize = 500;
 	TPZStructMatrix::SetNumThreads(3);
 }
 
 template<class front>
-TPZParFrontStructMatrix<front>::TPZParFrontStructMatrix(const TPZParFrontStructMatrix &copy): TPZFrontStructMatrix<front>(copy), fMaxStackSize(copy.fMaxStackSize)
+TPZParFrontStructMatrix<front>::TPZParFrontStructMatrix(const TPZParFrontStructMatrix &copy): TPZRegisterClassId(&TPZParFrontStructMatrix::ClassId),
+																							  TPZFrontStructMatrix<front>(copy), fMaxStackSize(copy.fMaxStackSize)
 {
 }
 
@@ -743,6 +745,11 @@ TPZMatrix<STATE> * TPZParFrontStructMatrix<front>::CreateAssemble(TPZFMatrix<STA
 	Assemble(*mat,rhs,guiInterface);
 	return mat;
 	
+}
+template <class front>
+int TPZParFrontStructMatrix<front>::ClassId() {
+    //CLASSIDFRANreturn TPZFrontStructMatrix::ClassId()^Hash("TPZParFrontStructMatrix");
+	return 666;
 }
 
 

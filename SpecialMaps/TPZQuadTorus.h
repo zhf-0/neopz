@@ -29,28 +29,29 @@ static int ClassId();
 public:
         
         /** @brief Constructor with list of nodes */
-		TPZQuadTorus(TPZVec<long> &nodeindexes) : TPZGeoQuad(nodeindexes), fPhiTheta(3,4,0.)
+		TPZQuadTorus(TPZVec<long> &nodeindexes) :
+                TPZRegisterClassId(&TPZQuadTorus::ClassId),TPZGeoQuad(nodeindexes), fPhiTheta(3,4,0.)
 		{
 		}
 		
 		/** @brief Empty constructor */
-		TPZQuadTorus() : TPZGeoQuad(), fPhiTheta(3,4,0.)
+		TPZQuadTorus() : TPZRegisterClassId(&TPZQuadTorus::ClassId),TPZGeoQuad(), fPhiTheta(3,4,0.)
 		{
 		}
 		
 		/** @brief Constructor with node map */
 		TPZQuadTorus(const TPZQuadTorus &cp,
-				   std::map<long,long> & gl2lcNdMap) : TPZGeoQuad(cp,gl2lcNdMap), fPhiTheta(cp.fPhiTheta)
+				   std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZQuadTorus::ClassId),TPZGeoQuad(cp,gl2lcNdMap), fPhiTheta(cp.fPhiTheta)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZQuadTorus(const TPZQuadTorus &cp) : TPZGeoQuad(cp), fPhiTheta(cp.fPhiTheta)
+		TPZQuadTorus(const TPZQuadTorus &cp) : TPZRegisterClassId(&TPZQuadTorus::ClassId),TPZGeoQuad(cp), fPhiTheta(cp.fPhiTheta)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZQuadTorus(const TPZQuadTorus &cp, TPZGeoMesh &) : TPZGeoQuad(cp), fPhiTheta(cp.fPhiTheta)
+		TPZQuadTorus(const TPZQuadTorus &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZQuadTorus::ClassId),TPZGeoQuad(cp), fPhiTheta(cp.fPhiTheta)
 		{
 		}
         

@@ -98,7 +98,9 @@ public:
 	/** @brief Polynomial order of this function. */
 	/** In case of non-polynomial function it can be a reasonable approximation order. */
 	virtual int PolynomialOrder() const {return -1;}
-    
+    private:
+    static int ClassId();
+public:
     };
     
 #endif

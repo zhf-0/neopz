@@ -14,19 +14,19 @@ TPZStructMatrix * TPZSkylineStructMatrix::Clone(){
 }
 
 TPZSkylineStructMatrix::TPZSkylineStructMatrix(const TPZSkylineStructMatrix &cp)
-:TPZStructMatrix(cp) {
+:TPZRegisterClassId(&TPZSkylineStructMatrix::ClassId),TPZStructMatrix(cp) {
 	//nothing here
 }
 
-TPZSkylineStructMatrix::TPZSkylineStructMatrix() : TPZStructMatrix()
+TPZSkylineStructMatrix::TPZSkylineStructMatrix() : TPZRegisterClassId(&TPZSkylineStructMatrix::ClassId),TPZStructMatrix()
 {
 }
 
-TPZSkylineStructMatrix::TPZSkylineStructMatrix(TPZCompMesh *mesh) : TPZStructMatrix(mesh)
+TPZSkylineStructMatrix::TPZSkylineStructMatrix(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZSkylineStructMatrix::ClassId),TPZStructMatrix(mesh)
 {
 }
 
-TPZSkylineStructMatrix::TPZSkylineStructMatrix(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStructMatrix(cmesh)
+TPZSkylineStructMatrix::TPZSkylineStructMatrix(TPZAutoPointer<TPZCompMesh> cmesh) : TPZRegisterClassId(&TPZSkylineStructMatrix::ClassId),TPZStructMatrix(cmesh)
 {
 }
 
@@ -48,6 +48,11 @@ TPZMatrix<STATE> * TPZSkylineStructMatrix::ReallyCreate(long neq, const TPZVec<l
 
 
 TPZSkylineStructMatrix::~TPZSkylineStructMatrix(){
+}
+
+int TPZSkylineStructMatrix::ClassId() {
+    //CLASSIDFRANreturn TPZStructMatrix::ClassId()^Hash("TPZSkylineStructMatrix");
+    return 666;
 }
 
 

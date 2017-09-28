@@ -104,7 +104,9 @@ public:
 	void SetAnalysisFunction(void (*fp)(TPZMaterial *mat,TPZCompMesh *cmesh)){
 		fFunction = fp;
 	}
-	
+	private:
+	static int ClassId();
+public:
 };
 
 #endif

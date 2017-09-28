@@ -41,7 +41,9 @@ public:
     virtual TPZMatrix<STATE> * Create();
 	
     virtual TPZStructMatrix * Clone();
-
+    private:
+    static int ClassId();
+public:
 private :
     TPZSkylineStructMatrix();
 

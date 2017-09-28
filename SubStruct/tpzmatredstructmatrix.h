@@ -31,7 +31,9 @@ public:
 	virtual TPZStructMatrix *Clone();
 	
 	virtual TPZMatrix<STATE> *Create();
-        
+	private:
+	static int ClassId();
+	public:
 protected :
         void SetMesh(TPZCompMesh *cmesh);
         

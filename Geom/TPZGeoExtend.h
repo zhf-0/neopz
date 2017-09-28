@@ -95,7 +95,7 @@ namespace pzgeom {
 		}
 		
 		/** @brief Returns the type name of the element */
-		static std::string TypeName() { return "Pr:"+TFather::TypeName();} 
+		static std::string TypeName() { return "TPZPrismExtend:"+TFather::TypeName();}
 		
 		static void X(const TPZFMatrix<REAL> &nodes,TPZVec<REAL> &loc,TPZVec<REAL> &result);
 		

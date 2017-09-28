@@ -28,28 +28,28 @@ static int ClassId();
 public:
         
         /** @brief Constructor with list of nodes */
-		TPZTriangleTorus(TPZVec<long> &nodeindexes) : TPZGeoTriangle(nodeindexes), fR(0), fr(), fPhiTheta(3,3,0.)
+		TPZTriangleTorus(TPZVec<long> &nodeindexes) : TPZRegisterClassId(&TPZTriangleTorus::ClassId),TPZGeoTriangle(nodeindexes), fR(0), fr(), fPhiTheta(3,3,0.)
 		{
 		}
 		
 		/** @brief Empty constructor */
-		TPZTriangleTorus() : TPZGeoTriangle(), fR(0), fr(), fPhiTheta(3,3,0.)
+		TPZTriangleTorus() : TPZRegisterClassId(&TPZTriangleTorus::ClassId),TPZGeoTriangle(), fR(0), fr(), fPhiTheta(3,3,0.)
 		{
 		}
 		
 		/** @brief Constructor with node map */
 		TPZTriangleTorus(const TPZTriangleTorus &cp,
-				   std::map<long,long> & gl2lcNdMap) : TPZGeoTriangle(cp,gl2lcNdMap), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
+				   std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZTriangleTorus::ClassId),TPZGeoTriangle(cp,gl2lcNdMap), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZTriangleTorus(const TPZTriangleTorus &cp) : TPZGeoTriangle(cp), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
+		TPZTriangleTorus(const TPZTriangleTorus &cp) : TPZRegisterClassId(&TPZTriangleTorus::ClassId),TPZGeoTriangle(cp), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZTriangleTorus(const TPZTriangleTorus &cp, TPZGeoMesh &) : TPZGeoTriangle(cp), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
+		TPZTriangleTorus(const TPZTriangleTorus &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZTriangleTorus::ClassId),TPZGeoTriangle(cp), fR(cp.fR), fr(cp.fr), fPhiTheta(cp.fPhiTheta)
 		{
 		}
         

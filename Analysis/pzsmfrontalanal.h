@@ -48,7 +48,9 @@ public:
 	
 	/** @brief Sets the front matrix */
 	void SetFront(TPZFront<STATE> &front) { fFront = &front;}
-	
+	private:
+	static int ClassId();
+public:
 };
 
 #endif 

@@ -46,15 +46,15 @@ static TPZCheckConsistency stiffconsist("ElementStiff");
 #endif
 
 
-TPZStructMatrixST::TPZStructMatrixST(TPZCompMesh *mesh) : TPZStructMatrixBase(mesh) {
+TPZStructMatrixST::TPZStructMatrixST(TPZCompMesh *mesh) : TPZRegisterClassId(&TPZStructMatrixST::ClassId),TPZStructMatrixBase(mesh) {
     
 }
 
-TPZStructMatrixST::TPZStructMatrixST(TPZAutoPointer<TPZCompMesh> cmesh) : TPZStructMatrixBase(cmesh) {
+TPZStructMatrixST::TPZStructMatrixST(TPZAutoPointer<TPZCompMesh> cmesh) : TPZRegisterClassId(&TPZStructMatrixST::ClassId),TPZStructMatrixBase(cmesh) {
     
 }
 
-TPZStructMatrixST::TPZStructMatrixST(const TPZStructMatrixST &copy) : TPZStructMatrixBase(copy) {
+TPZStructMatrixST::TPZStructMatrixST(const TPZStructMatrixST &copy) : TPZRegisterClassId(&TPZStructMatrixST::ClassId),TPZStructMatrixBase(copy) {
     
 }
 

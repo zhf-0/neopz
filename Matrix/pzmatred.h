@@ -51,7 +51,7 @@ public:
 	TPZMatRed(const long dim, const long dim00);
 	
 	template<class TSideCopy>
-	TPZMatRed<TVar ,TSideMatrix>(const TPZMatRed<TVar, TSideCopy> &cp): TPZMatrix<TVar>(cp), fK11(cp.fK11), fK01(cp.fK01), fK10(cp.fK10), fF0(cp.fF0), fF1(cp.fF1),fMaxRigidBodyModes(cp.fMaxRigidBodyModes),fNumberRigidBodyModes(cp.fNumberRigidBodyModes)
+	TPZMatRed<TVar ,TSideMatrix>(const TPZMatRed<TVar, TSideCopy> &cp): TPZRegisterClassId(&TPZMatRed::ClassId),TPZMatrix<TVar>(cp), fK11(cp.fK11), fK01(cp.fK01), fK10(cp.fK10), fF0(cp.fF0), fF1(cp.fF1),fMaxRigidBodyModes(cp.fMaxRigidBodyModes),fNumberRigidBodyModes(cp.fNumberRigidBodyModes)
 	{
 		fDim0=cp.fDim0;
 		fDim1=cp.fDim1;

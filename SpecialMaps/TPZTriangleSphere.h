@@ -29,28 +29,28 @@ static int ClassId();
 public:
         
         /** @brief Constructor with list of nodes */
-		TPZTriangleSphere(TPZVec<long> &nodeindexes) : GeomTriang(nodeindexes), fXc(0.), fR(0.)
+		TPZTriangleSphere(TPZVec<long> &nodeindexes) : TPZRegisterClassId(&TPZTriangleSphere::ClassId),GeomTriang(nodeindexes), fXc(0.), fR(0.)
 		{
 		}
 		
 		/** @brief Empty constructor */
-		TPZTriangleSphere() : GeomTriang(), fXc(0.), fR(0.)
+		TPZTriangleSphere() : TPZRegisterClassId(&TPZTriangleSphere::ClassId),GeomTriang(), fXc(0.), fR(0.)
 		{
 		}
 		
 		/** @brief Constructor with node map */
 		TPZTriangleSphere(const TPZTriangleSphere &cp,
-				   std::map<long,long> & gl2lcNdMap) : GeomTriang(cp,gl2lcNdMap), fXc(cp.fXc), fR(cp.fR)
+				   std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZTriangleSphere::ClassId),GeomTriang(cp,gl2lcNdMap), fXc(cp.fXc), fR(cp.fR)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZTriangleSphere(const TPZTriangleSphere &cp) : GeomTriang(cp), fXc(cp.fXc), fR(cp.fR)
+		TPZTriangleSphere(const TPZTriangleSphere &cp) : TPZRegisterClassId(&TPZTriangleSphere::ClassId), GeomTriang(cp), fXc(cp.fXc), fR(cp.fR)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZTriangleSphere(const TPZTriangleSphere &cp, TPZGeoMesh &) : GeomTriang(cp), fXc(cp.fXc), fR(cp.fR)
+		TPZTriangleSphere(const TPZTriangleSphere &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZTriangleSphere::ClassId),GeomTriang(cp), fXc(cp.fXc), fR(cp.fR)
 		{
 		}
         

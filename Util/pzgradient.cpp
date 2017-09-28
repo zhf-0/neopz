@@ -12,7 +12,8 @@
 
 #include "pzgradient.h"
 
-TPZGradient::TPZGradient(): TPZFunction<STATE>(){
+TPZGradient::TPZGradient(): TPZRegisterClassId(&TPZGradient::ClassId),
+                            TPZFunction<STATE>(){
     
     fCenter.Resize(3,0.);
     fGradient.Resize(3);
@@ -20,9 +21,14 @@ TPZGradient::TPZGradient(): TPZFunction<STATE>(){
     falphaK = 1.;
 }
 
-TPZGradient::TPZGradient(const TPZGradient &cp): TPZFunction<STATE>(cp), fCenter(cp.fCenter), fGradient(cp.fGradient){
+TPZGradient::TPZGradient(const TPZGradient &cp): TPZRegisterClassId(&TPZGradient::ClassId),TPZFunction<STATE>(cp), fCenter(cp.fCenter), fGradient(cp.fGradient){
     
     fUc = cp.fUc;
     falphaK = cp.falphaK;
+}
+
+int TPZGradient::ClassId() {
+    //CLASSIDFRANreturn TPZFunction<STATE>::ClassId()^Hash("TPZGradient");
+    return 666;
 }
 

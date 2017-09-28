@@ -35,13 +35,13 @@ using namespace std;
 
 template<class TVar, class TSubStruct>
 TPZDohrPrecond<TVar, TSubStruct>::TPZDohrPrecond(TPZDohrMatrix<TVar, TSubStruct> &origin, TPZAutoPointer<TPZDohrAssembly<TVar> > assemble)
-: TPZMatrix<TVar>(origin), fGlobal(origin.SubStructures()), fCoarse(0), fNumCoarse(origin.NumCoarse()), fNumThreads(0), fAssemble(assemble)
+: TPZRegisterClassId(&TPZDohrPrecond::ClassId),TPZMatrix<TVar>(origin), fGlobal(origin.SubStructures()), fCoarse(0), fNumCoarse(origin.NumCoarse()), fNumThreads(0), fAssemble(assemble)
 {
 	fNumThreads = origin.NumThreads();
 }
 
 template<class TVar, class TSubStruct>
-TPZDohrPrecond<TVar, TSubStruct>::TPZDohrPrecond(const TPZDohrPrecond<TVar, TSubStruct> &cp) : TPZMatrix<TVar>(cp), fGlobal(cp.fGlobal), fCoarse(0),
+TPZDohrPrecond<TVar, TSubStruct>::TPZDohrPrecond(const TPZDohrPrecond<TVar, TSubStruct> &cp) : TPZRegisterClassId(&TPZDohrPrecond::ClassId),TPZMatrix<TVar>(cp), fGlobal(cp.fGlobal), fCoarse(0),
 fNumCoarse(cp.fNumCoarse), fNumThreads(cp.fNumThreads), fAssemble(cp.fAssemble)
 {
 	if (cp.fCoarse) {
@@ -51,7 +51,7 @@ fNumCoarse(cp.fNumCoarse), fNumThreads(cp.fNumThreads), fAssemble(cp.fAssemble)
 
 /** @brief Empty constructor for restoring */
 template<class TVar, class TSubStruct>
-TPZDohrPrecond<TVar, TSubStruct>::TPZDohrPrecond() : fCoarse(0), fNumCoarse(-1), fNumThreads(-1)
+TPZDohrPrecond<TVar, TSubStruct>::TPZDohrPrecond() : TPZRegisterClassId(&TPZDohrPrecond::ClassId),fCoarse(0), fNumCoarse(-1), fNumThreads(-1)
 {
 }
 

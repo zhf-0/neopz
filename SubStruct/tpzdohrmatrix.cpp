@@ -23,7 +23,7 @@ static LoggerPtr logger(Logger::getLogger("substruct.dohrsubstruct"));
 
 template<class TVar, class TSubStruct>
 TPZDohrMatrix<TVar,TSubStruct>::TPZDohrMatrix(TPZAutoPointer<TPZDohrAssembly<TVar> > assembly)
-: TPZMatrix<TVar>(), fNumThreads(0), fAssembly(assembly)
+: TPZRegisterClassId(&TPZDohrMatrix::ClassId),TPZMatrix<TVar>(), fNumThreads(0), fAssembly(assembly)
 {
 }
 

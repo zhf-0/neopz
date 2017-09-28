@@ -30,8 +30,9 @@ public:
   {
     return new TPZSkylineNSymStructMatrix(*this);
   }
-
-    
+  private:
+    static int ClassId();
+public:
 
 };
 

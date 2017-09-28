@@ -26,11 +26,11 @@ using namespace std;
 #include "TPZFrontStructMatrix.h"
 
 
-TPZParSkylineStructMatrix::TPZParSkylineStructMatrix(const TPZParSkylineStructMatrix &cp) : TPZSkylineStructMatrix(cp){
+TPZParSkylineStructMatrix::TPZParSkylineStructMatrix(const TPZParSkylineStructMatrix &cp) : TPZRegisterClassId(&TPZParSkylineStructMatrix::ClassId),TPZSkylineStructMatrix(cp){
 	fNumThreads = cp.fNumThreads;
 }
 
-TPZParSkylineStructMatrix::TPZParSkylineStructMatrix(TPZCompMesh *mesh, int numthreads) : TPZSkylineStructMatrix(mesh)
+TPZParSkylineStructMatrix::TPZParSkylineStructMatrix(TPZCompMesh *mesh, int numthreads) : TPZRegisterClassId(&TPZParSkylineStructMatrix::ClassId),TPZSkylineStructMatrix(mesh)
 {
 	fNumThreads = numthreads;
 }
@@ -54,6 +54,10 @@ TPZMatrix<STATE> * TPZParSkylineStructMatrix::CreateAssemble(TPZFMatrix<STATE> &
 	return mat;
 }
 
+int TPZParSkylineStructMatrix::ClassId() {
+	//CLASSIDFRANreturn TPZSkylineStructMatrix::ClassId()^Hash("TPZParSkylineStructMatrix");
+	return 666;
+}
 #ifndef STATE_COMPLEX
 #include "pzmat2dlin.h"
 

@@ -14,7 +14,8 @@ using namespace std;
 
 // Construction/Destruction
 
-TPZSubMeshFrontalAnalysis::TPZSubMeshFrontalAnalysis(TPZSubCompMesh *mesh) : TPZAnalysis(mesh){
+TPZSubMeshFrontalAnalysis::TPZSubMeshFrontalAnalysis(TPZSubCompMesh *mesh) :
+		TPZRegisterClassId(&TPZSubMeshFrontalAnalysis::ClassId),TPZAnalysis(mesh){
 	fMesh = mesh;
 	fFront = 0;
 }
@@ -82,4 +83,9 @@ void TPZSubMeshFrontalAnalysis::LoadSolution(const TPZFMatrix<STATE> &sol)
 	
 	fSolution = fReferenceSolution + soltemp;
 	TPZAnalysis::LoadSolution();
+}
+
+int TPZSubMeshFrontalAnalysis::ClassId() {
+	//CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZSubMeshFrontalAnalysis");
+	return 666;
 }

@@ -15,17 +15,17 @@ static LoggerPtr logger(Logger::getLogger("pz.topology.prismextend"));
 namespace pztopology {
 	
 	template<class TFather>
-	Pr<TFather>::Pr()
+	TPZPrismExtend<TFather>::TPZPrismExtend() : TPZRegisterClassId(&TPZPrismExtend::ClassId)
 	{
 	}
 	
 	template<class TFather>
-	Pr<TFather>::~Pr()
+	TPZPrismExtend<TFather>::~TPZPrismExtend()
 	{
 	}
 	
 	template<class TFather>
-	int Pr<TFather>::NSideNodes(int side)
+	int TPZPrismExtend<TFather>::NSideNodes(int side)
 	{
 		int ftns = side/TFather::NSides;
 		if(ftns < 2) return TFather::NSideNodes(side % TFather::NSides);
@@ -33,7 +33,7 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	int Pr<TFather>::SideNodeLocId(int side, int node)
+	int TPZPrismExtend<TFather>::SideNodeLocId(int side, int node)
 	{
 		int ftns = side/TFather::NSides;
 		int fatherside = side%TFather::NSides;
@@ -42,15 +42,15 @@ namespace pztopology {
 		int fatherlevel = node/TFather::NSideNodes(fatherside);
 		if(fatherlevel == 0) return TFather::SideNodeLocId(fatherside,node);
 		if(fatherlevel == 1) return TFather::SideNodeLocId(fatherside,node-TFather::NSideNodes(fatherside))+TFather::NCornerNodes;//TFather::NSideNodes(fatherside);
-		PZError << "Pr<TFather>::SideNodeLocId inconsistent side or node " << side
+		PZError << "TPZPrismExtend<TFather>::SideNodeLocId inconsistent side or node " << side
 		<< ' ' << node << endl;
 		return -1;
 	}
 	
 	template<class TFather>
-	int Pr<TFather>::SideDimension(int side) {
+	int TPZPrismExtend<TFather>::SideDimension(int side) {
 		if(side<0 || side >= NSides) {
-			PZError << "Pr<TFather>::SideDimension side " << side << endl;
+			PZError << "TPZPrismExtend<TFather>::SideDimension side " << side << endl;
 			return -1;
 		}
 		int ftns = side/TFather::NSides;
@@ -60,10 +60,10 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	void Pr<TFather>::HigherDimensionSides(int side, TPZStack<int> &high)
+	void TPZPrismExtend<TFather>::HigherDimensionSides(int side, TPZStack<int> &high)
 	{
 		if(side <0 || side >= NSides) {
-			PZError << "Pr<TFather>::HigherDimensionSides side "<< side << endl;
+			PZError << "TPZPrismExtend<TFather>::HigherDimensionSides side "<< side << endl;
 		}
 		int ftns = side/TFather::NSides;
 		int fatherside = side%TFather::NSides;
@@ -90,7 +90,7 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	void Pr<TFather>::CenterPoint(int side, TPZVec<REAL> &center) {
+	void TPZPrismExtend<TFather>::CenterPoint(int side, TPZVec<REAL> &center) {
 		//center.Resize(Dimension);
 		int ftns = side/TFather::NSides;
 		int fatherside = side%TFather::NSides;
@@ -110,11 +110,11 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	TPZTransform<> Pr<TFather>::TransformElementToSide(int side){
+	TPZTransform<> TPZPrismExtend<TFather>::TransformElementToSide(int side){
 		
 		if(side<0 || side>=NSides)
 		{
-			PZError << "Pr<TFather>::TransformElementToSide called with side error\n";
+			PZError << "TPZPrismExtend<TFather>::TransformElementToSide called with side error\n";
 			return TPZTransform<>(0,0);
 		}
 		
@@ -143,10 +143,10 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	TPZTransform<> Pr<TFather>::TransformSideToElement(int side){
+	TPZTransform<> TPZPrismExtend<TFather>::TransformSideToElement(int side){
 		
 		if(side<0 || side>=NSides){
-			PZError << "Pr<TFather>::TransformSideToElement side out range\n";
+			PZError << "TPZPrismExtend<TFather>::TransformSideToElement side out range\n";
 			return TPZTransform<>(0,0);
 		}
 		int sidedim = SideDimension(side);
@@ -183,10 +183,10 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	TPZTransform<> Pr<TFather>::SideToSideTransform(int sidefrom, int sideto)
+	TPZTransform<> TPZPrismExtend<TFather>::SideToSideTransform(int sidefrom, int sideto)
 	{
 		if(sidefrom <0 || sidefrom >= NSides || sideto <0 || sideto >= NSides) {
-			PZError << "Pr<TFather>::HigherDimensionSides sidefrom "<< sidefrom << 
+			PZError << "TPZPrismExtend<TFather>::HigherDimensionSides sidefrom "<< sidefrom <<
 			' ' << sideto << endl;
 			return TPZTransform<>(0);
 		}
@@ -211,19 +211,19 @@ namespace pztopology {
 				return trans;
 			}
 		}
-		PZError << "Pr<TFather>::SideToSideTransform highside not found sidefrom "
+		PZError << "TPZPrismExtend<TFather>::SideToSideTransform highside not found sidefrom "
 		<< sidefrom << ' ' << sideto << endl;
 		return TPZTransform<>(0);
 	}
 	
 	template<class TFather>
-	int Pr<TFather>::NumSides() {
+	int TPZPrismExtend<TFather>::NumSides() {
 		return TFather::NumSides()*3;
 	}
 	
 	
 	template<class TFather>
-	int Pr<TFather>::NContainedSides(int side) {
+	int TPZPrismExtend<TFather>::NContainedSides(int side) {
 		int ftns = side/TFather::NSides;
 		int fatherside = side%TFather::NSides;
 		if(ftns<2) return TFather::NContainedSides(fatherside);
@@ -231,11 +231,11 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	int Pr<TFather>::ContainedSideLocId(int side,int c) {
+	int TPZPrismExtend<TFather>::ContainedSideLocId(int side,int c) {
 		int nsconnect = NContainedSides(side);
 		if(c >= nsconnect)
 		{
-			PZError << "Pr<TFather>::ContainedSideLocId, side = " << side << " connect = " << c << endl;
+			PZError << "TPZPrismExtend<TFather>::ContainedSideLocId, side = " << side << " connect = " << c << endl;
 			return -1;
 		}
 		int ftns = side/TFather::NSides;
@@ -249,7 +249,7 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	void Pr<TFather>::LowerDimensionSides(int side,TPZStack<int> &smallsides)
+	void TPZPrismExtend<TFather>::LowerDimensionSides(int side,TPZStack<int> &smallsides)
 	{
 		smallsides.Resize(0);
 		int nsidecon = NContainedSides(side);
@@ -259,7 +259,7 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	void Pr<TFather>::LowerDimensionSides(int side,TPZStack<int> &smallsides, int DimTarget)
+	void TPZPrismExtend<TFather>::LowerDimensionSides(int side,TPZStack<int> &smallsides, int DimTarget)
 	{
 		smallsides.Resize(0);
 		int nsidecon = NContainedSides(side);
@@ -270,13 +270,13 @@ namespace pztopology {
 	
 	/**volume of the master element*/
 	template<class TFather>
-	REAL Pr<TFather>::RefElVolume()
+	REAL TPZPrismExtend<TFather>::RefElVolume()
 	{
 		return 2.0*TFather::RefElVolume();
 	}
 	
 	template<class TFather>
-	TPZIntPoints *Pr<TFather>::CreateSideIntegrationRule(int side, int order) {
+	TPZIntPoints *TPZPrismExtend<TFather>::CreateSideIntegrationRule(int side, int order) {
 		
 		TPZIntPoints *integ = TFather::CreateSideIntegrationRule(side%TFather::NSides,order);
 		if(side< 2*TFather::NSides) {
@@ -289,23 +289,23 @@ namespace pztopology {
 	}
 	
 	template<class TFather>
-	std::string Pr<TFather>::StrType()
+	std::string TPZPrismExtend<TFather>::StrType()
 	{
-		return "Pr:" + MElementType_Name(TFather::Type());
+		return "TPZPrismExtend:" + MElementType_Name(TFather::Type());
 	}
 	
 	template<class TFather>
-	std::string Pr<TFather>::StrType(int side)
+	std::string TPZPrismExtend<TFather>::StrType(int side)
 	{
 		if(side < 2*TFather::NSides)
 		{
 			return MElementType_Name(TFather::Type(side%(TFather::NSides)));
 		}
-		return "Pr:" + MElementType_Name(TFather::Type(side%(TFather::NSides)));
+		return "TPZPrismExtend:" + MElementType_Name(TFather::Type(side%(TFather::NSides)));
 	}
 	
 	template<class TFather>
-	bool Pr<TFather>::MapToSide(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide) {
+	bool TPZPrismExtend<TFather>::MapToSide(int side, TPZVec<REAL> &InternalPar, TPZVec<REAL> &SidePar, TPZFMatrix<REAL> &JacToSide) {
 		TPZTransform<> Transf = SideToSideTransform(NSides - 1, side);
 		SidePar.Resize(SideDimension(side));
 		Transf.Apply(InternalPar,SidePar);
@@ -318,7 +318,7 @@ namespace pztopology {
 	 * uses log4cxx to print the results of all methods
 	 */
 	template<class TFather>
-	void Pr<TFather>::Diagnostic()
+	void TPZPrismExtend<TFather>::Diagnostic()
 	{
 #ifdef LOG4CXX
         if (logger->isDebugEnabled())
@@ -580,16 +580,21 @@ namespace pztopology {
 		
 #endif
 	}
-	
-	
-	template<>
-	REAL Pr< pztopology::TPZPoint >::RefElVolume()
+	template<class TFather>
+    int TPZPrismExtend<TFather>::ClassId() {
+        //CLASSID return TFather::ClassId()^Hash("TPZPrismExtend");
+		return 666;
+    }
+
+
+    template<>
+	REAL TPZPrismExtend< pztopology::TPZPoint >::RefElVolume()
 	{
 		return 2.0L;
 	}
 	
-	template class Pr<TPZPoint>;
-	template class Pr<Pr<TPZPoint> >;
+	template class TPZPrismExtend<TPZPoint>;
+	template class TPZPrismExtend<TPZPrismExtend<TPZPoint> >;
 	
 }
 

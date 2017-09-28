@@ -184,7 +184,9 @@ public:
     void SetFrontalSolver();
 	/** @brief Set to solve with GMRes algorithm for block diagonal matrix */
     void SetGMResBlock(REAL tol, int numiter, int numvec);
-	
+	private:
+	static int ClassId();
+public:
 protected:
 	
 	/** @brief Stores a pointer to the computational flow mesh. */
@@ -219,7 +221,6 @@ protected:
 	
 	/** @brief Indication if a frontal matrix is being used as a preconditioner */
 	int fHasFrontalPreconditioner;
-	
 };
 
 #endif

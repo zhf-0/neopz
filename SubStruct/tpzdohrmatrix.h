@@ -46,12 +46,12 @@ public:
 	
 	TPZDohrMatrix(TPZAutoPointer<TPZDohrAssembly<TVar> > dohrassembly);
 	
-	TPZDohrMatrix() : TPZMatrix<TVar>()
+	TPZDohrMatrix() : TPZRegisterClassId(&TPZDohrMatrix::ClassId),TPZMatrix<TVar>()
     {
         
     }
 	
-	TPZDohrMatrix(const TPZDohrMatrix &cp) : fGlobal(cp.fGlobal), fNumCoarse(cp.fNumCoarse), fNumThreads(cp.fNumThreads),
+	TPZDohrMatrix(const TPZDohrMatrix &cp) : TPZRegisterClassId(&TPZDohrMatrix::ClassId),fGlobal(cp.fGlobal), fNumCoarse(cp.fNumCoarse), fNumThreads(cp.fNumThreads),
 	fAssembly(cp.fAssembly)
 	{
 	}

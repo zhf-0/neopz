@@ -27,12 +27,14 @@ static LoggerPtr logger(Logger::getLogger("pz.nonlinearanalysis"));
 
 using namespace std;
 
-TPZNonLinearAnalysis::TPZNonLinearAnalysis() : TPZAnalysis() {
+TPZNonLinearAnalysis::TPZNonLinearAnalysis() : TPZRegisterClassId(&TPZNonLinearAnalysis::ClassId),
+TPZAnalysis() {
 	if(Mesh()) Mesh()->Solution().Zero();
 	fSolution.Zero();
 }
 
-TPZNonLinearAnalysis::TPZNonLinearAnalysis(TPZCompMesh *mesh,std::ostream &out) : TPZAnalysis(mesh,true,out) {
+TPZNonLinearAnalysis::TPZNonLinearAnalysis(TPZCompMesh *mesh,std::ostream &out) :
+		TPZRegisterClassId(&TPZNonLinearAnalysis::ClassId),TPZAnalysis(mesh,true,out) {
 	if(Mesh()) Mesh()->Solution().Zero();
 	fSolution.Zero();
 }
@@ -245,4 +247,9 @@ void TPZNonLinearAnalysis::LoadSolution(){
 
 void TPZNonLinearAnalysis::LoadState(TPZFMatrix<STATE> &state){
 	this->LoadSolution(state);
+}
+
+int TPZNonLinearAnalysis::ClassId() {
+	//CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZNonLinearAnalysis");
+	return 666;
 }
