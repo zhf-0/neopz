@@ -85,7 +85,7 @@ const int matIntBCbott=-11, matIntBCtop=-12, matIntBCleft=-13, matIntBCright=-14
 const int matPoint =-5;//Materia de um ponto
 const int dirichlet = 0, neumann = 1, mixed = 2, pointtype=5, dirichletvar=4; //Condições de contorno do problema ->default Dirichlet na esquerda e na direita
 const int pointtypex = 3, pointtypey = 4;
-const REAL visco=1.,theta=-1.; //Coeficientes: viscosidade, fator simetria
+const REAL visco=1.,theta=1.; //Coeficientes: viscosidade, fator simetria
 const REAL Pi=M_PI;
 
 const int quadmat1 = 1; //Parte inferior do quadrado
@@ -94,7 +94,7 @@ const int quadmat3 = 3; //Material de interface
 
 //Dados do problema:
 
-int h_level = 16;
+int h_level = 8;
 
 double hx=1.,hy=1.; //Dimensões em x e y do domínio
 int nelx=h_level, nely=h_level; //Número de elementos em x e y
@@ -102,7 +102,7 @@ int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
 int pOrder = 2; //Ordem polinomial de aproximação
 
 STATE hE=hx/h_level;
-STATE S0=2500.;
+STATE S0=25.;
 STATE Sigma=S0*(pOrder*pOrder)/hE;
 
 void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget);
@@ -290,7 +290,7 @@ void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
                      2.*(xv*xv*xv)*(1. - 6.*yv + 6.*(yv*yv)) +
                      xv*(1. - 6.*yv + 12.*(yv*yv) - 12.*(yv*yv*yv) + 6.*(yv*yv*yv*yv)));
     
-    f[0] = f_x+0.001; // x direction
+    f[0] = f_x; // x direction
     f[1] = f_y; // y direction
 }
 
@@ -433,29 +433,6 @@ void solucao_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     f[1] = v_y; // y direction
     f[2] = p; //
 }
-
-// definition of v analytic
-void v_exactbcx1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
-    
-    f.resize(2);
-    STATE xv = x[0];
-    STATE vbc_x =  sin(2.0*Pi*xv);
-    
-    f[0] = vbc_x; // x direction
-    f[1] = 0.; // y direction
-}
-
-// definition of v analytic
-void v_exactbcy1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
-    
-    f.resize(2);
-    STATE yv = x[1];
-    STATE vbc_y =  -sin(2.0*Pi*yv);
-    
-    f[0] = 0.; // x direction
-    f[1] = vbc_y; // y direction
-}
-
 
 // Solução analítica - Artigo
 void sol_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& dsol){
@@ -929,22 +906,22 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     
     TPZMaterial * BCond0 = material->CreateBC(material, matBCbott, dirichlet, val1, val2); //Cria material que implementa a condição de contorno inferior
     //BCond0->SetForcingFunction(p_exact1, bc_inte_order);
-    //BCond0->SetForcingFunction(solucao_exact,bc_inte_order);
+    BCond0->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond0); //Insere material na malha
     
     TPZMaterial * BCond1 = material->CreateBC(material, matBCtop, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno superior
     //BCond1->SetForcingFunction(p_exact1,bc_inte_order);
-    //BCond1->SetForcingFunction(solucao_exact,bc_inte_order);
+    BCond1->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond1); //Insere material na malha
     
     TPZMaterial * BCond2 = material->CreateBC(material, matBCleft, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno esquerda
     //BCond2->SetForcingFunction(p_exact1,bc_inte_order);
-    //BCond2->SetForcingFunction(solucao_exact,bc_inte_order);
+    BCond2->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond2); //Insere material na malha
     
     TPZMaterial * BCond3 = material->CreateBC(material, matBCright, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno direita
     //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
-    //BCond3->SetForcingFunction(solucao_exact,bc_inte_order);
+    BCond3->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond3); //Insere material na malha
     
     //Ponto
