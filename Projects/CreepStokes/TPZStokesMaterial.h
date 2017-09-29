@@ -23,7 +23,7 @@
 class TPZStokesMaterial : public TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >  {
     
 private:
-
+    
     /// viscosidade
     STATE fViscosity;
     
@@ -32,9 +32,13 @@ private:
     
     /// termo contrario a beta na sua formulacao (para ser conforme a literatura)
     STATE fTheta;
-
+    
     /// dimension of the material
     int fDimension;
+    
+    /// lenght of elements
+    STATE fSigma;
+    
 public:
     
     
@@ -46,7 +50,7 @@ public:
     /** Creates a material object and inserts it in the vector of
      *  material pointers of the mesh.
      */
-    TPZStokesMaterial(int matid, int dimension, STATE viscosity, STATE theta);
+    TPZStokesMaterial(int matid, int dimension, STATE viscosity, STATE theta, STATE Sigma);
     
     
     /** Creates a material object based on the referred object and
@@ -95,8 +99,7 @@ public:
     int NSolutionVariables(int var);
     
     /** Computes the divergence over the parametric space */
-    void ComputeDivergenceOnMaster(TPZVec<TPZMaterialData> &datavec, TPZFMatrix<STATE> &DivergenceofPhi, STATE &DivergenceofU);
-
+    void ComputeDivergenceOnDeformed(TPZVec<TPZMaterialData> &datavec, TPZFMatrix<STATE> &DivergenceofPhi);
     
     /** returns the solution associated with the var index based on
      * the finite element approximation */
@@ -132,7 +135,7 @@ public:
     // Contribute Methods being used - Multiphysics
     virtual void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     
-
+    
     
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
     {
@@ -162,7 +165,7 @@ public:
      * @param ef[out] is the load vector
      * @since April 16, 2007
      */
-   
+    
     
     /**
      * It computes a contribution to the load vector at one integration point.
@@ -223,7 +226,7 @@ public:
     }
     
     
-
+    
     
     /**
      * It computes a contribution to the stiffness matrix and load vector at one internal interface integration point.
@@ -236,7 +239,7 @@ public:
     virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight,TPZFMatrix<STATE> &ef){
         DebugStop();
     }
-
+    
     /**
      * Save the element data to a stream
      */
@@ -258,6 +261,8 @@ public:
      * @param bc[in] is the boundary condition material
      */
     virtual void Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors);
+    
+    
     
 };
 
