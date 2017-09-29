@@ -20,11 +20,13 @@ public:
 static int ClassId();
 public:
 
-    TPZSandlerDimaggioThermoForceA() 
+    TPZSandlerDimaggioThermoForceA()
+    : TPZRegisterClassId(&TPZSandlerDimaggioThermoForceA::ClassId)
     {
     }
 
     TPZSandlerDimaggioThermoForceA(const TPZSandlerDimaggioThermoForceA & source)
+    : TPZRegisterClassId(&TPZSandlerDimaggioThermoForceA::ClassId)
     {
     }
 

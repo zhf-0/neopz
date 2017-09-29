@@ -554,6 +554,12 @@ void TPZPlasticStepPV<YC_t, ER_t>::SetElasticResponse(TPZElasticResponse &ER)
     fYC.SetElasticResponse(ER);
 }
 
+template <class YC_t, class ER_t>
+int TPZPlasticStepPV::ClassId() {
+    //CLASSIDFRANreturn TPZPlasticBase::ClassId()^YC_t::ClassId()^ER_t::ClassId()^Hash("TPZPlasticStepPV");
+    return 666;
+}
+
 template class TPZPlasticStepPV<TPZSandlerExtended, TPZElasticResponse>;
 template class TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse>;
 

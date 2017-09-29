@@ -49,7 +49,7 @@ public:
      * @param[in] alpha damage variable
      */
 
-  TPZPlasticStepPV(REAL alpha=0.):fYC(), fER(), fResTol(1.e-12), fMaxNewton(30), fN()
+  TPZPlasticStepPV(REAL alpha=0.):TPZRegisterClassId(&TPZPlasticStepPV::ClassId),fYC(), fER(), fResTol(1.e-12), fMaxNewton(30), fN()
 	{ 
         fN.fAlpha = alpha;
     }
@@ -59,7 +59,7 @@ public:
      *
      * @param[in] source of copy
      */
-	TPZPlasticStepPV(const TPZPlasticStepPV & source)
+	TPZPlasticStepPV(const TPZPlasticStepPV & source) : TPZRegisterClassId(&TPZPlasticStepPV::ClassId)
 	{
         fYC = source.fYC;
         fER = source.fER;
@@ -214,6 +214,10 @@ public:
     //virtual void Write(TPZStream &buf) const;
 
     //virtual void Read(TPZStream &buf);
+
+    private:
+    static int ClassId();
+public:
 public:
 
     /** @brief Object which represents the yield criterium */

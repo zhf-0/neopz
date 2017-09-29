@@ -29,13 +29,13 @@ public:
 	
 public:
 	
-    TPZVonMises():VONMISESPARENT()
+    TPZVonMises():TPZRegisterClassId(&TPZVonMises::ClassId),VONMISESPARENT()
     {
 		fMaterialTensionSign  = 1; // internally in this material tension is negative
 		fInterfaceTensionSign =  1; // by default
     }
 	
-    TPZVonMises(const TPZVonMises & source):VONMISESPARENT(source)
+    TPZVonMises(const TPZVonMises & source):TPZRegisterClassId(&TPZVonMises::ClassId),VONMISESPARENT(source)
     {
     }
 	

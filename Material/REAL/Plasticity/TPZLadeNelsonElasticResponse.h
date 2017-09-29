@@ -39,10 +39,11 @@ public:
 static int ClassId();
 public:
     
-    TPZLadeNelsonElasticResponse() : fLambda(0.), fM(0.), fPoisson(0.), fPa(0.)
+    TPZLadeNelsonElasticResponse() : TPZRegisterClassId(&TPZLadeNelsonElasticResponse::ClassId), fLambda(0.), fM(0.), fPoisson(0.), fPa(0.)
     { }
 	
-    TPZLadeNelsonElasticResponse(const TPZLadeNelsonElasticResponse & source)
+    TPZLadeNelsonElasticResponse(const TPZLadeNelsonElasticResponse & source):
+            TPZRegisterClassId(&TPZLadeNelsonElasticResponse::ClassId)
     {
 	   fLambda	= source.fLambda;
        fM		= source.fM;

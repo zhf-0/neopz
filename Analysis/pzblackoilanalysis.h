@@ -70,7 +70,9 @@ public:
 	void SetInitialSolution(TPZFMatrix<STATE> & InitialSol);
 	/** @brief Zeroes solution to start iterative process */
 	void SetInitialSolutionAsZero();
-	
+    private:
+	static int ClassId();
+public:
 protected:
 	
 	/** @brief Simulation time step */

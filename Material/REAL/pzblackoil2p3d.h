@@ -196,7 +196,10 @@ public:
 	
 	/** @brief Absolute permeability. */
 	void K(TPZFMatrix<REAL> &K);
-	
+
+	private:
+	static int ClassId();
+public:
 	/** @} */
 };
 

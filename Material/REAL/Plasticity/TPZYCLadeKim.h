@@ -33,9 +33,9 @@ public:
 static int ClassId();
 public:
 
-    TPZYCLadeKim():fKsi1(0.),fh(0.),fAlpha(0.),fKsi2(0.),fMu(0.),fNeta1(0.),fm(0.),fPa(0.),fForceYield(0){ }
+    TPZYCLadeKim():TPZRegisterClassId(&TPZYCLadeKim::ClassId),fKsi1(0.),fh(0.),fAlpha(0.),fKsi2(0.),fMu(0.),fNeta1(0.),fm(0.),fPa(0.),fForceYield(0){ }
 	
-    TPZYCLadeKim(const TPZYCLadeKim & source)
+    TPZYCLadeKim(const TPZYCLadeKim & source) : TPZRegisterClassId(&TPZYCLadeKim::ClassId)
     {
 		fKsi1  = source.fKsi1;
    		fh     = source.fh;

@@ -21,11 +21,11 @@ public:
 static int ClassId();
 public:
     
-    TPZLadeKimThermoForceA() : fRho(0), fD(0), fPa(0)
+    TPZLadeKimThermoForceA() : TPZRegisterClassId(&TPZLadeKimThermoForceA::ClassId),fRho(0), fD(0), fPa(0)
     {
     }
 	
-    TPZLadeKimThermoForceA(const TPZLadeKimThermoForceA & source)
+    TPZLadeKimThermoForceA(const TPZLadeKimThermoForceA & source) : TPZRegisterClassId(&TPZLadeKimThermoForceA::ClassId)
     {
 	   fRho	= source.fRho;
        fD	= source.fD;

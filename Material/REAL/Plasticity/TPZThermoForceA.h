@@ -15,7 +15,7 @@ Neste caso utiliza-se encruamento linear
 class TPZThermoForceA : public TPZSavable {
 public:
 
-    TPZThermoForceA() : fSigmaYield0(0), fK(0)
+    TPZThermoForceA() : TPZRegisterClassId(&TPZThermoForceA::ClassId),fSigmaYield0(0), fK(0)
     {
     }
     

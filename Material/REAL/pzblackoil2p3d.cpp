@@ -286,7 +286,8 @@ void TPZBlackOil2P3D::K(TPZFMatrix<REAL> &K){
 
 //Programa
 
-TPZBlackOil2P3D::TPZBlackOil2P3D(int id, double deltaT):TPZDiscontinuousGalerkin(id){
+TPZBlackOil2P3D::TPZBlackOil2P3D(int id, double deltaT):
+		TPZRegisterClassId(&TPZBlackOil2P3D::ClassId),TPZDiscontinuousGalerkin(id){
 	this->fDeltaT = deltaT;
 }
 
@@ -294,7 +295,8 @@ TPZBlackOil2P3D::~TPZBlackOil2P3D(){
 	//nothing to be done
 }
 
-TPZBlackOil2P3D::TPZBlackOil2P3D(const TPZBlackOil2P3D &cp):TPZDiscontinuousGalerkin(cp){
+TPZBlackOil2P3D::TPZBlackOil2P3D(const TPZBlackOil2P3D &cp):
+		TPZRegisterClassId(&TPZBlackOil2P3D::ClassId),TPZDiscontinuousGalerkin(cp){
 	
 }
 
@@ -564,6 +566,12 @@ void TPZBlackOil2P3D::Solution(TPZVec<STATE> &Sol, TPZFMatrix<STATE> &DSol,
 	
 	TPZMaterial::Solution(Sol,DSol,axes,var,Solout);
 	
-}//method
+}
+
+int TPZBlackOil2P3D::ClassId() {
+	//CLASSIDFRAN return TPZDiscontinuousGalerkin::ClassId()^Hash("TPZBlackOil2P3D");
+	return 666;
+}
+//method
 
 #endif

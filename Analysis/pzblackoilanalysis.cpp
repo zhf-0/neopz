@@ -15,7 +15,8 @@ using namespace std;
 
 #ifdef _AUTODIFF
 
-TPZBlackOilAnalysis::TPZBlackOilAnalysis(TPZCompMesh *mesh, double TimeStep, std::ostream &out):TPZNonLinearAnalysis(mesh,out){
+TPZBlackOilAnalysis::TPZBlackOilAnalysis(TPZCompMesh *mesh, double TimeStep, std::ostream &out):
+		TPZRegisterClassId(&TPZBlackOilAnalysis::ClassId),TPZNonLinearAnalysis(mesh,out){
 	this->fTimeStep = TimeStep;
 	this->fSimulationTime = 0.;
 	this->SetConvergence(0, 0.);
@@ -380,6 +381,12 @@ void TPZBlackOilAnalysis::Vazao(TPZBlackOilAnalysis &an, int matid, double & Vaz
 		VazaoOleoFundo += ef.fMat(0,0)*Bo.val()*86400.;
 		VazaoAguaFundo += ef.fMat(1,0)*bo->Bw()*86400.;
 	}//iel
-}//method
+}
+
+int TPZBlackOilAnalysis::ClassId() {
+	//CLASSIDFRAN return TPZNonLinearAnalysis::ClassId()^Hash("TPZBlackOilAnalysis");
+	return 666;
+}
+//method
 
 #endif

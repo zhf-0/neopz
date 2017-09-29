@@ -16,11 +16,12 @@ public:
 static int ClassId();
 public:
     
-   TPZElasticResponse() : fLambda(0.), fMu(0.)
+   TPZElasticResponse() : TPZRegisterClassId(&TPZElasticResponse::ClassId),fLambda(0.), fMu(0.)
    {
    }
 	
    TPZElasticResponse(const TPZElasticResponse & source)
+   : TPZRegisterClassId(&TPZElasticResponse::ClassId)
    {
 	   fLambda	= source.fLambda;
        fMu		= source.fMu;

@@ -1,11 +1,12 @@
 #include "TPZElasticCriteria.h"
 
 TPZElasticCriteria::TPZElasticCriteria()
+: TPZRegisterClassId(&TPZElasticCriteria::ClassId)
 {
   
 }
 
-TPZElasticCriteria::TPZElasticCriteria(const TPZElasticCriteria &cp) : fN(cp.fN), fER(cp.fER)
+TPZElasticCriteria::TPZElasticCriteria(const TPZElasticCriteria &cp) : TPZRegisterClassId(&TPZElasticCriteria::ClassId), fN(cp.fN), fER(cp.fER)
 {
 }
 
@@ -124,4 +125,9 @@ void TPZElasticCriteria::SetState(const TPZPlasticState<REAL> &state)
 int TPZElasticCriteria::IntegrationSteps() const
 {
   return 1;
+}
+
+int TPZElasticCriteria::ClassId() {
+    //CLASSIDFRAN return TPZPlasticBase::ClassId()^Hash("TPZElasticCriteria");
+    return 666;
 }

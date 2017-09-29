@@ -82,8 +82,6 @@ public:
    */
   virtual void ApplyStrainComputeSigma(const TPZTensor<REAL> &epsTotal, TPZTensor<REAL> &sigma);
   
-  
-  
   //virtual void ApplySigmaComputeStrain(const TPZTensor<REAL> &sigma, TPZTensor<REAL> &epsTotal);
   
   /**
@@ -130,7 +128,9 @@ public:
    */
   virtual void SetState(const TPZPlasticState<REAL> &state);
 
-  
+  private:
+    static int ClassId();
+public:
 };
 
 

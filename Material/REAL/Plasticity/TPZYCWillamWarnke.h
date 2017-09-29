@@ -19,9 +19,9 @@ class TPZYCWillamWarnke: public TPZSavable {
     	
 public:
 	
-    TPZYCWillamWarnke():fa(1.),fb(1.),fcConcrete(20.),fcoesion(9.2376),fa0(0.1025),fa1(-0.8403),fa2(-0.0910),fb0(0.1025),fb1(-0.4507),fb2(-0.1018){}
+    TPZYCWillamWarnke():TPZRegisterClassId(&TPZYCWilliamWarnke::ClassId),fa(1.),fb(1.),fcConcrete(20.),fcoesion(9.2376),fa0(0.1025),fa1(-0.8403),fa2(-0.0910),fb0(0.1025),fb1(-0.4507),fb2(-0.1018){}
 	
-    TPZYCWillamWarnke(const TPZYCWillamWarnke & source)
+    TPZYCWillamWarnke(const TPZYCWillamWarnke & source) : TPZRegisterClassId(&TPZYCWilliamWarnke::ClassId)
     {
 		fa  = source.fa;
    		fb  = source.fb;
@@ -38,7 +38,7 @@ public:
 	
     const char * Name() const
     {
-		return "TPZYCDruckerPrager";	
+		return "TPZYCWilliamWarnke";
     }
 	
     void Print(std::ostream & out) const

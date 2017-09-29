@@ -28,9 +28,10 @@ class TPZYCDruckerPrager: public TPZSavable {
 	
 public:
 
-    TPZYCDruckerPrager():fKsi(0.),fEta(0.){}
+    TPZYCDruckerPrager():TPZRegisterClassId(&TPZYCDruckerPrager::ClassId),fKsi(0.),fEta(0.){}
 	
     TPZYCDruckerPrager(const TPZYCDruckerPrager & source)
+    : TPZRegisterClassId(&TPZYCDruckerPrager::ClassId)
     {
 		fKsi  = source.fKsi;
    		fEta  = source.fEta;
