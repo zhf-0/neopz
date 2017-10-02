@@ -25,7 +25,7 @@ static LoggerPtr logdata(Logger::getLogger("pz.tpzmatpoissonD3"));
 
 using namespace std;
 
-TPZMatPoissonD3::TPZMatPoissonD3():TPZDiscontinuousGalerkin(){
+TPZMatPoisson3D::TPZMatPoisson3D():TPZRegisterClassId(&TPZMatPoisson3D::ClassId),TPZDiscontinuousGalerkin(){
 	
     /** Valor da funcao de carga */
     fF = 0.; //fF
@@ -48,7 +48,7 @@ TPZMatPoissonD3::TPZMatPoissonD3():TPZDiscontinuousGalerkin(){
 
 }
 
-TPZMatPoissonD3::TPZMatPoissonD3(int matid, int dim):TPZDiscontinuousGalerkin(matid){
+TPZMatPoisson3D::TPZMatPoisson3D(int matid, int dim):TPZRegisterClassId(&TPZMatPoisson3D::ClassId),TPZDiscontinuousGalerkin(matid){
 	
     if(dim<0 || dim >3){
         DebugStop();
@@ -75,15 +75,15 @@ TPZMatPoissonD3::TPZMatPoissonD3(int matid, int dim):TPZDiscontinuousGalerkin(ma
     fPermeabilityFunction = NULL;
 }
 
-TPZMatPoissonD3::~TPZMatPoissonD3(){
+TPZMatPoisson3D::~TPZMatPoisson3D(){
 }
 
-TPZMatPoissonD3::TPZMatPoissonD3(const TPZMatPoissonD3 &copy):TPZDiscontinuousGalerkin(copy){
+TPZMatPoisson3D::TPZMatPoisson3D(const TPZMatPoisson3D &copy):TPZRegisterClassId(&TPZMatPoisson3D::ClassId),TPZDiscontinuousGalerkin(copy){
     
     this->operator=(copy);
 }
 
-TPZMatPoissonD3 & TPZMatPoissonD3::operator=(const TPZMatPoissonD3 &copy){
+TPZMatPoisson3D & TPZMatPoisson3D::operator=(const TPZMatPoisson3D &copy){
     
     TPZDiscontinuousGalerkin::operator = (copy);
     this->fF = copy.fF; //fF
@@ -94,11 +94,11 @@ TPZMatPoissonD3 & TPZMatPoissonD3::operator=(const TPZMatPoissonD3 &copy){
 	return *this;
 }
 
-int TPZMatPoissonD3::NStateVariables() {
+int TPZMatPoisson3D::NStateVariables() {
 	return 1;//(1+fDim);
 }
 
-void TPZMatPoissonD3::Print(std::ostream &out) {
+void TPZMatPoisson3D::Print(std::ostream &out) {
 	out << "name of material : " << Name() << "\n";
     out << "Dimesion of problem " << fDim << endl;
 	out << "Material ID  "<< fMatId << endl;
@@ -112,7 +112,7 @@ void TPZMatPoissonD3::Print(std::ostream &out) {
 
 // Contribute methods
 // esse metodo esta ok
-void TPZMatPoissonD3::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatPoisson3D::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     
 #ifdef PZDEBUG
@@ -259,14 +259,14 @@ void TPZMatPoissonD3::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, 
     
 }
 
-void TPZMatPoissonD3::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
+void TPZMatPoisson3D::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
 {
     return;
 }
 
 
 //Contribute interface methods
-void TPZMatPoissonD3::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleft, TPZVec<TPZMaterialData> &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMatPoisson3D::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleft, TPZVec<TPZMaterialData> &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
     TPZFMatrix<REAL> &phiQL = dataleft[0].phi;
 	//TPZFMatrix<REAL> &phiQR = dataright[0].phi;
@@ -354,7 +354,7 @@ void TPZMatPoissonD3::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMater
     
 }
 
-void TPZMatPoissonD3::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
+void TPZMatPoisson3D::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
 {
     
     
@@ -555,18 +555,18 @@ void TPZMatPoissonD3::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZMat
 }
 
 
-void TPZMatPoissonD3::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc)
+void TPZMatPoisson3D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc)
 {
 	DebugStop();
 }
 
 
-void TPZMatPoissonD3::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
+void TPZMatPoisson3D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc)
 {
 	DebugStop();
 }
 
-void TPZMatPoissonD3::FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
+void TPZMatPoisson3D::FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMaterialData > &datavec)
 {
     int nref = datavec.size();
 	for(int i = 0; i<nref; i++)
@@ -577,7 +577,7 @@ void TPZMatPoissonD3::FillBoundaryConditionDataRequirement(int type,TPZVec<TPZMa
 }
 
 /** Returns the variable index associated with the name */
-int TPZMatPoissonD3::VariableIndex(const std::string &name){
+int TPZMatPoisson3D::VariableIndex(const std::string &name){
     if(!strcmp("Flux",name.c_str()))           return 1;
     if(!strcmp("Pressure",name.c_str()))       return 2;
     if(!strcmp("GradFluxX",name.c_str()))      return 3;
@@ -591,7 +591,7 @@ int TPZMatPoissonD3::VariableIndex(const std::string &name){
 	return TPZMaterial::VariableIndex(name);
 }
 
-int TPZMatPoissonD3::NSolutionVariables(int var){
+int TPZMatPoisson3D::NSolutionVariables(int var){
     if(var == 1) return 3;
     if(var == 2) return 1;
     if(var == 3) return 3;
@@ -605,7 +605,7 @@ int TPZMatPoissonD3::NSolutionVariables(int var){
 }
 
 // metodo para gerar vtk
-void TPZMatPoissonD3::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
+void TPZMatPoisson3D::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
 	
 	Solout.Resize( this->NSolutionVariables(var));
 	
@@ -703,7 +703,7 @@ void TPZMatPoissonD3::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec
 }
 
 // metodo para computar erros
-void TPZMatPoissonD3::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
+void TPZMatPoisson3D::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
     
     Solout.Resize( this->NSolutionVariables(var));
 
@@ -730,7 +730,7 @@ void TPZMatPoissonD3::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &So
 }
 
 #include "pzaxestools.h"
-void TPZMatPoissonD3::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes, int var,TPZVec<STATE> &Solout){
+void TPZMatPoisson3D::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes, int var,TPZVec<STATE> &Solout){
     
 #ifndef STATE_COMPLEX
     Solout.Resize( this->NSolutionVariables( var ) );
@@ -756,7 +756,7 @@ void TPZMatPoissonD3::Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMa
 
 
 
-void TPZMatPoissonD3::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
+void TPZMatPoisson3D::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 {
 	int nref = datavec.size();
 	for(int i = 0; i<nref; i++)
@@ -772,7 +772,7 @@ void TPZMatPoissonD3::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 
 
 
-void TPZMatPoissonD3::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values){
+void TPZMatPoisson3D::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values){
     
     values.Fill(0.0);
     TPZVec<STATE> sol(1),dsol(3),div(1);
@@ -819,7 +819,7 @@ void TPZMatPoissonD3::ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TP
 
 
 
-void TPZMatPoissonD3::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
+void TPZMatPoisson3D::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
 							 TPZFMatrix<STATE> &dudx, TPZFMatrix<REAL> &axes, TPZVec<STATE> &/*flux*/,
 							 TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values) {
 	
@@ -841,6 +841,11 @@ void TPZMatPoissonD3::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
     }
     //values[0] : erro em norma H1 <=> norma Energia
     values[0]  = values[1]+values[2];
+}
+
+int TPZMatPoisson3D::ClassId() {
+    //CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZMatPoisson3D");
+    return 666;
 }
 
 

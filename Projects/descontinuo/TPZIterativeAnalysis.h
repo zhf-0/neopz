@@ -33,6 +33,10 @@ public:
   void ResetReference(TPZCompMesh *aggcmesh);
 
   void SetReference(TPZCompMesh *aggcmesh);
+
+	private:
+	static int ClassId();
+public:
 };
 
 #endif

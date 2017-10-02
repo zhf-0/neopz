@@ -29,7 +29,7 @@ static LoggerPtr logdata(Logger::getLogger("pz.material.poroelastic.data"));
 
 TPZPoroElastic2d::EState TPZPoroElastic2d::gState = ECurrentState;
 
-TPZPoroElastic2d::TPZPoroElastic2d():TPZDiscontinuousGalerkin(), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.), fPlaneStress(0) {
+TPZPoroElastic2d::TPZPoroElastic2d():TPZRegisterClassId(&TPZPoroElastic2d::ClassId),TPZDiscontinuousGalerkin(), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.), fPlaneStress(0) {
 	fE = 0.;
 	fDim = 2;
 	fmatId = 0;
@@ -41,7 +41,7 @@ TPZPoroElastic2d::TPZPoroElastic2d():TPZDiscontinuousGalerkin(), ff(0), fnu(0.),
 	
 }
 
-TPZPoroElastic2d::TPZPoroElastic2d(int matid, int dim):TPZDiscontinuousGalerkin(matid), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.),fPlaneStress(0) {
+TPZPoroElastic2d::TPZPoroElastic2d(int matid, int dim):TPZRegisterClassId(&TPZPoroElastic2d::ClassId),TPZDiscontinuousGalerkin(matid), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.),fPlaneStress(0) {
 	fE = 0.;
 	fDim = dim;
 	ff.resize(2);
@@ -1339,5 +1339,9 @@ void TPZPoroElastic2d::ContributeInterface(TPZVec<TPZMaterialData> &datavec, TPZ
 
 void TPZPoroElastic2d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
 	DebugStop();
+}
+
+int TPZPoroElastic2d::ClassId() {
+	//CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZPoroElastic2d");
 }
 

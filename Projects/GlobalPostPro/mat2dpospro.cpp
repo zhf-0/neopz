@@ -22,30 +22,30 @@
 #include "pzmatrix.h"
 #include "pzaxestools.h"
 
-Mat2Dpospro::Mat2Dpospro() : TPZMaterial(), fDim(0){ //void constructor
+TPZMat2Dpospro::TPZMat2Dpospro() : TPZRegisterClassId(&TPZMat2Dpospro::ClassId),TPZMaterial(), fDim(0){ //void constructor
 
   fAlpha = 1.;
   fDelta = 1.; 
 }
 
-Mat2Dpospro::Mat2Dpospro(int nummat, int dim) : TPZMaterial(nummat), fDim(dim){ //constructor
+TPZMat2Dpospro::TPZMat2Dpospro(int nummat, int dim) : TPZRegisterClassId(&TPZMat2Dpospro::ClassId),TPZMaterial(nummat), fDim(dim){ //constructor
 
   fAlpha = 1.;
   fDelta = 1.; 
 }
 
-Mat2Dpospro::~Mat2Dpospro()
+TPZMat2Dpospro::~TPZMat2Dpospro()
 {
   
 }
 
-Mat2Dpospro::Mat2Dpospro(const Mat2Dpospro& other) : TPZMaterial(other)
+TPZMat2Dpospro::TPZMat2Dpospro(const TPZMat2Dpospro& other) : TPZRegisterClassId(&TPZMat2Dpospro::ClassId),TPZMaterial(other)
 {
   fAlpha = other.fAlpha;
   fDelta = other.fDelta;
 }
 
-Mat2Dpospro & Mat2Dpospro::operator=(const Mat2Dpospro &copy)
+TPZMat2Dpospro & TPZMat2Dpospro::operator=(const TPZMat2Dpospro &copy)
 {
     TPZMaterial::operator=(copy);
     fAlpha = copy.fAlpha;
@@ -54,11 +54,11 @@ Mat2Dpospro & Mat2Dpospro::operator=(const Mat2Dpospro &copy)
 }
 
 
-int Mat2Dpospro::Dimension() const {return fDim;};
+int TPZMat2Dpospro::Dimension() const {return fDim;};
 
-int Mat2Dpospro::NStateVariables() {return 1;}
+int TPZMat2Dpospro::NStateVariables() {return 1;}
 
-void Mat2Dpospro::Print(std::ostream &out) {
+void TPZMat2Dpospro::Print(std::ostream &out) {
   out << "name of material : " << Name() << "\n";
   out << "Coeficient which multiplies the gradient operator "<< "my var" << std::endl;
   out << "Base Class properties :";
@@ -66,18 +66,18 @@ void Mat2Dpospro::Print(std::ostream &out) {
   out << "\n";
 }
 
-void Mat2Dpospro::SetParameters(REAL alpha, REAL delta) {
+void TPZMat2Dpospro::SetParameters(REAL alpha, REAL delta) {
   fAlpha = alpha;
   fDelta = delta;
 }
 
-void Mat2Dpospro::GetParameters(REAL &alpha, REAL &delta) {
+void TPZMat2Dpospro::GetParameters(REAL &alpha, REAL &delta) {
     alpha = fAlpha;
     delta = fDelta;
 }
 
 
-void Mat2Dpospro::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZMat2Dpospro::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 	//Find u in V c Hdiv, tal a_alpha(u,v) = L_alpha(v) para todo v in V
 	//where a_alpha(u,v) = integral(u dot v) +  co^alpha integral(div u div v)
@@ -169,7 +169,7 @@ void Mat2Dpospro::Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STAT
 }
 
 /** Returns the variable index associated with the name */
-int Mat2Dpospro::VariableIndex(const std::string &name){
+int TPZMat2Dpospro::VariableIndex(const std::string &name){
   if(!strcmp("U",name.c_str()))		return  1;
   if(!strcmp("F",name.c_str()))		return  2;
   if(!strcmp("Sigma",name.c_str()))		return  3;
@@ -179,7 +179,7 @@ int Mat2Dpospro::VariableIndex(const std::string &name){
   return TPZMaterial::VariableIndex(name);
 }
 
-int Mat2Dpospro::NSolutionVariables(int var){
+int TPZMat2Dpospro::NSolutionVariables(int var){
   if(var == 1) return 1;
   if(var == 2) return 1;
   if(var == 3) return fDim;
@@ -189,7 +189,7 @@ int Mat2Dpospro::NSolutionVariables(int var){
   return TPZMaterial::NSolutionVariables(var);
 }
 
-void Mat2Dpospro::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
+void TPZMat2Dpospro::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout){
     
     Solout.Resize( this->NSolutionVariables(var));
     
@@ -241,7 +241,7 @@ void Mat2Dpospro::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout
 }
 
 
-void Mat2Dpospro::FillDataRequirements(TPZMaterialData  &data)
+void TPZMat2Dpospro::FillDataRequirements(TPZMaterialData  &data)
 {
     data.SetAllRequirements(false);
     data.fNeedsSol = false;
@@ -251,10 +251,15 @@ void Mat2Dpospro::FillDataRequirements(TPZMaterialData  &data)
     data.fNeedsNeighborCenter = false;
 }
 
-void Mat2Dpospro::FillBoundaryConditionDataRequirement(int type, TPZMaterialData &data){
+void TPZMat2Dpospro::FillBoundaryConditionDataRequirement(int type, TPZMaterialData &data){
 
     data.fNeedsSol = false;
     data.fNeedsNormal = false;
     data.fNeedsNeighborSol = false;
+}
+
+int TPZMat2Dpospro::ClassId() {
+    //CLASSIDFRAN return TPZMaterial::ClassId()^Hash("TPZMat2Dpospro");
+    return 666;
 }
 

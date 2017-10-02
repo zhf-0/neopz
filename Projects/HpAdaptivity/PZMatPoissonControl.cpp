@@ -45,7 +45,7 @@ static LoggerPtr logdata(Logger::getLogger("pz.TPZMatPoissonControl.data"));
 
 using namespace std;
 
-TPZMatPoissonControl::TPZMatPoissonControl():TPZDiscontinuousGalerkin(){
+TPZMatPoissonControl::TPZMatPoissonControl():TPZRegisterClassId(&TPZMatPoissonControl::ClassId),TPZDiscontinuousGalerkin(){
 	
     /** Valor da funcao de carga */
     fF = 0.; //fF
@@ -64,7 +64,7 @@ TPZMatPoissonControl::TPZMatPoissonControl():TPZDiscontinuousGalerkin(){
     
 }
 
-TPZMatPoissonControl::TPZMatPoissonControl(int matid, int dim):TPZDiscontinuousGalerkin(matid){
+TPZMatPoissonControl::TPZMatPoissonControl(int matid, int dim):TPZRegisterClassId(&TPZMatPoissonControl::ClassId),TPZDiscontinuousGalerkin(matid){
 	
     if(dim<0 || dim >3){
         DebugStop();
@@ -88,7 +88,7 @@ TPZMatPoissonControl::TPZMatPoissonControl(int matid, int dim):TPZDiscontinuousG
 TPZMatPoissonControl::~TPZMatPoissonControl(){
 }
 
-TPZMatPoissonControl::TPZMatPoissonControl(const TPZMatPoissonControl &copy):TPZDiscontinuousGalerkin(copy){
+TPZMatPoissonControl::TPZMatPoissonControl(const TPZMatPoissonControl &copy):TPZRegisterClassId(&TPZMatPoissonControl::ClassId),TPZDiscontinuousGalerkin(copy){
     
     this->operator=(copy);
 }
@@ -373,4 +373,9 @@ void TPZMatPoissonControl::FillDataRequirements(TPZVec<TPZMaterialData > &datave
 		datavec[i].fNeedsNeighborCenter = false;
 		datavec[i].fNeedsNormal = true;
 	}
+}
+
+int TPZMatPoissonControl::ClassId() {
+    //CLASSIDFRAN return TPZDiscontinuousGalerkin::ClassId()^Hash("TPZMatPoissonControl");
+    return 666;
 }

@@ -383,6 +383,10 @@ public:
 	}
 	
 	virtual void FillDataRequirements(TPZVec<TPZMaterialData > &datavec);
+
+	private:
+	static int ClassId();
+public:
 };
 
 #endif

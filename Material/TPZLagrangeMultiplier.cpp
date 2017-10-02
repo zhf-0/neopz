@@ -14,7 +14,7 @@
 /** @brief Unique identifier for serialization purposes */
 int TPZLagrangeMultiplier::ClassId()
 {
-    //CLASSIDFRANreturn TPZDiscontinousGalerkin::ClassId()^Hash("TPZLagrangeMultiplier");
+    //CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZLagrangeMultiplier");
     return 666;
 }
 

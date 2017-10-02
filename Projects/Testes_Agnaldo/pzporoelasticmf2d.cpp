@@ -21,7 +21,7 @@ static LoggerPtr logdata(Logger::getLogger("pz.material.poroelastic2d.data"));
 
 TPZPoroElasticMF2d::EState TPZPoroElasticMF2d::gState = ECurrentState;
 
-TPZPoroElasticMF2d::TPZPoroElasticMF2d():TPZDiscontinuousGalerkin(){
+TPZPoroElasticMF2d::TPZPoroElasticMF2d():TPZRegisterClassId(&TPZPoroElasticMF2d::ClassId),TPZDiscontinuousGalerkin(){
     fE = 0.;
     fnu = 0.;
     flambda = 0;
@@ -49,7 +49,7 @@ TPZPoroElasticMF2d::TPZPoroElasticMF2d():TPZDiscontinuousGalerkin(){
     fReturnSolutionDimension = false;
 }
 
-TPZPoroElasticMF2d::TPZPoroElasticMF2d(int matid, int dim):TPZDiscontinuousGalerkin(matid){
+TPZPoroElasticMF2d::TPZPoroElasticMF2d(int matid, int dim):TPZRegisterClassId(&TPZPoroElasticMF2d::ClassId),TPZDiscontinuousGalerkin(matid){
     
     fE = 0.;
     fnu = 0.;
@@ -83,7 +83,7 @@ TPZPoroElasticMF2d::TPZPoroElasticMF2d(int matid, int dim):TPZDiscontinuousGaler
 TPZPoroElasticMF2d::~TPZPoroElasticMF2d(){
 }
 
-TPZPoroElasticMF2d::TPZPoroElasticMF2d(const TPZPoroElasticMF2d &copy){
+TPZPoroElasticMF2d::TPZPoroElasticMF2d(const TPZPoroElasticMF2d &copy) : TPZRegisterClassId(&TPZPoroElasticMF2d::ClassId){
     this->operator=(copy);
 }
 
@@ -899,6 +899,11 @@ void TPZPoroElasticMF2d::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 		datavec[i].fNeedsNormal = false;
 	}
 	
+}
+
+int TPZPoroElasticMF2d::ClassId() {
+    //CLASSIDFRAN return TPZDiscontinuousGalerkin::ClassId()^Hash("TPZPoroElasticMF2d");
+    return 666;
 }
 
 

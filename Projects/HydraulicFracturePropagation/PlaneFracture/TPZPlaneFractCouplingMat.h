@@ -189,7 +189,9 @@ public:
     {
         return fvsp;
     }
-
+    private:
+    static int ClassId();
+public:
 private:
     
     TPZLastElastFunction * fLastElastFunction;

@@ -2,7 +2,8 @@
 #include "convhyper.h"
 #include "pzmaterialdata.h"
 
-TPZConvHyper::TPZConvHyper(int numnod, int num, REAL E, REAL mu, REAL nu, REAL lambda, REAL coef1, REAL coef2, REAL coef3) : TPZMatHyperElastic(num,E,mu,nu,lambda,coef1,coef2,coef3), fState(3,3,0.),
+TPZConvHyper::TPZConvHyper(int numnod, int num, REAL E, REAL mu, REAL nu, REAL lambda, REAL coef1, REAL coef2, REAL coef3) : TPZRegisterClassId(&TPZConvHyper::ClassId),
+                                                                                                                             TPZMatHyperElastic(num,E,mu,nu,lambda,coef1,coef2,coef3), fState(3,3,0.),
 						       fPhi(numnod,1,0.),fDphi(3,numnod,0.),fAxes(3,3,0.),fSol(3,0.),fX(3,0.),fNumNod(numnod) {
   int i,n;
   for(i=0;i<3;i++) {
@@ -71,4 +72,9 @@ void TPZConvHyper::ComputeTangent(TPZFMatrix<STATE> &tangent, TPZVec<REAL> &coef
   data.dphix = fDphi;
   Contribute(data,1.,tangent,ef);
   //tangent.Print("tangent");
+}
+
+int TPZConvHyper::ClassId() {
+  //CLASSIDFRANreturn TPZMatHyperElastic::ClassId()^Hash("TPZConvHyper");
+  return 666;
 }

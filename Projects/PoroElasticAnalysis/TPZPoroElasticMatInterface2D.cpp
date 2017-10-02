@@ -7,7 +7,7 @@
  *
  */
 
-#include "PoroElasticMatInterface2D.h"
+#include "TPZPoroElasticMatInterface2D.h"
 #include "pzdiscgal.h"
 #include "pzelasmat.h"
 #include "pzporoelastic2d.h"
@@ -24,7 +24,7 @@ static LoggerPtr logger(Logger::getLogger("pz.poroelastic2d"));
 static LoggerPtr logdata(Logger::getLogger("pz.material.poroelastic.data"));
 #endif
 
-PoroElasticMatInterface2D::PoroElasticMatInterface2D() : TPZPoroElastic2d(){
+TPZPoroElasticMatInterface2D::TPZPoroElasticMatInterface2D() : TPZRegisterClassId(&TPZPoroElasticMatInterface2D::ClassId),TPZPoroElastic2d(){
 	fknu = 1000000.0;
 	fktu = 1000000.0;
 	fknp = 1000000.0;
@@ -33,7 +33,7 @@ PoroElasticMatInterface2D::PoroElasticMatInterface2D() : TPZPoroElastic2d(){
 	this->SetDimension(1);
 }
 
-PoroElasticMatInterface2D::PoroElasticMatInterface2D(int mat,int dim, bool DoContribute, REAL fmu) : TPZPoroElastic2d(mat,dim){
+TPZPoroElasticMatInterface2D::TPZPoroElasticMatInterface2D(int mat,int dim, bool DoContribute, REAL fmu) : TPZRegisterClassId(&TPZPoroElasticMatInterface2D::ClassId),TPZPoroElastic2d(mat,dim){
 	fknu = 1000000.0;
 	fktu = 1000000.0;
 	fknp = 1000000.0;
@@ -43,13 +43,13 @@ PoroElasticMatInterface2D::PoroElasticMatInterface2D(int mat,int dim, bool DoCon
 	this->SetDimension(1);	
 }
 
-PoroElasticMatInterface2D::~PoroElasticMatInterface2D()
+TPZPoroElasticMatInterface2D::~TPZPoroElasticMatInterface2D()
 	{
 	}
 
 // Contribute Interface implementations
 
-void PoroElasticMatInterface2D::SetPenalty(REAL knu, REAL ktu, REAL knp, REAL ktp)
+void TPZPoroElasticMatInterface2D::SetPenalty(REAL knu, REAL ktu, REAL knp, REAL ktp)
 {
 	fknu = knu;
 	fktu = ktu;
@@ -57,7 +57,7 @@ void PoroElasticMatInterface2D::SetPenalty(REAL knu, REAL ktu, REAL knp, REAL kt
 	fktp = ktp;	
 }
 
-void PoroElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZPoroElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 	if (this->fcontribute) 
 	{
@@ -144,7 +144,7 @@ void PoroElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZVe
 }
 
 /** Returns the variable index associated with the name */
-int PoroElasticMatInterface2D::VariableIndex(const std::string &name)
+int TPZPoroElasticMatInterface2D::VariableIndex(const std::string &name)
 {
 	//	Elasticity Variables
 	if(!strcmp("NormalRight",name.c_str()))				return	1;
@@ -159,7 +159,7 @@ int PoroElasticMatInterface2D::VariableIndex(const std::string &name)
 	return TPZMaterial::VariableIndex(name);
 }
 
-int PoroElasticMatInterface2D::NSolutionVariables(int var){
+int TPZPoroElasticMatInterface2D::NSolutionVariables(int var){
 	if(var == 1)	return 3;
 	if(var == 2)	return 3;
 	if(var == 3)	return 3;
@@ -171,7 +171,7 @@ int PoroElasticMatInterface2D::NSolutionVariables(int var){
 	return TPZMaterial::NSolutionVariables(var);
 }
 
-void PoroElasticMatInterface2D::Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * Left, TPZCompEl * Right)
+void TPZPoroElasticMatInterface2D::Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * Left, TPZCompEl * Right)
 {
 	
 	Solout.Resize( this->NSolutionVariables(var));
@@ -318,17 +318,22 @@ void PoroElasticMatInterface2D::Solution(TPZMaterialData &data, TPZVec<TPZMateri
 
 
 
-void PoroElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+void TPZPoroElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();
 }
 
-void PoroElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef){
+void TPZPoroElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();	
 }
 
-void PoroElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+void TPZPoroElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();	
+}
+
+int TPZPoroElasticMatInterface2D::ClassId() {
+	//CLASSIDFRANreturn TPZPoroElastic2D::ClassId()^Hash("TPZPoroElasticMatInterface2D");
+	return 666;
 }

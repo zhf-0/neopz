@@ -14,7 +14,7 @@
 #include "pzfmatrix.h"
 
 
-TPZCouplingDSMaterial::TPZCouplingDSMaterial() : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
+TPZCouplingDSMaterial::TPZCouplingDSMaterial() : TPZRegisterClassId(&TPZCouplingDSMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
 
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
@@ -24,7 +24,7 @@ TPZCouplingDSMaterial::TPZCouplingDSMaterial() : TPZMatWithMem<TPZFMatrix<STATE>
 
 ////////////////////////////////////////////////////////////////////
 
-TPZCouplingDSMaterial::TPZCouplingDSMaterial(int matid, int dimension, STATE viscosity,STATE permeability, STATE theta) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fViscosity(viscosity),fTheta(theta),fDimension(dimension)
+TPZCouplingDSMaterial::TPZCouplingDSMaterial(int matid, int dimension, STATE viscosity,STATE permeability, STATE theta) : TPZRegisterClassId(&TPZCouplingDSMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fViscosity(viscosity),fTheta(theta),fDimension(dimension)
 {
 
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
@@ -35,7 +35,7 @@ TPZCouplingDSMaterial::TPZCouplingDSMaterial(int matid, int dimension, STATE vis
 
 ////////////////////////////////////////////////////////////////////
 
-TPZCouplingDSMaterial::TPZCouplingDSMaterial(const TPZCouplingDSMaterial &mat) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
+TPZCouplingDSMaterial::TPZCouplingDSMaterial(const TPZCouplingDSMaterial &mat) : TPZRegisterClassId(&TPZCouplingDSMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat), fViscosity(mat.fViscosity), fTheta(mat.fTheta),fDimension(mat.fDimension)
 {
        fk= mat.fk;
     
@@ -639,4 +639,9 @@ void TPZCouplingDSMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
 {
  
     DebugStop();
+}
+
+int TPZCouplingDSMaterial::ClassId() {
+    //CLASSIDFRANreturn TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >::ClassId()^Hash("TPZCouplingDSMaterial");
+    return 666;
 }

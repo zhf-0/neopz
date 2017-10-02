@@ -118,7 +118,10 @@ public:
   
     /** @brief Sets if doesnt wanna calculate the contribution. Used to speed up the memory update of the fracture */
     void SetNotContribute(bool setNotCont = true);
-  
+
+    private:
+    static int ClassId();
+public:
 };
 
 

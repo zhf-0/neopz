@@ -582,7 +582,7 @@ namespace pztopology {
 	}
 	template<class TFather>
     int TPZPrismExtend<TFather>::ClassId() {
-        //CLASSID return TFather::ClassId()^Hash("TPZPrismExtend");
+        //CLASSIDFRAN return TFather::ClassId()^Hash("TPZPrismExtend");
 		return 666;
     }
 

@@ -2198,7 +2198,7 @@ TPZCompMesh *hdivCurvedJCompAppMath::CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCo
     //criando material
     int dim = gmesh->Dimension();
     bool intface;
-//    TPZMatPoissonD3 *material = new TPZMatPoissonD3(fmatId,dim); intface = true; // nesse material tem que ser true
+//    TPZMatPoisson3D *material = new TPZMatPoisson3D(fmatId,dim); intface = true; // nesse material tem que ser true
     TPZMatMixedPoisson3D *material = new TPZMatMixedPoisson3D(fmatId,dim); intface = true; // nesse material tem que ser true
     //TPZMixedPoisson *material = new TPZMixedPoisson(matId,dim); intface = false; // nesse material tem que ser false
     

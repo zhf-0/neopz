@@ -26,6 +26,9 @@ class TPZFlowCompMesh1 : public TPZCompMesh {
   int Exists();
 
   void NotCreate();
+private:
+    static int ClassId();
+public:
 };
 
 #endif

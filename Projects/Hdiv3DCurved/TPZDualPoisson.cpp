@@ -9,7 +9,7 @@
 #include "TPZDualPoisson.h"
 
 
-TPZDualPoisson::TPZDualPoisson(){
+TPZDualPoisson::TPZDualPoisson() : TPZRegisterClassId(&TPZDualPoisson::ClassId){
     
 }
 
@@ -17,11 +17,11 @@ TPZDualPoisson::~TPZDualPoisson(){
     
 }
 
-TPZDualPoisson::TPZDualPoisson(int mat_id): TPZMaterial(mat_id){
+TPZDualPoisson::TPZDualPoisson(int mat_id):TPZRegisterClassId(&TPZDualPoisson::ClassId), TPZMaterial(mat_id){
     
 }
 
-TPZDualPoisson::TPZDualPoisson(const TPZDualPoisson &copy){
+TPZDualPoisson::TPZDualPoisson(const TPZDualPoisson &copy):TPZRegisterClassId(&TPZDualPoisson::ClassId){
     
 }
 

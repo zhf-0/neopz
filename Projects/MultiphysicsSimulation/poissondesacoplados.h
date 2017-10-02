@@ -24,7 +24,7 @@
  */
 
 
-class TPZMatPoissonDesacoplado : public TPZDiscontinuousGalerkin {
+class TPZMatPoissonUncoupled : public TPZDiscontinuousGalerkin {
 
 protected:
 	/** @brief Forcing function value */
@@ -39,15 +39,15 @@ protected:
 	REAL fK2;
 	
 public:
-	TPZMatPoissonDesacoplado();
+	TPZMatPoissonUncoupled();
 	
-	TPZMatPoissonDesacoplado(int matid, int dim);
+	TPZMatPoissonUncoupled(int matid, int dim);
 	
-	virtual ~TPZMatPoissonDesacoplado();
+	virtual ~TPZMatPoissonUncoupled();
 	
 	virtual void Print(std::ostream & out);
 	
-	virtual std::string Name() { return "TPZMatPoissonDesacoplado"; }
+	virtual std::string Name() { return "TPZMatPoissonUncoupled"; }
 	
 	int Dimension() const {return fDim;}
 	
@@ -146,7 +146,10 @@ public:
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
 		DebugStop();
 	}
-	 	
+
+	private:
+	static int ClassId();
+public:
 	
 };
 #endif

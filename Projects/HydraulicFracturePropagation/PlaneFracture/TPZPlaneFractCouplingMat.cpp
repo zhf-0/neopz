@@ -14,7 +14,7 @@
 TPZPlaneFractCouplingMat::EState TPZPlaneFractCouplingMat::gState = EActualState;
 
 
-TPZPlaneFractCouplingMat::TPZPlaneFractCouplingMat() : TPZElast3Dnlinear()
+TPZPlaneFractCouplingMat::TPZPlaneFractCouplingMat() : TPZRegisterClassId(&TPZPlaneFractCouplingMat::ClassId),TPZElast3Dnlinear()
 {
     fLastElastFunction = new TPZLastElastFunction();
     fVisc = 0.;
@@ -32,6 +32,7 @@ TPZPlaneFractCouplingMat::TPZPlaneFractCouplingMat(int nummat, STATE E, STATE po
                                                    STATE Pe,
                                                    STATE gradPref,
                                                    STATE vsp) :
+        TPZRegisterClassId(&TPZPlaneFractCouplingMat::ClassId),
                                                    TPZElast3Dnlinear(nummat, E, poisson, force, preStressXX, preStressYY, preStressZZ)
 {
     this->fLastElastFunction = new TPZLastElastFunction();
@@ -411,6 +412,10 @@ void TPZPlaneFractCouplingMat::FillBoundaryConditionDataRequirement(int type, TP
         datavec[i].fNeedsSol = true;
 		datavec[i].fNeedsNormal = true;
 	}
+}
+
+int TPZPlaneFractCouplingMat::ClassId() {
+    //CLASSIDFRAN return TPZElast3Dnlinear::ClassId()^Hash("TPZPlaneFractCouplingMat");
 }
 
 

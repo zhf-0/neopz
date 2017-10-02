@@ -281,6 +281,9 @@ public:
      */
     virtual void ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
 		DebugStop();
-	}	
+	}
+	private:
+	static int ClassId();
+public:
 };
 #endif

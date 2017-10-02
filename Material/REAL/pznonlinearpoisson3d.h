@@ -101,12 +101,11 @@ public:
 	}
 
 	/** @} */
-	
-protected:
-    bool fIsReferred;
     private:
     static int ClassId();
 public:
+protected:
+    bool fIsReferred;
 };
 
 #endif

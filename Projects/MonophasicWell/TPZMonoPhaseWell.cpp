@@ -13,7 +13,7 @@
 #include "pzaxestools.h"
 
 /** @brief Constructor */
-TPZMonoPhaseWell::TPZMonoPhaseWell(int id): TPZMaterial(id)
+TPZMonoPhaseWell::TPZMonoPhaseWell(int id): TPZRegisterClassId(&TPZMonoPhaseWell::ClassId),TPZMaterial(id)
 {
     
     /** @brief Well cross sectional area */
@@ -69,7 +69,7 @@ TPZMonoPhaseWell::~TPZMonoPhaseWell()
 
 
 /** @brief Copy constructor */
-TPZMonoPhaseWell::TPZMonoPhaseWell(TPZMonoPhaseWell & copy){
+TPZMonoPhaseWell::TPZMonoPhaseWell(TPZMonoPhaseWell & copy) : TPZRegisterClassId(&TPZMonoPhaseWell::ClassId){
     
     fAp=copy.fAp;
     fd=copy.fd;

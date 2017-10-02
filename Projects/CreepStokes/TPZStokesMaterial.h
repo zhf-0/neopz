@@ -256,7 +256,9 @@ public:
      * @param bc[in] is the boundary condition material
      */
     virtual void Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_exact, TPZFMatrix<STATE> &du_exact, TPZVec<REAL> &errors);
-    
+    private:
+    static int ClassId();
+public:
 };
 
 #endif

@@ -8,7 +8,7 @@
 
 #include "TPZPrimalPoisson.h"
 
-TPZPrimalPoisson::TPZPrimalPoisson(){
+TPZPrimalPoisson::TPZPrimalPoisson() : TPZRegisterClassId(&TPZPrimalPoisson::ClassId){
     
 }
 
@@ -16,11 +16,11 @@ TPZPrimalPoisson::~TPZPrimalPoisson(){
     
 }
 
-TPZPrimalPoisson::TPZPrimalPoisson(int mat_id): TPZMaterial(mat_id){
+TPZPrimalPoisson::TPZPrimalPoisson(int mat_id): TPZRegisterClassId(&TPZPrimalPoisson::ClassId),TPZMaterial(mat_id){
     
 }
 
-TPZPrimalPoisson::TPZPrimalPoisson(const TPZPrimalPoisson &copy){
+TPZPrimalPoisson::TPZPrimalPoisson(const TPZPrimalPoisson &copy) : TPZRegisterClassId(&TPZPrimalPoisson::ClassId){
 
 }
 

@@ -5,7 +5,7 @@
 #include "TExtFunction.h"
 
 template<class TVar>
-TExtFunction<TVar>::TExtFunction() {
+TExtFunction<TVar>::TExtFunction() : TPZRegisterClassId(&TExtFunction::ClassId) {
 
 }
 
@@ -33,6 +33,11 @@ int TExtFunction<TVar>::NFunctions() const {
 template<class TVar>
 int TExtFunction<TVar>::PolynomialOrder() const{
   return 1;
+}
+template <class TVar>
+int TExtFunction<TVar>::ClassId() {
+    //CLASSIDFRANreturn TPZFunction<TVar>::ClassId()^Hash("TExtFunction");
+  return 666;
 }
 
 template class TExtFunction<float>;

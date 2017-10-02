@@ -3364,7 +3364,7 @@ TPZCompMesh *LaplaceInSphere::CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim)
 {
     /// criar materiais
     //TPZMatPoisson3d *material = new TPZMatPoisson3d(fmatId,fDim);
-    //TPZMatPoissonD3 *material = new TPZMatPoissonD3(fmatId,fDim);
+    //TPZMatPoisson3D *material = new TPZMatPoisson3D(fmatId,fDim);
     TPZMatMixedPoisson3D *material = new TPZMatMixedPoisson3D(fmatId,fDim);
     
     TPZMaterial * mat(material);
@@ -3514,7 +3514,7 @@ TPZCompMesh *LaplaceInSphere::CMeshPressure(TPZGeoMesh *gmesh, int pOrder, int d
 {
     /// criar materiais
     //TPZMatPoisson3d *material = new TPZMatPoisson3d(fmatId,fDim);
-    //TPZMatPoissonD3 *material = new TPZMatPoissonD3(fmatId,fDim);
+    //TPZMatPoisson3D *material = new TPZMatPoisson3D(fmatId,fDim);
     TPZMatMixedPoisson3D *material = new TPZMatMixedPoisson3D(fmatId,fDim);
     
     material->NStateVariables();

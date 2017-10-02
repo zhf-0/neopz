@@ -20,7 +20,7 @@ int TPZFlowCompMesh1::Exists() {
   return fExists;
 }
 
-TPZFlowCompMesh1::TPZFlowCompMesh1(TPZGeoMesh* gr) : TPZCompMesh(gr) {
+TPZFlowCompMesh1::TPZFlowCompMesh1(TPZGeoMesh* gr) : TPZRegisterClassId(&TPZFlowCompMesh1::ClassId),TPZCompMesh(gr) {
   fExists = 1;
 }
 
@@ -72,6 +72,11 @@ REAL TPZFlowCompMesh1::MaxVelocityOfMesh(int nstate,REAL gamma) {
   }
   return maxvel;
 
+}
+
+int TPZFlowCompMesh1::ClassId() {
+  //CLASSIDFRANreturn TPZCompMesh::CLassId()^Hash("TPZFlowCompMesh1");
+  return 666;
 }
 
 

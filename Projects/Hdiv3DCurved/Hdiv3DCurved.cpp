@@ -1115,7 +1115,7 @@ TPZAnalysis * CreateAnalysis(TPZCompMesh * cmesh, SimulationCase & sim_data){
     TPZAnalysis * analysis = new TPZAnalysis(cmesh, true);
     if (sim_data.UsePardisoQ) {
         
-        TPZSymetricSpStructMatrix matrix(cmesh);
+        TPZSymmetricSpStructMatrix matrix(cmesh);
 //        TPZSkylineStructMatrix matrix(cmesh);
         matrix.SetNumThreads(sim_data.n_threads);
         analysis->SetStructuralMatrix(matrix);

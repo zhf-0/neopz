@@ -104,10 +104,6 @@ ENABLE_TESTING()
 
 			#Example to work with scalar as complex
 			#add_subdirectory(Helmholtz1D)
-			add_subdirectory(TesteComplexo1D)
-			add_subdirectory(StriplineFran)
-			add_subdirectory(ValidacaoHCurlFran1)
-			add_subdirectory(ValidacaoHCurlFran2)
 
 			#add_subdirectory(HDiv_demo)
 
@@ -232,9 +228,6 @@ ENABLE_TESTING()
 			add_subdirectory(StabilizedHybridElasticity)
 			add_subdirectory(GlobalPostPro)
 			add_subdirectory(HDiv)
-
-			# validacaoFranHCurl
-			add_subdirectory(ValidacaoHCurlFran1)
 
 			#Projetos de Thiago Dias dos Santos
 			#add_subdirectory(SantosProjects)

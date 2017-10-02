@@ -28,7 +28,7 @@
  */
 
 
-class TPZMatPoissonD3 : public TPZDiscontinuousGalerkin {
+class TPZMatPoisson3D : public TPZDiscontinuousGalerkin {
     
 protected:
 	/** Material Id */
@@ -57,18 +57,18 @@ protected:
 	
 public:
     
-	TPZMatPoissonD3();
+	TPZMatPoisson3D();
 	
-	TPZMatPoissonD3(int matid, int dim);
+	TPZMatPoisson3D(int matid, int dim);
     
-	virtual ~TPZMatPoissonD3();
+	virtual ~TPZMatPoisson3D();
     
     /** @brief copy constructor */
-    TPZMatPoissonD3(const TPZMatPoissonD3 &copy);
+    TPZMatPoisson3D(const TPZMatPoisson3D &copy);
     
-    TPZMatPoissonD3 &operator=(const TPZMatPoissonD3 &copy);
+    TPZMatPoisson3D &operator=(const TPZMatPoisson3D &copy);
 	
-	virtual std::string Name() { return "TPZMatPoissonD3"; }
+	virtual std::string Name() { return "TPZMatPoisson3D"; }
 	
 	int Dimension() const {return fDim;}
     
@@ -240,7 +240,9 @@ public:
                 TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);
     
     void ErrorsHdiv(TPZMaterialData &data,TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values);
-    
+	private:
+	static int ClassId();
+public:
 };
 
 

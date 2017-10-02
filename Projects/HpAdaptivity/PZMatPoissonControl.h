@@ -212,6 +212,10 @@ public:
                 TPZVec<STATE> &u_exact,TPZFMatrix<STATE> &du_exact,TPZVec<REAL> &values){
         DebugStop();
     }
+
+    private:
+    static int ClassId();
+public:
 };
 
 

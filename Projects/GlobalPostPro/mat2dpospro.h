@@ -20,7 +20,7 @@
 #define MAT2DPOSPRO_H
 #include "pzmaterial.h"
 
-class Mat2Dpospro : public TPZMaterial {
+class TPZMat2Dpospro : public TPZMaterial {
 
 protected:
   
@@ -36,25 +36,25 @@ protected:
 public:
 
     /** @brief Default Constructor */
-    Mat2Dpospro();
+    TPZMat2Dpospro();
     
     /** @brief Constructor with matid and dimension */    
-    Mat2Dpospro(int matid, int dim);
+    TPZMat2Dpospro(int matid, int dim);
     
     /** @brief Destructor */      
-    virtual ~Mat2Dpospro();
+    virtual ~TPZMat2Dpospro();
     
     /** @brief copy constructor */
-    Mat2Dpospro(const Mat2Dpospro &other);
+    TPZMat2Dpospro(const TPZMat2Dpospro &other);
     
     /** @brief operator equal */    
-    Mat2Dpospro &operator=(const Mat2Dpospro &copy);
+    TPZMat2Dpospro &operator=(const TPZMat2Dpospro &copy);
     
     /** @brief Print Method */
     virtual void Print(std::ostream & out);
     
     /** @brief Name of the material */
-    virtual std::string Name() { return "Mat2Dpospro"; }
+    virtual std::string Name() { return "TPZMat2Dpospro"; }
     
     /** @brief Returns the integrable dimension */    
     virtual int Dimension() const;
@@ -86,8 +86,10 @@ public:
     
     void SetParameters(REAL alpha, REAL delta);
 
-    void GetParameters(REAL &alpha, REAL &delta);   
-  
+    void GetParameters(REAL &alpha, REAL &delta);
+    private:
+    static int ClassId();
+public:
 };
 
 #endif // MAT2DPOSPRO_H

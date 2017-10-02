@@ -41,6 +41,9 @@ public:
    * function it can be a reasonable approximation order.
    */
   virtual int PolynomialOrder() const;
+private:
+    static int ClassId();
+public:
 
 };
 

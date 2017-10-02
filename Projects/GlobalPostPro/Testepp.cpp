@@ -313,7 +313,7 @@ TPZCompMesh *ComputationalMesh(TPZGeoMesh * gmesh, int pOrder)
     int dim = gmesh->Dimension();
 
     // 	Material being used
-    Mat2Dpospro * material = new Mat2Dpospro(matId,dim);
+    TPZMat2Dpospro * material = new TPZMat2Dpospro(matId,dim);
     TPZMaterial * mat(material);
 
     TPZCompEl::SetgOrder(pOrder);

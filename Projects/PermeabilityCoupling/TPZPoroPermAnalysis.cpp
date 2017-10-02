@@ -9,7 +9,7 @@
 #include "TPZPoroPermAnalysis.h"
 
 
-TPZPoroPermAnalysis::TPZPoroPermAnalysis() : TPZAnalysis() {
+TPZPoroPermAnalysis::TPZPoroPermAnalysis() : TPZRegisterClassId(&TPZPoroPermAnalysis::ClassId),TPZAnalysis() {
     
     /** @brief define the simulation data */
     fSimulationData = NULL;
@@ -48,7 +48,7 @@ TPZPoroPermAnalysis::~TPZPoroPermAnalysis(){
 }
 
 /** @brief Copy constructor $ */
-TPZPoroPermAnalysis::TPZPoroPermAnalysis(const TPZPoroPermAnalysis &copy)
+TPZPoroPermAnalysis::TPZPoroPermAnalysis(const TPZPoroPermAnalysis &copy) : TPZRegisterClassId(&TPZPoroPermAnalysis::ClassId)
 {
     fSimulationData = copy.fSimulationData;
     fmeshvec        = copy.fmeshvec;
@@ -568,4 +568,9 @@ void TPZPoroPermAnalysis::PlotStrainPressure(std::string file_name){
         points.Print("p = ",out,EMathematicaInput);
     }
     
+}
+
+int TPZPoroPermAnalysis::ClassId() {
+    //CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZPoroPermAnalysis");
+    return 666;
 }

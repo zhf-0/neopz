@@ -20,23 +20,20 @@
 #include "pzelmat.h"
 #include "pzdiscgal.h"
 #include "pzelasmat.h"
-#include "pzporoelastic2d.h"
-#include "TPZMultiphysicsInterfaceEl.h"
-#include "pzmultiphysicselement.h"
 
-#ifndef PoroElasticMatInterface2DH
-#define PoroElasticMatInterface2DH
+#ifndef ElasticMatInterface2DH
+#define ElasticMatInterface2DH
 
 /**
  * @ingroup material
  * @brief This class implements a two dimensional elastic material in plane stress or strain
  */
-class PoroElasticMatInterface2D  : public TPZPoroElastic2d {
+class TPZElasticMatInterface2D  : public TPZElasticityMaterial {
 	
 	public :
 	
 	/** @brief Default constructor */
-	PoroElasticMatInterface2D();
+	TPZElasticMatInterface2D();
 	/** 
 	 * @brief Creates an elastic material with:
 	 * @param num material id
@@ -46,19 +43,18 @@ class PoroElasticMatInterface2D  : public TPZPoroElastic2d {
 	 * @param fy forcing function \f$ -y = fy \f$
 	 * @param plainstress \f$ plainstress = 1 \f$ indicates use of plainstress
 	 */
-	PoroElasticMatInterface2D(int mat,int dim, bool DoContribute, REAL fmu);
-
+	TPZElasticMatInterface2D(int num, REAL E, REAL nu, REAL fx, REAL fy, int plainstress);
 	
 //	/** @brief Copies the data of one TPZElasticityMaterial object to another */
-//	ElasticMatInterface2D(const ElasticMatInterface2D &copy);
+//	TPZElasticMatInterface2D(const TPZElasticMatInterface2D &copy);
 //	
 //	/** @brief Creates a new material from the current object   ??*/
-//	virtual TPZMaterial * NewMaterial() { return new ElasticMatInterface2D(*this);}
+//	virtual TPZMaterial * NewMaterial() { return new TPZElasticMatInterface2D(*this);}
 	
 	/** @brief Default destructor */
-	virtual ~PoroElasticMatInterface2D();
+	virtual ~TPZElasticMatInterface2D();
 	
-	void SetPenalty(REAL knu, REAL ktu, REAL knp, REAL ktp);
+	void SetPenalty(REAL kn, REAL kt);
 	
 //	/** @brief Returns the model dimension */
 //	int Dimension() { return 2;}
@@ -70,7 +66,7 @@ class PoroElasticMatInterface2D  : public TPZPoroElastic2d {
 //	virtual void Print(std::ostream & out = std::cout);
 //	
 //	/** @brief Returns the material name*/
-//	std::string Name() { return "ElasticMatInterface2D"; }
+//	std::string Name() { return "TPZElasticMatInterface2D"; }
 	
 //	/** @brief Returns the number of components which form the flux function */
 //	virtual short NumberOfFluxes(){return 3;}
@@ -101,20 +97,13 @@ class PoroElasticMatInterface2D  : public TPZPoroElastic2d {
 //		TPZDiscontinuousGalerkin::ContributeBC(data,weight,ef,bc);
 //	}
 //	
-	virtual void ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, 
-									 REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+	virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
 	
 	virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
 	
 	virtual void ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef);
 	
 	virtual void ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc);
-	
-	virtual int VariableIndex(const std::string &name);
-	
-	virtual int NSolutionVariables(int var);
-	
-	virtual void Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * Left, TPZCompEl * Right);	
 	
 //	/** @} */
 //	
@@ -154,7 +143,7 @@ class PoroElasticMatInterface2D  : public TPZPoroElastic2d {
 //	/** @brief Set PresStress Tensor */
 //	void SetPreStress(REAL Sigxx, REAL Sigyy, REAL Sigxy);
 //	
-//	private:
+ private:
 static int ClassId();
 public:
 //	
@@ -166,24 +155,39 @@ protected:
 	//	virtual void Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<REAL> &Solout);
 	
 private:
-	/** @brief Normal Penalty for U */
-	REAL fknu;	
+	/** @brief Normal Penalty */
+	REAL fkn;	
 
-	/** @brief Tangent Penalty for U */
-	REAL fktu;	
+	/** @brief Tangent Penalty */
+	REAL fkt;	
 	
-	/** @brief Normal Penalty for P */
-	REAL fknp;	
 	
-	/** @brief Tangent Penalty for P */
-	REAL fktp;		
-	
-	/** @brief Bool Contribute or not  */
-	bool fcontribute;
-	
-	/** @brief REAL Static friction coefficient  */
-	REAL fFrictionmu;       
-	
+//	/** @brief Normal Penalty */
+//	REAL fkn;
+//	
+//	/** @brief Poison coeficient */
+//	REAL fnu;
+//	
+//	/** @brief Forcing vector */
+//	REAL ff[3];
+//	
+//	/** @brief \f$ G = E/2(1-nu) \f$ */
+//	REAL fEover21PlusNu;
+//	
+//	/** @brief \f$ E/(1-nu) \f$ */
+//	REAL fEover1MinNu2;
+//	
+//	/** @brief Pre Stress Tensor - Sigma XX */
+//	REAL fPreStressXX;
+//	
+//	/** @brief Pre Stress Tensor - Sigma YY */
+//	REAL fPreStressYY;
+//	
+//	/** @brief Pre Stress Tensor - Sigma XY */
+//	REAL fPreStressXY;
+//	
+//	/** @brief Uses plain stress */
+//	int fPlaneStress;
 };
 
 #endif

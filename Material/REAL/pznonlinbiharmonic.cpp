@@ -713,6 +713,6 @@ void TPZNonLinBiharmonic::ContributeBCInterface(TPZMaterialData &data, TPZMateri
 }
 
 int TPZNonLinBiharmonic::ClassId(){
-    //CLASSIDFRANreturn TPZDiscontinousGalerkin::ClassId()^Hash("TPZNonLinBiharmonic");
+    //CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZNonLinBiharmonic");
     return 666;
 }

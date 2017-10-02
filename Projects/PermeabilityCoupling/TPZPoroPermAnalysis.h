@@ -179,7 +179,10 @@ public:
     
     /** @brief Compute the strain and the Pressure at x euclidean point for each time */
     void PlotStrainPressure(std::string file_name);
-    
+
+    private:
+    static int ClassId();
+public:
 };
 
 

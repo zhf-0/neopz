@@ -23,11 +23,11 @@ static LoggerPtr logger(Logger::getLogger("pz.material.TPZMatLaplacian"));
 
 using namespace std;
 
-TPZMatLaplacianHybrid::TPZMatLaplacianHybrid(int nummat, int dim) : TPZMatLaplacian(nummat,dim)
+TPZMatLaplacianHybrid::TPZMatLaplacianHybrid(int nummat, int dim) : TPZRegisterClassId(&TPZMatLaplacianHybrid::ClassId),TPZMatLaplacian(nummat,dim)
 {
 }
 
-TPZMatLaplacianHybrid::TPZMatLaplacianHybrid() : TPZMatLaplacian()
+TPZMatLaplacianHybrid::TPZMatLaplacianHybrid() : TPZRegisterClassId(&TPZMatLaplacianHybrid::ClassId),TPZMatLaplacian()
 {
 }
 

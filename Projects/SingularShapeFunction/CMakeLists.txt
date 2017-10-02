@@ -3,7 +3,7 @@
 
 file(GLOB header *.h)
 
-set(main_SRCS main.cpp TExtFunction.cpp TDiscoFunction.cpp)
+set(main_SRCS main.cpp TExtFunction.cpp TPZDiscoFunction.cpp)
 
 add_executable(SingularShapeFunction ${main_SRCS} ${header})
 

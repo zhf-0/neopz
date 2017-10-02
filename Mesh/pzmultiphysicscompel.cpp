@@ -1169,7 +1169,7 @@ int TPZMultiphysicsCompEl<TGeometry>::IntegrationOrder()
 
 template<class TGeometry>
 int TPZMultiphysicsCompEl<TGeometry>::ClassId(){
-    //return TPZMultiphysicsElement::ClassId()^TGeometry::ClassId()^Hash("TPZMultiphysicsCompEl");
+    //CLASSIDFRANreturn TPZMultiphysicsElement::ClassId()^TGeometry::ClassId()^Hash("TPZMultiphysicsCompEl");
     return 666;
 }
 

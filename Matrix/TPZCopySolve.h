@@ -19,11 +19,11 @@ class TPZCopySolve: public TPZMatrixSolver<TVar>
 {
 public:
 	
-	TPZCopySolve(TPZMatrix<TVar> *mat) :
+	TPZCopySolve(TPZMatrix<TVar> *mat) : TPZRegisterClassId(&TPZCopySolve::ClassId),
     TPZMatrixSolver<TVar>(mat)
 	{
 	}
-	TPZCopySolve(const TPZCopySolve &other) :
+	TPZCopySolve(const TPZCopySolve &other) : TPZRegisterClassId(&TPZCopySolve::ClassId),
     TPZMatrixSolver<TVar>(other)
 	{
 	}
@@ -44,6 +44,16 @@ public:
 	{
 		return new TPZCopySolve(*this);
 	}
+
+private:
+	static int ClassId();
+public:
 };
+
+template<class TVar>
+int TPZCopySolve<TVar>::ClassId() {
+	//CLASSIDFRANreturn TPZMatrixSolver<TVar>::ClassId()^Hash("TPZCopySolve");
+	return 666;
+}
 
 #endif //TPZCOPYSOLVE_H

@@ -18,8 +18,8 @@
 
 #include <pzgengrid.h>
 #include "AnalyticalFunctions.h"
-#include "ElasticMatInterface2D.h"
-#include "PoroElasticMatInterface2D.h"
+#include "TPZElasticMatInterface2D.h"
+#include "TPZPoroElasticMatInterface2D.h"
 #include "TPZInterfaceEl.h"
 #include "pzdiscgal.h"
 
@@ -745,7 +745,7 @@ TPZCompMesh * ComputationalElasticityMesh(TiXmlHandle ControlDoc, TPZReadGIDGrid
 				REAL KTU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[2];
 				
 				
-				ElasticMatInterface2D *InterfaceMat = new ElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, planestress); 
+				TPZElasticMatInterface2D *InterfaceMat = new TPZElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, planestress);
 				InterfaceMat->SetPenalty(KNU,KTU);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				cmesh->InsertMaterialObject(MaterialInterface);			
@@ -791,7 +791,7 @@ TPZCompMesh * ComputationalElasticityMesh(TiXmlHandle ControlDoc, TPZReadGIDGrid
 				REAL KNU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[1];
 				REAL KTU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[2];
 				
-				ElasticMatInterface2D *InterfaceMat = new ElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, planestress); 
+				TPZElasticMatInterface2D *InterfaceMat = new TPZElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, planestress);
 				InterfaceMat->SetPenalty(KNU,KTU);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				cmesh->InsertMaterialObject(MaterialInterface);			
@@ -1071,7 +1071,7 @@ TPZCompMesh * ComputationalDiffusionMesh(TiXmlHandle ControlDoc,TPZReadGIDGrid G
 				REAL KTU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[2];
 				
 				
-				ElasticMatInterface2D *InterfaceMat = new ElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, 0); 
+				TPZElasticMatInterface2D *InterfaceMat = new TPZElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, 0);
 				InterfaceMat->SetPenalty(KNU,KTU);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				cmesh->InsertMaterialObject(MaterialInterface);			
@@ -1117,7 +1117,7 @@ TPZCompMesh * ComputationalDiffusionMesh(TiXmlHandle ControlDoc,TPZReadGIDGrid G
 				REAL KNU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[1];
 				REAL KTU = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[2];
 				
-				ElasticMatInterface2D *InterfaceMat = new ElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, 0); 
+				TPZElasticMatInterface2D *InterfaceMat = new TPZElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,Eyoung, PoissonRatio, BodyForceX, BodyForceY, 0);
 				InterfaceMat->SetPenalty(KNU,KTU);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				cmesh->InsertMaterialObject(MaterialInterface);			
@@ -1481,7 +1481,7 @@ TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGID
 				REAL friction = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[5];				
 				bool docontribute = true;
 				
-				PoroElasticMatInterface2D *InterfaceMat = new PoroElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,1,docontribute,friction); 
+				TPZPoroElasticMatInterface2D *InterfaceMat = new TPZPoroElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,1,docontribute,friction);
 				InterfaceMat->SetPenalty(KNU,KTU,KNP,KNP);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				Multiphysics->InsertMaterialObject(MaterialInterface);			
@@ -1533,7 +1533,7 @@ TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGID
 				REAL friction = GeometryInfo.fBCMaterialDataVec[ibc].fProperties[5];	
 				bool docontribute = false;				
 				
-				PoroElasticMatInterface2D *InterfaceMat = new PoroElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,1,docontribute,friction); 
+				TPZPoroElasticMatInterface2D *InterfaceMat = new TPZPoroElasticMatInterface2D(GeometryInfo.fBCMaterialDataVec[ibc].fMatID,1,docontribute,friction);
 				InterfaceMat->SetPenalty(KNU,KTU,KNP,KNP);		
 				TPZMaterial * MaterialInterface(InterfaceMat);
 				Multiphysics->InsertMaterialObject(MaterialInterface);			

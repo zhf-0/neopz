@@ -948,7 +948,7 @@ TPZCompMesh *CMeshMixed(TPZGeoMesh * gmesh, TPZVec<TPZCompMesh *> meshvec, int d
     //criando material
     //int dim =2;
     bool intface;
-    TPZMatPoissonD3 *material = new TPZMatPoissonD3(matId,dim); intface = true; // nesse material tem que ser true
+    TPZMatPoisson3D *material = new TPZMatPoisson3D(matId,dim); intface = true; // nesse material tem que ser true
     //TPZMixedPoisson *material = new TPZMixedPoisson(matId,dim); intface = false; // nesse material tem que ser false
     
     //incluindo os dados do problema

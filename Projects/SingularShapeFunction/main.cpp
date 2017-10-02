@@ -120,7 +120,7 @@ int main() {
 #include "TPZParFrontMatrix.h"
 #include "TPZFrontNonSym.h"
 #include "pzstepsolver.h"
-#include "TDiscoFunction.h"
+#include "TPZDiscoFunction.h"
 #include "TPZCopySolve.h"
 #include "TPZSpStructMatrix.h"
 
@@ -329,7 +329,7 @@ int main1(){
   TPZCompElDisc::SetTensorialShape(cmesh);
 
   if(!ApenasPolinomial){
-    TPZAutoPointer<TPZFunction<STATE> > ExternalShapes = new TDiscoFunction<STATE>();
+    TPZAutoPointer<TPZFunction<STATE> > ExternalShapes = new TPZDiscoFunction<STATE>();
     for(long iel = 0; iel < cmesh->NElements(); iel++){
       TPZCompEl * cel = cmesh->ElementVec()[iel];
       if(!cel) continue;

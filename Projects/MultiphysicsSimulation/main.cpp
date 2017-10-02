@@ -178,7 +178,7 @@ int main1(int argc, char *argv[])
 	mphysics->SetAllCreateFunctionsMultiphysicElem();
 	
 	int MatId = 1;
-	TPZMatPoissonDesacoplado *mymaterial = new TPZMatPoissonDesacoplado(MatId, 2);
+	TPZMatPoissonUncoupled *mymaterial = new TPZMatPoissonUncoupled(MatId, 2);
 	mymaterial->SetParameters(-1., -0.1);
 	mymaterial->SetInternalFlux(8.,0.);
 	ofstream argm("mymaterial.txt");

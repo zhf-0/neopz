@@ -19,7 +19,8 @@ static LoggerPtr logdata(Logger::getLogger("pz.permeabilityc"));
 #endif
 
 
-TPZPoroPermCoupling::TPZPoroPermCoupling():TPZMatWithMem<TPZPoroPermMemory,TPZDiscontinuousGalerkin>(), fnu(0.), falpha(0.), fk(0.), feta(0.), fPlaneStress(0) {
+TPZPoroPermCoupling::TPZPoroPermCoupling():TPZRegisterClassId(&TPZPoroPermCoupling::ClassId),
+                                           TPZMatWithMem<TPZPoroPermMemory,TPZDiscontinuousGalerkin>(), fnu(0.), falpha(0.), fk(0.), feta(0.), fPlaneStress(0) {
 
     fDim = 2;
     fb.resize(2);
@@ -35,7 +36,8 @@ TPZPoroPermCoupling::TPZPoroPermCoupling():TPZMatWithMem<TPZPoroPermMemory,TPZDi
     
 }
 
-TPZPoroPermCoupling::TPZPoroPermCoupling(int matid, int dim):TPZMatWithMem<TPZPoroPermMemory,TPZDiscontinuousGalerkin>(matid), fnu(0.), falpha(0.), fk(0.), feta(0.),fPlaneStress(0) {
+TPZPoroPermCoupling::TPZPoroPermCoupling(int matid, int dim):TPZRegisterClassId(&TPZPoroPermCoupling::ClassId),
+                                                             TPZMatWithMem<TPZPoroPermMemory,TPZDiscontinuousGalerkin>(matid), fnu(0.), falpha(0.), fk(0.), feta(0.),fPlaneStress(0) {
 
     fDim = dim;
     fb.resize(2);
@@ -1294,4 +1296,9 @@ void TPZPoroPermCoupling::Principal_Stress(TPZFMatrix<REAL> T, TPZFMatrix<REAL> 
     S(1,1) = s2;
     S(2,2) = s3;
     
+}
+
+int TPZPoroPermCoupling::ClassId() {
+    //CLASSIDFRANreturn TPZMatWithMem<TPZPoroPermMemory,TPZDiscontinuousGalerkin>::ClassId()^Hash("TPZPoroPermCoupling");
+    return 666;
 }

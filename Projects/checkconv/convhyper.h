@@ -27,7 +27,9 @@ public :
   void Residual(TPZFMatrix<STATE> &residual, int icase);
 
   void LoadSolution(TPZFMatrix<STATE> &state);
-
+    private:
+    static int ClassId();
+public:
 };
 
 #endif

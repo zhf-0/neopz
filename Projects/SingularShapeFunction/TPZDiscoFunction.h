@@ -12,18 +12,18 @@
   * @since August 01, 2007
   */
 template<class TVar>
-class TDiscoFunction : public TPZFunction<TVar>{
+class TPZDiscoFunction : public TPZFunction<TVar>{
 public:
 
   /**
    * Class constructor
    */
-   TDiscoFunction();
+   TPZDiscoFunction();
 
   /**
    * Class destructor
    */
-  ~ TDiscoFunction();
+  ~ TPZDiscoFunction();
     
   /**
    * Performs function computation
@@ -41,6 +41,10 @@ public:
    * function it can be a reasonable approximation order.
    */
   virtual int PolynomialOrder() const;
+
+    private:
+    static int ClassId();
+    public:
 
 };
 

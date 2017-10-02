@@ -686,7 +686,7 @@ TPZCompMesh *Hdiv2dPaper201504::CMeshFlux(TPZGeoMesh *gmesh, int pOrder, int dim
 {
     /// criar materiais
     //TPZMatPoisson3d *material = new TPZMatPoisson3d(matId,fDim);
-    //TPZMatPoissonD3 *material = new TPZMatPoissonD3(fmatId,fDim);
+    //TPZMatPoisson3D *material = new TPZMatPoisson3D(fmatId,fDim);
     TPZMatMixedPoisson3D *material = new TPZMatMixedPoisson3D(fmatId,fDim);
     
     TPZMaterial * mat(material);
@@ -742,7 +742,7 @@ TPZCompMesh *Hdiv2dPaper201504::CMeshPressure(TPZGeoMesh *gmesh, int pOrder, int
 {
     /// criar materiais
     //TPZMatPoisson3d *material = new TPZMatPoisson3d(fmatId,fDim);
-    //TPZMatPoissonD3 *material = new TPZMatPoissonD3(fmatId,fDim);
+    //TPZMatPoisson3D *material = new TPZMatPoisson3D(fmatId,fDim);
     TPZMatMixedPoisson3D *material = new TPZMatMixedPoisson3D(fmatId,fDim);
     material->NStateVariables();
     

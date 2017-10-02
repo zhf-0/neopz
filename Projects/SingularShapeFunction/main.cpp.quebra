@@ -113,7 +113,7 @@ int main1(){
 #include "TPZParFrontMatrix.h"
 #include "TPZFrontNonSym.h"
 #include "pzstepsolver.h"
-#include "TDiscoFunction.h"
+#include "TPZDiscoFunction.h"
 #include "TPZCopySolve.h"
 #include "TPZSpStructMatrix.h"
 

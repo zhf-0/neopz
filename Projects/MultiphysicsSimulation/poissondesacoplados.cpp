@@ -15,24 +15,24 @@
 
 using namespace std;
 
-TPZMatPoissonDesacoplado::TPZMatPoissonDesacoplado():TPZDiscontinuousGalerkin(), fXf1(0.), fXf2(0.),fDim(1){
+TPZMatPoissonUncoupled::TPZMatPoissonUncoupled():TPZRegisterClassId(&TPZMatPoissonUncoupled::ClassId),TPZDiscontinuousGalerkin(), fXf1(0.), fXf2(0.),fDim(1){
 	fK1 = 1.;
 	fK2 = 1.;
 }
 
-TPZMatPoissonDesacoplado::TPZMatPoissonDesacoplado(int matid, int dim):TPZDiscontinuousGalerkin(matid), fXf1(0.), fXf2(0.),fDim(dim){
+TPZMatPoissonUncoupled::TPZMatPoissonUncoupled(int matid, int dim):TPZRegisterClassId(&TPZMatPoissonUncoupled::ClassId),TPZDiscontinuousGalerkin(matid), fXf1(0.), fXf2(0.),fDim(dim){
 	fK1 = 1.;
 	fK2 = 1.;
 }
 
-TPZMatPoissonDesacoplado::~TPZMatPoissonDesacoplado(){
+TPZMatPoissonUncoupled::~TPZMatPoissonUncoupled(){
 }
 
-int TPZMatPoissonDesacoplado::NStateVariables() {
+int TPZMatPoissonUncoupled::NStateVariables() {
 	return 1;
 }
 
-void TPZMatPoissonDesacoplado::Print(std::ostream &out) {
+void TPZMatPoissonUncoupled::Print(std::ostream &out) {
 	out << "name of material : " << Name() << "\n";
 	out << "Laplace operator multiplier fK  da primeira equacao  "<< fK1 << endl;
 	out << "Laplace operator multiplier fK  da segunda equacao  "<< fK2<< endl;
@@ -43,7 +43,7 @@ void TPZMatPoissonDesacoplado::Print(std::ostream &out) {
 	out << "\n";
 }
 
-void TPZMatPoissonDesacoplado::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
+void TPZMatPoissonUncoupled::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
 
 	
 	int nref =  datavec.size();
@@ -95,7 +95,7 @@ void TPZMatPoissonDesacoplado::Contribute(TPZVec<TPZMaterialData> &datavec, REAL
 
 }
 
-void TPZMatPoissonDesacoplado::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,
+void TPZMatPoissonUncoupled::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,
 									   TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
 	
 	
@@ -171,7 +171,7 @@ void TPZMatPoissonDesacoplado::ContributeBC(TPZVec<TPZMaterialData> &datavec,REA
 		
 }
 
-//void TPZMatPoissonDesacoplado::ContributeInterface(TPZVec<TPZMaterialData> &datavec, REAL weight,
+//void TPZMatPoissonUncoupled::ContributeInterface(TPZVec<TPZMaterialData> &datavec, REAL weight,
 //                                          TPZFMatrix<REAL> &ek,TPZFMatrix<REAL> &ef){
 //	
 //	TPZFMatrix<REAL> &dphiLdAxesu = datavec[0].dphixl;
@@ -275,7 +275,7 @@ void TPZMatPoissonDesacoplado::ContributeBC(TPZVec<TPZMaterialData> &datavec,REA
 //}
 
 /** Returns the variable index associated with the name */
-int TPZMatPoissonDesacoplado::VariableIndex(const std::string &name){
+int TPZMatPoissonUncoupled::VariableIndex(const std::string &name){
 	if(!strcmp("SolutionU",name.c_str()))        return  1;
 	if(!strcmp("SolutionP",name.c_str()))        return  2;
 	if(!strcmp("DerivateU",name.c_str()))        return  3;
@@ -284,14 +284,14 @@ int TPZMatPoissonDesacoplado::VariableIndex(const std::string &name){
 	return TPZMaterial::VariableIndex(name);
 }
 
-int TPZMatPoissonDesacoplado::NSolutionVariables(int var){
+int TPZMatPoissonUncoupled::NSolutionVariables(int var){
 	if(var == 1) return 1;
 	if(var == 2) return 1;
 	if((var == 3) || (var == 4)) return fDim;
 	return TPZMaterial::NSolutionVariables(var);
 }
 
-void TPZMatPoissonDesacoplado::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
+void TPZMatPoissonUncoupled::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
 	
 	Solout.Resize( this->NSolutionVariables(var));
 	
@@ -338,12 +338,17 @@ void TPZMatPoissonDesacoplado::Solution(TPZVec<TPZMaterialData> &datavec, int va
 }
 
 
-void TPZMatPoissonDesacoplado::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
+void TPZMatPoissonUncoupled::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef){
 	DebugStop();
 }
 
-void TPZMatPoissonDesacoplado::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+void TPZMatPoissonUncoupled::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 	DebugStop();
+}
+
+int TPZMatPoissonUncoupled::ClassId() {
+	//CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZMatPoissonUncoupled");
+	return 666;
 }
 //int IntegrationRuleOrder(TPZVec<int> elPMaxOrder) const
 //{

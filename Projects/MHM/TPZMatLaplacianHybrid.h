@@ -27,14 +27,14 @@ public:
 
 	TPZMatLaplacianHybrid(int nummat, int dim);
 
-  TPZMatLaplacianHybrid(int matid) : TPZMatLaplacian(matid)
+  TPZMatLaplacianHybrid(int matid) : TPZRegisterClassId(&TPZMatLaplacianHybrid::ClassId),TPZMatLaplacian(matid)
   {
 
   }
 
 	TPZMatLaplacianHybrid();
 
-	TPZMatLaplacianHybrid(const TPZMatLaplacianHybrid &copy) : TPZMatLaplacian(copy)
+	TPZMatLaplacianHybrid(const TPZMatLaplacianHybrid &copy) : TPZRegisterClassId(&TPZMatLaplacianHybrid::ClassId),TPZMatLaplacian(copy)
     {
         
     }

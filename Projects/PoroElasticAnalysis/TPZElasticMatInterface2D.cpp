@@ -7,7 +7,7 @@
  *
  */
 
-#include "ElasticMatInterface2D.h"
+#include "TPZElasticMatInterface2D.h"
 #include "pzdiscgal.h"
 #include "pzelasmat.h"
 #include "pzlog.h"
@@ -21,29 +21,29 @@ static LoggerPtr logger(Logger::getLogger("pz.poroelastic2d"));
 static LoggerPtr logdata(Logger::getLogger("pz.material.poroelastic.data"));
 #endif
 
-ElasticMatInterface2D::ElasticMatInterface2D() : TPZElasticityMaterial(){
+TPZElasticMatInterface2D::TPZElasticMatInterface2D() : TPZRegisterClassId(&TPZElasticMatInterface2D::ClassId),TPZElasticityMaterial(){
 	fkn = 1000000.0;
 	fkt = 1000000.0;		
 }
 
-ElasticMatInterface2D::ElasticMatInterface2D(int num, REAL E, REAL nu, REAL fx, REAL fy, int plainstress) : TPZElasticityMaterial(num, E, nu, fx, fy, plainstress){
+TPZElasticMatInterface2D::TPZElasticMatInterface2D(int num, REAL E, REAL nu, REAL fx, REAL fy, int plainstress) : TPZRegisterClassId(&TPZElasticMatInterface2D::ClassId),TPZElasticityMaterial(num, E, nu, fx, fy, plainstress){
 	fkn = 1000000.0;
 	fkt = 1000000.0;	
 }
 
-ElasticMatInterface2D::~ElasticMatInterface2D()
+TPZElasticMatInterface2D::~TPZElasticMatInterface2D()
 	{
 	}
 
 // Contribute Interface implementations
 
-void ElasticMatInterface2D::SetPenalty(REAL kn, REAL kt)
+void TPZElasticMatInterface2D::SetPenalty(REAL kn, REAL kt)
 {
 	fkn = kn;
 	fkt = kt;
 }
 
-void ElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 //	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	
@@ -126,17 +126,22 @@ void ElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMateri
 	
 }
 
-void ElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+void TPZElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();
 }
 
-void ElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef){
+void TPZElasticMatInterface2D::ContributeInterface(TPZMaterialData &data, TPZMaterialData &dataleft, TPZMaterialData &dataright, REAL weight, TPZFMatrix<STATE> &ef){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();	
 }
 
-void ElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){
+void TPZElasticMatInterface2D::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &left, REAL weight, TPZFMatrix<STATE> &ef,TPZBndCond &bc){
 	PZError << "\nFATAL ERROR - Method not implemented: " << __PRETTY_FUNCTION__ << "\n";
 	DebugStop();	
+}
+
+int TPZElasticMatInterface2D::ClassId() {
+	//CLASSIDFRANreturn TPZElasticityMaterial::ClassId()^Hash("TPZElasticMatInterface2D");
+	return 666;
 }

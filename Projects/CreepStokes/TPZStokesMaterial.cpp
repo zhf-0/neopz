@@ -15,7 +15,7 @@
 
 using namespace std;
 
-TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
+TPZStokesMaterial::TPZStokesMaterial() : TPZRegisterClassId(&TPZStokesMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
     //fDim = 1;
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
@@ -25,7 +25,7 @@ TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<STATE>, TPZDis
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, int space, STATE viscosity, STATE theta) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fDimension(dimension),fSpace(space),fViscosity(viscosity),fTheta(theta)
+TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, int space, STATE viscosity, STATE theta) : TPZRegisterClassId(&TPZStokesMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fDimension(dimension),fSpace(space),fViscosity(viscosity),fTheta(theta)
 {
     // symmetric version
     //fTheta = -1;
@@ -39,7 +39,7 @@ TPZStokesMaterial::TPZStokesMaterial(int matid, int dimension, int space, STATE 
 
 ////////////////////////////////////////////////////////////////////
 
-TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat),fDimension(mat.fDimension),fSpace(mat.fSpace), fViscosity(mat.fViscosity), fTheta(mat.fTheta)
+TPZStokesMaterial::TPZStokesMaterial(const TPZStokesMaterial &mat) : TPZRegisterClassId(&TPZStokesMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat),fDimension(mat.fDimension),fSpace(mat.fSpace), fViscosity(mat.fViscosity), fTheta(mat.fTheta)
 {
     fk= mat.fk;
     
@@ -1960,4 +1960,9 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     ////////////////////////////////////////////////// HDIV
     
+}
+
+int TPZStokesMaterial::ClassId() {
+    //CLASSIDFRANreturn TPZMatWithMem<TPZFMatrix<STATE>,TPZDiscontinuousGalerkin>::ClassId()^Hash("TPZStokesMaterial");
+    return 666;
 }

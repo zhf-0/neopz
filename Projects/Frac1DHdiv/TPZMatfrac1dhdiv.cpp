@@ -14,14 +14,14 @@ static LoggerPtr logger(Logger::getLogger("pz.multiphase"));
 static LoggerPtr logdata(Logger::getLogger("pz.material.multiphase.data"));
 #endif
 
-TPZMatfrac1dhdiv::TPZMatfrac1dhdiv(): TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >()
+TPZMatfrac1dhdiv::TPZMatfrac1dhdiv(): TPZRegisterClassId(&TPZMatfrac1dhdiv::ClassId),TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >()
 {
   fDim = 1;
   TPZFNMatrix<3,REAL> Vl(1,1,0.);
   this->SetDefaultMem(Vl);
 }
 
-TPZMatfrac1dhdiv::TPZMatfrac1dhdiv(int matid): TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid)
+TPZMatfrac1dhdiv::TPZMatfrac1dhdiv(int matid): TPZRegisterClassId(&TPZMatfrac1dhdiv::ClassId),TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(matid)
 {
   fDim = 1;
   TPZFNMatrix<3,REAL> Vl(1,1,0.);
@@ -464,4 +464,9 @@ void TPZMatfrac1dhdiv::FillBoundaryConditionDataRequirement(int type,TPZVec<TPZM
     datavec[i].SetAllRequirements(false);
     datavec[i].fNeedsSol = true;
   }
+}
+
+int TPZMatfrac1dhdiv::ClassId() {
+  //CLASSIDFRAN return TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin>::ClassId()^Hash("TPZMatfrac1dhdiv");
+  return 666;
 }

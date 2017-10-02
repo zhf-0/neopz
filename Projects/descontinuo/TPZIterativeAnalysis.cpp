@@ -10,7 +10,7 @@
 #include "pzdxmesh.h"
 using namespace std;
 
-TPZIterativeAnalysis::TPZIterativeAnalysis(TPZCompMesh *mesh,std::ostream &out) : TPZAnalysis(mesh,true,out), fBegin(0),fInit(0) {
+TPZIterativeAnalysis::TPZIterativeAnalysis(TPZCompMesh *mesh,std::ostream &out) : TPZRegisterClassId(&TPZIterativeAnalysis::ClassId),TPZAnalysis(mesh,true,out), fBegin(0),fInit(0) {
 
   //fBegin = 0.0;
   //fInit = 0.0;
@@ -271,4 +271,9 @@ void TPZIterativeAnalysis::SetReference(TPZCompMesh *aggcmesh){
       ref->SetReference(agg);
     }
   }
+}
+
+int TPZIterativeAnalysis::ClassId() {
+  //CLASSIDFRANreturn TPZAnalysis::ClassId()^Hash("TPZIterativeAnalysis");
+  return 666;
 }

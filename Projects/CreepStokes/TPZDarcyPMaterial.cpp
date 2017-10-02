@@ -14,7 +14,7 @@
 #include "pzfmatrix.h"
 
 
-TPZDarcyPMaterial::TPZDarcyPMaterial() : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
+TPZDarcyPMaterial::TPZDarcyPMaterial() : TPZRegisterClassId(&TPZDarcyPMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(){
 
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
     this->SetDefaultMem(Vl);
@@ -24,7 +24,7 @@ TPZDarcyPMaterial::TPZDarcyPMaterial() : TPZMatWithMem<TPZFMatrix<STATE>, TPZDis
 
 ////////////////////////////////////////////////////////////////////
 
-TPZDarcyPMaterial::TPZDarcyPMaterial(int matid, int dimension, int space, STATE viscosity, STATE permeability, STATE theta) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fDimension(dimension),fSpace(space),fViscosity(viscosity),fk(permeability),fTheta(theta)
+TPZDarcyPMaterial::TPZDarcyPMaterial(int matid, int dimension, int space, STATE viscosity, STATE permeability, STATE theta) : TPZRegisterClassId(&TPZDarcyPMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(matid),fDimension(dimension),fSpace(space),fViscosity(viscosity),fk(permeability),fTheta(theta)
 {
 
     TPZFNMatrix<3,STATE> Vl(1,1,0.);
@@ -34,7 +34,7 @@ TPZDarcyPMaterial::TPZDarcyPMaterial(int matid, int dimension, int space, STATE 
 
 ////////////////////////////////////////////////////////////////////
 
-TPZDarcyPMaterial::TPZDarcyPMaterial(const TPZDarcyPMaterial &mat) : TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat),fDimension(mat.fDimension),fSpace(mat.fSpace),fViscosity(mat.fViscosity),fk(mat.fk), fTheta(mat.fTheta)
+TPZDarcyPMaterial::TPZDarcyPMaterial(const TPZDarcyPMaterial &mat) : TPZRegisterClassId(&TPZDarcyPMaterial::ClassId),TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >(mat),fDimension(mat.fDimension),fSpace(mat.fSpace),fViscosity(mat.fViscosity),fk(mat.fk), fTheta(mat.fTheta)
 {
     
     
@@ -1291,4 +1291,9 @@ void TPZDarcyPMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     ////////////////////////////////////////////////// HDIV
     
+}
+
+int TPZDarcyPMaterial::ClassId() {
+    //CLASSIDFRANreturn TPZMatWithMem<TPZFMatrix<STATE>, TPZDiscontinuousGalerkin >::ClassId()^Hash("TPZDarcyPMaterial");
+    return 666;
 }

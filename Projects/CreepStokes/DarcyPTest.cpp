@@ -130,7 +130,7 @@ void DarcyPTest::Run(int Space, int pOrder, int nx, int ny, double hx, double hy
 //    TPZSkylineStructMatrix matskl(cmesh_m); //caso simetrico ***
 
     
-    TPZSymetricSpStructMatrix matskl(cmesh_m); //caso simetrico ***
+    TPZSymmetricSpStructMatrix matskl(cmesh_m); //caso simetrico ***
     
     matskl.SetNumThreads(numthreads);
     an.SetStructuralMatrix(matskl);

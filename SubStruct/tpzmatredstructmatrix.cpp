@@ -70,7 +70,7 @@ TPZMatrix<STATE> *TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::Create()
 template< class TStructMatrix, class TSparseMatrix>
 int TPZMatRedStructMatrix<TStructMatrix,TSparseMatrix>::ClassId() {
     //CLASSIDFRAN return TPZStructMatrix::ClassId()^TStructMatrix::ClassId()^TSparseMatrix::ClassId()^Hash("TPZMatRedStructMatrix");
-	// return 666;
+	return 666;
 }
 
 template class TPZMatRedStructMatrix<TPZSkylineStructMatrix,TPZVerySparseMatrix<STATE> >;

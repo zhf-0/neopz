@@ -23,13 +23,13 @@ static LoggerPtr logger(Logger::getLogger("pz.multiphase"));
 static LoggerPtr logdata(Logger::getLogger("pz.material.multiphase.data"));
 #endif
 
-TPZMatDarcy2dhdiv::TPZMatDarcy2dhdiv(): TPZDiscontinuousGalerkin()
+TPZMatDarcy2dhdiv::TPZMatDarcy2dhdiv(): TPZRegisterClassId(&TPZMatDarcy2dhdiv::ClassId),TPZDiscontinuousGalerkin()
 {
     fDim = 2;
     fNotContribute = false;
 }
 
-TPZMatDarcy2dhdiv::TPZMatDarcy2dhdiv(int matid): TPZDiscontinuousGalerkin(matid)
+TPZMatDarcy2dhdiv::TPZMatDarcy2dhdiv(int matid): TPZRegisterClassId(&TPZMatDarcy2dhdiv::ClassId),TPZDiscontinuousGalerkin(matid)
 {
     fDim = 2;
     fNotContribute = false;
@@ -904,4 +904,9 @@ void TPZMatDarcy2dhdiv::FillBoundaryConditionDataRequirement(int type,TPZVec<TPZ
         datavec[i].fNeedsNormal = true;
         datavec[i].fNeedsNeighborSol = true;
     }
+}
+
+int TPZMatDarcy2dhdiv::ClassId() {
+    //CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZMatDarcy2dhdiv");
+    return 666;
 }

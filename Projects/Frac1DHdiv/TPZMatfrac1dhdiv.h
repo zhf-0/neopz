@@ -119,7 +119,10 @@ public:
   
   /** @brief Return dwdp (which is always the same) */
   REAL Getdwdp();
-  
+
+  private:
+    static int ClassId();
+public:
 };
 
 #endif

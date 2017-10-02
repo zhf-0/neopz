@@ -281,8 +281,10 @@ public:
     
     /** @brief Drucker prager elastoplastic corrector  */
     void corrector_DP(TPZFMatrix<REAL> Grad_u_n, TPZFMatrix<REAL> Grad_u, TPZFMatrix<REAL> &e_e, TPZFMatrix<REAL> &e_p, TPZFMatrix<REAL> &S);
-    
-    
+
+private:
+    static int ClassId();
+public:
 };
 
 
