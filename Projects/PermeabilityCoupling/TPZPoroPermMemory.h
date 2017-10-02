@@ -13,7 +13,7 @@
 #include "pzreal.h"
 #include "pzfmatrix.h"
 
-class TPZPoroPermMemory {
+class TPZPoroPermMemory : TPZSavable{
     
     
     /** @brief displacements */
@@ -36,7 +36,7 @@ public:
     /** @brief Default destructor */
     ~TPZPoroPermMemory();
     
-    TPZPoroPermMemory(const TPZPoroPermMemory &copy)
+    TPZPoroPermMemory(const TPZPoroPermMemory &copy) : TPZRegisterClassId(&TPZPoroPermMemory::ClassId)
     {
         
         fu_n = copy.fu_n;
@@ -123,8 +123,10 @@ public:
         //        out << fPressure;
         DebugStop();
     }
-    
-    
+
+    private:
+    static int ClassId();
+public:
 };
 
 inline std::ostream &operator<<(std::ostream &out,const TPZPoroPermMemory &mem)

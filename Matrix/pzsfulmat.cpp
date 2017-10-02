@@ -871,6 +871,6 @@ int TPZSFMatrix<TVar>::DerivedFrom(char *classname){
 
 template<class TVar>
 int TPZSFMatrix<TVar>::ClassId(){
-    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassID()^Hash("TPZSFMatrix");
+    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassId()^Hash("TPZSFMatrix");
 	return 666;
 }

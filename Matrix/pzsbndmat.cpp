@@ -1997,7 +1997,7 @@ TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZSBMatrix<complex<
 #endif
 template<class TVar>
 int TPZSBMatrix<TVar>::ClassId(){
-    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassID()^Hash("TPZSBMatrix");
+    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassId()^Hash("TPZSBMatrix");
     return 666;
 }
 

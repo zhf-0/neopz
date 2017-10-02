@@ -480,7 +480,7 @@ inline void TPZCompElPostProc<TCOMPEL>::ComputeShape(TPZVec<REAL> &intpoint, TPZ
 }
 template<class TPZCOMPEL>
 int TPZCompElPostProc<TPZCOMPEL>::ClassId() {
-	//CLASSIDFRANreturn TPZReferredCompEl::ClassId()^Hash("TPZCompElPostProc");
+	//CLASSIDFRANreturn TPZReferredCompEl<TPZCOMPEL>::ClassId()^Hash("TPZCompElPostProc");
 	return 666;
 }
 

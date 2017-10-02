@@ -81,6 +81,6 @@ void TPZThermicElast3D::Solution(TPZVec<STATE> &Sol, TPZFMatrix<STATE> &DSol,
 }
 
 int TPZThermicElast3D::ClassId(){
-    //CLASSIDFRANreturn TZElasticity3D::ClassId()^Hash("TPZThermicElast3D");
+    //CLASSIDFRANreturn TPZElasticity3D::ClassId()^Hash("TPZThermicElast3D");
     return 666;
 }

@@ -9,7 +9,7 @@
 #include "TPZPoroPermMemory.h"
 
 /** @brief Default constructor */
-TPZPoroPermMemory::TPZPoroPermMemory(){
+TPZPoroPermMemory::TPZPoroPermMemory() : TPZRegisterClassId(&TPZPoroPermMemory::ClassId){
     
     /** @brief displacements */
     fu_n.Resize(3, 0);
@@ -30,4 +30,8 @@ TPZPoroPermMemory::TPZPoroPermMemory(){
 /** @brief Default destructor */
 TPZPoroPermMemory::~TPZPoroPermMemory(){
     
+}
+
+int TPZPoroPermMemory::ClassId() {
+    return Hash("TPZPoroPermMemory");
 }

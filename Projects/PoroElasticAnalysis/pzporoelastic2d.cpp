@@ -1343,5 +1343,6 @@ void TPZPoroElastic2d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialD
 
 int TPZPoroElastic2d::ClassId() {
 	//CLASSIDFRANreturn TPZDiscontinuousGalerkin::ClassId()^Hash("TPZPoroElastic2d");
+	return 666;
 }
 

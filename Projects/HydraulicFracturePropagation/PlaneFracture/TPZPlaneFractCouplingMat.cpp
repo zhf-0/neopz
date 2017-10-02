@@ -416,6 +416,7 @@ void TPZPlaneFractCouplingMat::FillBoundaryConditionDataRequirement(int type, TP
 
 int TPZPlaneFractCouplingMat::ClassId() {
     //CLASSIDFRAN return TPZElast3Dnlinear::ClassId()^Hash("TPZPlaneFractCouplingMat");
+    return 666;
 }
 
 

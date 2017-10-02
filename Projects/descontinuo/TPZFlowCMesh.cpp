@@ -75,7 +75,7 @@ REAL TPZFlowCompMesh1::MaxVelocityOfMesh(int nstate,REAL gamma) {
 }
 
 int TPZFlowCompMesh1::ClassId() {
-  //CLASSIDFRANreturn TPZCompMesh::CLassId()^Hash("TPZFlowCompMesh1");
+  //CLASSIDFRANreturn TPZCompMesh::ClassId()^Hash("TPZFlowCompMesh1");
   return 666;
 }
 

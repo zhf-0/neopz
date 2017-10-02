@@ -829,7 +829,7 @@ int TPZSkylParMatrix<TVar>::main_nada()
 
 template<class TVar>
 int TPZSkylParMatrix<TVar>::ClassId(){
-    //CLASSIDFRAN return TPZSkylMatrix::ClassId()^Hash("TPZSkylParMatrix");
+    //CLASSIDFRAN return TPZSkylMatrix<TVar>::ClassId()^Hash("TPZSkylParMatrix");
 	return 666;
 }
 

@@ -748,7 +748,7 @@ TPZMatrix<STATE> * TPZParFrontStructMatrix<front>::CreateAssemble(TPZFMatrix<STA
 }
 template <class front>
 int TPZParFrontStructMatrix<front>::ClassId() {
-    //CLASSIDFRANreturn TPZFrontStructMatrix::ClassId()^Hash("TPZParFrontStructMatrix");
+    //CLASSIDFRANreturn TPZFrontStructMatrix<front>::ClassId()^Hash("TPZParFrontStructMatrix");
 	return 666;
 }
 

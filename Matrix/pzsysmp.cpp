@@ -369,7 +369,7 @@ int TPZSYsmpMatrix<TVar>::Subst_Backward( TPZFMatrix<TVar>* b ) const
 
 template<class TVar>
 int TPZSYsmpMatrix<TVar>::ClassId(){
-    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassID()^Hash("TPZSYsmpMatrix");
+    //CLASSIDFRANreturn TPZMatrix<TVar>::ClassId()^Hash("TPZSYsmpMatrix");
     return 666;
 }
 template class TPZSYsmpMatrix<double>;
