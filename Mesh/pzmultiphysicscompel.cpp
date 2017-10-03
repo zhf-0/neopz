@@ -667,6 +667,7 @@ void TPZMultiphysicsCompEl<TGeometry>::CalcStiff(TPZElementMatrix &ek, TPZElemen
 	}
     int order = material->IntegrationRuleOrder(ordervec);
 	
+  
 	TPZGeoEl *ref = this->Reference();
 	intrule = ref->CreateSideIntegrationRule(ref->NSides()-1, order);
 	

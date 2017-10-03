@@ -54,6 +54,7 @@
 #include "pzpoisson3d.h"
 #include "pzpoisson3dreferred.h"
 #include "meshgen.h"
+#include "TPZGmshReader.h"
 
 #include "pzmixedelasmat.h"
 #include "pzmultiphysicselement.h"
@@ -72,7 +73,7 @@
 #include "pzmultiphysicselement.h"
 #include "TPZMultiphysicsInterfaceEl.h"
 
-
+#include "pzgengrid.h"
 #include <cmath>
 #include <set>
 
@@ -100,6 +101,9 @@ TPZGeoMesh *CreateGMesh(int nelx, int nely, double hx, double hy);
  * @param pOrder ordem polinomial de aproximacao
  */
 TPZCompMesh *CMesh_S(TPZGeoMesh *gmesh, int pOrder);
+
+/// change the order of the internal connect to the given order
+void ChangeInternalOrder(TPZCompMesh *cmesh, int pOrder);
 
 /**
  * @brief Funcao para criar a malha computacional da pressão a ser simulado
@@ -182,18 +186,34 @@ int main(int argc, char *argv[])
     TPZManVector<REAL,3> x(3,1.);
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 1;
+    int h_level = 4;
     
     
     double hx=2,hy=2; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
-    int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-    int pOrder = 8; //Ordem polinomial de aproximação
+    int nx=nelx ,ny=nely; //Número de nos em x  y
+    int RibpOrder = 1; //Ordem polinomial de aproximação
+    int InternalpOrder = 2;
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
     //Gerando malha geométrica:
     
+    TPZGmshReader Girkmann;
+    
+    Girkmann.fPZMaterialId[2]["ELASTICITY"] = 1;
+    Girkmann.fPZMaterialId[1]["SUPPORT"] = -1;
+    Girkmann.fPZMaterialId[1]["ZERO"] = -2;
+    Girkmann.fPZMaterialId[1]["SYM"] = -3;
+    Girkmann.fPZMaterialId[1]["MOMENT"] = 2;
+    
+    
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("Girkmann.msh");
+ 
+    {
+        std::ofstream out("Girkmann.vtk");
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh2,out,true);
+    }
     TPZGeoMesh *gmesh = CreateGMesh(nx, ny, hx, hy); //Função para criar a malha geometrica
     
 #ifdef PZDEBUG
@@ -206,10 +226,12 @@ int main(int argc, char *argv[])
     TElasticityExample1 Example;
     //Gerando malha computacional:
     
-    TPZCompMesh *cmesh_S = CMesh_S(gmesh, pOrder); //Função para criar a malha computacional da tensão
-    TPZCompMesh *cmesh_U = CMesh_U(gmesh, pOrder); //Função para criar a malha computacional da deslocamento
-    TPZCompMesh *cmesh_P = CMesh_P(gmesh, pOrder); //Função para criar a malha computacional da rotação
-    TPZCompMesh *cmesh_m = CMesh_m(gmesh, pOrder,  Example); //Função para criar a malha computacional multifísica
+    
+    TPZCompMesh *cmesh_S = CMesh_S(gmesh, RibpOrder); //Função para criar a malha computacional da tensão
+    ChangeInternalOrder(cmesh_S,InternalpOrder);
+    TPZCompMesh *cmesh_U = CMesh_U(gmesh, InternalpOrder); //Função para criar a malha computacional da deslocamento
+    TPZCompMesh *cmesh_P = CMesh_P(gmesh, InternalpOrder); //Função para criar a malha computacional da rotação
+    TPZCompMesh *cmesh_m = CMesh_m(gmesh, RibpOrder,  Example); //Função para criar a malha computacional multifísica
 #ifdef PZDEBUG
     {
         std::ofstream filecS("MalhaC_S.txt"); //Impressão da malha computacional da tensão (formato txt)
@@ -313,6 +335,8 @@ int main(int argc, char *argv[])
     TPZManVector<REAL,3> Errors;
     ofstream ErroOut("Erro.txt",std::ios::app);
     ErroOut << "Number of elements " << h_level << std::endl;
+    ErroOut << "Number of Condensed equations " << cmesh_m->NEquations() << std::endl;
+    ErroOut << "Number of equations before condensation " << cmesh_m->Solution().Rows() << std::endl;
     an.SetExact(Example.Exact());
     an.PostProcessError(Errors,ErroOut);
     
@@ -453,22 +477,35 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     TPZVec <REAL> coord (3,0.);
     TPZVec <REAL> newcoord(3,0.);
-    TPZVec <REAL> gcoord1(4,0.);
-    TPZVec <REAL> gcoord2(4,0.);
+    TPZVec <REAL> gcoord1(3,0.);
+    TPZVec <REAL> gcoord2(3,0.);
     double theta=M_PI/4;
-    gcoord1[0]=-0.3;
-    gcoord2[0]=0;
-    gcoord1[1]=1.7;
-    gcoord2[1]=0.7;
-    gcoord1[3]=1;
-    gcoord2[3]=1;
-    gcoord1[2]=0;
-    gcoord2[2]=1;
+    gcoord1[0]=-1;
+    gcoord2[0]=hx-1;
+    gcoord1[1]=-1.;
+    gcoord2[1]=hy-1;
+    gcoord1[2]=0-1;
+    gcoord2[2]=0-1;
     //Inicialização dos nós:
     
+    TPZManVector<int> nelem(2,1);
+    nelem[0]= nx;
+    nelem[1] = ny;
     
+    TPZGenGrid gengrid(nelem,gcoord1,gcoord2);
     
+//    gengrid.SetElementType(ETriangle);
     
+    REAL distort = 0.7;
+//    gengrid.SetDistortion(distort);
+    
+    gengrid.Read(gmesh);
+    gengrid.SetBC(gmesh,4,matBCbott);
+    gengrid.SetBC(gmesh,5,matBCright);
+    gengrid.SetBC(gmesh,6,matBCtop);
+    gengrid.SetBC(gmesh,7,matBCleft);
+   
+    /*
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
@@ -487,6 +524,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
             gmesh->NodeVec()[index] = TPZGeoNode(id,coord,*gmesh);
         }
     }
+    */
     
 //  Ponto 1
 //  TPZVec<long> pointtopology(1);
@@ -496,7 +534,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     
     //Vetor auxiliar para armazenar as conecções entre elementos:
-    
+ /*   
     TPZVec <long> connect(4,0);
     
     
@@ -538,7 +576,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
             }
         }
     }
-
+*/
     {
         TPZCheckGeom check(gmesh);
         check.CheckUniqueId();
@@ -1017,3 +1055,27 @@ void CreateCondensedElements2(TPZCompMesh *cmesh)
         TPZCondensedCompEl *condensed = new TPZCondensedCompEl(cel);
     }
 }
+
+/// change the order of the internal connect to the given order
+void ChangeInternalOrder(TPZCompMesh *cmesh, int pOrder)
+{
+    long nel = cmesh->NElements();
+    for(long el = 0; el<nel; el++)
+    {
+        TPZCompEl *cel = cmesh->Element(el);
+        if(!cel) continue;
+        
+        TPZGeoEl *gel = cel->Reference();
+        if(gel->Dimension() != cmesh->Dimension())
+        {
+            continue;
+        }
+        int nc = cel->NConnects();
+        TPZInterpolatedElement *intel = dynamic_cast<TPZInterpolatedElement *>(cel);
+        if(!intel) DebugStop();
+        
+        intel->ForceSideOrder(gel->NSides()-1,pOrder);
+    }
+    cmesh->ExpandSolution();
+}
+

@@ -1788,14 +1788,13 @@ void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
 {
     //values[0] = 0.;
     TPZManVector<REAL,4> SigmaV(4,0.),sigma_exactV(4,0.),eps_exactV(4,0.),EPSZV(4,0.);
-    TPZFNMatrix<9,STATE> sigma(3,3,0.),eps(3,3,0.);
+    TPZFNMatrix<9,STATE> sigma(3,3,0.),eps(3,3,0.),grad(2,2,0.);
     TPZFNMatrix<4,STATE> eps_exact(2,2,0.);
     REAL sigx,sigy,sigxy,gamma;
     REAL lambda = GetLambda();
     REAL mu = this->GetMU();
     REAL E = this->fE;
     
-  
     //TPZManVector<REAL,4> SIGMA(4,0.) , EPSZ(4,0.), eps_exact(4,0.);
     int dim = Dimension();
     for (int i=0; i<dim; i++) {
@@ -1812,7 +1811,7 @@ void TPZElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> 
     for (int i=0; i<dim; i++) {
         disp[i] = data[1].sol[0][i];
     }
-    
+       
 #ifdef LOG4CXX
     if(logdata->isDebugEnabled())
 

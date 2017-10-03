@@ -93,8 +93,8 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[1] = (TVar)sin(x[0]*x[0]*x[0]*x[0]);
-        disp[0] = (TVar)cos(x[1]*x[1]*x[1]*x[1]);
+        disp[0] = (1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]);
+        disp[1] = (1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]);
     }
 
     else if(fProblemType ==ERot)//rotation
@@ -160,8 +160,8 @@ void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > 
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[1] = FADsin(x[0]*x[0]*x[0]*x[0]);
-        disp[0] = FADcos(x[1]*x[1]*x[1]*x[1]);
+        disp[0] = (1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]);
+        disp[1] = (1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]);
     }
       
     else if(fProblemType ==ERot)//rotation
