@@ -1035,7 +1035,15 @@ void TPZMultiphysicsCompEl<TGeometry>::EvaluateError(  void (*fp)(const TPZVec<R
             material->Errors(datavec,u_exact,du_exact,values);
       
 			for(int ier = 0; ier < NErrors; ier++)
+            {
+#ifdef PZDEBUG
+                if(values[ier] < 0.)
+                {
+                    DebugStop();
+                }
+#endif
 				errors[ier] += values[ier]*weight;
+            }
 		}
 		
 	}//fim for : integration rule
