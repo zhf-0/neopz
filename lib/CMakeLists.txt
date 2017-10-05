@@ -59,57 +59,77 @@ set(pzsources
 
 #creating target pz library and installing it
 if (BUILD_PYTHON_BINDING)
-	IF (NOT WIN32)
-		#Build a shared library to be used with python binding
+	if (NOT WIN32)
 		add_library(pz SHARED ${pzsources})
-	ELSE()
+	else(NOT WIN32)
 		add_library(pz STATIC ${pzsources})
-	ENDIF()
-else()
+	endif(NOT WIN32)
+else(BUILD_PYTHON_BINDING)
   #Build a static library (default)
   add_library(pz ${pzsources})
 endif()
 
 target_link_libraries(pz ${PTHREAD_LIB})
 
-IF (USING_IPO)
-  set_property(DIRECTORY PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
-ENDIF()
+if(APPLE)
+	target_link_libraries(pz ${ACCELERATE_LIB})
+endif(APPLE)
 
-IF (NOT WIN32)
-target_link_libraries(pz pthread)
-ENDIF()
+if(USING_BOOST)
+	target_link_libraries(pz ${Boost_LIBRARIES})
+endif(USING_BOOST)
+
+if (USING_IPO)
+  set_property(DIRECTORY PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+endif(USING_IPO)
 
 if (USING_LOG4CXX)
   target_link_libraries(pz ${LOG4CXX_LIB})
   if(WIN32)
 		target_link_libraries(pz odbc32.lib ws2_32.lib mswsock.lib)
-  endif()
-endif()
-
-if (USING_OPENMP)
-  target_link_libraries(pz ${OPENMP_LIB})
-endif()
+  endif(WIN32)
+endif(USING_LOG4CXX)
 
 if (USING_METIS)
   target_link_libraries(pz ${METIS_LIB})
-endif()
+endif(USING_METIS)
 
-if (USING_BLAS)
+if(USING_OPENSSL)
+	link_libraries(crypto)
+endif(USING_OPENSSL)
+
+if(USING_TBB)
+	target_link_libraries(pz ${TBB_LIB})
+endif(USING_TBB)
+
+if (USING_OPENMP)
+	target_link_libraries(pz ${OPENMP_LIB})
+endif(USING_OPENMP)
+
+if (USING_LIKWID)
+	target_link_libraries(pz ${LIKWID_LIB})
+endif(USING_LIKWID)
+
+if (USING_LIBNUMA)
+	target_link_libraries(pz ${LIBNUMA_LIB})
+endif(USING_LIBNUMA)
+
+if(USING_BLAS)
   target_link_libraries(pz ${CBLAS_LIB} ${ATLAS_LIB})
-endif()
+endif(USING_BLAS)
 
-if (USING_PAPI)
+if(USING_PAPI)
   target_link_libraries(pz ${PAPI_LIB})
-endif()
+endif(USING_PAPI)
 
-if (USING_MKL)
-  target_link_libraries(pz ${MKL_LIB_INTEL} ${MKL_LIB_CORE} ${MKL_LIB_THREAD} ${COMPOSER_OMP})
-endif()
+if(USING_HWLOC)
+	target_link_libraries(pz ${HWLOC_LIB})
+endif(USING_HWLOC)
 
-if (USING_HWLOC)
-  target_link_libraries(pz ${HWLOC_LIB})
-endif()
+if(USING_MKL)
+	target_link_libraries(pz ${MKL_LIB_INTEL} ${MKL_LIB_CORE} ${MKL_LIB_THREAD} ${COMPOSER_OMP})
+endif(USING_MKL)
+
 
 install(TARGETS pz DESTINATION ${NEOPZ_LIB})
 

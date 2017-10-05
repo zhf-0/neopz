@@ -325,7 +325,7 @@ void TPZAcademicGeoMesh::CheckConsistency(TPZGeoMesh *mesh)
 }
 
 
-int TPZAcademicGeoMesh::AddBoundaryElements(TPZGeoMesh *gmesh)
+void TPZAcademicGeoMesh::AddBoundaryElements(TPZGeoMesh *gmesh)
 {
     long nel = gmesh->NElements();
     for(long el=0; el<nel; el++) {
@@ -398,7 +398,7 @@ int TPZAcademicGeoMesh::AddBoundaryElements(TPZGeoMesh *gmesh)
     }
 }
 
-int TPZAcademicGeoMesh::AddBoundaryElementsByCoord(TPZGeoMesh *gmesh)
+void TPZAcademicGeoMesh::AddBoundaryElementsByCoord(TPZGeoMesh *gmesh)
 {
   long nel = gmesh->NElements();
   for(long el=0; el<nel; el++) {

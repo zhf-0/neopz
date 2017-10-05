@@ -82,7 +82,3 @@
 #ifndef @STATE_TYPE_DEF@
 #define @STATE_TYPE_DEF@
 #endif
-
-#ifndef HDIVPIOLA
-#cmakedefine HDIVPIOLA
-#endif
