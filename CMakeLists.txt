@@ -93,7 +93,7 @@ endif()
 
 #enabling pthread library
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
+find_package(Threads REQUIRED PATHS ${PROJECT_SOURCE_DIR}/../externallibs/pthread ${PROJECT_SOURCE_DIR}/../externallibs/pthread/lib ${PROJECT_SOURCE_DIR}/../externallibs/pthread/include ${PROJECT_SOURCE_DIR}/../pthread ${PROJECT_SOURCE_DIR}/../pthread/lib ${PROJECT_SOURCE_DIR}/../pthread/include)
 if(NOT Threads_FOUND)
 	message(FATAL_ERROR "Could not find pthread")
 endif(NOT Threads_FOUND)
