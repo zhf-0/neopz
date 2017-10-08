@@ -1,6 +1,6 @@
 # @file neopz/CMakeList.txt  -- First file to read for CMake
 
-cmake_minimum_required (VERSION 2.8.0)
+cmake_minimum_required (VERSION 3.1.0)
 
 project (PZ)
 
@@ -92,17 +92,11 @@ endif()
 #ENABLING EXTERNAL LIBRARIES
 
 #enabling pthread library
-find_path(PTHREAD_INCLUDE NAMES PThread.h pthread.h PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../externallibs/pthread ${PROJECT_SOURCE_DIR}/../externallibs/pthread/include ${PROJECT_SOURCE_DIR}/../pthread )
-find_library(PTHREAD_LIB NAMES libpthread.dylib pthread.lib pthreadVC2.lib libPThread.so libPThread.a libpthread.so libpthread.a PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../externallibs/pthread/lib  ${PROJECT_SOURCE_DIR}/../pthread/lib)
-if(NOT PTHREAD_INCLUDE)
-	set (PTHREAD_INCLUDE "" CACHE PATH "Directory where pthread.h can be found")
-	message(FATAL_ERROR "PThread's headers not found")
-endif()
-if(NOT PTHREAD_LIB)
-	set (PTHREAD_LIB "" CACHE PATH "Directory where the pthread library can be found")
-	message(FATAL_ERROR "PThread lib not found")
-endif()
-include_directories(${PTHREAD_INCLUDE})
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+if(NOT Threads_FOUND)
+	message(FATAL_ERROR "Could not find pthread")
+endif(NOT Threads_FOUND)
 
 IF(APPLE)
    # Mac OS X specific code

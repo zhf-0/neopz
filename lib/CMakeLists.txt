@@ -69,7 +69,7 @@ else(BUILD_PYTHON_BINDING)
   add_library(pz ${pzsources})
 endif()
 
-target_link_libraries(pz ${PTHREAD_LIB})
+target_link_libraries(pz Threads::Threads)
 
 if(APPLE)
 	target_link_libraries(pz ${ACCELERATE_LIB})
