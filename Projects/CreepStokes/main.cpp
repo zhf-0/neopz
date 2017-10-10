@@ -85,7 +85,7 @@ const int matIntBCbott=-11, matIntBCtop=-12, matIntBCleft=-13, matIntBCright=-14
 const int matPoint =-5;//Materia de um ponto
 const int dirichlet = 0, neumann = 1, mixed = 2, pointtype=5, dirichletvar=4; //Condições de contorno do problema ->default Dirichlet na esquerda e na direita
 const int pointtypex = 3, pointtypey = 4;
-const REAL visco=1.,theta=1.; //Coeficientes: viscosidade, fator simetria
+const REAL visco=1.,theta=-1.; //Coeficientes: viscosidade, fator simetria
 const REAL Pi=M_PI;
 
 const int quadmat1 = 1; //Parte inferior do quadrado
@@ -94,15 +94,16 @@ const int quadmat3 = 3; //Material de interface
 
 //Dados do problema:
 
-int h_level = 8;
+int h_level = 64;
 
 double hx=1.,hy=1.; //Dimensões em x e y do domínio
 int nelx=h_level, nely=h_level; //Número de elementos em x e y
 int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-int pOrder = 2; //Ordem polinomial de aproximação
+int pOrder = 3; //Ordem polinomial de aproximação
 
 STATE hE=hx/h_level;
-STATE S0=25.;
+//STATE S0=(80./(pOrder*pOrder));
+STATE S0=5.;
 STATE Sigma=S0*(pOrder*pOrder)/hE;
 
 void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget);
@@ -274,6 +275,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+
 // Teste 0
 // definition of f
 void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
@@ -283,12 +285,15 @@ void f_source(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE yv = x[1];
     //    STATE zv = x[2];
     
-    STATE f_x = 4.*((xv*xv*xv)*(6. - 12.*yv) + (xv*xv*xv*xv)*(-3. + 6.*yv) +
-                    yv*(1. - 3.*yv + 2.*(yv*yv)) - 6.*xv*yv*(1. - 3.*yv + 2.*(yv*yv)) +
-                    3.*(xv*xv)*(-1. + 4.*yv - 6.*(yv*yv) + 4.*(yv*yv*yv)));
-    STATE f_y = -4.*(-3.*((-1. + yv)*(-1. + yv))*(yv*yv) - 3.*(xv*xv)*(1. - 6.*yv + 6.*(yv*yv)) +
-                     2.*(xv*xv*xv)*(1. - 6.*yv + 6.*(yv*yv)) +
-                     xv*(1. - 6.*yv + 12.*(yv*yv) - 12.*(yv*yv*yv) + 6.*(yv*yv*yv*yv)));
+//    STATE f_x = xv*xv*xv*(12. - 24.*yv) + xv*xv*xv*xv*(-6. + 12.*yv) + xv*yv*(-12. + 36.*yv - 24.*yv*yv)+yv*(2. - 6.*yv + 4.*yv*yv) + xv*xv*(-6. + 24.*yv - 36.*yv*yv + 24.*yv*yv*yv) - Pi*sin(Pi*xv)*sin(Pi*yv);
+//    STATE f_y = 6.*(1. - 1.*yv)*(1. - 1.*yv)*yv*yv + xv*xv*xv*(-4. + 24.*yv - 24.*yv*yv) +
+//    xv*xv*(6. - 36.*yv + 36.*yv*yv)+xv*(-2. + 12.*yv - 24.*yv*yv + 24.*yv*yv*yv - 12.*yv*yv*yv*yv) +
+//    Pi*cos(Pi*xv)*cos(Pi*yv);
+    
+    
+    
+    STATE f_x = 8.*(1. - xv)*(1. - xv)*xv*xv*yv+ 4.*(1. - xv)*(1. - xv)*xv*xv*(-3. + 4.*yv)+ 4.*(1. - xv)*(1. - xv)*yv*(1. - 3.*yv + 2.*yv*yv)- 16.*(1. - xv)*xv*yv*(1. - 3.*yv + 2.*yv*yv) + 4.*xv*xv*yv*(1. - 3.*yv + 2.*yv*yv) - Pi*sin(Pi*xv)*sin(Pi*yv);
+    STATE f_y =  -4.*xv*(1. - 3.*xv + 2.*xv*xv)*(1. - yv)*(1. - yv)+ 16.*xv*(1. - 3.*xv + 2.*xv*xv)*(1. - yv)*yv-4.*xv*(1. - 3.*xv + 2.*xv*xv)*yv*yv- 8.*xv*(1. - yv)*(1. - yv)*yv*yv -4.*(-3. + 4.*xv)*(1. - yv)*(1. - yv)*yv*yv+Pi*cos(Pi*xv)*cos(Pi*yv);
     
     f[0] = f_x; // x direction
     f[1] = f_y; // y direction
@@ -302,8 +307,8 @@ void v_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE v_x =  -2.*((-1. + xv)*(-1. + xv))*(xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
-    STATE v_y =  +2.*(-1. + xv)*xv*(-1. + 2.*xv)*((-1. + yv)*(-1. + yv))*(yv*yv);
+    STATE v_x = -2.*(1. - xv)*(1. - xv)*xv*xv*yv*(1. - 3.*yv + 2.*yv*yv);
+    STATE v_y = 2.*xv*(1. - 3.*xv + 2.*xv*xv)*(1. - yv)*(1. - yv)*yv*yv;
     
     f[0] = v_x; // x direction
     f[1] = v_y; // y direction
@@ -317,7 +322,7 @@ void p_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE p_x =  0.0;
+    STATE p_x = cos(Pi*xv)*sin(Pi*yv);
     
     f[0] = p_x; // x direction
 }
@@ -330,9 +335,9 @@ void solucao_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE v_x =  -2.*((-1. + xv)*(-1. + xv))*(xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
-    STATE v_y =  +2.*(-1. + xv)*xv*(-1. + 2.*xv)*((-1. + yv)*(-1. + yv))*(yv*yv);
-    STATE p =  0.;
+    STATE v_x = -2.*(1. - xv)*(1. - xv)*xv*xv*yv*(1. - 3.*yv + 2.*yv*yv);
+    STATE v_y = 2.*xv*(1. - 3.*xv + 2.*xv*xv)*(1. - yv)*(1. - yv)*yv*yv;
+    STATE p =  cos(Pi*xv)*sin(Pi*yv);
     
     f[0] = v_x; // x direction
     f[1] = v_y; // y direction
@@ -349,26 +354,26 @@ void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& ds
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE v_x =  -2.*((-1. + xv)*(-1. + xv))*(xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
-    STATE v_y =  +2.*(-1. + xv)*xv*(-1. + 2.*xv)*((-1. + yv)*(-1. + yv))*(yv*yv);
-    STATE pressure= 0.;
+    STATE v_x = -2.*(1. - xv)*(1. - xv)*xv*xv*yv*(1. - 3.*yv + 2.*yv*yv);
+    STATE v_y = 2.*xv*(1. - 3.*xv + 2.*xv*xv)*(1. - yv)*(1. - yv)*yv*yv;
+    STATE p =  cos(Pi*xv)*sin(Pi*yv);
     
     sol[0]=v_x;
     sol[1]=v_y;
-    sol[2]=pressure;
+    sol[2]= p;
     
     // vx direction
-    dsol(0,0)= -4*(-1 + xv)*(-1 + xv)*xv*(-1 + yv)*yv*(-1 + 2*yv) - 4*(-1 + xv)*xv*xv*(-1 + yv)*yv*(-1 + 2*yv);
-    dsol(0,1)= 4*(-1 + xv)*xv*(-1 + yv)*(-1 + yv)*yv*yv + 2*(-1 + xv)*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv + 2*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv*yv;
+    dsol(0,0)= -4.*(-1. + xv)*xv*(-1. + 2.* xv)*yv*(1. - 3.*yv + 2.*yv*yv);
+    dsol(1,0)= -2.*(-1 + xv)*(-1. + xv)*xv*xv*(1.- 6.*yv + 6.*yv*yv);
     
     // vy direction
-    dsol(1,0)= -4*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*yv - 2*(-1 + xv)*(-1 + xv)*xv*xv*(-1 + yv)*(-1 + 2*yv) - 2*(-1 + xv)*(-1 + xv)*xv*xv*yv*(-1 + 2*yv);
-    dsol(1,1)= 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*(-1 + yv)*yv + 4*(-1 + xv)*xv*(-1 + 2*xv)*(-1 + yv)*yv*yv;
+    dsol(0,1)= 2.*(1.- 6.*xv + 6.*xv*xv)*(-1. + yv)*(-1. + yv)*yv*yv;
+    dsol(1,1)= 4.*xv*(1. - 3.*xv + 2.*xv*xv)*(-1. + yv)*yv*(-1. + 2.*yv);
     
     // Gradiente pressão
     
-    dsol(2,0)= 0;
-    dsol(2,1)= 0;
+    dsol(2,0)= -Pi*sin(Pi*xv)*sin(Pi*yv);
+    dsol(2,1)= Pi*cos(Pi*xv)*cos(Pi*yv);
     
     
 }
@@ -906,22 +911,22 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     
     TPZMaterial * BCond0 = material->CreateBC(material, matBCbott, dirichlet, val1, val2); //Cria material que implementa a condição de contorno inferior
     //BCond0->SetForcingFunction(p_exact1, bc_inte_order);
-    BCond0->SetForcingFunction(solucao_exact,bc_inte_order);
+    //BCond0->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond0); //Insere material na malha
     
     TPZMaterial * BCond1 = material->CreateBC(material, matBCtop, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno superior
     //BCond1->SetForcingFunction(p_exact1,bc_inte_order);
-    BCond1->SetForcingFunction(solucao_exact,bc_inte_order);
+    //BCond1->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond1); //Insere material na malha
     
     TPZMaterial * BCond2 = material->CreateBC(material, matBCleft, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno esquerda
     //BCond2->SetForcingFunction(p_exact1,bc_inte_order);
-    BCond2->SetForcingFunction(solucao_exact,bc_inte_order);
+    //BCond2->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond2); //Insere material na malha
     
     TPZMaterial * BCond3 = material->CreateBC(material, matBCright, dirichlet, val1, val2); //Cria material que implementa a condicao de contorno direita
     //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
-    BCond3->SetForcingFunction(solucao_exact,bc_inte_order);
+    //BCond3->SetForcingFunction(solucao_exact,bc_inte_order);
     cmesh->InsertMaterialObject(BCond3); //Insere material na malha
     
     //Ponto
