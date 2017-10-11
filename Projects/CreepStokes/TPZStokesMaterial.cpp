@@ -891,6 +891,15 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
             
         case 5: //Ponto pressao
         {
+            
+            if(bc.HasForcingFunction())
+            {
+                TPZManVector<STATE> pbc(1);
+                bc.ForcingFunction()->Execute(datavec[vindex].x,pbc);
+                p_D = pbc[0];
+                
+            }
+            
             p_D = bc.Val2()(0,0);
             
             
@@ -901,7 +910,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 //                    phiPi(e,0)=phiP(i,0);
                 //                }
                 
-                ef(i) += 1.0 * p_D * phiP(i,0);
+                ef(i) += gBigNumber * p_D * phiP(i,0);
                 
                 for(int j = 0; j < nshapeP; j++){
                     
@@ -909,7 +918,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                     //                        phiPj(e,0)=phiP(j,0);
                     //                    }
                     
-                    ek(i,j) += 1.0 * (phiP(i,0) * phiP(j,0));
+                    ek(i,j) += gBigNumber * (phiP(i,0) * phiP(j,0));
                     
                 }
                 
