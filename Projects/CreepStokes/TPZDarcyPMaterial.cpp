@@ -164,7 +164,7 @@ void TPZDarcyPMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
             break;
         case 2: //f
         {
-            TPZVec<double> f;
+            TPZVec<STATE> f;
             if(this->HasForcingFunction()){
                 this->ForcingFunction()->Execute(datavec[vindex].x, f);
             }
@@ -174,7 +174,7 @@ void TPZDarcyPMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
         
         case 3: //v_exact
         {
-            TPZVec<double> v;
+            TPZVec<STATE> v;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExact()->Execute(datavec[vindex].x, v);
             }
@@ -185,7 +185,7 @@ void TPZDarcyPMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
         
         case 4: //p_exact
         {
-            TPZVec<double> p;
+            TPZVec<STATE> p;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExactPressure()->Execute(datavec[pindex].x, p);
             }
@@ -475,7 +475,7 @@ void TPZDarcyPMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     nshapeP = phiP.Rows();
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
-    TPZVec<double> f(fDimension);
+    TPZVec<STATE> f(fDimension);
     for (int e=0; e<fDimension; e++) {
         f[e] = 0.;
     }
@@ -574,7 +574,8 @@ void TPZDarcyPMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     //
     
     if(this->HasForcingFunction()){
-        this->ForcingFunction()->Execute(datavec[vindex].x, f);
+       this->ForcingFunction()->Execute(datavec[vindex].x, f);
+
     }
     else{
         f[0] = 0.0;

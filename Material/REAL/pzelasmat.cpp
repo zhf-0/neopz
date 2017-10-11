@@ -353,7 +353,8 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
 
         
         if(this->HasForcingFunction()){
-            this->ForcingFunction()->Execute(datavec[0].x, f);
+//            this->ForcingFunction()->Execute(datavec[0].x, f);
+            DebugStop();
         }
         
         

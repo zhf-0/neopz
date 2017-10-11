@@ -165,7 +165,7 @@ void TPZCouplingDSMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, 
             break;
         case 2: //f
         {
-            TPZVec<double> f;
+            TPZVec<STATE> f;
             if(this->HasForcingFunction()){
                 this->ForcingFunction()->Execute(datavec[vindex].x, f);
             }
@@ -176,7 +176,7 @@ void TPZCouplingDSMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, 
         
         case 3: //v_exact
         {
-            TPZVec<double> v;
+            TPZVec<STATE> v;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExact()->Execute(datavec[vindex].x, v);
             }
@@ -187,7 +187,7 @@ void TPZCouplingDSMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, 
         
         case 4: //p_exact
         {
-            TPZVec<double> p;
+            TPZVec<STATE> p;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExactPressure()->Execute(datavec[pindex].x, p);
             }

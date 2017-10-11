@@ -16,7 +16,8 @@
 //SetSpace
 //#define IsHDivQ
 //#define IsH1
-#define IsDGM
+//#define IsDGM
+#define IsHDIV
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -165,7 +166,7 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
             break;
         case 2: //f
         {
-            TPZVec<double> f;
+            TPZVec<STATE> f;
             if(this->HasForcingFunction()){
                 this->ForcingFunction()->Execute(datavec[vindex].x, f);
             }
@@ -176,7 +177,7 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
             
         case 3: //v_exact
         {
-            TPZVec<double> v;
+            TPZVec<STATE> v;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExact()->Execute(datavec[vindex].x, v);
             }
@@ -187,7 +188,7 @@ void TPZStokesMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZV
             
         case 4: //p_exact
         {
-            TPZVec<double> p;
+            TPZVec<STATE> p;
             if(this->HasfForcingFunctionExact()){
                 this->ForcingFunctionExactPressure()->Execute(datavec[pindex].x, p);
             }
@@ -397,7 +398,7 @@ void TPZStokesMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     nshapeV = datavec[vindex].fVecShapeIndex.NElements();
     
     
-    TPZVec<double> f;
+    TPZVec<STATE> f;
     TPZFMatrix<STATE> phiVi(fDimension,1,0.0);
     
     
@@ -584,7 +585,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 p_D = vbc[2];
             }
             
-#ifdef IsHDivQ
+#ifdef IsHDIV
             
             for(int i = 0; i < nshapeV; i++ )
             {
@@ -608,7 +609,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
             
             
             
-#else
+#endif
             
             for(int i = 0; i < nshapeV; i++ )
             {
@@ -657,7 +658,7 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 }
                 
             }
-#endif
+
             
             //pressao
             
@@ -1597,8 +1598,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
         
         
         
-#ifdef IsDGM
-        
+//#ifdef IsDGM
         
         
         if(bc.HasForcingFunction())
@@ -1699,34 +1699,9 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
             ek(i,j) += fact1 ;
             ek(j,i) += -fTheta*fact1;
             
-     
-            
-            
-//            STATE fact2=(-2.) * weight * fViscosity * InnerVec(phiVnin, Dunj) ;
-//            
-//            
-//            ek(i,j) += fact2 ;
-//            ek(j,i) += fTheta*fact2;
-//            
-//            STATE fact1=(-2.) * weight * fViscosity * InnerVec(phiVtit, Dunj) ;
-//            
-//            
-//            ek(i,j) += fact1 ;
-//            ek(j,i) += fTheta*fact1;
-            
-            
-//            STATE fact2=(-2.) * weight * fViscosity * InnerVec(phiVnin, Dunj) ;
-//            
-//            
-//            ek(i,j) += fact2 ;
-//            ek(j,i) += fTheta*fact2;
-            
-            
-            //std::cout<<ek<<std::endl;
-            
         }
         
-#endif
+//#endif
         
         
         //pressao fracamente
@@ -1746,16 +1721,6 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
                         v_2n(0,0)+=v_2(e,0)*normal[e];
                     }
         
-                   // std::cout<<v_2<<std::endl;
-                   // std::cout<<normal<<std::endl;
-        
-        
-                    //STATE factfp= (-1.) * weight * fViscosity * Inner(v_2n,phiPj);
-        
-                    //ef(j+nshapeV,0) += factfp ;
-        
-                    //Condição em f2:
-                    
                     STATE factfp= (1.) * weight * fViscosity * v_2n(0,0)* phiPj(0,0);
         
                     ef(j+nshapeV,0) += factfp ;
@@ -1764,7 +1729,6 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
                     STATE fact = (1.) * weight * Inner(phiVni,phiPj);
                     ek(i,j+nshapeV) += fact;
                     ek(j+nshapeV,i) += fact;
-        //
         
         
                 }
@@ -1987,7 +1951,7 @@ void TPZStokesMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<STATE> &u_e
     
     ////////////////////////////////////////////////// HDIV
     
-#ifdef IsHDivQ
+#ifdef IsHDIV
     /// erro norma HDiv
     
     STATE Div_exact=0., Div=0.;
