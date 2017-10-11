@@ -186,6 +186,20 @@ void TPZMaterial::Solution(TPZMaterialData &data, int var, TPZVec<STATE> &Solout
 }
 
 void TPZMaterial::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
+    int nvec = datavec.size();
+    int numdata = 0;
+    int dataindex = -1;
+    for (int iv=0; iv<datavec.size(); iv++) {
+        if(datavec[iv].phi.Rows() != 0)
+        {
+            numdata++;
+            dataindex = iv;
+        }
+    }
+    if (numdata == 1) {
+        Solution(datavec[dataindex], var, Solout);
+        return;
+    }
     DebugStop();
 }
 

@@ -93,8 +93,8 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] = (1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]);
-        disp[1] = (1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]);
+        disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
+        disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
     }
 
     else if(fProblemType ==ERot)//rotation
@@ -160,8 +160,8 @@ void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > 
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] = (1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]);
-        disp[1] = (1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]);
+        disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
+        disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
     }
       
     else if(fProblemType ==ERot)//rotation
@@ -337,6 +337,7 @@ void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
     Elastic(x, E, nu);
     TVar Fac = E/((TVar)1.+nu)/((TVar(1.)-TVar(2.)*nu));
     graduxy(x,grad);
+    //uxy(x,u);
     sigma.Resize(2,2);
     sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
     sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
