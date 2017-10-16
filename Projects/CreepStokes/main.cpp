@@ -94,16 +94,16 @@ const int quadmat3 = 3; //Material de interface
 
 //Dados do problema:
 
-int h_level = 64;
+int h_level = 16;
 
 double hx=1.,hy=1.; //Dimensões em x e y do domínio
 int nelx=h_level, nely=h_level; //Número de elementos em x e y
 int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-int pOrder = 3; //Ordem polinomial de aproximação
+int pOrder = 2; //Ordem polinomial de aproximação
 
 STATE hE=hx/h_level;
 //STATE S0=(80./(pOrder*pOrder));
-STATE S0=8.;
+STATE S0=30.;
 STATE Sigma=S0*(pOrder*pOrder)/hE;
 
 void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget);
@@ -709,14 +709,14 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Definição do espaço de aprximação:
     
-    //cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
+    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
     
-    cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
+    //cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
     
     
     //Criando elementos com graus de liberdade differentes para cada elemento (descontínuo):
     
-    //cmesh->ApproxSpace().CreateDisconnectedElements(true); //Criando elementos desconectados (descontínuo)
+    cmesh->ApproxSpace().CreateDisconnectedElements(true); //Criando elementos desconectados (descontínuo)
     
     
     //Criando material:
@@ -727,12 +727,12 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->InsertMaterialObject(material); //Insere material na malha
     
     //Dimensões do material (para H1 e descontinuo):
-    //TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
-    //material->SetMaterial(xkin, xcin, xfin);
+    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+    material->SetMaterial(xkin, xcin, xfin);
     
     //Dimensões do material (para HDiv):
-    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
-    material->SetMaterial(xkin, xcin, xfin);
+    //TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
+    //material->SetMaterial(xkin, xcin, xfin);
     
     
     //Condições de contorno:
@@ -779,7 +779,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     
     // @omar::
     
-    //pOrder--; // Space restriction apapapa
+    pOrder--; // Space restriction apapapa
     
     //Criando malha computacional:
     

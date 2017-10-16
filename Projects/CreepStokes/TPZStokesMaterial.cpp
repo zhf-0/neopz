@@ -16,8 +16,8 @@
 //SetSpace
 //#define IsHDivQ
 //#define IsH1
-//#define IsDGM
-#define IsHDIV
+#define IsDGM
+//#define IsHDIV
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -1737,7 +1737,7 @@ void TPZStokesMaterial::ContributeBCInterface(TPZMaterialData &data, TPZVec<TPZM
         
                     STATE fact = (1.) * weight * Inner(phiVni,phiPj);
                     ek(i,j+nshapeV) += fact;
-                    ek(j+nshapeV,i) += fact;
+                    ek(j+nshapeV,i) += fact; //AQUIPABLO
         
         
                 }
