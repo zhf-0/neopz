@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 3.1.0)
 
 project (PZ)
 
-#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # Prevents timespec redefinition problem with Visual Studio 2015
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_STRUCT_TIMESPEC")
@@ -92,6 +92,8 @@ endif()
 #ENABLING EXTERNAL LIBRARIES
 
 #enabling pthread library
+
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED PATHS ${PROJECT_SOURCE_DIR}/../externallibs/pthread ${PROJECT_SOURCE_DIR}/../externallibs/pthread/lib ${PROJECT_SOURCE_DIR}/../externallibs/pthread/include ${PROJECT_SOURCE_DIR}/../pthread ${PROJECT_SOURCE_DIR}/../pthread/lib ${PROJECT_SOURCE_DIR}/../pthread/include)
 if(NOT Threads_FOUND)
