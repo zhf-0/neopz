@@ -85,7 +85,7 @@ const int matIntBCbott=-11, matIntBCtop=-12, matIntBCleft=-13, matIntBCright=-14
 const int matPoint =-5;//Materia de um ponto
 const int dirichlet = 0, neumann = 1, mixed = 2, pointtype=5, dirichletvar=4; //Condições de contorno do problema ->default Dirichlet na esquerda e na direita
 const int pointtypex = 3, pointtypey = 4;
-const REAL visco=1.,theta=1.; //Coeficientes: viscosidade, fator simetria
+const REAL visco=1.,theta=-1.; //Coeficientes: viscosidade, fator simetria
 const REAL Pi=M_PI;
 
 const int quadmat1 = 1; //Parte inferior do quadrado
@@ -103,7 +103,7 @@ int pOrder = 2; //Ordem polinomial de aproximação
 
 STATE hE=hx/h_level;
 //STATE S0=(80./(pOrder*pOrder));
-STATE S0=30.;
+STATE S0=20.;
 STATE Sigma=S0*(pOrder*pOrder)/hE;
 
 void AddMultiphysicsInterfaces(TPZCompMesh &cmesh, int matfrom, int mattarget);
@@ -764,10 +764,18 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     }
     
     
+    //Descontínuo:
+    cmesh->ApproxSpace().SetAllCreateFunctionsHDiv(2);
+    std::set<int> matids;
+    matids.insert(1);
+    cmesh->AutoBuild(matids);
+    cmesh->ApproxSpace().SetAllCreateFunctionsDiscontinuous();
+    /////////////////
+    
     cmesh->AutoBuild();
+    
     cmesh->AdjustBoundaryElements();
     cmesh->CleanUpUnconnectedNodes();
-    
     
     
     return cmesh;
@@ -869,8 +877,8 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         newnod.SetLagrangeMultiplier(1);
     }
     
-    //    cmesh->AdjustBoundaryElements();
-    //    cmesh->CleanUpUnconnectedNodes();
+        cmesh->AdjustBoundaryElements();
+        cmesh->CleanUpUnconnectedNodes();
     
     return cmesh;
     
@@ -943,7 +951,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
     
     
     
-#ifdef PZDEBUG
+
     int ncel = cmesh->NElements();
     for(int i =0; i<ncel; i++){
         TPZCompEl * compEl = cmesh->ElementVec()[i];
@@ -952,7 +960,7 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder)
         if(facel)DebugStop();
         
     }
-#endif
+
     
     
     

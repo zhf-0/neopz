@@ -1119,7 +1119,9 @@ void TPZInterpolationSpace::EvaluateError(  void (*fp)(const TPZVec<REAL> &loc,T
 			}
 			else{
 				this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
-				material->Errors(data.x,data.sol[0],data.dsol[0],data.axes,flux_el,u_exact,du_exact,values);
+				//material->Errors(data.x,data.sol[0],data.dsol[0],data.axes,flux_el,u_exact,du_exact,values);
+                material->Errors(data,u_exact,du_exact,errors); //AQUIPABLO
+
 			}
         
 			for(int ier = 0; ier < NErrors; ier++)

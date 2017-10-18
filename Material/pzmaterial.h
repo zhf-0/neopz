@@ -487,7 +487,7 @@ public:
     {
         DebugStop();
     }
-
+    
     /**
 	 * @brief Computes the error due to the difference between the interpolated flux \n
 	 * and the flux computed based on the derivative of the solution
