@@ -102,7 +102,7 @@ endif()
 
 #pthread's location for windows
 if(WIN32)
-	set(PTHREADS_ROOT_DIR ../externallibs/pthread)
+	set(PTHREADS_ROOT_DIR ./../externallibs)
 	find_package(PThreads-win32 REQUIRED)
 endif(WIN32)
 

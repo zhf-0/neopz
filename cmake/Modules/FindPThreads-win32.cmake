@@ -26,7 +26,7 @@ set( PTHREADS_LIBRARY_DIR ${PTHREADS_ROOT_DIR}/lib )
 
 # FIXME need to support aliases for different exception/cleanup build options
 set( LIBRARY_NAMES
-  pthreadVC2
+  pthread
   )
 get_library_list(PTHREADS ${PTHREADS_LIBRARY_DIR} "d" "${LIBRARY_NAMES}")
 
@@ -35,6 +35,7 @@ find_file( CMAKE_HAVE_PTHREAD_H "pthread.h" PATHS ${PTHREADS_INCLUDE_DIR} NO_DEF
 
 if( CMAKE_HAVE_PTHREAD_H )
   message(STATUS "  Found win32 pthreads in ${PTHREADS_ROOT_DIR}")
+  include_directories(${PTHREADS_INCLUDE_DIR})
 else( CMAKE_HAVE_PTHREAD_H )
   message(STATUS "  win32 pthreads root NOT found!!!")
 endif( CMAKE_HAVE_PTHREAD_H )
