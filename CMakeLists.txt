@@ -1,20 +1,20 @@
 # @file neopz/CMakeList.txt  -- First file to read for CMake
 
-cmake_minimum_required (VERSION 3.1.0)
+cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
 
 project (PZ)
 
+#this is the folder where additional findMYLIB.cmake modules must be put
+#in order to use find_package(MYLIB)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # Prevents timespec redefinition problem with Visual Studio 2015
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_STRUCT_TIMESPEC")
+add_definitions(-DHAVE_STRUCT_TIMESPEC)
 
 IF (NOT WIN32)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")#this flag is for preventing errors when casting from double to float
+   add_compile_options("-fPIC" "-Wno-narrowing")#this flag is for preventing errors when casting from double to float
 ENDIF()
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -61,14 +61,21 @@ add_definitions(-DREFPATTERNDIR=\"${REFPATTERNDIR}\")
 
 #Defining variables
 #To cmake
-string(FIND ${CMAKE_CXX_FLAGS_DEBUG} "-DPZDEBUG" val)
-if(${val} LESS 0)
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DPZDEBUG" CACHE STRING "c++ debug flags go here" FORCE)
-endif()
-string(FIND ${CMAKE_CXX_FLAGS_RELEASE} "-DNODEBUG" val)
-if(${val} LESS 0)
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNODEBUG -DZERO_INTERNAL_RESIDU -DMAKEINTERNAL" CACHE STRING "c++ release flags go here" FORCE)
-endif()
+
+#first the release flags, then the debug flags
+add_compile_options(
+    "$<$<CONFIG:>: -DNODEBUG >"
+    "$<$<CONFIG:DEBUG>: -DPZDEBUG -DZERO_INTERNAL_RESIDU -DMAKEINTERNAL >"
+)
+
+# string(FIND ${CMAKE_CXX_FLAGS_DEBUG} "-DPZDEBUG" val)
+# if(${val} LESS 0)
+# 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DPZDEBUG" CACHE STRING "c++ debug flags go here" FORCE)
+# endif()
+# string(FIND ${CMAKE_CXX_FLAGS_RELEASE} "-DNODEBUG" val)
+# if(${val} LESS 0)
+# 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNODEBUG -DZERO_INTERNAL_RESIDU -DMAKEINTERNAL" CACHE STRING "c++ release flags go here" FORCE)
+# endif()
 
 # Location to search files or libraries
 set(SEARCH_DIRS ENV PATH /usr/local/opt/ /usr/local/opt/qt5/lib/cmake/ /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/local/include/tbb /usr/lib /usr/lib64 /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/pthread ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib ./externallibs/lib ./externallibs/include ./../externallibs/lib ./../externallibs/include /usr/lib/atlas-base/ /usr/include/atlas /usr/local/atlas/include /usr/local/atlas/lib )
@@ -95,7 +102,7 @@ endif()
 
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED PATHS ${PROJECT_SOURCE_DIR}/../externallibs/pthread ${PROJECT_SOURCE_DIR}/../externallibs/pthread/lib ${PROJECT_SOURCE_DIR}/../externallibs/pthread/include ${PROJECT_SOURCE_DIR}/../pthread ${PROJECT_SOURCE_DIR}/../pthread/lib ${PROJECT_SOURCE_DIR}/../pthread/include)
+find_package(Threads REQUIRED)
 if(NOT Threads_FOUND)
 	message(FATAL_ERROR "Could not find pthread")
 endif(NOT Threads_FOUND)
@@ -103,7 +110,7 @@ endif(NOT Threads_FOUND)
 IF(APPLE)
    # Mac OS X specific code
    add_definitions(-DMACOSX)
-   FIND_LIBRARY(ACCELERATE_LIB Accelerate)
+   find_library(ACCELERATE_LIB Accelerate)
 #   SET(OperatingSystem "Mac OS X")
 ENDIF(APPLE)
 
@@ -509,12 +516,9 @@ if(WIN32)
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	#disabling All warnings
-	#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W0")
-	#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /W0")
 	#disabling STL warning for std::_Vector_alloc when LOG4CXX is enabled
 	if (USING_LOG4CXX)
-	    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4251")
-	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4251")
+		add_definitions("/wd4251")
 	endif()
 	#define use of pthread static lib.
 	add_definitions(-DPTW32_STATIC_LIB)

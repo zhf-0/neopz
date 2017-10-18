@@ -131,6 +131,9 @@ if(USING_MKL)
 endif(USING_MKL)
 
 
+set_property(TARGET pz PROPERTY CXX_STANDARD 11)
+set_property(TARGET pz PROPERTY CXX_STANDARD_REQUIRED ON)
+
 install(TARGETS pz DESTINATION ${NEOPZ_LIB})
 
 #creating pzmatrix lib -- It is comment now, because it is not needed when the pzlib is installed.
