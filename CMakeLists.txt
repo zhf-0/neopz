@@ -100,6 +100,12 @@ endif()
 
 #enabling pthread library
 
+#pthread's location for windows
+if(WIN32)
+	set(PTHREADS_ROOT_DIR ../externallibs/pthread)
+	find_package(PThreads-win32 REQUIRED)
+endif(WIN32)
+
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
