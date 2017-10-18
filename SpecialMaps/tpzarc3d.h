@@ -119,6 +119,14 @@ namespace pzgeom
         }
 		void Jacobian(TPZFMatrix<REAL> &coord, TPZVec<REAL> &par, TPZFMatrix<REAL> &jacobian, TPZFMatrix<REAL> &axes, REAL &detjac, TPZFMatrix<REAL> &jacinv) const;
 		
+        //Needs Implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel, TPZVec<T> &ksi,TPZVec<T> &result) const
+        {
+        
+        }
+        
+        
         template<class T>
         void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &result) const
         {

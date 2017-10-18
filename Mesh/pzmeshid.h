@@ -245,6 +245,22 @@ const int TPZMPCOMPELWITHMEMINTERFACE = 428;
 /** @brief Id of pyramidal hdiv interpolated element */
 const int TPZINTELPYRAMIDHDIV = 429;
 
+const int TPZGEOELMAPPEDPOINTID = 430;
+/** @brief Id of geometric ref pattern linear mapped element */
+const int TPZGEOELMAPPEDLINEID = 431;
+/** @brief Id of geometric ref pattern triangular mapped element */
+const int TPZGEOELMAPPEDTRIANGLEID = 432;
+/** @brief Id of geometric ref pattern quadrilateral mapped element */
+const int TPZGEOELMAPPEDQUADRILATERALID = 433;
+/** @brief Id of geometric ref pattern cube mapped element */
+const int TPZGEOELMAPPEDCUBEID = 434;
+/** @brief Id of geometric ref pattern prismal mapped element */
+const int TPZGEOELMAPPEDPRISMID = 435;
+/** @brief Id of geometric ref pattern tetrahedral mapped element */
+const int TPZGEOELMAPPEDTETRAHEDRAID = 436;
+/** @brief Id of geometric ref pattern pyramidal mapped element */
+const int TPZGEOELMAPPEDPYRAMIDID = 437;
+
 
 /** @} */
 

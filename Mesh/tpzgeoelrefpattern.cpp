@@ -36,6 +36,7 @@
 #include "pzvec.h"
 #include "pzmanvector.h"
 #include "TPZRefPatternDataBase.h"
+#include "tpzgeoelmapped.h"
 
 using namespace pzgeom;
 using namespace pzshape;
@@ -192,4 +193,5 @@ int TPZGeoElRefPattern<TPZGeoPoint>::ClassId() const{
 template class
 TPZRestoreClass< TPZGeoElRefPattern<TPZGeoPoint>, TPZGEOELREFPATPOINTID>;
 #endif
+
 

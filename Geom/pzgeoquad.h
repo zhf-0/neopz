@@ -69,6 +69,57 @@ namespace pzgeom {
             TShape(loc, phi, dphi);
         }
         
+        /** @brief Compute the correction factor for a non linear mapping */
+        
+        static void CorrectFact (TPZVec<REAL> &ksi, int &EdgeSides ,REAL &cf)
+        {
+            if (EdgeSides == 4)
+            {
+                cf = (1 - ksi[1])/2;
+            }
+            else if (EdgeSides == 5)
+            {
+                cf = (1 + ksi[0])/2;
+            }
+            else if (EdgeSides == 6)
+            {
+                cf = (1 + ksi[1])/2;
+            }
+            else if(EdgeSides == 7)
+            {
+                cf = (1 - ksi[0])/2;
+            }
+
+        }
+        
+        /** @brief Returns the equivalent ksi from a quadrilateral element to a linear element */
+        
+        static void LinearKsi(int &EdgeSides, TPZVec<REAL> &ksi, TPZVec<REAL> &s) {
+            
+            if (EdgeSides == 4) {
+                s[0] = ksi[0];
+            }
+            else if (EdgeSides == 5) {
+                s[0] = ksi[1];
+            }
+            else if (EdgeSides == 6) {
+                s[0] = - ksi[0];
+            }
+            else if (EdgeSides == 7) {
+                s[0] = - ksi[1];
+            }
+        }
+
+        
+        //Needs implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            X(coord,ksi,result);
+        }
+        
         /* @brief Compute x mapping from local parametric coordinates */
         template<class T>
         void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &x) const
@@ -150,6 +201,7 @@ namespace pzgeom {
 										  TPZVec<long>& nodeindexes,
 										  int matid,
 										  long& index);
+        
 	};
     
     template<class T>

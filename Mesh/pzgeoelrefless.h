@@ -102,7 +102,7 @@ public:
 	virtual  int HasSubElement() const {return 0;}//fSubEl[0]!=0;}
 	
 	/** @brief Returns a pointer to the neighbour and the neighbourside along side of the current element */
-	virtual  TPZGeoElSide Neighbour(int side) {
+	virtual  TPZGeoElSide Neighbour(int side) const {
 #ifdef PZDEBUG
         if (fNeighbours[side] < 0 || fNeighbours[side] >= this->Mesh()->NElements()) {
             DebugStop();
@@ -263,6 +263,9 @@ public:
 	
 	/** @brief Returns the coordinate in real space of the point coordinate in the master element space*/
 	virtual  void X(TPZVec<REAL> &coordinate,TPZVec<REAL> &result) const;
+    
+    /**@brief Returns the coordinate in real space of the point coordinate in the master element space related to one the edge of the element*/
+    virtual void XLinearMapping(TPZVec<REAL> &ksi, TPZVec<REAL> &result) const;
 
 #ifdef _AUTODIFF
     /** @brief Returns the coordinate in real space of the point coordinate in the master element space*/

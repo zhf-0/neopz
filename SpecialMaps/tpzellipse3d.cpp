@@ -68,6 +68,7 @@ void TPZEllipse3D::SetAxes(TPZVec<REAL> Origin, TPZVec<REAL> SemiAxeX, TPZVec<RE
 	fsAxeY = sqrt(fSemiAxeY[0]*fSemiAxeY[0] + fSemiAxeY[1]*fSemiAxeY[1] + fSemiAxeY[2]*fSemiAxeY[2]);
 }
 
+
 template<class T>
 void TPZEllipse3D::X(TPZFMatrix<REAL> &nodeCoord,TPZVec<T> &qsi,TPZVec<T> &x) const
 {
