@@ -310,6 +310,11 @@ TPZGeoElRefLess<TGeo>::X(TPZVec<REAL> &coordinate,TPZVec<REAL> &result) const {
 	fGeo.X(*this,coordinate,result);
 }
 
+template<class TGeo>
+void TPZGeoElRefLess<TGeo>::XLinearMapping(TPZVec<REAL> &ksi,TPZVec<REAL> &result) const {
+    fGeo.XLinearMapping(*this,ksi,result);
+}
+
 #ifdef _AUTODIFF
 /** @brief Return the gradient of the transformation at the point */
 template<class TGeo>

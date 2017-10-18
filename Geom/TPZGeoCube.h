@@ -99,6 +99,16 @@ namespace pzgeom {
             GradX(coord,loc,gradx);
         }
         
+        //Needs implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            X(coord,ksi,result);
+        }
+
+        
         /** @brief Compute x mapping from element nodes and local parametric coordinates */
         template<class T>
         static void X(const TPZFMatrix<REAL> &nodecoordinates,TPZVec<T> &loc,TPZVec<T> &x);

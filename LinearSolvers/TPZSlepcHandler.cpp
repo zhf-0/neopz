@@ -199,7 +199,7 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   ierr = PetscTime(&t1);CHKERRQ(ierr);
   ierr = EPSSolve(eps);CHKERRQ(ierr);
   ierr = PetscTime(&t2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Elapsed Time in EPSSolve: %f\n",t2-t1);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Elapsed Time in EPSSolve: %f\n",t2-t1);CHKERRQ(ierr);
   PetscInt nconv;
   EPSGetConverged(eps, &nconv);
   PetscScalar kr, ki;
