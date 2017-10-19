@@ -95,7 +95,7 @@ if (USING_METIS)
 endif(USING_METIS)
 
 if(USING_OPENSSL)
-	link_libraries(crypto)
+	target_link_libraries(crypto)
 endif(USING_OPENSSL)
 
 if(USING_TBB)
@@ -130,9 +130,25 @@ if(USING_MKL)
 	target_link_libraries(pz ${MKL_LIB_INTEL} ${MKL_LIB_CORE} ${MKL_LIB_THREAD} ${COMPOSER_OMP})
 endif(USING_MKL)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-set_property(TARGET pz PROPERTY CXX_STANDARD 11)
-set_property(TARGET pz PROPERTY CXX_STANDARD_REQUIRED ON)
+## inserting definitions
+#specifying the path to neopz source code
+set(PZSOURCEDIR ${PROJECT_SOURCE_DIR})
+#specify where the refinement patterns can be found (default behaviour when running the code)
+set(REFPATTERNDIR ${PROJECT_SOURCE_DIR}/Refine/RefPatterns)
+
+#first the common flags, then release flags,
+# and finally the debug flags
+target_compile_definitions(pz PRIVATE
+	PZSOURCEDIR=\"${PZSOURCEDIR}\"
+	REFPATTERNDIR=\"${REFPATTERNDIR}\"
+	HAVE_STRUCT_TIMESPEC
+    $<$<CONFIG:Debug>:PZDEBUG ZERO_INTERNAL_RESIDU MAKEINTERNAL>
+    $<$<CONFIG:Release>:NODEBUG >
+)
 
 install(TARGETS pz DESTINATION ${NEOPZ_LIB})
 

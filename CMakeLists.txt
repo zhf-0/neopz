@@ -4,19 +4,17 @@ cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
 
 project (PZ)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #this is the folder where additional findMYLIB.cmake modules must be put
 #in order to use find_package(MYLIB)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-# Prevents timespec redefinition problem with Visual Studio 2015
-add_definitions(-DHAVE_STRUCT_TIMESPEC)
-
 IF (NOT WIN32)
    add_compile_options("-fPIC" "-Wno-narrowing")#this flag is for preventing errors when casting from double to float
 ENDIF()
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Specify where the headers files must be finded
 include_directories(
@@ -51,31 +49,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/Publications"
 )
 
-## inserting main definitions
-#specifying the path to neopz source code
-set(PZSOURCEDIR ${PROJECT_SOURCE_DIR})
-add_definitions(-DPZSOURCEDIR=\"${PZSOURCEDIR}\")
-#specify where the refinement patterns can be found (default behaviour when running the code)
-set(REFPATTERNDIR ${PROJECT_SOURCE_DIR}/Refine/RefPatterns)
-add_definitions(-DREFPATTERNDIR=\"${REFPATTERNDIR}\")
-
-#Defining variables
-#To cmake
-
-#first the release flags, then the debug flags
-add_compile_options(
-    "$<$<CONFIG:>: -DNODEBUG >"
-    "$<$<CONFIG:DEBUG>: -DPZDEBUG -DZERO_INTERNAL_RESIDU -DMAKEINTERNAL >"
-)
-
-# string(FIND ${CMAKE_CXX_FLAGS_DEBUG} "-DPZDEBUG" val)
-# if(${val} LESS 0)
-# 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DPZDEBUG" CACHE STRING "c++ debug flags go here" FORCE)
-# endif()
-# string(FIND ${CMAKE_CXX_FLAGS_RELEASE} "-DNODEBUG" val)
-# if(${val} LESS 0)
-# 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNODEBUG -DZERO_INTERNAL_RESIDU -DMAKEINTERNAL" CACHE STRING "c++ release flags go here" FORCE)
-# endif()
+#Defining variables to cmake
 
 # Location to search files or libraries
 set(SEARCH_DIRS ENV PATH /usr/local/opt/ /usr/local/opt/qt5/lib/cmake/ /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/local/include/tbb /usr/lib /usr/lib64 /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/pthread ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib ./externallibs/lib ./externallibs/include ./../externallibs/lib ./../externallibs/include /usr/lib/atlas-base/ /usr/include/atlas /usr/local/atlas/include /usr/local/atlas/lib )
@@ -618,8 +592,3 @@ endif(BUILD_TUTORIAL)
 #To insert doxygen documentation files
 file(GLOB_RECURSE doxyfiles Documentation/*.h ./dox*.h)
 add_custom_target(DOXYGEN_Files SOURCES  ${doxyfiles})
-
-#To force XCode to use standard library c++ = libstdc++ (Required after upgrading to XCode 5)
-#SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
-
-set_target_properties(pz PROPERTIES XCODE_ATTRIBUTE_WARNING_CFLAGS "")
