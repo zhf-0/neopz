@@ -15,9 +15,9 @@
 
 //SetSpace
 //#define IsHDivQ
-//#define IsH1
+#define IsH1
 //#define IsDGM
-#define IsHDIV
+//#define IsHDIV
 
 
 TPZStokesMaterial::TPZStokesMaterial() : TPZMatWithMem<TPZFMatrix<REAL>, TPZDiscontinuousGalerkin >(){
@@ -584,6 +584,59 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 v_2(1,0) = vbc[1];
                 p_D = vbc[2];
             }
+        
+#ifdef IsH1
+            
+            TPZManVector<REAL> n = datavec[0].normal;
+            
+            for(int i = 0; i < nshapeV; i++ )
+            {
+                int iphi = datavec[vindex].fVecShapeIndex[i].second;
+                int ivec = datavec[vindex].fVecShapeIndex[i].first;
+                
+                for (int e=0; e<fDimension; e++) {
+                    phiVi(e,0)=datavec[vindex].fNormalVec(e,ivec)*phiV(iphi,0);
+                    phiVni(0,0)+=phiVi(e,0)*n[e];
+                }
+                
+                //Adaptação para Hdiv
+                
+                STATE factef=0.0;
+                for(int is=0; is<gy ; is++){
+                    factef += 1.0* v_2(is,0) * phiVi(is,0);
+                }
+                
+                ef(i,0) += weight * gBigNumber * factef;
+                
+                
+                for(int j = 0; j < nshapeV; j++){
+                    int jphi = datavec[vindex].fVecShapeIndex[j].second;
+                    int jvec = datavec[vindex].fVecShapeIndex[j].first;
+                    
+                    
+                    
+                    for (int e=0; e<fDimension; e++) {
+                        phiVj(e,0)=datavec[vindex].fNormalVec(e,jvec)*phiV(jphi,0);
+                    }
+                    
+                    //Adaptação para Hdiv
+                    
+                    STATE factek = 0.0;
+                    for(int is=0; is<gy ; is++){
+                        factek += phiVj(is,0) * phiVi(is,0);
+                    }
+                    
+                    ek(i,j) += weight * gBigNumber * factek;
+                    
+                    
+                }
+                
+                
+            }
+
+            
+
+#endif
             
 #ifdef IsHDIV
             
@@ -606,7 +659,6 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
                 }
                 
             }
-            
             
             
 //            for(int i = 0; i < nshapeV; i++ )
@@ -922,7 +974,10 @@ void TPZStokesMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weig
 
 void TPZStokesMaterial::ContributeInterface(TPZMaterialData &data, TPZVec<TPZMaterialData> &datavecleft, TPZVec<TPZMaterialData> &datavecright, REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef){
     
-    
+#ifdef IsH1
+    //Caso H1 -> return
+    return;
+#endif
     // Verificar que
     // os termos mistos devem estar sem viscosidade!
     

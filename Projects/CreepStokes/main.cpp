@@ -85,7 +85,7 @@ const int matIntBCbott=-11, matIntBCtop=-12, matIntBCleft=-13, matIntBCright=-14
 const int matPoint =-5;//Materia de um ponto
 const int dirichlet = 0, neumann = 1, mixed = 2, pointtype=5, dirichletvar=4; //Condições de contorno do problema ->default Dirichlet na esquerda e na direita
 const int pointtypex = 3, pointtypey = 4;
-const REAL visco=1.,theta=-1.; //Coeficientes: viscosidade, fator simetria
+const REAL visco=1.,theta=1.; //Coeficientes: viscosidade, fator simetria
 const REAL Pi=M_PI;
 
 const int quadmat1 = 1; //Parte inferior do quadrado
@@ -94,12 +94,12 @@ const int quadmat3 = 3; //Material de interface
 
 //Dados do problema:
 
-int h_level = 64;
+int h_level = 16;
 
 double hx=1.,hy=1.; //Dimensões em x e y do domínio
 int nelx=h_level, nely=h_level; //Número de elementos em x e y
 int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-int pOrder = 3; //Ordem polinomial de aproximação
+int pOrder = 2; //Ordem polinomial de aproximação
 
 STATE hE=hx/h_level;
 //STATE S0=(80./(pOrder*pOrder));
@@ -139,7 +139,7 @@ void sol_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& p, TPZFMatrix<STATE>& v);
 int main(int argc, char *argv[])
 {
     
-    TPZMaterial::gBigNumber = 1.e16;
+    TPZMaterial::gBigNumber = 1.e12;
     
 #ifdef LOG4CXX
     InitializePZLOG();
@@ -183,11 +183,11 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
     cmesh_m->LoadReferences();
     
-    AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
-    AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
-    AddMultiphysicsInterfaces(*cmesh_m,matIntBCtop,matBCtop);
-    AddMultiphysicsInterfaces(*cmesh_m,matIntBCleft,matBCleft);
-    AddMultiphysicsInterfaces(*cmesh_m,matIntBCright,matBCright);
+   // AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
+   // AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
+   // AddMultiphysicsInterfaces(*cmesh_m,matIntBCtop,matBCtop);
+   // AddMultiphysicsInterfaces(*cmesh_m,matIntBCleft,matBCleft);
+   // AddMultiphysicsInterfaces(*cmesh_m,matIntBCright,matBCright);
     
 #ifdef PZDEBUG
     std::ofstream fileg1("MalhaGeo2.txt"); //Impressão da malha geométrica (formato txt)
@@ -202,6 +202,7 @@ int main(int argc, char *argv[])
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     TPZSkylineNSymStructMatrix matskl(cmesh_m); //caso nao simetrico ***
+    //TPZFStructMatrix matskl(cmesh_m);
     matskl.SetNumThreads(2);
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
@@ -324,6 +325,7 @@ void p_exact(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
     STATE p_x = cos(Pi*xv)*sin(Pi*yv);
     
+    
     f[0] = p_x; // x direction
 }
 
@@ -387,8 +389,10 @@ void f_source1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE yv = x[1];
     //    STATE zv = x[2];
     
-    STATE f_x = exp(yv)*sin(Pi*xv) + 8.0*Pi*Pi*cos(2.0*Pi*yv)*sin(2.0*Pi*xv);
-    STATE f_y = -exp(yv)*cos(Pi*xv)*(1./Pi) - 8.0*Pi*Pi*cos(2.0*Pi*xv)*sin(2.0*Pi*yv);
+    //STATE f_x = exp(yv)*sin(Pi*xv) + 8.0*Pi*Pi*cos(2.0*Pi*yv)*sin(2.0*Pi*xv);
+    //STATE f_y = -exp(yv)*cos(Pi*xv)*(1./Pi) - 8.0*Pi*Pi*cos(2.0*Pi*xv)*sin(2.0*Pi*yv);
+    STATE f_x = 2.0*xv + 8.0*Pi*Pi*cos(2.0*Pi*yv)*sin(2.0*Pi*xv);
+    STATE f_y = 2.0*yv - 8.0*Pi*Pi*cos(2.0*Pi*xv)*sin(2.0*Pi*yv);
     
     f[0] = f_x; // x direction
     f[1] = f_y; // y direction
@@ -417,7 +421,8 @@ void p_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     STATE xv = x[0];
     STATE yv = x[1];
     
-    STATE p_x =  -(1./Pi)*cos(Pi*xv)*exp(yv);
+    //STATE p_x =  -(1./Pi)*cos(Pi*xv)*exp(yv);
+    STATE p_x =  xv*xv+yv*yv;
     
     f[0] = p_x; // x direction
 }
@@ -432,7 +437,8 @@ void solucao_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& f){
     
     STATE v_x =  cos(2.0*Pi*yv)*sin(2.0*Pi*xv);
     STATE v_y =  -(cos(2.0*Pi*xv)*sin(2.0*Pi*yv));
-    STATE p =   -(1./Pi)*cos(Pi*xv)*exp(yv);
+    //STATE p =   -(1./Pi)*cos(Pi*xv)*exp(yv);
+    STATE p =  xv*xv+yv*yv;
     
     f[0] = v_x; // x direction
     f[1] = v_y; // y direction
@@ -450,7 +456,8 @@ void sol_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& d
     
     STATE v_x =  cos(2*Pi*yv)*sin(2*Pi*xv);
     STATE v_y =  -(cos(2*Pi*xv)*sin(2*Pi*yv));
-    STATE pressure=  -(1./Pi)*cos(Pi*xv)*exp(yv);
+//    STATE pressure=  -(1./Pi)*cos(Pi*xv)*exp(yv);
+    STATE pressure= xv*xv+yv*yv;
     
     sol[0]=v_x;
     sol[1]=v_y;
@@ -466,8 +473,10 @@ void sol_exact1(const TPZVec<REAL> & x, TPZVec<STATE>& sol, TPZFMatrix<STATE>& d
     
     // Gradiente pressão
     
-    dsol(2,0)= exp(yv)*sin(Pi*xv);
-    dsol(2,1)= -exp(yv)*cos(Pi*xv)*(1./Pi);
+//    dsol(2,0)= exp(yv)*sin(Pi*xv);
+//    dsol(2,1)= -exp(yv)*cos(Pi*xv)*(1./Pi);
+    dsol(2,0)= 2*xv;
+    dsol(2,1)= 2*yv;
     
     
 }
@@ -709,9 +718,9 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     
     //Definição do espaço de aprximação:
     
-    //cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
+    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1:
     
-    cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
+    //cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
     
     
     //Criando elementos com graus de liberdade differentes para cada elemento (descontínuo):
@@ -727,12 +736,12 @@ TPZCompMesh *CMesh_v(TPZGeoMesh *gmesh, int pOrder)
     cmesh->InsertMaterialObject(material); //Insere material na malha
     
     //Dimensões do material (para H1 e descontinuo):
-    //TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
-    //material->SetMaterial(xkin, xcin, xfin);
+    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
+    material->SetMaterial(xkin, xcin, xfin);
     
     //Dimensões do material (para HDiv):
-    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
-    material->SetMaterial(xkin, xcin, xfin);
+    //TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
+    //material->SetMaterial(xkin, xcin, xfin);
     
     
     //Condições de contorno:
@@ -787,7 +796,7 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
     
     // @omar::
     
-    //pOrder--; // Space restriction apapapa
+    pOrder--; // Space restriction apapapa
     
     //Criando malha computacional:
     
@@ -877,8 +886,8 @@ TPZCompMesh *CMesh_p(TPZGeoMesh *gmesh, int pOrder)
         newnod.SetLagrangeMultiplier(1);
     }
     
-        cmesh->AdjustBoundaryElements();
-        cmesh->CleanUpUnconnectedNodes();
+     //   cmesh->AdjustBoundaryElements();
+     //   cmesh->CleanUpUnconnectedNodes();
     
     return cmesh;
     

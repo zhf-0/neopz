@@ -905,7 +905,7 @@ int TPZSkylNSymMatrix<TVar>::Decompose_LU()
     //
 		
     pivot = fElem[k][0] - sum;
-    if (fabs(pivot) < 1.e-8)
+    if (fabs(pivot) < 1.e-12)
     {
       cout <<
           "TPZSkylNSymMatrix<TVar>::Decompose_LU a matrix nao e positiva definida"
