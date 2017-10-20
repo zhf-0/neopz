@@ -60,14 +60,11 @@ set(NEOPZ_INCLUDE pzlib/include)
 #To install neopz library
 set(NEOPZ_LIB pzlib/lib)
 
-#To enable Python bindings
+#To enable Python bindings and create the library
 option(BUILD_PYTHON_BINDING "To build the Python bindings" OFF)
 if (BUILD_PYTHON_BINDING)
-	find_package(SWIG "2.0")
-	find_package(PythonLibs)
-	if (NOT SWIG_FOUND OR NOT PYTHONLIBS_FOUND)
-		message(FATAL_ERROR "SWIG 2 and Python headers required for building Python API bindings. You can set proper SWIG executable with argument -DSWIG_EXECUTABLE=/path/to/swig2.0")
-	endif()
+	find_package(SWIG "2.0" REQUIRED)
+	find_package(PythonLibs REQUIRED)
 endif()
 
 #ENABLING EXTERNAL LIBRARIES
@@ -83,9 +80,6 @@ endif(WIN32)
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-if(NOT Threads_FOUND)
-	message(FATAL_ERROR "Could not find pthread")
-endif(NOT Threads_FOUND)
 
 IF(APPLE)
    # Mac OS X specific code
@@ -113,11 +107,7 @@ if(USING_BOOST)
 	ENDIF()
 	find_package( Boost COMPONENTS unit_test_framework REQUIRED )
 	add_definitions(-DUSING_BOOST)
-   	if(Boost_FOUND)
-		include_directories(${Boost_INCLUDE_DIR})
-	else(Boost_FOUND)
-		message(FATAL_ERROR "This project requires the BOOST library. Please inform the path to it")
-   	endif(Boost_FOUND)
+   	include_directories(${Boost_INCLUDE_DIR})
 endif(USING_BOOST)
 
 option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
@@ -268,11 +258,8 @@ option(USING_MATLAB_ENGINE "Whether MatLab Engine will be linked in" OFF)
 if(USING_MATLAB_ENGINE)
 	add_definitions(-DUSING_MATLAB)
 	find_package(MATLAB REQUIRED)
-	if (NOT MATLAB_FOUND)
-		message(FATAL_ERROR "This project requires the MATLAB library. Please inform the path to your matlab application")
-	endif()
 
-	if(NOT EXISTS "/usr/bin/matlab")
+	if(NOT EXISTS "/usr/bin/matlab" AND NOT WIN32)
 		message(FATAL_ERROR "Error! Please create matlab symlink on /usr/bin by typing on terminal:\nsudo ln -sf PATH_TO_YOUR_MATLAB/bin/matlab /usr/bin/matlab")
 	endif()
 

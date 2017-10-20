@@ -58,15 +58,10 @@ set(pzsources
 	)
 
 #creating target pz library and installing it
-if (BUILD_PYTHON_BINDING)
-	if (NOT WIN32)
-		add_library(pz SHARED ${pzsources})
-	else(NOT WIN32)
-		add_library(pz STATIC ${pzsources})
-	endif(NOT WIN32)
-else(BUILD_PYTHON_BINDING)
-  #Build a static library (default)
-  add_library(pz ${pzsources})
+if (BUILD_PYTHON_BINDING AND NOT WIN32)
+  add_library(pz SHARED ${pzsources})
+else(BUILD_PYTHON_BINDING AND NOT WIN32)
+  add_library(pz STATIC ${pzsources})
 endif()
 
 target_link_libraries(pz Threads::Threads)
@@ -140,9 +135,15 @@ set(PZSOURCEDIR ${PROJECT_SOURCE_DIR})
 #specify where the refinement patterns can be found (default behaviour when running the code)
 set(REFPATTERNDIR ${PROJECT_SOURCE_DIR}/Refine/RefPatterns)
 
-#first the common flags, then release flags,
+# first the common flags, then release flags,
 # and finally the debug flags
-target_compile_definitions(pz PRIVATE
+#####################################################################
+#This should not be public, but private.							#
+#We must urgently remove PZSOURCEDIR and REFPATTERNDIR usages from  #
+#our projects.														#
+#####################################################################
+
+target_compile_definitions(pz PUBLIC
 	PZSOURCEDIR=\"${PZSOURCEDIR}\"
 	REFPATTERNDIR=\"${REFPATTERNDIR}\"
 	HAVE_STRUCT_TIMESPEC
