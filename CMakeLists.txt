@@ -12,6 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #in order to use find_package(MYLIB)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+include(PzDependentOption)#macro for dependent options
 #Specify where the headers files must be finded
 include_directories(
 	"${PROJECT_SOURCE_DIR}/Python"
@@ -239,21 +240,10 @@ endif(USING_MATLAB_ENGINE)
 
 #enabling BLAS library
 option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
+pz_dependent_option(BLA_VENDOR STRING "Which BLAS to use" "OpenBLAS"
+                       USING_BLAS "OpenBLAS")
 if(USING_BLAS)
-	find_path(CBLAS_INCLUDE cblas.h PATHS ${SEARCH_DIRS})
-	#find_library(ATLAS_LIB NAMES libatlas.dylib libtatlas.dylib atlas.lib libatlas.so libtatlas.so libatlas.a PATHS ${SEARCH_DIRS})
-	find_library(CBLAS_LIB NAMES libcblas.dylib libtcblas.dylib cblas.lib libcblas.so libtcblas.so libcblas.a PATHS ${SEARCH_DIRS})
-	if(NOT CBLAS_INCLUDE)
-		set (CBLAS_INCLUDE "" CACHE PATH "Directory where CBLAS header files can be found")
-	else()
-		include_directories(${CBLAS_INCLUDE})
-	endif()
-	#if(NOT ATLAS_LIB)
-	#	set (ATLAS_LIB "" CACHE PATH "Directory where the ATLAS library can be found")
-	#endif()
-	if(NOT CBLAS_LIB)
-		set (CBLAS_LIB "" CACHE PATH "Directory where the CBLAS library can be found")
-	endif()
+	find_package(BLAS REQUIRED)
 endif(USING_BLAS)
 
 #enabling LAPACK library

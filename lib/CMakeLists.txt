@@ -132,7 +132,7 @@ if(USING_MATLAB_ENGINE)
 endif(USING_MATLAB_ENGINE)
 
 if(USING_BLAS)
-  target_link_libraries(pz ${CBLAS_LIB} ${ATLAS_LIB})
+  target_link_libraries(pz ${BLAS_LIBRARIES})
   target_compile_definitions(pz PRIVATE USING_BLAS)
 endif(USING_BLAS)
 
