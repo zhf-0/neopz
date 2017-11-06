@@ -376,6 +376,15 @@ endif(USING_QWT)
 #To select type of REAL
 set(REALTypesAre "Types are: double, float, long double, pzfpcounter")
 set(REAL_TYPE "double" CACHE STRING "${REALTypesAre}")
+#To select type of STATE
+set(STATETypesAre "Types are: double, float, long double, complex<float>, complex<double>, complex<long double>")
+set(STATE_TYPE "double" CACHE STRING "${STATETypesAre}")
+
+if (STATE_TYPE STREQUAL "complex<float>" OR 
+	STATE_TYPE STREQUAL "complex<double>" OR 
+	STATE_TYPE STREQUAL "complex<long double>")
+  set (BUILD_COMPLEX_PROJECTS ON)
+endif()
 
 #increment all the directories where the sources files is
 if(NOT BUILD_COMPLEX_PROJECTS)

@@ -210,6 +210,10 @@ if(BUILD_TUTORIAL)
 	target_compile_definitions(pz PRIVATE BUILD_TUTORIAL)
 endif()
 
+
+#defining STATE and REAL types
+
+
 if (REAL_TYPE STREQUAL "double")
   target_compile_definitions(pz PUBLIC REALdouble)
   set(REAL_TYPE_DEF "REALdouble")
@@ -227,10 +231,6 @@ else()
 endif()
 message (STATUS "Using REAL type = ${REAL_TYPE}")
 
-#To select type of STATE
-set(STATETypesAre "Types are: double, float, long double, complex<float>, complex<double>, complex<long double>")
-set(STATE_TYPE "double" CACHE STRING "${STATETypesAre}")
-
 if (STATE_TYPE STREQUAL "double")
   target_compile_definitions(pz PUBLIC STATEdouble)
   set(STATE_TYPE_DEF "STATEdouble")
@@ -244,17 +244,14 @@ elseif (STATE_TYPE STREQUAL "complex<float>")
   target_compile_definitions(pz PUBLIC STATEcomplexf)
   target_compile_definitions(pz PUBLIC STATE_COMPLEX)
   set(STATE_TYPE_DEF "STATEcomplexf")
-  set (BUILD_COMPLEX_PROJECTS ON)
 elseif (STATE_TYPE STREQUAL "complex<double>")
   target_compile_definitions(pz PUBLIC STATEcomplexd)
   target_compile_definitions(pz PUBLIC STATE_COMPLEX)
   set(STATE_TYPE_DEF "STATEcomplexd")
-  set (BUILD_COMPLEX_PROJECTS ON)
 elseif (STATE_TYPE STREQUAL "complex<long double>")
   target_compile_definitions(pz PUBLIC STATEcomplexld)
   target_compile_definitions(pz PUBLIC STATE_COMPLEX)
   set(STATE_TYPE_DEF "STATEcomplexld")
-  set (BUILD_COMPLEX_PROJECTS ON)
 else()
   message (FATAL_ERROR "ERROR: Please specify a valid type for STATE. ${STATETypesAre}")
 endif()
