@@ -295,7 +295,7 @@ endif()
 set (CONFIG_H "${PROJECT_BINARY_DIR}/Common/config.h")
 configure_file ("${PROJECT_SOURCE_DIR}/Common/config.h.in" ${CONFIG_H})
 # add it to include search path
-include_directories("${PROJECT_BINARY_DIR}/Common")
+target_include_directories(pz PUBLIC "${PROJECT_BINARY_DIR}/Common")
 # add the .h file in the install target
 install (FILES ${CONFIG_H} DESTINATION ${NEOPZ_INCLUDE})
 # End of config.h part
