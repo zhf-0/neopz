@@ -165,7 +165,7 @@ void TPZInterpolationSpace::ComputeRequiredData(TPZMaterialData &data,
         }
     }//fNeedsSol
 	
-    data.x.Resize(3., 0.0);
+    data.x.Resize(3, 0.0);
     Reference()->X(qsi, data.x);
 
     TPZManVector<REAL,3> x_center(3,0.0);
@@ -1061,20 +1061,20 @@ void TPZInterpolationSpace::RemoveInterface(int side) {
 
 void TPZInterpolationSpace::EvaluateError(  void (*fp)(const TPZVec<REAL> &loc,TPZVec<STATE> &val,TPZFMatrix<STATE> &deriv),
 										  TPZVec<REAL> &errors,TPZBlock<REAL> * /*flux */){
-	int NErrors = this->Material()->NEvalErrors();
-	errors.Resize(NErrors);
-	errors.Fill(0.);
 	TPZMaterial * material = Material();
 	//TPZMaterial * matptr = material.operator->();
-	if(!material){
+	if (!material) {
 		PZError << "TPZInterpolatedElement::EvaluateError : no material for this element\n";
 		Print(PZError);
 		return;
 	}
-	if(dynamic_cast<TPZBndCond *>(material)) {
-		LOGPZ_INFO(logger,"Exiting EvaluateError - null error - boundary condition material.");
+	if (dynamic_cast<TPZBndCond *>(material)) {
+		LOGPZ_INFO(logger, "Exiting EvaluateError - null error - boundary condition material.");
 		return;
 	}
+	int NErrors = material->NEvalErrors();
+	errors.Resize(NErrors);
+	errors.Fill(0.);
 	int problemdimension = Mesh()->Dimension();
 	if(Reference()->Dimension() < problemdimension) return;
 	
