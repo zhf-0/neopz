@@ -56,9 +56,68 @@ set(SEARCH_DIRS ENV PATH /usr/local/opt/ /usr/local/opt/qt5/lib/cmake/ /usr/incl
 set(NEOPZ_INCLUDE pzlib/include)
 #To install neopz library
 set(NEOPZ_LIB pzlib/lib)
-
+############################################
+############################################
+############################################
+##############  All options   ##############
 #To enable Python bindings and create the library
 option(BUILD_PYTHON_BINDING "To build the Python bindings" OFF)
+#enabling Boost library
+option(USING_BOOST "Whether the Boost package will be linked with the library" OFF)
+#To enable unit test using boost UnitTest framework
+option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
+#To use differentiation with FAD
+option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
+#enabling to use LOG4CXX library
+option(USING_LOG4CXX "Whether the LOG4CXX library will be linked in" OFF)
+#enabling compiler interprocedural optimizations (IPO)
+option(USING_IPO "Whether link and assembly support for compiler IPO will be activated or not (may cause linking to be very slow)." OFF)
+#enabling METIS library
+option(USING_METIS "Whether the METIS library will be linked in" OFF)
+#enabling OPENSSL library (used for MD5 computation)
+option(USING_OPENSSL "Whether the OPENSSL library will be linked in" OFF)
+#enabling TBB library
+option(USING_TBB "Whether the TBB library will be linked in" OFF)
+#enabling OpenMP runtime and library
+option(USING_OPENMP "Whether the OpenMP library and runtime will be linked in" OFF)
+#enabling LIKWID library
+option(USING_LIKWID "Whether the likwid library will be linked in" OFF)
+#enabling NUMA library
+option(USING_LIBNUMA "Whether the Lib NUMA library will be linked in" OFF)
+#enabling MatLab library
+option(USING_MATLAB_ENGINE "Whether MatLab Engine will be linked in" OFF)
+#enabling BLAS library
+option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
+pz_dependent_option(BLA_VENDOR STRING "Which BLAS to use" ""
+                       USING_BLAS "")#will be used in order to specify BLAS's vendor. not ready yet.
+#enabling QWT library
+option(USING_QWT "Whether the QWT library will be linked in" OFF)
+#enabling MKL library
+option(USING_MKL "Whether the MKL library will be linked in" OFF)
+#enabling HWLOC library
+option(USING_HWLOC "Whether the HWLOC library will be linked in" OFF)
+#enabling PAPI library
+option(USING_PAPI "Whether the PAPI library will be linked in" OFF)
+#enabling LAPACK library
+option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
+##############PZ configuration##############
+#enabling the new skyline matrix format
+option(USING_NEW_SKYLMAT "Enable the new skyline matrix format" OFF)
+#To building several examples for training and experimentation PZ
+option(BUILD_TUTORIAL "To build examples for training or teaching PZ" OFF)
+#To building several examples for training and experimentation PZ
+option(BUILD_BROKEN "To build projects which are broken" OFF)
+#To building all the specific projects developed with PZ environment
+option(BUILD_PROJECTS "To build specific projects." OFF)
+#To building all the performance projects developed with PZ environment
+option(BUILD_PERF_TESTS "To build the performance test." OFF)
+#To building all the plasticity materials
+option(BUILD_PLASTICITY_MATERIALS "To build plasticity materials." OFF)
+############################################
+############################################
+############################################
+##########option-dependent actions##########
+#To enable Python bindings and create the library
 if (BUILD_PYTHON_BINDING)
 	find_package(SWIG "2.0" REQUIRED)
 	find_package(PythonLibs REQUIRED)
@@ -67,7 +126,6 @@ endif()
 #ENABLING EXTERNAL LIBRARIES
 
 #enabling pthread library
-
 #pthread's location for windows
 if(WIN32)
 	set(PTHREADS_ROOT_DIR ./../externallibs)
@@ -84,11 +142,8 @@ IF(APPLE)
 #   SET(OperatingSystem "Mac OS X")
 ENDIF(APPLE)
 
-#enabling Boost library
-option(USING_BOOST "Whether the Boost package will be linked with the library" OFF)
 
 #To enable unit test using boost UnitTest framework
-option(BUILD_UNITTESTING "Whether the Boost UnitTest will be linked in" OFF)
 if(BUILD_UNITTESTING)
 	set(USING_BOOST ON CACHE BOOL "Whether the Boost package will be linked with the library" FORCE)
 endif()
@@ -103,14 +158,12 @@ if(USING_BOOST)
    	include_directories(${Boost_INCLUDE_DIR})
 endif(USING_BOOST)
 
-option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
 
 if(USING_FAD)
 	include_directories(External/FAD External/FAD/Fad External/FAD/TinyFad External/FAD/TinyFadET)
 endif(USING_FAD)
 
 #enabling to use LOG4CXX library
-option(USING_LOG4CXX "Whether the LOG4CXX library will be linked in" OFF)
 if(USING_LOG4CXX)
 	find_path(LOG4CXX_INCLUDE log4cxx PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../log4cxx ${PROJECT_SOURCE_DIR}/../log4cxx_src/include ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src/include)
 	find_library(LOG4CXX_LIB_RELEASE
@@ -138,11 +191,7 @@ if(USING_LOG4CXX)
 	endif()
 endif(USING_LOG4CXX)
 
-#enabling compiler interprocedural optimizations (IPO)
-option(USING_IPO "Whether link and assembly support for compiler IPO will be activated or not (may cause linking to be very slow)." OFF)
-
 #enabling METIS library
-option(USING_METIS "Whether the METIS library will be linked in" OFF)
 if(USING_METIS)
 	find_path(METIS_INCLUDE metis.h PATHS ${SEARCH_DIRS})
 	find_library(METIS_LIB NAMES libmetis.dylib metis.lib libmetis.so libmetis.a PATHS ${SEARCH_DIRS})
@@ -158,11 +207,7 @@ if(USING_METIS)
 	endif()
 endif(USING_METIS)
 
-#enabling OPENSSL library (used for MD5 computation)
-option(USING_OPENSSL "Whether the OPENSSL library will be linked in" OFF)
-
 #enabling TBB library
-option(USING_TBB "Whether the TBB library will be linked in" OFF)
 if(USING_TBB)
 	find_path(TBB_INCLUDE tbb.h PATHS ${SEARCH_DIRS}
 	/opt/intel/tbb/include/tbb /usr/include/tbb /opt/local/include/tbb)
@@ -181,7 +226,6 @@ if(USING_TBB)
 endif(USING_TBB)
 
 #enabling OpenMP runtime and library
-option(USING_OPENMP "Whether the OpenMP library and runtime will be linked in" OFF)
 if(USING_OPENMP)
 	find_path(OPENMP_INCLUDE omp.h PATHS ${SEARCH_DIRS} /opt/local/lib/gcc5/gcc/x86_64-apple-darwin15/5.2.0/include)
 	find_library(OPENMP_LIB NAMES libgomp.dylib PATHS ${SEARCH_DIRS}  /opt/local/lib/gcc5)
@@ -197,7 +241,6 @@ if(USING_OPENMP)
 endif(USING_OPENMP)
 
 #enabling LIKWID library
-option(USING_LIKWID "Whether the likwid library will be linked in" OFF)
 if(USING_LIKWID)
 	find_path(LIKWID_INCLUDE likwid.h PATHS ${SEARCH_DIRS})
 	find_library(LIKWID_LIB NAMES liblikwid.a PATHS ${SEARCH_DIRS})
@@ -214,7 +257,6 @@ if(USING_LIKWID)
 endif(USING_LIKWID)
 
 #enabling numa library
-option(USING_LIBNUMA "Whether the Lib NUMA library will be linked in" OFF)
 if(USING_LIBNUMA)
 	find_path(LIBNUMA_INCLUDE numa.h PATHS ${SEARCH_DIRS})
 	find_library(LIBNUMA_LIB NAMES libnuma.so PATHS ${SEARCH_DIRS})
@@ -230,24 +272,18 @@ if(USING_LIBNUMA)
 	endif()
 endif(USING_LIBNUMA)
 
-# ----------------------- enabling MatLab library -----------------------
-option(USING_MATLAB_ENGINE "Whether MatLab Engine will be linked in" OFF)
-
+#enabling MatLab library
 if(USING_MATLAB_ENGINE)
 	find_package(MATLAB REQUIRED)
 	include_directories(${Matlab_ROOT_DIR}/extern/include)
 endif(USING_MATLAB_ENGINE)
 
 #enabling BLAS library
-option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
-pz_dependent_option(BLA_VENDOR STRING "Which BLAS to use" "OpenBLAS"
-                       USING_BLAS "OpenBLAS")
 if(USING_BLAS)
 	find_package(BLAS REQUIRED)
 endif(USING_BLAS)
 
 #enabling LAPACK library
-option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
 if(USING_LAPACK)
 	if(APPLE)
 	else()
@@ -265,7 +301,6 @@ if(USING_LAPACK)
 endif(USING_LAPACK)
 
 #enabling PAPI library
-option(USING_PAPI "Whether the PAPI library will be linked in" OFF)
 if(USING_PAPI)
 		find_path(PAPI_INCLUDE NAMES papi.h PATHS ${SEARCH_DIRS})
 		find_library(PAPI_LIB NAMES libpapi.a libpapi.so PATHS ${SEARCH_DIRS})
@@ -278,7 +313,6 @@ if(USING_PAPI)
 endif(USING_PAPI)
 
 #enabling HWLOC library
-option(USING_HWLOC "Whether the HWLOC library will be linked in" OFF)
 if(USING_HWLOC)
 		find_path(HWLOC_INCLUDE NAMES hwloc.h PATHS ${SEARCH_DIRS})
 		find_library(HWLOC_LIB NAMES hwloc.a libhwloc.so libhwloc.dylib PATHS ${SEARCH_DIRS})
@@ -293,7 +327,6 @@ endif(USING_HWLOC)
 
 
 #enabling MKL library
-option(USING_MKL "Whether the MKL library will be linked in" OFF)
 if(USING_MKL)
 
 		if (WIN32)
@@ -331,8 +364,6 @@ endif(USING_MKL)
 
 
 #enabling QWT library
-option(USING_QWT "Whether the QWT library will be linked in" OFF)
-
 if(USING_QWT)
 	if (WIN32)
 		set(QWT_ROOT "C:/Qwt-6.1.3")
@@ -342,19 +373,6 @@ if(USING_QWT)
 endif(USING_QWT)
 
 ##############PZ configuration##############
-
-#enabling the new skyline matrix format
-option(USING_NEW_SKYLMAT "Enable the new skyline matrix format" OFF)
-#To building several examples for training and experimentation PZ
-option(BUILD_TUTORIAL "To build examples for training or teaching PZ" OFF)
-#To building several examples for training and experimentation PZ
-option(BUILD_BROKEN "To build projects which are broken" OFF)
-#To building all the specific projects developed with PZ environment
-option(BUILD_PROJECTS "To build specific projects." OFF)
-#To building all the performance projects developed with PZ environment
-option(BUILD_PERF_TESTS "To build the performance test." OFF)
-#To building all the plasticity materials
-option(BUILD_PLASTICITY_MATERIALS "To build plasticity materials." OFF)
 #To select type of REAL
 set(REALTypesAre "Types are: double, float, long double, pzfpcounter")
 set(REAL_TYPE "double" CACHE STRING "${REALTypesAre}")
