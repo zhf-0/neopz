@@ -679,10 +679,7 @@ TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TP
     }
     meshVec[ matMultiPhysics->H1Index() ] = cmeshH1;
     meshVec[ matMultiPhysics->HCurlIndex() ] = cmeshHCurl;
-    meshVec [ matMultiPhysics->LagrangeIndex() ] = cmeshLag;
-    
-    //  TPZMatHCurl2D *matMultiPhysics = new TPZMatHCurl2D(matId , lambda , ur , er , e0 , theta, scale);
-    
+    meshVec [ matMultiPhysics->LagrangeIndex() ] = cmeshLag;    
     
     TPZCompMesh *cmeshMF = new TPZCompMesh( gmesh );
     
