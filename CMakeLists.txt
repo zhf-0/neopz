@@ -377,19 +377,6 @@ endif(USING_QWT)
 set(REALTypesAre "Types are: double, float, long double, pzfpcounter")
 set(REAL_TYPE "double" CACHE STRING "${REALTypesAre}")
 
-
-
-# Begin of config.h part
-# This file contains all definitions used to compile the library pz
-# this will be saved at include diretory in the install target
-set (CONFIG_H "${PROJECT_BINARY_DIR}/Common/config.h")
-configure_file ("${PROJECT_SOURCE_DIR}/Common/config.h.in" ${CONFIG_H})
-# add it to include search path
-include_directories("${PROJECT_BINARY_DIR}/Common")
-# add the .h file in the install target
-install (FILES ${CONFIG_H} DESTINATION ${NEOPZ_INCLUDE})
-# End of config.h part
-
 #increment all the directories where the sources files is
 if(NOT BUILD_COMPLEX_PROJECTS)
     if(BUILD_PERF_TESTS)

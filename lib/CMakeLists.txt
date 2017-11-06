@@ -292,6 +292,18 @@ if(WIN32)
 endif()
 
 
+# Begin of config.h part
+# This file contains all definitions used to compile the library pz
+# this will be saved at include diretory in the install target
+set (CONFIG_H "${PROJECT_BINARY_DIR}/Common/config.h")
+configure_file ("${PROJECT_SOURCE_DIR}/Common/config.h.in" ${CONFIG_H})
+# add it to include search path
+include_directories("${PROJECT_BINARY_DIR}/Common")
+# add the .h file in the install target
+install (FILES ${CONFIG_H} DESTINATION ${NEOPZ_INCLUDE})
+# End of config.h part
+
+
 #creating pzmatrix lib -- It is comment now, because it is not needed when the pzlib is installed.
 #set(pzmatrixsources 
 #	${pzcommon_STAT_SRCS} ${pzutil_STAT_SRCS} ${pzperfutil_STAT_SRCS} ${pzsave_STAT_SRCS} 
