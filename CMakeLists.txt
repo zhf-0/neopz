@@ -1,6 +1,6 @@
 # @file neopz/CMakeList.txt  -- First file to read for CMake
 
-cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.7 FATAL_ERROR)
 
 project (PZ)
 
