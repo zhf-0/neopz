@@ -145,9 +145,15 @@ public:
 	virtual void Execute(const TPZVec<REAL> &x, TPZVec<TVar> &f, TPZFMatrix<TVar> &df)
     {
         if (!fFunc2) {
-			DebugStop();
+			if (!fFunc)
+				DebugStop();
+			else {
+				df.Zero();
+				fFunc(x, f);
+			}
 		}
-        fFunc2(x, f, df);
+        else
+            fFunc2(x, f, df);
     }
 	
 	/**

@@ -396,6 +396,7 @@ void TPZAcademicGeoMesh::AddBoundaryElements(TPZGeoMesh *gmesh)
             }
         }
     }
+	return 0;
 }
 
 void TPZAcademicGeoMesh::AddBoundaryElementsByCoord(TPZGeoMesh *gmesh)
@@ -484,6 +485,7 @@ void TPZAcademicGeoMesh::AddBoundaryElementsByCoord(TPZGeoMesh *gmesh)
       }
     }
   }
+  return 0;
 }
 
 
