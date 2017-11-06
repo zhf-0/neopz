@@ -499,7 +499,7 @@ TPZFBMatrix<TVar>::Transpose (TPZMatrix<TVar> *const T) const
 template<class TVar>
 int TPZFBMatrix<TVar>::Decompose_LU(std::list<long> &singular)
 {
-    return Decompose_LU();
+    Decompose_LU();
 }
 
 

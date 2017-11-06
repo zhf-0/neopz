@@ -52,9 +52,9 @@ protected:
     TPZGeoMesh *HexahedralMesh();
     TPZGeoMesh *TetrahedralMeshUsingRefinement();
     
-    void AddBoundaryElements(TPZGeoMesh *gmesh);
+    int AddBoundaryElements(TPZGeoMesh *gmesh);
   
-    void AddBoundaryElementsByCoord(TPZGeoMesh *gmesh);
+    int AddBoundaryElementsByCoord(TPZGeoMesh *gmesh);
       
     void CheckConsistency(TPZGeoMesh *gmesh);
 
