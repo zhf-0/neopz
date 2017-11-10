@@ -151,7 +151,7 @@ if(USING_HWLOC)
 endif(USING_HWLOC)
 
 if(USING_MKL)
-	target_link_libraries(pz ${MKL_LIB_INTEL} ${MKL_LIB_CORE} ${MKL_LIB_THREAD} ${COMPOSER_OMP})
+	target_link_libraries(pz ${MKL_LIBRARIES})
 	target_compile_definitions(pz PRIVATE USING_MKL)
 endif(USING_MKL)
 
