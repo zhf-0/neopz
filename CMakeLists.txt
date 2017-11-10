@@ -142,6 +142,9 @@ IF(APPLE)
 #   SET(OperatingSystem "Mac OS X")
 ENDIF(APPLE)
 
+######just testing
+find_package(PETSc REQUIRED)
+find_package(SLEPc REQUIRED)
 
 #To enable unit test using boost UnitTest framework
 if(BUILD_UNITTESTING)
