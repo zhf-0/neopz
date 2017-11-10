@@ -72,8 +72,6 @@ option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
 option(USING_LOG4CXX "Whether the LOG4CXX library will be linked in" OFF)
 #enabling compiler interprocedural optimizations (IPO)
 option(USING_IPO "Whether link and assembly support for compiler IPO will be activated or not (may cause linking to be very slow)." OFF)
-#enabling METIS library
-option(USING_METIS "Whether the METIS library will be linked in" OFF)
 #enabling OPENSSL library (used for MD5 computation)
 option(USING_OPENSSL "Whether the OPENSSL library will be linked in" OFF)
 #enabling TBB library
@@ -86,20 +84,24 @@ option(USING_LIKWID "Whether the likwid library will be linked in" OFF)
 option(USING_LIBNUMA "Whether the Lib NUMA library will be linked in" OFF)
 #enabling MatLab library
 option(USING_MATLAB_ENGINE "Whether MatLab Engine will be linked in" OFF)
-#enabling BLAS library
-option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
-pz_dependent_option(BLA_VENDOR STRING "Which BLAS to use" ""
-                       USING_BLAS "")#will be used in order to specify BLAS's vendor. not ready yet.
 #enabling QWT library
 option(USING_QWT "Whether the QWT library will be linked in" OFF)
-#enabling MKL library
-option(USING_MKL "Whether the MKL library will be linked in" OFF)
 #enabling HWLOC library
 option(USING_HWLOC "Whether the HWLOC library will be linked in" OFF)
 #enabling PAPI library
 option(USING_PAPI "Whether the PAPI library will be linked in" OFF)
+#enabling MKL library (enables BLAS and LAPACK)
+option(USING_MKL "Whether the MKL library will be linked in" OFF)
+#enabling SLEPc library (enables PETSc, BLAS, LAPACK, ARPACK, SUPERLU and METIS)
+option(USING_SLEPC "Whether the SLEPc library will be linked in" OFF)
+#enabling PETSc library (enables BLAS, LAPACK, ARPACK, SUPERLU and METIS)
+option(USING_PETSC "Whether the PETSC library will be linked in" OFF)
+#enabling BLAS library
+option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
 #enabling LAPACK library
 option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
+#enabling METIS library
+option(USING_METIS "Whether the METIS library will be linked in" OFF)
 ##############PZ configuration##############
 #enabling the new skyline matrix format
 option(USING_NEW_SKYLMAT "Enable the new skyline matrix format" OFF)
@@ -138,13 +140,10 @@ find_package(Threads REQUIRED)
 
 IF(APPLE)
    # Mac OS X specific code
-   find_library(ACCELERATE_LIB Accelerate)
+   #find_library(ACCELERATE_LIB Accelerate)
 #   SET(OperatingSystem "Mac OS X")
 ENDIF(APPLE)
 
-######just testing
-find_package(PETSc REQUIRED)
-find_package(SLEPc REQUIRED)
 
 #To enable unit test using boost UnitTest framework
 if(BUILD_UNITTESTING)
@@ -194,21 +193,6 @@ if(USING_LOG4CXX)
 	endif()
 endif(USING_LOG4CXX)
 
-#enabling METIS library
-if(USING_METIS)
-	find_path(METIS_INCLUDE metis.h PATHS ${SEARCH_DIRS})
-	find_library(METIS_LIB NAMES libmetis.dylib metis.lib libmetis.so libmetis.a PATHS ${SEARCH_DIRS})
-	if(NOT METIS_INCLUDE)
-		set (METIS_INCLUDE "" CACHE PATH "Directory where metis header files can be found")
-		message(FATAL_ERROR "metis's headers not found")
-	else()
-		include_directories(${METIS_INCLUDE})
-	endif()
-	if(NOT METIS_LIB)
-		set (METIS_LIB "" CACHE PATH "Directory where the metis library can be found")
-		message(FATAL_ERROR "metis lib not found")
-	endif()
-endif(USING_METIS)
 
 #enabling TBB library
 if(USING_TBB)
@@ -281,27 +265,6 @@ if(USING_MATLAB_ENGINE)
 	include_directories(${Matlab_ROOT_DIR}/extern/include)
 endif(USING_MATLAB_ENGINE)
 
-#enabling BLAS library
-if(USING_BLAS)
-	find_package(BLAS REQUIRED)
-endif(USING_BLAS)
-
-#enabling LAPACK library
-if(USING_LAPACK)
-	if(APPLE)
-	else()
-		find_path(LAPACK_INCLUDE clapack.h PATHS ${SEARCH_DIRS})
-		find_library(LAPACK_LIB NAMES libclapack.dylib PATHS ${SEARCH_DIRS})
-		if(NOT LAPACK_INCLUDE)
-			set (LAPACK_INCLUDE "" CACHE PATH "Directory where LAPACK header files can be found")
-		else()
-			include_directories(${LAPACK_INCLUDE})
-		endif()
-		if(NOT LAPACK_LIB)
-			set (LAPACK_LIB "" CACHE PATH "Directory where the LAPACK library can be found")
-		endif()
-	endif(APPLE)
-endif(USING_LAPACK)
 
 #enabling PAPI library
 if(USING_PAPI)
@@ -327,45 +290,6 @@ if(USING_HWLOC)
 		endif()
 endif(USING_HWLOC)
 
-
-
-#enabling MKL library
-if(USING_MKL)
-
-		if (WIN32)
-			set(MKL_ROOT "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows")
-			find_path(MKL_INCLUDE NAMES mkl.h PATHS ${MKL_ROOT}/mkl/include)
-			find_library(MKL_LIB_INTEL NAMES mkl_rt.lib PATHS ${MKL_ROOT}/mkl/lib/intel64_win)
-			find_library(MKL_LIB_CORE NAMES mkl_core.lib PATHS ${MKL_ROOT}/mkl/lib/intel64_win)
-			find_library(MKL_LIB_THREAD NAMES mkl_intel_thread.lib PATHS ${MKL_ROOT}/mkl/lib/intel64_win)
-			find_library(COMPOSER_OMP NAMES libiomp5md.lib PATHS ${MKL_ROOT}/compiler/lib/intel64_win)
-		else()
-			find_path(MKL_INCLUDE NAMES mkl.h PATHS ${SEARCH_DIRS} /opt/intel/mkl/include /softwares/intel/mkl/include)
-			find_library(MKL_LIB_INTEL NAMES libmkl_intel_lp64.so libmkl_intel_lp64.dylib PATHS
-					${SEARCH_DIRS} /opt/intel/mkl/lib /opt/intel/mkl/lib/intel64/ /softwares/intel/mkl/lib /softwares/intel/mkl/lib/intel64)
-			find_library(MKL_LIB_CORE NAMES libmkl_core.so libmkl_core.dylib PATHS ${SEARCH_DIRS}
-					/opt/intel/mkl/lib /opt/intel/mkl/lib/intel64/ /softwares/intel/mkl/lib /softwares/intel/mkl/lib/intel64/)
-			find_library(MKL_LIB_THREAD NAMES libmkl_intel_thread.so libmkl_intel_thread.dylib PATHS
-					${SEARCH_DIRS} /opt/intel/mkl/lib /opt/intel/mkl/lib/intel64/ /softwares/intel/mkl/lib /softwares/intel/mkl/lib/intel64/)
-			find_library(COMPOSER_OMP NAMES libiomp5.so libiomp5.dylib PATHS ${SEARCH_DIRS}
-					/opt/intel/composer_xe/compiler/lib
-					/opt/intel/composerxe/lib/intel64
-					/opt/intel/lib /softwares/intel/lib/intel64)
-			#find_path(OMP_INCLUDE NAMES omp.h PATHS ${SEARCH_DIRS} /opt/intel/composer_xe_2013_sp1.1.103/compiler/include)
-			#include_directories(${OMP_INCLUDE})
-		endif()
-
-		if(NOT MKL_INCLUDE)
-			set (MKL_INCLUDE "" CACHE PATH "Directory where mkl.h can be found")
-		else()
-			include_directories(${MKL_INCLUDE})
-		endif()
-		if(NOT MKL_LIB)
-			set (MKL_LIB_INTEL "" CACHE PATH "Directory where the mkl library can be found")
-		endif()
-endif(USING_MKL)
-
-
 #enabling QWT library
 if(USING_QWT)
 	if (WIN32)
@@ -374,6 +298,95 @@ if(USING_QWT)
 		set(QWT_ROOT "" CACHE PATH "Root directory where the QWT library is istalled")
 	endif()
 endif(USING_QWT)
+
+
+#enabling MKL library
+if(USING_MKL)
+	if(NOT DEFINED ENV{MKLROOT})
+		###################################################################
+		# the script mklvars.sh must be run in order to  				  #
+		# set the environment variables needed to configure 			  #
+		# the MKL library. It is located in the bin folder 				  #
+		# inside your mkl install dir (on macOS it is /opt/intel/mkl/bin) #
+		###################################################################
+    	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for")
+	endif()
+	find_package(MKL REQUIRED)
+	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
+	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+	#enabling LAPACK library (it wont search for it, though, since MKL contains it)
+	set(USING_LAPACK ON CACHE BOOL "Whether the LAPACK library will be linked in" FORCE)
+endif(USING_MKL)
+
+#enabling SLEPc library's dependency on PETSc
+if(USING_SLEPC)
+	set(USING_PETSC ON CACHE BOOL "Whether the PETSC library will be linked in" FORCE)
+endif(USING_SLEPC)
+
+#enabling PETSc library
+if(USING_PETSC)
+	if(NOT DEFINED ENV{PETSC_DIR})
+		###################################################################
+		# 				WRITE DOCUMENTATION FOR PETSC_DIR 			      #
+		###################################################################
+    	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for")
+	endif()
+	set(ENV{BLA_VENDOR} "OpenBLAS")
+	find_package(PETSc REQUIRED)
+endif(USING_PETSC)
+
+if(USING_SLEPC)
+	if(NOT DEFINED ENV{SLEPC_DIR})
+		###################################################################
+		# 				WRITE DOCUMENTATION FOR SLEPC_DIR 			      #
+		###################################################################
+    	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for")
+	endif()
+	find_package(SLEPc REQUIRED)
+endif(USING_SLEPC)
+
+####################################################################
+#   The following instructions regarding BLAS, LAPACK and METIS    #
+# must be AFTER if(USING_MKL), if(USING_PETSC) and if(USING_SLEPC) #
+####################################################################
+
+if(NOT USING_MKL)
+	if(NOT USING_PETSC)
+		#search for BLAS and LAPACK normally
+		set(ENV{BLA_VENDOR} "All")
+	endif(NOT USING_PETSC)
+
+	#enabling LAPACK library's dependency on BLAS
+	if(USING_LAPACK)
+		set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+	endif(USING_LAPACK)
+
+	#enabling BLAS library
+	if(USING_BLAS)
+		find_package(BLAS REQUIRED)
+	endif(USING_BLAS)
+
+	#enabling LAPACK library
+	if(USING_LAPACK)
+		find_package(LAPACK REQUIRED)
+	endif(USING_LAPACK)
+endif(NOT USING_MKL)
+
+#enabling METIS library
+if(USING_METIS)
+	find_path(METIS_INCLUDE metis.h PATHS ${SEARCH_DIRS})
+	find_library(METIS_LIB NAMES libmetis.dylib metis.lib libmetis.so libmetis.a PATHS ${SEARCH_DIRS})
+	if(NOT METIS_INCLUDE)
+		set (METIS_INCLUDE "" CACHE PATH "Directory where metis header files can be found")
+		message(FATAL_ERROR "metis's headers not found")
+	else()
+		include_directories(${METIS_INCLUDE})
+	endif()
+	if(NOT METIS_LIB)
+		set (METIS_LIB "" CACHE PATH "Directory where the metis library can be found")
+		message(FATAL_ERROR "metis lib not found")
+	endif()
+endif(USING_METIS)
 
 ##############PZ configuration##############
 #To select type of REAL
