@@ -40,7 +40,6 @@ set(THR_LIB "mkl_intel_thread")
 set(COR_LIB "mkl_core")
 
 find_path(MKL_INCLUDE_DIR NAMES mkl.h HINTS $ENV{MKLROOT}/include)
-
 find_library(MKL_INTERFACE_LIBRARY
              NAMES ${INT_LIB}
              PATHS $ENV{MKLROOT}/lib
@@ -70,6 +69,9 @@ find_library(MKL_CORE_LIBRARY
              NO_DEFAULT_PATH)
 
 set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
+if(MKL_INCLUDE_DIRS)
+  include_directories(${MKL_INCLUDE_DIRS})
+endif()
 #I guess libiomp5 is not quite necessary
 if(NOT MKL_OMP_LIBRARY)
   set(MKL_OMP_LIBRARY "")
@@ -77,11 +79,10 @@ endif()
 set(MKL_LIBRARIES ${MKL_INTERFACE_LIBRARY} ${MKL_OMP_LIBRARY} ${MKL_THREAD_LAYER_LIBRARY} ${MKL_CORE_LIBRARY})
 
 
-if (MKL_INCLUDE_DIR AND
-    MKL_INTERFACE_LIBRARY AND
-    MKL_THREAD_LAYER_LIBRARY AND
-    MKL_CORE_LIBRARY)
-else()
+if (NOT MKL_INCLUDE_DIR OR
+    NOT MKL_INTERFACE_LIBRARY OR
+    NOT MKL_THREAD_LAYER_LIBRARY OR
+    NOT MKL_CORE_LIBRARY)
   set(MKL_INCLUDE_DIRS "")
   set(MKL_LIBRARIES "")
   set(MKL_INTERFACE_LIBRARY "")
