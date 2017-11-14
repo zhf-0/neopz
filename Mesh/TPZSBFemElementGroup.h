@@ -18,16 +18,16 @@ class TPZSBFemElementGroup : public TPZElementGroup
 {
     
     /// Matrix of eigenvectors which compose the stiffness matrix
-    TPZFMatrix<STATE> fPhi;
+    TPZFMatrix<std::complex<double> > fPhi;
     
     /// Inverse of the eigenvector matrix (transfers eigenvector coeficients to side shape coeficients)
-    TPZFMatrix<STATE> fPhiInverse;
+    TPZFMatrix<std::complex<double> > fPhiInverse;
     
     /// Vector of eigenvalues of the SBFem analyis
-    TPZManVector<STATE> fEigenvalues;
+    TPZManVector<std::complex<double> > fEigenvalues;
     
     /// Multiplying coefficients of each eigenvector
-    TPZFMatrix<STATE> fCoef;
+    TPZFMatrix<std::complex<double> > fCoef;
     
     TPZFMatrix<STATE> fMassMatrix;
     
@@ -102,9 +102,91 @@ public:
      */
     virtual void LoadSolution();
 
+    /** @brief Loads the geometric element referece */
+    virtual void LoadElementReference()
+    {
+        for (long i = 0; i < fElGroup.size(); i++) {
+            fElGroup[i]->LoadElementReference();
+        }
+    }
+    
 
+
+    long NumEigenValues()
+    {
+        return fEigenvalues.size();
+    }
+    
+    /// Load the coeficients such that we visualize an eigenvector
+    void LoadEigenVector(long eig);
     /// method to compute the stiffness
     /// method to compute the solution
+    
+    TPZVec<STATE> MultiplyingCoeficients()
+    {
+        int nel = fCoef.Rows();
+        TPZVec<STATE> result(nel,0.);
+        for (int ir=0; ir<nel; ir++) {
+            result[ir] = fCoef(ir,0).real();
+        }
+        return result;
+    }
+    
+    TPZVec<std::complex<double> > &EigenValues()
+    {
+        return fEigenvalues;
+    }
+    
+    TPZFMatrix<std::complex<double> > Phi()
+    {
+        return fPhi;
+    }
+    
+    
+    TPZFMatrix<std::complex<double> > Coeficients()
+    {
+        return fCoef;
+    }
+    
+    TPZFMatrix<double> PhiReal()
+    {
+        long rows = fPhi.Rows(),cols = fPhi.Cols();
+        TPZFMatrix<double> phireal(rows,cols);
+        for(long i=0; i<rows; i++)
+        {
+            for(long j=0; j<cols; j++)
+            {
+                phireal(i,j) = fPhi(i,j).real();
+            }
+        }
+        return phireal;
+    }
+    
+    TPZManVector<double> EigenvaluesReal()
+    {
+        long nel = fEigenvalues.NElements();
+        TPZManVector<double> eig(nel);
+        for(long el=0; el<nel; el++)
+        {
+            eig[el] = fEigenvalues[el].real();
+        }
+        return eig;
+    }
+    
+    TPZFMatrix<double> CoeficientsReal()
+    {
+        long rows = fCoef.Rows(),cols = fCoef.Cols();
+        TPZFMatrix<double> coefreal(rows,cols);
+        for(long i=0; i<rows; i++)
+        {
+            for(long j=0; j<cols; j++)
+            {
+                coefreal(i,j) = fCoef(i,j).real();
+            }
+        }
+        return coefreal;
+    }
+
 };
 
 #endif /* TPZSBFemElementGroup_hpp */

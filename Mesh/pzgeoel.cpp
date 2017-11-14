@@ -1358,7 +1358,7 @@ void TPZGeoEl::SetNeighbourForBlending(int side){
 		}
 		NextSide = NextSide.Neighbour();
 	}
-	
+    NextSide = TPZGeoElSide(this,side);
 	//now TPZGeoElMapped are accepted
 	while(NextSide.Neighbour().Element() != ElemSide.Element())
 	{

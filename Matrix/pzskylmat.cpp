@@ -2609,7 +2609,7 @@ TPZSkylMatrix<TVar>::Decompose_Cholesky(std::list<long> &singular)
         //		if ( pivot < ((TVar)1.e-9) ) {
 		if(pivot < Tol) {
 			singular.push_back(k);
-            std::cout << __FUNCTION__ << " Singular equation pivot " << pivot << " k " << k << std::endl;
+            std::cout << __FUNCTION__ << " Singular equation pivot " << pivot << " k " << k <<  " neq " << dimension << std::endl;
 			pivot = 1.;
 		}
 		// A matriz nao e' definida positiva.

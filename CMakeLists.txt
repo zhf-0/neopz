@@ -45,6 +45,10 @@ add_definitions(-DPZSOURCEDIR=\"${PZSOURCEDIR}\")
 set(REFPATTERNDIR ${PROJECT_SOURCE_DIR}/Refine/RefPatterns)
 add_definitions(-DREFPATTERNDIR=\"${REFPATTERNDIR}\")
 
+set(needed_features
+    cxx_strong_enums
+    cxx_constexpr
+    cxx_auto_type)
 
 #Defining variables
 #To cmake

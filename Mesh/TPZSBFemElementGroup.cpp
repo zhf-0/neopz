@@ -6,7 +6,7 @@
 //
 //
 
-#include "TPZSBFemElementGroup.hpp"
+#include "TPZSBFemElementGroup.h"
 #include "TPZSBFemVolume.h"
 #include <Accelerate/Accelerate.h>
 
@@ -109,6 +109,7 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     TPZElementMatrix E0,E1,E2, M0;
     ComputeMatrices(E0, E1, E2, M0);
     
+    InitializeElementMatrix(ek, ef);
 //    E0.fMat.Print("E0");
 //    E1.fMat.Print("E1Check = ",std::cout,EMathematicaInput);
 //    E2.fMat.Print("E2");
@@ -128,7 +129,7 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     if (info != 0) {
         DebugStop();
     }
-    E0Inv.Print("E0InvCheck = ",std::cout,EMathematicaInput);
+//    E0Inv.Print("E0InvCheck = ",std::cout,EMathematicaInput);
     
     TPZFMatrix<STATE> globmat(2*n,2*n,0.);
     
@@ -149,7 +150,7 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     }
 
     cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, n, n, -1., &E1.fMat(0,0), n, &E0Inv(0,0), n, 0., &globmat(n,n), 2*n);
-    globmat.Print("GlobMatCheck = ",std::cout, EMathematicaInput);
+//    globmat.Print("GlobMatCheck = ",std::cout, EMathematicaInput);
 
     TPZFMatrix<STATE> globmatkeep(globmat);
     TPZFMatrix< std::complex<double> > eigenVectors;
@@ -157,6 +158,7 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     
     globmatkeep.SolveEigenProblem(eigenvalues, eigenVectors);
     
+    if(0)
     {
         TPZManVector<STATE> eigvalreal(2*n,0.);
         TPZFMatrix<STATE> eigvecreal(2*n,2*n,0.);
@@ -166,24 +168,44 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
                 eigvecreal(i,j) = eigenVectors(i,j).real();
             }
         }
-        std::cout << "eigval = {" << eigvalreal << "};\n";
-        eigvecreal.Print("eigvec =",std::cout,EMathematicaInput);
+//        eigenVectors.Print("eigvec =",std::cout,EMathematicaInput);
     }
     
-    TPZFNMatrix<200,STATE> QVectors(n,n,0.);
+    TPZFNMatrix<200,std::complex<double> > QVectors(n,n,0.);
     fPhi.Resize(n, n);
-    TPZManVector<STATE> eigvalsel(n,0);
+    TPZManVector<std::complex<double> > eigvalsel(n,0);
+    TPZFMatrix<std::complex<double> > eigvecsel(2*n,n,0.),eigvalmat(1,n,0.);
     int count = 0;
     for (int i=0; i<2*n; i++) {
         if (eigenvalues[i].real() < -1.e-6) {
+            double maxvaleigenvec = 0;
             for (int j=0; j<n; j++) {
-                QVectors(j,count) = eigenVectors(j+n,i).real();
-                fPhi(j,count) = eigenVectors(j,i).real();
-                eigvalsel[count] = eigenvalues[i].real();
+                QVectors(j,count) = eigenVectors(j+n,i);
+                eigvecsel(j,count) = eigenVectors(j,i);
+                eigvecsel(j+n,count) = eigenVectors(j+n,i);
+                fPhi(j,count) = eigenVectors(j,i);
+                double realvalabs = fabs(fPhi(j,count).real());
+                if (realvalabs > maxvaleigenvec) {
+                    maxvaleigenvec = realvalabs;
+                }
+            }
+            eigvalsel[count] = eigenvalues[i];
+            eigvalmat(0,count) = eigenvalues[i];
+            for (int j=0; j<n; j++) {
+                QVectors(j,count) /= maxvaleigenvec;
+                eigvecsel(j,count) /= maxvaleigenvec;
+                eigvecsel(j+n,count) /= maxvaleigenvec;
+                fPhi(j,count) /= maxvaleigenvec;
+
             }
             count++;
         }
     }
+    
+#ifdef PZDEBUG2
+    std::cout << "eigval = {" << eigvalsel << "};\n";
+#endif
+
     int nstate = Connect(0).NState();
     if (nstate != 2 && nstate != 1) {
         DebugStop();
@@ -200,21 +222,51 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
         if (cornercon.find(conindex) != cornercon.end())
         {
             fPhi(eq,count) = 1;
+            eigvecsel(eq,count) = 1;
             if (nstate == 2)
             {
                 fPhi(eq+1,count+1) = 1;
+                eigvecsel(eq+1,count+1) = 1;
             }
         }
         eq += Connect(ic).NShape()*Connect(ic).NState();
     }
+    
     fEigenvalues = eigvalsel;
 //    std::cout << "eigenvalues " << eigvalsel << std::endl;
-//    PhiVectors.Print("Phivec ",std::cout);
-    TPZFMatrix<STATE> phicopy(fPhi);
-    phicopy.Inverse(fPhiInverse, ELU);
-//    fPhiInverse.Print("fPhiInverse",std::cout);
+//    fPhi.Print("Phivec =",std::cout,EMathematicaInput);
+    TPZFMatrix<std::complex<double> > phicopy(fPhi);
+    fPhiInverse.Redim(n, n);
+    fPhiInverse.Identity();
+    {
+        TPZVec<int> pivot;
+        phicopy.Decompose_LU(pivot);
+        phicopy.Substitution(&fPhiInverse, pivot);
+    }
+    //   phicopy.Inverse(fPhiInverse, ELU);
+//    phicopy.Print("phidec = ",std::cout,EMathematicaInput);
+//    fPhiInverse.Print("fPhiInverse = ",std::cout,EMathematicaInput);
 //    QVectors.Print("QVectors ", std::cout);
-    QVectors.Multiply(fPhiInverse, ek.fMat);
+    TPZFMatrix<std::complex<double> > ekloc;
+    QVectors.Multiply(fPhiInverse, ekloc);
+    if(0)
+    {
+        std::ofstream out("EigenProblem.nb");
+        globmatkeep.Print("matrix = ",out,EMathematicaInput);
+        eigvecsel.Print("eigvec =",out,EMathematicaInput);
+        eigvalmat.Print("lambda =",out,EMathematicaInput);
+        fPhi.Print("phi = ",out,EMathematicaInput);
+        fPhiInverse.Print("phiinv = ",out,EMathematicaInput);
+        QVectors.Print("qvec = ",out,EMathematicaInput);
+    }
+    
+    TPZFMatrix<double> ekimag(ekloc.Rows(),ekloc.Cols());
+    for (int i=0; i<ekloc.Rows(); i++) {
+        for (int j=0; j<ekloc.Cols(); j++) {
+            ek.fMat(i,j) = ekloc(i,j).real();
+            ekimag(i,j) = ekloc(i,j).imag();
+        }
+    }
     
     long nel = fElGroup.size();
     for (long el = 0; el<nel; el++) {
@@ -230,12 +282,15 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     
     ComputeMassMatrix(M0);
     
-    ek.fMat.Print("Stiffness",std::cout);
+//    ek.fMat.Print("Stiffness",std::cout,EMathematicaInput);
+#ifdef PZDEBUG
+    std::cout << "Norm of imaginary part " << Norm(ekimag) << std::endl;
+#endif
 }
 
 void TPZSBFemElementGroup::LoadSolution()
 {
-    TPZFNMatrix<200,STATE> uh_local(fPhi.Rows(),fMesh->Solution().Cols(),0.);
+    TPZFNMatrix<200,std::complex<double> > uh_local(fPhi.Rows(),fMesh->Solution().Cols(),0.);
     int nc = NConnects();
     int count = 0;
     for (int ic=0; ic<nc; ic++) {
@@ -272,25 +327,62 @@ void TPZSBFemElementGroup::LoadSolution()
 void TPZSBFemElementGroup::ComputeMassMatrix(TPZElementMatrix &M0)
 {
     //    M0.fMat.Print("Mass = ",std::cout,EMathematicaInput);
-    TPZFMatrix<STATE> temp;
+    TPZFMatrix<std::complex<double> > temp;
     REAL alpha = 1.;
     REAL beta = 0.;
     int transpose = 1;
-    fPhi.MultAdd(M0.fMat, M0.fMat, temp, alpha, beta, transpose);
-    //    temp.Print("Temp = ",std::cout,EMathematicaInput);
-    temp.Multiply(fPhi,fMassMatrix);
     int nrow = fEigenvalues.size();
+    TPZFMatrix<std::complex<double> > M0Loc(nrow,nrow),MassLoc(nrow,nrow);
     for (int i=0; i<nrow; i++) {
-        for (int j=0; j<nrow; j++) {
-            fMassMatrix(i,j) /= (2.-fEigenvalues[i]-fEigenvalues[j]);
+        for(int j=0; j<nrow; j++)
+        {
+            M0Loc(i, j) = M0.fMat(i,j);
         }
     }
-    fPhiInverse.MultAdd(fMassMatrix, M0.fMat, temp,alpha, beta, transpose);
-    temp.Multiply(fPhiInverse,fMassMatrix);
+    fPhi.MultAdd(M0Loc, M0Loc, temp, alpha, beta, transpose);
+    //    temp.Print("Temp = ",std::cout,EMathematicaInput);
+    temp.Multiply(fPhi,MassLoc);
+    for (int i=0; i<nrow; i++) {
+        for (int j=0; j<nrow; j++) {
+            MassLoc(i,j) /= (2.-fEigenvalues[i]-fEigenvalues[j]);
+        }
+    }
+    fPhiInverse.MultAdd(MassLoc, M0Loc, temp,alpha, beta, transpose);
+    temp.Multiply(fPhiInverse,MassLoc);
     
-    fMassMatrix.Print("Mass Matrix",std::cout);
+    TPZFMatrix<double> MassLocImag(nrow,nrow);
+    fMassMatrix.Redim(nrow, nrow);
+    for (int i=0; i<nrow; i++) {
+        for(int j=0; j<nrow; j++)
+        {
+            fMassMatrix(i, j) = MassLoc(i,j).real();
+            MassLocImag(i,j) = MassLoc(i,j).imag();
+        }
+    }
+    
+//    fMassMatrix.Print("Mass Matrix",std::cout,EMathematicaInput);
+#ifdef PZDEBUG
+    std::cout << "Norm of imaginary part " << Norm(MassLocImag) << std::endl;
+#endif
 }
 
+void TPZSBFemElementGroup::LoadEigenVector(long eig)
+{
+    fCoef.Zero();
+    fCoef(eig,0) = 1.;
+    long nel = fElGroup.size();
+    for (long el = 0; el<nel; el++) {
+        TPZCompEl *cel = fElGroup[el];
+        TPZSBFemVolume *sbfem = dynamic_cast<TPZSBFemVolume *>(cel);
+#ifdef PZDEBUG
+        if (!sbfem) {
+            DebugStop();
+        }
+#endif
+        sbfem->LoadCoef(fCoef);
+    }
+    
+}
 
 //http://www.netlib.org/lapack/lug/node50.html
 //https://software.intel.com/en-us/node/521079

@@ -11,6 +11,7 @@
 #include "pzmaterial.h"
 #include "pzelmat.h"
 #include "pzgraphelq2dd.h"
+#include "pzbndcond.h"
 
 
 TPZSBFemVolume::TPZSBFemVolume(TPZCompMesh &mesh, TPZGeoEl *gel,long &index) : TPZCompEl(mesh,gel,index), fElementGroupIndex(-1), fSkeleton(-1), fDensity(1.)
@@ -141,7 +142,7 @@ TPZCompEl * CreateSBFemCompEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index)
 }
 
 /// initialize the data structures of the eigenvectors and eigenvalues associated with this volume element
-void TPZSBFemVolume::SetPhiEigVal(TPZFMatrix<STATE> &phi, TPZManVector<STATE> &eigval)
+void TPZSBFemVolume::SetPhiEigVal(TPZFMatrix<std::complex<double> > &phi, TPZManVector<std::complex<double> > &eigval)
 {
     fEigenvalues = eigval;
     int nrow = fLocalIndices.size();
@@ -158,7 +159,7 @@ void TPZSBFemVolume::SetPhiEigVal(TPZFMatrix<STATE> &phi, TPZManVector<STATE> &e
  * Is used to initialize the solution of connect objects with dependency. \n
  * Is also used to load the solution within SuperElements
  */
-void TPZSBFemVolume::LoadCoef(TPZFMatrix<STATE> &coef)
+void TPZSBFemVolume::LoadCoef(TPZFMatrix<std::complex<double> > &coef)
 {
     fCoeficients = coef;
 }
@@ -213,12 +214,12 @@ void TPZSBFemVolume::ComputeSolution(TPZVec<REAL> &qsi,
 #endif
     for (int s=0; s<sol.size(); s++)
     {
-        TPZManVector<STATE,10> uh_xi(fPhi.Rows(),0.), Duh_xi(fPhi.Rows(),0.);
+        TPZManVector<std::complex<double>,10> uh_xi(fPhi.Rows(),0.), Duh_xi(fPhi.Rows(),0.);
         int nphixi = fPhi.Rows();
         int numeig = fPhi.Cols();
         for (int c=0; c<numeig; c++) {
-            REAL xiexp;
-            REAL xiexpm1;
+            std::complex<double> xiexp;
+            std::complex<double> xiexpm1;
             if(IsZero(fEigenvalues[c]))
             {
                 xiexp = 1;
@@ -239,18 +240,18 @@ void TPZSBFemVolume::ComputeSolution(TPZVec<REAL> &qsi,
                 Duh_xi[i] += -fCoeficients(c,s)*fEigenvalues[c]*xiexpm1*fPhi(i,c);
             }
         }
-        std::cout << "uh_xi " << uh_xi << std::endl;
-        std::cout << "Duh_xi " << Duh_xi << std::endl;
+//        std::cout << "uh_xi " << uh_xi << std::endl;
+//        std::cout << "Duh_xi " << Duh_xi << std::endl;
         sol[s].Resize(nstate);
         sol[s].Fill(0.);
         TPZFNMatrix<9,STATE> dsollow(dim-1,nstate,0.), dsolxieta(dim,nstate,0.);
         TPZManVector<STATE,3> dsolxi(nstate,0.);
         for (int ishape=0; ishape<nshape; ishape++) {
             for (int istate=0; istate<nstate; istate++) {
-                sol[s][istate] += data1d.phi(ishape)*uh_xi[ishape*nstate+istate];
-                dsolxi[istate] += data1d.phi(ishape)*Duh_xi[ishape*nstate+istate];
+                sol[s][istate] += data1d.phi(ishape)*uh_xi[ishape*nstate+istate].real();
+                dsolxi[istate] += data1d.phi(ishape)*Duh_xi[ishape*nstate+istate].real();
                 for (int d=0; d<dim-1; d++) {
-                    dsollow(d,istate) += data1d.dphi(d,ishape)*uh_xi[ishape*nstate+istate];
+                    dsollow(d,istate) += data1d.dphi(d,ishape)*uh_xi[ishape*nstate+istate].real();
                 }
             }
         }
@@ -273,8 +274,8 @@ void TPZSBFemVolume::ComputeSolution(TPZVec<REAL> &qsi,
     }
     
     // tototototot
-    std::cout << "Solution " << sol[0] << std::endl;
-    dsol[0].Print("DSol",std::cout);
+//    std::cout << "Solution " << sol[0] << std::endl;
+//    dsol[0].Print("DSol",std::cout);
 }
 
 
@@ -296,6 +297,8 @@ void TPZSBFemVolume::Solution(TPZVec<REAL> &qsi,int var,TPZVec<STATE> &sol)
     TPZMaterialData data2d;
 
     ComputeSolution(qsi, data2d.sol, data2d.dsol, data2d.axes);
+    data2d.x.Resize(3, 0.);
+    Reference()->X(qsi, data2d.x);
     mat2d->Solution(data2d, var, sol);
     
 }
@@ -307,3 +310,91 @@ void TPZSBFemVolume::CreateGraphicalElement(TPZGraphMesh &graphmesh, int dimensi
         new TPZGraphElQ2dd(this,&graphmesh);
     }
 }
+
+#include "pzaxestools.h"
+
+
+void TPZSBFemVolume::EvaluateError(void (* fp)(const TPZVec<REAL> &loc,TPZVec<STATE> &val,TPZFMatrix<STATE> &deriv),
+                   TPZVec<REAL> &errors,TPZBlock<REAL> * /*flux*/)
+{
+    int NErrors = this->Material()->NEvalErrors();
+    errors.Resize(NErrors);
+    errors.Fill(0.);
+    TPZMaterial * material = Material();
+    //TPZMaterial * matptr = material.operator->();
+    if(!material){
+        PZError << "TPZInterpolatedElement::EvaluateError : no material for this element\n";
+        Print(PZError);
+        return;
+    }
+    if(dynamic_cast<TPZBndCond *>(material)) {
+        std::cout << "Exiting EvaluateError - null error - boundary condition material.";
+        DebugStop();
+    }
+    int problemdimension = Mesh()->Dimension();
+    TPZGeoEl *ref = Reference();
+    if(ref->Dimension() < problemdimension) return;
+        
+    // Adjust the order of the integration rule
+    //Cesar 2007-06-27 ==>> Begin
+    //this->MaxOrder is usefull to evaluate polynomial function of the aproximation space.
+    //fp can be any function and max order of the integration rule could produce best results
+    int dim = Dimension();
+    TPZAutoPointer<TPZIntPoints> intrule = ref->CreateSideIntegrationRule(ref->NSides()-1, 5);
+    int maxIntOrder = intrule->GetMaxOrder();
+    TPZManVector<int,3> prevorder(dim), maxorder(dim, maxIntOrder);
+    //end
+    intrule->GetOrder(prevorder);
+    
+    intrule->SetOrder(maxorder);
+    
+    int ndof = material->NStateVariables();
+    int nflux = material->NFluxes();
+    TPZManVector<STATE,10> u_exact(ndof);
+    TPZFNMatrix<90,STATE> du_exact(dim+1,ndof);
+    TPZManVector<REAL,10> intpoint(problemdimension), values(NErrors);
+    values.Fill(0.0);
+    REAL weight;
+    TPZManVector<STATE,9> flux_el(nflux,0.);
+    
+    TPZMaterialData data;
+    data.x.Resize(3);
+    int nintpoints = intrule->NPoints();
+    std::ofstream out("pointerr.txt");
+    
+    for(int nint = 0; nint < nintpoints; nint++) {
+        
+        intrule->Point(nint,intpoint,weight);
+
+        ref->Jacobian(intpoint, data.jacobian, data.axes, data.detjac, data.jacinv);
+        
+        weight *= fabs(data.detjac);
+        ComputeSolution(intpoint, data.sol, data.dsol, data.axes);
+        // this->ComputeSolution(intpoint, data.phi, data.dphix, data.axes, data.sol, data.dsol);
+        //this->ComputeSolution(intpoint, data);
+        //contribuicoes dos erros
+        ref->X(intpoint, data.x);
+        
+        if(fp) {
+            fp(data.x,u_exact,du_exact);
+            
+            TPZFMatrix<STATE> dudaxes(data.dsol[0]),dudx(data.dsol[0]);
+            TPZAxesTools<STATE>::Axes2XYZ(dudaxes, dudx, data.axes);
+
+            out << "x " << data.x << " du " << dudx(0,0) << ' '<< dudx(1,0) << " du_ex " << du_exact(0,0) << ' ' << du_exact(1,0) << std::endl;
+            material->Errors(data.x,data.sol[0],data.dsol[0],data.axes,flux_el,u_exact,du_exact,values);
+            
+            for(int ier = 0; ier < NErrors; ier++)
+                errors[ier] += values[ier]*weight;
+        }
+        
+    }//fim for : integration rule
+     //Norma sobre o elemento
+    for(int ier = 0; ier < NErrors; ier++){
+        errors[ier] = sqrt(errors[ier]);
+    }//for ier
+    
+    intrule->SetOrder(prevorder);
+
+}
+

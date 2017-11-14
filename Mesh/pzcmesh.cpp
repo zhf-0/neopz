@@ -60,7 +60,7 @@ fSolution(0,1) {
 	fDefaultOrder = TPZCompEl::GetgOrder();
 	
 	//Initializing class members
-	fDimModel = 0;
+    fDimModel = 0;
 	fReference = gr;
 	//  fChecked = 0;
 	//fName[0] = '\0';
@@ -69,6 +69,7 @@ fSolution(0,1) {
 		SetName( gr->Name() );
 		gr->ResetReference();
 		gr->SetReference(this);
+        fDimModel = gr->Dimension();
 	}
     else {
         SetName( "Computational mesh");
@@ -87,7 +88,7 @@ fSolution(0,1)
     fDefaultOrder = TPZCompEl::GetgOrder();
     
     //Initializing class members
-    fDimModel = 0;
+    fDimModel = gmesh->Dimension();
     fReference = gmesh.operator->();
     //  fChecked = 0;
     //fName[0] = '\0';

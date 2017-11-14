@@ -1071,6 +1071,43 @@ int TPZFMatrix<double>::Decompose_LU(TPZVec<int> &index) {
     this->fDecomposed = ELUPivot;
     return 1;
 }
+template <>
+int TPZFMatrix<std::complex<double> >::Decompose_LU(TPZVec<int> &index) {
+    
+    
+    if (this->fDecomposed != ENoDecompose && this->fDecomposed != ELUPivot) DebugStop();
+    
+    if (this->fDecomposed != ENoDecompose) {
+        return ELUPivot;
+    }
+    
+    if ( this->Rows() != this->Cols() ) {
+        cout << "TPZFPivotMatrix::DecomposeLU ERRO : A Matriz não é quadrada" << endl;
+        return 0;
+    }
+    
+    
+    int nRows = this->Rows();
+    int zero = 0;
+    std::complex<double> b;int info;
+    
+    fPivot.Resize(nRows);
+    
+    //    int sgesv_(__CLPK_integer *__n, __CLPK_integer *__nrhs, __CLPK_real *__a,
+    //               __CLPK_integer *__lda, __CLPK_integer *__ipiv, __CLPK_real *__b,
+    //               __CLPK_integer *__ldb,
+    //               __CLPK_integer *__info) __OSX_AVAILABLE_STARTING(__MAC_10_2,
+    //                                                                __IPHONE_4_0);
+    
+//    void zgesv_( const MKL_INT* n, const MKL_INT* nrhs, MKL_Complex16* a,
+//                const MKL_INT* lda, MKL_INT* ipiv, MKL_Complex16* b,
+//                const MKL_INT* ldb, MKL_INT* info );
+
+    zgesv_(&nRows,&zero,(__CLPK_doublecomplex *)fElem,&nRows,&fPivot[0],(__CLPK_doublecomplex *)&b,&nRows,&info);
+    index = fPivot;
+    this->fDecomposed = ELUPivot;
+    return 1;
+}
 #endif
 
 template <class TVar>
@@ -1192,7 +1229,7 @@ int TPZFMatrix<TVar>::Decompose_LU(std::list<long> &singular) {
     for (int i=0; i<nrows; i++) {
         fPivot[i] = i+1;
     }
-    this->fDecomposed = ELUPivot;
+//    this->fDecomposed = ELUPivot;
 #endif
     return 1;
 }
@@ -1381,6 +1418,45 @@ int TPZFMatrix<double>::Substitution( TPZFMatrix<double> *B, const TPZVec<int> &
     int info = 0;
     
     dgetrs_(&notrans,&nRows,&BCols,fElem,&nRows,&fPivot[0],B->fElem,&nRows,&info);
+    
+#ifdef PZDEBUG
+    if(info != 0)
+    {
+        DebugStop();
+    }
+#endif
+    
+    return 1;
+}
+template<>
+int TPZFMatrix<std::complex<double> >::Substitution( TPZFMatrix<std::complex<double> > *B, const TPZVec<int> &index ) const{
+    
+    if(!B){
+        PZError << __PRETTY_FUNCTION__ << "TPZFMatrix<>*B eh nulo" << endl;
+        return 0;
+    }
+    
+    
+    if (!this->fDecomposed){
+        PZError <<  __PRETTY_FUNCTION__ << "Matriz não decomposta" << endl;
+        return 0;
+    }
+    
+    if (this->fDecomposed != ELUPivot){
+        PZError << __PRETTY_FUNCTION__ << "\nfDecomposed != ELUPivot" << endl;
+    }
+    
+    //    int sgetrs_(char *__trans, __CLPK_integer *__n, __CLPK_integer *__nrhs,
+    //                __CLPK_real *__a, __CLPK_integer *__lda, __CLPK_integer *__ipiv,
+    //                __CLPK_real *__b, __CLPK_integer *__ldb,
+    //                __CLPK_integer *__info) __OSX_AVAILABLE_STARTING(__MAC_10_2,
+    //                                                                 __IPHONE_4_0);
+    int nRows = this->Rows();
+    char notrans = 'N';
+    int BCols = B->Cols();
+    int info = 0;
+    
+    zgetrs_(&notrans,&nRows,&BCols,(__CLPK_doublecomplex*)fElem,&nRows,&fPivot[0],(__CLPK_doublecomplex*)B->fElem,&nRows,&info);
     
 #ifdef PZDEBUG
     if(info != 0)

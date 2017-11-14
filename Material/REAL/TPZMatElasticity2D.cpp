@@ -1006,7 +1006,7 @@ int TPZMatElasticity2D::VariableIndex(const std::string &name)
     if(!strcmp("SigmaY",name.c_str()))						return	4;
     if(!strcmp("SigmaZ",name.c_str()))						return	5;
     if(!strcmp("TauXY",name.c_str()))						return	6;
-    PZError << "TPZMatElasticity2D::VariableIndex Error name : " << name << " not found\n";
+//    PZError << "TPZMatElasticity2D::VariableIndex Error name : " << name << " not found\n";
     
     return TPZMaterial::VariableIndex(name);
 }

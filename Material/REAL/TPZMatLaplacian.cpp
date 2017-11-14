@@ -325,6 +325,7 @@ void TPZMatLaplacian::ContributeBC(TPZMaterialData &data,REAL weight,
 			}
 			break;
 		case 1 :			// Neumann condition
+//            std::cout << " x " << data.x << "\nphi "<<  phi << " " << v2[0] << std::endl;
 			for(in = 0 ; in < phi.Rows(); in++) {
 				ef(in,0) += v2[0] * (STATE)(phi(in,0) * weight);
 			}
@@ -340,7 +341,12 @@ void TPZMatLaplacian::ContributeBC(TPZMaterialData &data,REAL weight,
 	}
     
 	if (this->IsSymetric()) {//only 1.e-3 because of bignumbers.
-		if ( !ek.VerifySymmetry( 1.e-3 ) ) cout << __PRETTY_FUNCTION__ << "\nMATRIZ NAO SIMETRICA" << endl;
+		if ( !ek.VerifySymmetry( 1.e-3 ) )
+        {
+            ek.VerifySymmetry(1.e-3);
+            ek.Print("EK",std::cout);
+            cout << __PRETTY_FUNCTION__ << "\nMATRIZ NAO SIMETRICA" << endl;
+        }
 	}
 }
 
@@ -684,6 +690,7 @@ void TPZMatLaplacian::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
     TPZFMatrix<STATE> dudx(dudxaxes);
     TPZAxesTools<STATE>::Axes2XYZ(dudxaxes, dudx, axes);
     
+    
 	///L2 norm
 	values[1] = (u[0] - u_exact[0])*(u[0] - u_exact[0]);
 	
@@ -692,6 +699,17 @@ void TPZMatLaplacian::Errors(TPZVec<REAL> &x,TPZVec<STATE> &u,
 	for(int i = 0; i < this->fDim; i++){
 		values[2] += (dudx(i,0) - du_exact(i,0))*(dudx(i,0) - du_exact(i,0));
 	}
+#ifdef PZDEBUG2
+    if(fabs(u_exact[0]) > 5.0 || x[0] > 0.8)
+    {
+        std::cout << "x " << x << std::endl;
+        std::cout << "u " << u << std::endl;
+        std::cout << "u_exact " << u_exact << std::endl;
+        dudx.Print("dudx",std::cout);
+        du_exact.Print("du_exact",std::cout);
+        std::cout << "values[2] " << values[2] << std::endl;
+    }
+#endif
 	
 	///H1 norm
 	values[0] = values[1]+values[2];

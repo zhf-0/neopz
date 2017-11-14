@@ -23,13 +23,13 @@ class TPZSBFemVolume : public TPZCompEl
     long fSkeleton;
     
     /// Section of the phi vector associated with this volume element
-    TPZFMatrix<STATE> fPhi;
+    TPZFMatrix<std::complex<double> > fPhi;
     
     /// Eigenvlues associated with the internal shape functions
-    TPZManVector<STATE> fEigenvalues;
+    TPZManVector<std::complex<double> > fEigenvalues;
     
     /// Multiplier coeficients associated with the solution
-    TPZFMatrix<STATE> fCoeficients;
+    TPZFMatrix<std::complex<double> > fCoeficients;
     
     /// vector of local indices of multipliers in the group
     TPZManVector<long> fLocalIndices;
@@ -43,6 +43,11 @@ class TPZSBFemVolume : public TPZCompEl
 public:
     
     TPZSBFemVolume(TPZCompMesh &mesh, TPZGeoEl *gel, long &index);
+    
+    virtual ~TPZSBFemVolume()
+    {
+        Reference()->ResetReference();
+    }
     
     /// Compute the E0, E1 and E2 matrices
     void ComputeKMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1, TPZElementMatrix &E2, TPZElementMatrix &M0);
@@ -185,14 +190,68 @@ public:
     
 
     /// initialize the data structures of the eigenvectors and eigenvalues associated with this volume element
-    void SetPhiEigVal(TPZFMatrix<STATE> &phi, TPZManVector<STATE> &eigval);
+    void SetPhiEigVal(TPZFMatrix<std::complex<double> > &phi, TPZManVector<std::complex<double> > &eigval);
+    
+    TPZFMatrix<std::complex<double> > Phi()
+    {
+        return fPhi;
+    }
+    
+    TPZManVector<std::complex<double> > Eigenvalues()
+    {
+        return fEigenvalues;
+    }
+    
+    TPZFMatrix<std::complex<double> > Coeficients()
+    {
+        return fCoeficients;
+    }
+    
+    TPZFMatrix<double> PhiReal()
+    {
+        long rows = fPhi.Rows(),cols = fPhi.Cols();
+        TPZFMatrix<double> phireal(rows,cols);
+        for(long i=0; i<rows; i++)
+        {
+            for(long j=0; j<cols; j++)
+            {
+                phireal(i,j) = fPhi(i,j).real();
+            }
+        }
+        return phireal;
+    }
+    
+    TPZManVector<double> EigenvaluesReal()
+    {
+        long nel = fEigenvalues.NElements();
+        TPZManVector<double> eig(nel);
+        for(long el=0; el<nel; el++)
+        {
+            eig[el] = fEigenvalues[el].real();
+        }
+        return eig;
+    }
+    
+    TPZFMatrix<double> CoeficientsReal()
+    {
+        long rows = fCoeficients.Rows(),cols = fCoeficients.Cols();
+        TPZFMatrix<double> coefreal(rows,cols);
+        for(long i=0; i<rows; i++)
+        {
+            for(long j=0; j<cols; j++)
+            {
+                coefreal(i,j) = fCoeficients(i,j).real();
+            }
+        }
+        return coefreal;
+    }
     
     /** @brief Loads the solution within the internal data structure of the element */
     /**
      * Is used to initialize the solution of connect objects with dependency. \n
      * Is also used to load the solution within SuperElements
      */
-    virtual void LoadCoef(TPZFMatrix<STATE> &coef);
+    virtual void LoadCoef(TPZFMatrix<std::complex<double> > &coef);
     
     /**
      * @brief Computes solution and its derivatives in the local coordinate qsi.
@@ -203,6 +262,9 @@ public:
      */
     virtual void ComputeSolution(TPZVec<REAL> &qsi,
                                  TPZSolVec &sol, TPZGradSolVec &dsol,TPZFMatrix<REAL> &axes);
+    
+    void EvaluateError(void (* /*fp*/)(const TPZVec<REAL> &loc,TPZVec<STATE> &val,TPZFMatrix<STATE> &deriv),
+                       TPZVec<REAL> &/*errors*/,TPZBlock<REAL> * /*flux*/);
     
 
     /**
@@ -227,11 +289,21 @@ public:
         out << "Group Element Index " << fElementGroupIndex << std::endl;
         out << "Skeleton Element Index " << fSkeleton << std::endl;
         out << "Local Indices " << fLocalIndices << std::endl;
-        out << "Coeficients ";
         fCoeficients.Print("Coef =",out,EMathematicaInput);
-        out << "Displacement Eigenvectors\n";
         fPhi.Print("Phi = ",out,EMathematicaInput);
-        
+        if (fCoeficients.Rows())
+        {
+            TPZManVector<std::complex<double>,5> prod(fPhi.Rows(),0.);
+            for (int i=0; i<fPhi.Rows(); i++) {
+                for (int j=0; j<fPhi.Cols(); j++) {
+                    prod[i] += fPhi.GetVal(i,j)*fCoeficients.GetVal(j,0);
+                }
+            }
+            out << "Values at border " << prod << std::endl;
+        }
+        for (int i=0; i<NConnects(); i++) {
+            Connect(i).Print(*Mesh(),out);
+        }
     }
     
     void CreateGraphicalElement(TPZGraphMesh &, int);

@@ -621,7 +621,7 @@ void TPZAnalysis::ShowShape(const std::string &plotfile, TPZVec<long> &equationi
         fSolution(equationindices[ieq],0) = 1.;
         LoadSolution();
         Mesh()->TransferMultiphysicsSolution();
-        PostProcess(porder+1);
+        PostProcess(4);
         fSolution.Zero();
     }
     fSolution = solkeep;
