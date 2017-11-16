@@ -1,3 +1,4 @@
+
 # - Try to find SLEPC
 # Once done this will define
 #
@@ -59,6 +60,11 @@ if (SLEPC_VERSION)
   list(GET VERSION_LIST 2 SLEPC_VERSION_SUBMINOR)
 endif()
 
+if (MPI_CXX_FOUND)
+  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_CXX_INCLUDE_PATH})
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${MPI_CXX_LIBRARIES})
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
+endif()
 # Configure SLEPc IMPORT (this involves creating an 'imported' target
 # and attaching 'properties')
 if (SLEPC_FOUND AND NOT TARGET SLEPC::slepc)
@@ -71,7 +77,8 @@ if (SLEPC_FOUND AND NOT TARGET SLEPC::slepc)
   # Add libraries
   unset(_libs)
   foreach (lib ${SLEPC_LIBRARIES})
-    find_library(LIB_${lib} NAMES ${lib} PATHS ${SLEPC_LIBRARY_DIRS} NO_DEFAULT_PATH)
+    #find_library(LIB_${lib} NAMES ${lib} PATHS ${SLEPC_LIBRARY_DIRS} NO_DEFAULT_PATH)
+    find_library(LIB_${lib} ${lib} HINTS ${SLEPC_LIBRARY_DIRS})
     list(APPEND _libs ${LIB_${lib}})
   endforeach()
   set_property(TARGET SLEPC::slepc PROPERTY INTERFACE_LINK_LIBRARIES "${_libs}")
@@ -108,19 +115,12 @@ int main()
   ierr = SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);
   EPS eps;
   ierr = EPSCreate(PETSC_COMM_SELF, &eps); CHKERRQ(ierr);
-  //ierr = EPSSetFromOptions(eps); CHKERRQ(ierr);
+  ierr = EPSSetFromOptions(eps); CHKERRQ(ierr);
   ierr = EPSDestroy(&eps); CHKERRQ(ierr);
   ierr = SlepcFinalize(); CHKERRQ(ierr);
   return 0;
 }
 ")
-
-  # Add MPI variables if MPI has been found
-  if (MPI_CXX_FOUND)
-    set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_CXX_INCLUDE_PATH})
-    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${MPI_CXX_LIBRARIES})
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
-  endif()
   # Try to run test program (shared linking)
   try_run(
     SLEPC_TEST_LIB_EXITCODE
@@ -129,8 +129,7 @@ int main()
     ${SLEPC_TEST_LIB_CPP}
     CMAKE_FLAGS
     "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}"
-    "-DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES}"
-    LINK_LIBRARIES PETSC::petsc SLEPC::slepc
+    LINK_LIBRARIES PETSC::petsc SLEPC::slepc ${CMAKE_REQUIRED_LIBRARIES}
     COMPILE_OUTPUT_VARIABLE SLEPC_TEST_LIB_COMPILE_OUTPUT
     RUN_OUTPUT_VARIABLE SLEPC_TEST_LIB_OUTPUT
     )
@@ -142,7 +141,10 @@ int main()
     # Static libraries not required, so unset
 
   else()
-
+    #set(SLEPC_LOG_1 "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/slepc_log_1.err")
+    #set(SLEPC_LOG_2 "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/slepc_log_2.err")
+    #file(WRITE ${SLEPC_LOG_1} ${SLEPC_TEST_LIB_COMPILE_OUTPUT})
+    #file(WRITE ${SLEPC_LOG_2} ${SLEPC_TEST_LIB_OUTPUT})
     message(STATUS "Test SLEPC_TEST_RUNS with shared library linking - Failed")
     # Try to run test program (static linking)
     try_run(
@@ -153,16 +155,19 @@ int main()
       CMAKE_FLAGS
       "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}"
       "-DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES}"
-      LINK_LIBRARIES PETSC::petsc SLEPC::slepc_static
+      LINK_LIBRARIES PETSC::petsc SLEPC::slepc_static ${CMAKE_REQUIRED_LIBRARIES}
       COMPILE_OUTPUT_VARIABLE SLEPC_TEST_STATIC_LIBS_COMPILE_OUTPUT
       RUN_OUTPUT_VARIABLE SLEPC_TEST_STATIC_LIBS_OUTPUT
       )
-
-    if (SLEPC_TEST_STATIC_LIBS_COMPILED AND SLEPC_TEST_STATIC_LIBS_EXITCODE EQUAL 0)
       message(STATUS "Test SLEPC_TEST__RUNS with static linking - Success")
       set(SLEPC_TEST_RUNS TRUE)
     else()
-      message(STATUS "Test SLEPC_TETS_RUNS with static linking - Failed")
+      # set(SLEPC_LOG_3 "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/slepc_log_3.err")
+      # set(SLEPC_LOG_4 "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/slepc_log_4.err")
+      # file(WRITE ${SLEPC_LOG_3} ${SLEPC_TEST_STATIC_LIBS_COMPILE_OUTPUT})
+      # file(WRITE ${SLEPC_LOG_4} ${SLEPC_TEST_STATIC_LIBS_OUTPUT})
+      if (SLEPC_TEST_STATIC_LIBS_COMPILED AND SLEPC_TEST_STATIC_LIBS_EXITCODE EQUAL 0)
+        message(STATUS "Test SLEPC_TETS_RUNS with static linking - Failed")
       set(SLEPC_TEST_RUNS FALSE)
     endif()
   endif()
