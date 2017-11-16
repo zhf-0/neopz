@@ -309,7 +309,7 @@ if(USING_MKL)
 		# the MKL library. It is located in the bin folder 				  #
 		# inside your mkl install dir (on macOS it is /opt/intel/mkl/bin) #
 		###################################################################
-    	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for")
+    	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
 	find_package(MKL REQUIRED)
 	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
@@ -329,7 +329,7 @@ if(USING_PETSC)
 		###################################################################
 		# 				WRITE DOCUMENTATION FOR PETSC_DIR 			      #
 		###################################################################
-    	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for")
+    	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
 	set(ENV{BLA_VENDOR} "OpenBLAS")
 	find_package(PETSc REQUIRED)
@@ -340,7 +340,7 @@ if(USING_SLEPC)
 		###################################################################
 		# 				WRITE DOCUMENTATION FOR SLEPC_DIR 			      #
 		###################################################################
-    	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for")
+    	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
 	find_package(SLEPc REQUIRED)
 endif(USING_SLEPC)
