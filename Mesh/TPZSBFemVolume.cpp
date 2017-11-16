@@ -41,19 +41,20 @@ void TPZSBFemVolume::ComputeKMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1
     CSkeleton->InitializeElementMatrix(M0, efmat);
     
     TPZGeoEl *Ref1D = CSkeleton->Reference();
+    int dim1 = Ref1D->Dimension();
     
     int matid = Ref2D->MaterialId();
-    int dimension = Ref2D->Dimension();
+    int dim2 = Ref2D->Dimension();
     
     // find the first face side
     int nsides = Ref2D->NSides();
     int is;
-    for (is=nsides-1; is>0; is--) {
-        if (Ref2D->SideDimension(is) < dimension-1) {
+    for (is=0; is<nsides; is++) {
+        if (Ref2D->SideDimension(is) == dim1) {
             break;
         }
     }
-    int faceside = is+1;
+    int faceside = is;
     
     TPZGeoElSide thisside(Ref2D,faceside);
     
@@ -66,7 +67,7 @@ void TPZSBFemVolume::ComputeKMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1
     
     TPZGeoElSide SkeletonSide(Ref1D,Ref1D->NSides()-1);
     
-    TPZTransform tr(2, 1);
+    TPZTransform tr(dim2, dim1);
     tr = SkeletonSide.NeighbourSideTransform(thisside);
     TPZTransform t2 = Ref2D->SideToSideTransform(thisside.Side(), Ref2D->NSides()-1);
     tr = t2.Multiply(tr);
@@ -79,19 +80,19 @@ void TPZSBFemVolume::ComputeKMatrices(TPZElementMatrix &E0, TPZElementMatrix &E1
     CSkeleton->InitMaterialData(data2d);
     int nshape = data2d.phi.Rows();
     data2d.phi.Redim(nshape*2, 1);
-    data2d.dphi.Redim(2, 2*nshape);
-    data2d.dphix.Redim(2, 2*nshape);
-    data2d.dsol[0].Redim(2,2);
+    data2d.dphi.Redim(dim2, 2*nshape);
+    data2d.dphix.Redim(dim2, 2*nshape);
+    data2d.dsol[0].Redim(dim2,nstate);
     
     TPZFNMatrix<200,STATE> ek(nshape*nstate*2,nshape*nstate*2,0.), ef(nshape*nstate*2,1,0.);
     int npoint = intpoints.NPoints();
     for (int ip = 0; ip<npoint; ip++)
     {
-        TPZManVector<REAL,3> xi(1), xiquad(2);
+        TPZManVector<REAL,3> xi(dim1), xiquad(dim2);
         REAL weight;
         intpoints.Point(ip, xi, weight);
         tr.Apply(xi, xiquad);
-        TPZFNMatrix<9,REAL> jacobian(1,1),axes(1,3),jacinv(1,1);
+        TPZFNMatrix<9,REAL> jacobian(dim1,dim1),axes(dim1,3),jacinv(dim1,dim1);
         REAL detjac;
         Ref1D->Jacobian(xi,jacobian,axes,detjac,jacinv);
         Ref2D->Jacobian(xiquad, data2d.jacobian, data2d.axes, data2d.detjac, data2d.jacinv);
@@ -274,7 +275,7 @@ void TPZSBFemVolume::ComputeSolution(TPZVec<REAL> &qsi,
     }
     
     // tototototot
-//    std::cout << "Solution " << sol[0] << std::endl;
+//    std::cout << "qsi " << qsi << " Solution " << sol[0] << std::endl;
 //    dsol[0].Print("DSol",std::cout);
 }
 

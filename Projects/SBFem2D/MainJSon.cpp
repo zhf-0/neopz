@@ -160,10 +160,9 @@ void export_to_json(const std::vector<std::vector<double>> &coor,
 	myfile << out.dump();
 	myfile.close();
 }
-void rect_mesh() {
-	double eleSize = 5.0;
-	int numEleHor = 10;
-	int numEleVer = 5;
+void rect_mesh(int numEleVer, double vert_domainsize) {
+	double eleSize = vert_domainsize/numEleVer;
+	int numEleHor = numEleVer*2;
 	// generating grid points
 	std::vector<std::vector<double>> coor;
 	for (int i = 0; i <= numEleHor * 2; i++) {
@@ -354,7 +353,9 @@ void tutorial() {	// Explain how to read data from a given json file.
 
 int mainJSon() {
 	//tutorial();
-	rect_mesh();
+    int numver_el = 5;
+    double domain_vertsize = 25.;
+	rect_mesh(numver_el,domain_vertsize);
     return 0;
 }
 

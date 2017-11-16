@@ -11,9 +11,13 @@
 #include "TPZSBFemElementGroup.h"
 #include "pzcompel.h"
 #include "tpzgeoblend.h"
+#include "TPZGeoLinear.h"
 
 #include "tpzgeoelrefpattern.h"
 
+#ifdef LOG4CXX
+static LoggerPtr logger(Logger::getLogger("pz.mesh.tpzbuildsbfem"));
+#endif
 
 /// standard configuration means each element is a partition and a center node is created
 void TPZBuildSBFem::StandardConfiguration()
@@ -129,6 +133,18 @@ void TPZBuildSBFem::BuildComputationMesh(TPZCompMesh &cmesh)
     CreateElementGroups(cmesh);
     
 }
+
+/// add the sbfem elements to the computational mesh, the material should exist in cmesh
+void TPZBuildSBFem::BuildComputationMesh(TPZCompMesh &cmesh, const std::set<int> &volmatids, const std::set<int> &boundmatids)
+{
+    // create the boundary elements
+    cmesh.ApproxSpace().SetAllCreateFunctionsContinuous();
+    cmesh.AutoBuild(boundmatids);
+    CreateVolumetricElements(cmesh,volmatids);
+    CreateElementGroups(cmesh);
+
+}
+
 
 
 /// create the geometric skeleton elements
@@ -302,6 +318,143 @@ void TPZBuildSBFem::CreateVolumetricElements(TPZCompMesh &cmesh)
     cmesh.AutoBuild(matidstarget);
 }
 
+/// create geometric volumetric elements for all elements with the matid
+void TPZBuildSBFem::CreateVolumetricElements(TPZCompMesh &cmesh, const std::set<int> &matids)
+{
+    TPZGeoMesh *gmesh = cmesh.Reference();
+    gmesh->ResetReference();
+    int dim = gmesh->Dimension();
+    cmesh.LoadReferences();
+    std::set<int> matidsorig,matidstarget;
+    for (std::map<int,int>::iterator it = fMatIdTranslation.begin(); it!= fMatIdTranslation.end(); it++) {
+        long mat = it->second;
+        if(matids.find(mat) != matids.end())
+        {
+            matidsorig.insert(it->first);
+        }
+    }
+    long nel = gmesh->NElements();
+    for (long el=0; el<nel; el++) {
+        TPZGeoEl *gel = gmesh->Element(el);
+        if (!gel || gel->HasSubElement() || gel->Reference()) {
+            continue;
+        }
+        if (fElementPartition[el] == -1) {
+            continue;
+        }
+        if (matidsorig.find(gel->MaterialId()) == matidsorig.end()) {
+            continue;
+        }
+        int nsides = gel->NSides();
+        int geldim = gel->Dimension();
+        for (int is = 0; is<nsides; is++) {
+            if (gel->SideDimension(is) != geldim-1) {
+                continue;
+            }
+            // we only create an SBFem volume element if it is connected to a skeleton element?
+            TPZStack<TPZCompElSide> celstack;
+            TPZGeoElSide gelside(gel,is);
+            int onlyinterpolated = true;
+            int removeduplicates = true;
+            gelside.EqualorHigherCompElementList2(celstack, onlyinterpolated, removeduplicates);
+            int ncelstack = celstack.NElements();
+            for (int icel=0; icel<ncelstack; icel++) {
+                TPZGeoElSide subgelside = celstack[icel].Reference();
+                // we are only interested in faces
+                if (subgelside.Dimension() != geldim-1) {
+                    continue;
+                }
+                int nnodes = subgelside.NSideNodes();
+                if (nnodes != 2) {
+                    std::cout << "Please extend the code to higher dimensions\n";
+                }
+                TPZManVector<long,4> Nodes(nnodes*2,-1);
+                int matid = fMatIdTranslation[gel->MaterialId()];
+                long index;
+                for (int in=0; in<nnodes; in++) {
+                    Nodes[in] = subgelside.SideNodeIndex(in);
+                }
+                int elpartition = fElementPartition[el];
+                for (int in=nnodes; in < nnodes*2; in++) {
+                    Nodes[in] = fPartitionCenterNode[elpartition];
+                }
+                MElementType targettype = ENoType;
+                switch (nnodes) {
+                    case 2:
+                        targettype = EQuadrilateral;
+                        break;
+                    case 1:
+                        targettype = EOned;
+                        break;
+                    case 3:
+                        targettype = EPrisma;
+                        break;
+                    case 4:
+                        targettype = ECube;
+                        break;
+                        
+                    default:
+                        DebugStop();
+                        break;
+                }
+                if (subgelside.IsLinearMapping())
+                {
+                    gmesh->CreateGeoElement(targettype, Nodes, matid, index);
+#ifdef LOG4CXX
+                    if(logger->isDebugEnabled())
+                    {
+                        std::stringstream sout;
+                        sout << "Created element of type " << targettype << " with nodes " << Nodes << " index " << index;
+                        LOGPZ_DEBUG(logger, sout.str())
+                    }
+#endif
+                }
+                else
+                {
+                    long elementid = gmesh->NElements()+1;
+                    TPZGeoEl *gblend = 0;
+                    switch (targettype) {
+                        case EOned:
+                            gblend = gmesh->CreateGeoElement(targettype, Nodes, matid, index);
+                            break;
+                        case EQuadrilateral:
+                            gblend = new TPZGeoElRefPattern< pzgeom::TPZGeoBlend<pzgeom::TPZGeoQuad> > (Nodes, matid, *gmesh,index);
+                            break;
+                        case EPrisma:
+                            gblend = new TPZGeoElRefPattern< pzgeom::TPZGeoBlend<pzgeom::TPZGeoPrism> > (Nodes, matid, *gmesh,index);
+                            break;
+                        case ECube:
+                            gblend = new TPZGeoElRefPattern< pzgeom::TPZGeoBlend<pzgeom::TPZGeoCube> > (Nodes, matid, *gmesh,index);
+                            break;
+                        default:
+                            DebugStop();
+                            break;
+                    }
+#ifdef LOG4CXX
+                    if(logger->isDebugEnabled())
+                    {
+                        std::stringstream sout;
+                        sout << "Created element of type " << targettype << " with nodes " << Nodes << " index " << index;
+                        LOGPZ_DEBUG(logger, sout.str())
+                    }
+#endif
+
+                    
+                }
+                if (index >= fElementPartition.size()) {
+                    fElementPartition.resize(index+1);
+                }
+                fElementPartition[index] = elpartition;
+            }
+        }
+    }
+    gmesh->BuildConnectivity();
+    cmesh.ApproxSpace().SetAllCreateFunctionsSBFem(dim);
+    cmesh.AutoBuild(matids);
+
+}
+
+
 /// put the sbfem volumetric elements in element groups
 void TPZBuildSBFem::CreateElementGroups(TPZCompMesh &cmesh)
 {
@@ -328,9 +481,22 @@ void TPZBuildSBFem::CreateElementGroups(TPZCompMesh &cmesh)
         if (sbfem) {
             TPZGeoEl *gel = sbfem->Reference();
             long gelindex = gel->Index();
-            TPZGeoElSide gelside(gel,4);
+            int side = -1;
+            if (gel->Type() == EQuadrilateral) {
+                side = 4;
+            }
+            else if(gel->Type() == EOned)
+            {
+                side = 0;
+            }
+            else
+            {
+                DebugStop();
+            }
+            TPZGeoElSide gelside(gel,side);
+            int geldim = gel->Dimension();
             TPZGeoElSide neighbour = gelside.Neighbour();
-            while (neighbour != gelside && (neighbour.Element()->Dimension() != dim-1 || !neighbour.Element()->Reference())) {
+            while (neighbour != gelside && (neighbour.Element()->Dimension() != geldim-1 || !neighbour.Element()->Reference())) {
                 neighbour = neighbour.Neighbour();
             }
             if (neighbour == gelside) {
@@ -389,6 +555,39 @@ void TPZBuildSBFem::DivideSkeleton(int nref)
         for (long el=0; el<nel; el++) {
             TPZGeoEl *gel = elvec[el];
             if (!gel || gel->HasSubElement()) {
+                continue;
+            }
+            if (gel->Dimension() != dim-1) {
+                continue;
+            }
+            TPZManVector<TPZGeoEl *,10> subel;
+            gel->Divide(subel);
+        }
+    }
+}
+
+/// Divide de skeleton elements
+void TPZBuildSBFem::DivideSkeleton(int nref, const std::set<int> &volmatids)
+{
+    std::set<int> exclude;
+    for (auto it = fMatIdTranslation.begin(); it != fMatIdTranslation.end(); it++) {
+        if(volmatids.find(it->second) != volmatids.end())
+        {
+            exclude.insert(it->first);
+        }
+    }
+    int dim = fGMesh->Dimension();
+    for (int ir=0; ir<nref; ir++)
+    {
+        TPZAdmChunkVector<TPZGeoEl *> elvec = fGMesh->ElementVec();
+        long nel = elvec.NElements();
+        for (long el=0; el<nel; el++) {
+            TPZGeoEl *gel = elvec[el];
+            if (!gel || gel->HasSubElement()) {
+                continue;
+            }
+            // skip the elements with matid volmatids
+            if (exclude.find(gel->MaterialId()) != exclude.end()) {
                 continue;
             }
             if (gel->Dimension() != dim-1) {

@@ -29,7 +29,7 @@
 
 
 #ifndef STATE_COMPLEX
-#include "pzmathyperelastic.h"
+//#include "pzmathyperelastic.h"
 #endif
 
 #include <stdio.h>
@@ -103,7 +103,8 @@ int TPZSubCompMesh::main() {
 	TPZCompMesh mesh(&geo);
 	
 	// Insert the materials
-	TPZMaterial * meumat = new TPZMatHyperElastic(1,1.e5,0.25);
+    TPZMaterial * meumat = 0;//new TPZMatHyperElastic(1,1.e5,0.25);
+    DebugStop();
 	mesh.InsertMaterialObject(meumat);
 	
 	//int numeq;

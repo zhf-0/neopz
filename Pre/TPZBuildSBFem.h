@@ -28,10 +28,10 @@ class TPZBuildSBFem
     int fSkeletonMatId;
     
     /// partition to which each element belongs
-    TPZVec<long> fElementPartition;
+    TPZManVector<long> fElementPartition;
     
     /// center node id for each partition
-    TPZVec<long> fPartitionCenterNode;
+    TPZManVector<long> fPartitionCenterNode;
     
 public:
     
@@ -63,9 +63,15 @@ public:
     /// add the sbfem elements to the computational mesh, the material should exist in cmesh
     void BuildComputationMesh(TPZCompMesh &cmesh);
     
+    /// add the sbfem elements to the computational mesh, the material should exist in cmesh
+    void BuildComputationMesh(TPZCompMesh &cmesh, const std::set<int> &volmatids, const std::set<int> &boundmatids);
+    
     /// Divide de skeleton elements
     void DivideSkeleton(int nref);
-    
+
+    /// Divide de skeleton elements - elements of dimension dim-1 which are not in volmatids
+    void DivideSkeleton(int nref, const std::set<int> &volmatids);
+
 private:
     /// create the geometric skeleton elements
     void AddSkeletonElements();
@@ -75,6 +81,9 @@ private:
     
     /// create geometric volumetric elements
     void CreateVolumetricElements(TPZCompMesh &cmesh);
+    
+    /// create geometric volumetric elements for all elements with the matid
+    void CreateVolumetricElements(TPZCompMesh &cmesh, const std::set<int> &matids);
     
     /// put the sbfem volumetric elements in element groups
     void CreateElementGroups(TPZCompMesh &cmesh);

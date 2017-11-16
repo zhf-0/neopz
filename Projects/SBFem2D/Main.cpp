@@ -2,6 +2,8 @@
 #include <config.h>
 #endif
 
+#include "Common.h"
+
 #include "pzvec.h"
 #include "pzstack.h"
 #include "pzfmatrix.h"
@@ -25,10 +27,6 @@
 
 #include "pzanalysis.h"
 
-#include "TPZParSkylineStructMatrix.h"
-#include "pzstepsolver.h"
-#include "pzstrmatrix.h"
-
 #include "pzelasmat.h"
 #include "pzmultiphysicselement.h"
 #include "pzmultiphysicscompel.h"
@@ -42,7 +40,6 @@
 #include "pzelementgroup.h"
 #include "pzcondensedcompel.h"
 #include "TPZInterfaceEl.h"
-#include "TPZMultiPhysicsinterfaceEl.h"
 #include "TPZSBFemVolume.h"
 #include "TPZSBFemElementGroup.h"
 
@@ -71,32 +68,8 @@ static LoggerPtr logger(Logger::getLogger("pz.sbfem"));
 #endif
 
 
-//	This Solve Different analysis
-void SolveSist(TPZAnalysis *an, TPZCompMesh *fCmesh);
-
-//	These are tools for spatial and polynomial refinement and Postprocess of solutions
-void PostProcessElasticity(TPZAnalysis &an, std::string plotfile);
-
-/// create the 1d skeleton geometric elements
-void AddSkeletonElements(TPZAutoPointer<TPZGeoMesh> gmesh);
-
-/// create the collapsed volume elements
-/// groupval : geometric element index to which a collapsed element belongs
-void AddCollapsedVolumeElements(TPZAutoPointer<TPZGeoMesh> gmesh, TPZVec<long> &groupval);
-
-/// create the 1d skeleton elements
-TPZCompMesh * ComputationalSkeletonMesh(TPZAutoPointer<TPZGeoMesh> & gmesh,int pOrder);
-
-/// insert material objects in the computational mesh
-void InsertMaterialObjects(TPZCompMesh *cmesh, int problemtype);
-
-// Condense the internal degrees of freedom
-void CondenseInternalEquations(TPZCompMesh *mphysics);
-
 /// Define a rotation tensor which will be applied to the boundary conditions and mesh coordinates
 TPZFNMatrix<9,REAL> gRotate(3,3,0.);
-
-enum MMATID {Enomat, Emat1, Emat2, Emat3, Emat4, Ebc1, Ebc2, Ebc3, Ebc4, Ewrap, ESkeleton, EInterfaceMat1, EInterfaceMat2, EGroup};
 
 void OneTriangle(TPZAutoPointer<TPZGeoMesh> gmesh)
 {
@@ -147,24 +120,6 @@ void OneQuad(TPZAutoPointer<TPZGeoMesh> gmesh)
     gel->CreateBCGeoEl(7, 4);
 }
 
-void HarmonicNeumannLeft(const TPZVec<REAL> &x, TPZVec<STATE> &val)
-{
-    val[0] = -M_PI*exp(M_PI*x[0])*sin(M_PI*x[1]);
-}
-
-void HarmonicNeumannRight(const TPZVec<REAL> &x, TPZVec<STATE> &val)
-{
-    val[0] = M_PI*exp(M_PI*x[0])*sin(M_PI*x[1]);
-}
-
-void Harmonic_exact(const TPZVec<REAL> &xv, TPZVec<STATE> &val, TPZFMatrix<STATE> &deriv)
-{
-    val[0] = exp(M_PI*xv[0])*sin(M_PI*xv[1]);
-    deriv(0,0) = M_PI*val[0];
-    deriv(1,0) = M_PI*exp(M_PI*xv[0])*cos(M_PI*xv[1]);
-    
-}
-
 REAL mult[] = {10./45.,9./45.,8./45.,7./45.,6./45.,5./45.};
 
 void SingularNeumann(const TPZVec<REAL> &x, TPZVec<STATE> &val)
@@ -189,7 +144,7 @@ void Singular_exact(const TPZVec<REAL> &x, TPZVec<STATE> &val, TPZFMatrix<STATE>
     if (theta<0.) {
         theta += 2.*M_PI;
     }
-
+    
     val[0] = 0;
     deriv.Zero();
     for (int i=0; i<6; i++) {
@@ -198,7 +153,7 @@ void Singular_exact(const TPZVec<REAL> &x, TPZVec<STATE> &val, TPZFMatrix<STATE>
         deriv(0,0) += mult[i]*(Lambda*pow(r,Lambda-2.)*x[0]*cos(Lambda*theta)+pow(r,Lambda-2)*(Lambda)*sin(Lambda*theta)*(x[1]));
         deriv(1,0) += mult[i]*(Lambda*pow(r,Lambda-2.)*x[1]*cos(Lambda*theta)-pow(r,Lambda-2)*(Lambda)*sin(Lambda*theta)*(x[0]));
     }
-
+    
     
 }
 
@@ -235,8 +190,8 @@ void Displacement(const TPZVec<REAL> &xv, TPZVec<STATE> &result)
     // apply the rotation transposed
     REAL x = gRotate(0,0)*xv[0]+gRotate(1,0)*xv[1];
     REAL y = gRotate(0,1)*xv[0]+gRotate(1,1)*xv[1];
-//2    result[0] = exp(x-y)*(1.-x)*x*(1.-y)*y;
-//2    result[1] = sin(M_PI*x)*sin(M_PI*y);
+    //2    result[0] = exp(x-y)*(1.-x)*x*(1.-y)*y;
+    //2    result[1] = sin(M_PI*x)*sin(M_PI*y);
     result[0] = gRotate(0,0)*x;
     result[1] = gRotate(1,0)*x;
     
@@ -252,8 +207,8 @@ void Force(const TPZVec<REAL> &xv, TPZVec<STATE> &result)
     REAL Lambda = 1.;
     
     
-//2    result[0]=exp(x-y)*x*(-1.+y)*(G*(4-4.*x+5*y+3*x*y)+(3+x)*y*Lambda)+M_PI*M_PI*(G+Lambda)*cos(M_PI*x)*cos(M_PI*y);
-//2    result[1] = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*(G+Lambda)-M_PI*M_PI*(3*G+Lambda)*sin(M_PI*x)*sin(M_PI*y);
+    //2    result[0]=exp(x-y)*x*(-1.+y)*(G*(4-4.*x+5*y+3*x*y)+(3+x)*y*Lambda)+M_PI*M_PI*(G+Lambda)*cos(M_PI*x)*cos(M_PI*y);
+    //2    result[1] = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*(G+Lambda)-M_PI*M_PI*(3*G+Lambda)*sin(M_PI*x)*sin(M_PI*y);
     result[0] = 0;
     result[1] = 0;
 }
@@ -273,7 +228,7 @@ void Exact_Sol(const TPZVec<REAL> &xv, TPZVec<STATE> &val, TPZFMatrix<STATE> &de
     deriv.Zero();
     val[0] = x;
     val[1] = 0;
-
+    
     if(y<0.5)
     {
         G = 0.5;
@@ -314,30 +269,30 @@ void Exact_Sol(const TPZVec<REAL> &xv, TPZVec<STATE> &val, TPZFMatrix<STATE> &de
     //    deriv(1,5) = 27.;
     /* 1111111111111 */
     /* 2222222222222
-    val[0] = exp(x-y)*(1.-x)*x*(1.-y)*y;
-    val[1] = sin(M_PI*x)*sin(M_PI*y);
-    
-    val[2] = (2.*G+Lambda)*exp(x-y)*(-1.+x+x*x)*(-1.+y)*y+M_PI*cos(M_PI*y)*sin(M_PI*x);
-    val[3] = G*(-exp(x-y)*(-1.+x)*x*(1.+(-3.+y)*y)+M_PI*cos(M_PI*x)*sin(M_PI*y));
-    val[4] = val[3];
-    val[5] = exp(x-y)*(-1.+x+x*x)*(-1.+y)*y*Lambda+(2.*G+Lambda)*M_PI*cos(M_PI*y)*sin(M_PI*x);
-    
-    deriv(0,0) = exp(x-y)*(-1.+x+x*x)*(-1.+y)*y;
-    deriv(1,0) = -exp(x-y)*(-1+x)*x*(1.-3.*y+y*y);
-    
-    deriv(0,1) = M_PI*cos(M_PI*x)*sin(M_PI*y);
-    deriv(1,1) = M_PI*cos(M_PI*y)*sin(M_PI*x);
-    
-    deriv(0,2) = exp(x-y)*x*(3.+x)*(-1.+y)*y*(2.*G+Lambda)+M_PI*M_PI*Lambda*cos(M_PI*x)*cos(M_PI*y);
-    deriv(0,5) = exp(x-y)*x*(3.+x)*(-1.+y)*y*Lambda + M_PI*M_PI*(2.*G+Lambda)*cos(M_PI*x)*cos(M_PI*y);
-    deriv(0,3) = -exp(x-y)*G*(-1.+x+x*x)*(1.+(-3.+y)*y)-G*M_PI*M_PI*sin(M_PI*x)*sin(M_PI*y);
-    deriv(0,4) = deriv(0,3);
-    
-    deriv(1,2) = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*(2.*G+Lambda)-M_PI*M_PI*Lambda*sin(M_PI*x)*sin(M_PI*y);
-    deriv(1,5) = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*Lambda-M_PI*M_PI*(2.*G+Lambda)*sin(M_PI*x)*sin(M_PI*y);
-    deriv(1,3) = exp(x-y)*G*(-1.+x)*x*(-4.+y)*(-1.+y)+G*M_PI*M_PI*cos(M_PI*x)*cos(M_PI*y);
-    deriv(1,4) = deriv(1,3);
-    22222222222222 */
+     val[0] = exp(x-y)*(1.-x)*x*(1.-y)*y;
+     val[1] = sin(M_PI*x)*sin(M_PI*y);
+     
+     val[2] = (2.*G+Lambda)*exp(x-y)*(-1.+x+x*x)*(-1.+y)*y+M_PI*cos(M_PI*y)*sin(M_PI*x);
+     val[3] = G*(-exp(x-y)*(-1.+x)*x*(1.+(-3.+y)*y)+M_PI*cos(M_PI*x)*sin(M_PI*y));
+     val[4] = val[3];
+     val[5] = exp(x-y)*(-1.+x+x*x)*(-1.+y)*y*Lambda+(2.*G+Lambda)*M_PI*cos(M_PI*y)*sin(M_PI*x);
+     
+     deriv(0,0) = exp(x-y)*(-1.+x+x*x)*(-1.+y)*y;
+     deriv(1,0) = -exp(x-y)*(-1+x)*x*(1.-3.*y+y*y);
+     
+     deriv(0,1) = M_PI*cos(M_PI*x)*sin(M_PI*y);
+     deriv(1,1) = M_PI*cos(M_PI*y)*sin(M_PI*x);
+     
+     deriv(0,2) = exp(x-y)*x*(3.+x)*(-1.+y)*y*(2.*G+Lambda)+M_PI*M_PI*Lambda*cos(M_PI*x)*cos(M_PI*y);
+     deriv(0,5) = exp(x-y)*x*(3.+x)*(-1.+y)*y*Lambda + M_PI*M_PI*(2.*G+Lambda)*cos(M_PI*x)*cos(M_PI*y);
+     deriv(0,3) = -exp(x-y)*G*(-1.+x+x*x)*(1.+(-3.+y)*y)-G*M_PI*M_PI*sin(M_PI*x)*sin(M_PI*y);
+     deriv(0,4) = deriv(0,3);
+     
+     deriv(1,2) = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*(2.*G+Lambda)-M_PI*M_PI*Lambda*sin(M_PI*x)*sin(M_PI*y);
+     deriv(1,5) = -exp(x-y)*(-1.+x+x*x)*(1.+(-3.+y)*y)*Lambda-M_PI*M_PI*(2.*G+Lambda)*sin(M_PI*x)*sin(M_PI*y);
+     deriv(1,3) = exp(x-y)*G*(-1.+x)*x*(-4.+y)*(-1.+y)+G*M_PI*M_PI*cos(M_PI*x)*cos(M_PI*y);
+     deriv(1,4) = deriv(1,3);
+     22222222222222 */
 }
 
 TPZCompMesh *SetupRegularProblem(int nelx, int nrefskeleton, int porder)
@@ -351,7 +306,7 @@ TPZCompMesh *SetupRegularProblem(int nelx, int nrefskeleton, int porder)
     x1[2] = 0.;
     TPZManVector<int,4> nx(2,nelx);
     TPZGenGrid gengrid(nx,x0,x1);
-    gengrid.SetElementType(EQuadrilateral);
+    gengrid.SetElementType(ETriangle);
     TPZAutoPointer<TPZGeoMesh> gmesh = new TPZGeoMesh;
     
     //        OneQuad(gmesh);
@@ -375,21 +330,23 @@ TPZCompMesh *SetupRegularProblem(int nelx, int nrefskeleton, int porder)
     SBFem->SetDefaultOrder(porder);
     
     // problemtype - 1 laplace equation
-    int problemtype  = 1;
+    int problemtype  = 0;
     InsertMaterialObjects(SBFem,problemtype);
+    if(problemtype == 1)
     {
         TPZMaterial *BCond2 = SBFem->FindMaterial(Ebc2);
         TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(HarmonicNeumannRight);
         TPZAutoPointer<TPZFunction<STATE> > autodummy = dummy;
         BCond2->SetForcingFunction(autodummy);
     }
+    if(problemtype == 1)
     {
         TPZMaterial *BCond4 = SBFem->FindMaterial(Ebc4);
         TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(HarmonicNeumannLeft);
         TPZAutoPointer<TPZFunction<STATE> > autodummy = dummy;
         BCond4->SetForcingFunction(autodummy);
     }
-
+    
     
     build.BuildComputationMesh(*SBFem);
     
@@ -434,7 +391,7 @@ TPZCompMesh *SetupOneArc(int numrefskeleton, int porder)
     nodeindex[2] = 3;
     elementid = 1;
     TPZGeoEl *arc = new TPZGeoElRefPattern < pzgeom::TPZArc3D > (nodeindex, Ebc2, gmesh,elementid);
-
+    
     nodeindex.Resize(4);
     nodeindex[0] = 1;
     nodeindex[1] = 2;
@@ -458,7 +415,7 @@ TPZCompMesh *SetupOneArc(int numrefskeleton, int porder)
     
     TPZManVector<long,5> elids(1,gblend->Index());
     build.AddPartition(elids, 0);
-
+    
     build.DivideSkeleton(numrefskeleton);
     //        AddSkeletonElements(gmesh);
     /// generate the SBFem elementgroups
@@ -479,7 +436,7 @@ TPZCompMesh *SetupOneArc(int numrefskeleton, int porder)
         TPZBndCond *BC1 = dynamic_cast<TPZBndCond *>(SBFem->FindMaterial(Ebc1));
         BC1->Val2()(0,0) = 1;
     }
-
+    
     build.BuildComputationMesh(*SBFem);
     
     {
@@ -682,7 +639,7 @@ TPZCompMesh *ReadJSonFile(const std::string &filename, int numrefskeleton, int p
         SBFem->LoadSolution(SBFem->Solution());
     }
     SBFem->LoadReferences();
-
+    
     {
         std::ofstream out("JSonGeometry.vtk");
         TPZVTKGeoMesh vtk;
@@ -710,7 +667,7 @@ TPZCompMesh *TestHeterogeneous(int numquadrant,TPZVec<REAL> &contrast, REAL radi
     nodind = gmesh->NodeVec().AllocateNewElement();
     gmesh->NodeVec()[nodind].Initialize(co, gmesh);
     TPZManVector<long> scalecenters(2*numquadrant,-1);
-
+    
     long lastnode = nodind;
     long firstnode = nodind;
     for (int quadrant=0; quadrant<numquadrant; quadrant++) {
@@ -745,7 +702,7 @@ TPZCompMesh *TestHeterogeneous(int numquadrant,TPZVec<REAL> &contrast, REAL radi
         matid = EGroup+1;
         TPZGeoEl *gblend = new TPZGeoElRefPattern< pzgeom::TPZGeoBlend<pzgeom::TPZGeoQuad> > (nodes, matid, gmesh,elementindex);
         scalecenters[elementindex] = centernode;
-
+        
     }
     
     gmesh->BuildConnectivity();
@@ -854,7 +811,7 @@ TPZCompMesh *TestHeterogeneous(int numquadrant,TPZVec<REAL> &contrast, REAL radi
         OutputFourtyFive(SBFem,radius);
     }
     return SBFem;
-
+    
 }
 
 void OutputFourtyFive(TPZCompMesh *cmesh, REAL radius)
@@ -912,10 +869,10 @@ int main(int argc, char *argv[])
 {
     
     
-        //tutorial();
-        rect_mesh();
+    //tutorial();
+    rect_mesh();
     
-
+    
     
     gRotate.Identity();
     
@@ -924,36 +881,37 @@ int main(int argc, char *argv[])
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
-    int maxnelx = 2;
-    int numrefskeleton = 8;
-    int maxporder = 15;
-    for(int nelx = 1; nelx < maxnelx; nelx *=2)
+    int maxnelx = 12;
+    int numrefskeleton = 1;
+    int maxporder = 2;
+    int counter = 1;
+    for(int nelx = 10; nelx < maxnelx; nelx *=2)
     {
-                for (int irefskeleton = 0; irefskeleton < numrefskeleton; irefskeleton++)
-                {
-                    for ( int POrder = 2; POrder < maxporder; POrder += 1)
-                    {
+        for (int irefskeleton = 0; irefskeleton < numrefskeleton; irefskeleton++)
+        {
+            for ( int POrder = 1; POrder < maxporder; POrder += 1)
+            {
                 
-//                TPZCompMesh *SBFem = SetupRegularProblem(nelx,irefskeleton,POrder);
-//                TPZCompMesh *SBFem = SetupOneArc(irefskeleton,POrder);
-                TPZCompMesh *SBFem = ReadJSonFile("rect.json",irefskeleton,POrder);
-                    int numquadrant = 4;
-                    REAL radius = 1.;
-                    TPZManVector<REAL> contrast(4,1.);
-                    contrast[0] = 100;
-                    contrast[2] = 100;
-//                    contrast[0] = 10;
-//                    TPZCompMesh *SBFem = TestHeterogeneous(numquadrant , contrast, radius, irefskeleton, POrder);
-                    TPZSBFemElementGroup *celgrp = 0;
-                    long nel = SBFem->NElements();
-                    for (long el=0; el<nel; el++) {
-                        TPZSBFemElementGroup *cel = dynamic_cast<TPZSBFemElementGroup *>(SBFem->Element(el));
-                        if(cel)
-                        {
-                            celgrp = cel;
-                            break;
-                        }
+                TPZCompMesh *SBFem = SetupRegularProblem(nelx,irefskeleton,POrder);
+                //                TPZCompMesh *SBFem = SetupOneArc(irefskeleton,POrder);
+//                TPZCompMesh *SBFem = ReadJSonFile("rect.json",irefskeleton,POrder);
+                int numquadrant = 4;
+                REAL radius = 1.;
+                TPZManVector<REAL> contrast(4,1.);
+                contrast[0] = 100;
+                contrast[2] = 100;
+                //                    contrast[0] = 10;
+                //                    TPZCompMesh *SBFem = TestHeterogeneous(numquadrant , contrast, radius, irefskeleton, POrder);
+                TPZSBFemElementGroup *celgrp = 0;
+                long nel = SBFem->NElements();
+                for (long el=0; el<nel; el++) {
+                    TPZSBFemElementGroup *cel = dynamic_cast<TPZSBFemElementGroup *>(SBFem->Element(el));
+                    if(cel)
+                    {
+                        celgrp = cel;
+                        break;
                     }
+                }
                 
                 
                 std::cout << "nelx = " << nelx << std::endl;
@@ -963,19 +921,19 @@ int main(int argc, char *argv[])
                 // Visualization of computational meshes
                 bool mustOptimizeBandwidth = true;
                 TPZAnalysis * ElasticAnalysis = new TPZAnalysis(SBFem,mustOptimizeBandwidth);
-                
+                ElasticAnalysis->SetStep(counter++);
                 std::cout << "neq = " << SBFem->NEquations() << std::endl;
                 SolveSist(ElasticAnalysis, SBFem);
                 
                 
-
+                
                 
                 std::cout << "Post processing\n";
-        //        ElasticAnalysis->Solution().Print("Solution");
-        //        mphysics->Solution().Print("expandec");
+                //        ElasticAnalysis->Solution().Print("Solution");
+                //        mphysics->Solution().Print("expandec");
                 
                 //                ElasticAnalysis->SetExact(Harmonic_exact);
-//                ElasticAnalysis->SetExact(Singular_exact);
+                //                ElasticAnalysis->SetExact(Singular_exact);
                 
                 TPZManVector<STATE> errors(3,0.);
                 
@@ -985,54 +943,61 @@ int main(int argc, char *argv[])
                 {
                     TPZStack<std::string> vecnames,scalnames;
                     // scalar
-//                    scalnames.Push("State");
+                    //                    scalnames.Push("State");
                     vecnames.Push("State");
                     scalnames.Push("SigmaX");
                     scalnames.Push("SigmaY");
-                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../elasticityChecker.vtk");
-//                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../SingularSolution.vtk");
-//                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../Heterogeneous.vtk");
-                    ElasticAnalysis->PostProcess(1);
+//                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../elasticityChecker.vtk");
+                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../elasticityRegular.vtk");
+                    //                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../RegularSolution.vtk");
+                    //                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../SingularSolution.vtk");
+                    //                    ElasticAnalysis->DefineGraphMesh(2, scalnames, vecnames, "../Heterogeneous.vtk");
+                    ElasticAnalysis->PostProcess(3);
                 }
                 
-                if(0)
+                if(1)
                 {
-                    std::ofstream out("../CompMultiphysicsbefore.txt");
+                    std::ofstream out("../CompMeshWithSol.txt");
                     SBFem->Print(out);
                 }
-
-//                ElasticAnalysis->PostProcessError(errors);
+                
+                //                ElasticAnalysis->PostProcessError(errors);
                 
                 
                 
                 std::stringstream sout;
-//                sout << "../Heterogeneous.txt";
+                //                sout << "../Heterogeneous.txt";
                 sout << "../CheckerboardDiagnostic.txt";
-
+                //                sout << "../RegularSolution.txt";
+                
                 std::ofstream results(sout.str(),std::ios::app);
-                results.precision(15);
-                results << "nx " << nelx << " numrefskel " << irefskeleton << " " << " POrder " << POrder << " neq " << neq << std::endl;
-//                TPZFMatrix<double> errmat(1,3);
-//                for(int i=0;i<3;i++) errmat(0,i) = errors[i]*1.e6;
-//                std::stringstream varname;
-//                varname << "Errmat_" << POrder << "_" << irefskeleton << " = (1/1000000)*";
-//                errmat.Print(varname.str().c_str(),results,EMathematicaInput);
-// for circular domain with contrast
-//                results << "nx " << nelx << " numrefskel " << irefskeleton << " " << " POrder " << POrder << " neq " << neq << " contrast " << contrast << std::endl;
-                std::multimap<REAL,REAL> eigmap;
-                TPZManVector<double> eigval = celgrp->EigenvaluesReal();
-                TPZFMatrix<double> coef = celgrp->CoeficientsReal();
-                for (int i=0; i<eigval.size(); i++) {
-                    eigmap.insert(std::pair<double,double>(eigval[i],coef(i,0)));
+                //                results.precision(15);
+                //                results << "nx " << nelx << " numrefskel " << irefskeleton << " " << " POrder " << POrder << " neq " << neq << std::endl;
+                //                TPZFMatrix<double> errmat(1,3);
+                //                for(int i=0;i<3;i++) errmat(0,i) = errors[i]*1.e6;
+                //                std::stringstream varname;
+                //                varname << "Errmat_" << POrder << "_" << irefskeleton << " = (1/1000000)*";
+                //                errmat.Print(varname.str().c_str(),results,EMathematicaInput);
+                // for circular domain with contrast
+                //                results << "nx " << nelx << " numrefskel " << irefskeleton << " " << " POrder " << POrder << " neq " << neq << " contrast " << contrast << std::endl;
+                
+                if(0)
+                {
+                    std::multimap<REAL,REAL> eigmap;
+                    TPZManVector<double> eigval = celgrp->EigenvaluesReal();
+                    TPZFMatrix<double> coef = celgrp->CoeficientsReal();
+                    for (int i=0; i<eigval.size(); i++) {
+                        eigmap.insert(std::pair<double,double>(eigval[i],coef(i,0)));
+                    }
+                    for (std::multimap<double, double>::reverse_iterator it = eigmap.rbegin(); it!=eigmap.rend(); it++) {
+                        results << it->first << "|" << it->second << " ";
+                    }
                 }
-                for (std::multimap<double, double>::reverse_iterator it = eigmap.rbegin(); it!=eigmap.rend(); it++) {
-                    results << it->first << "|" << it->second << " ";
-                }
-                results << std::endl;
-//                results << celgrp->EigenValues() << std::endl;
+                //                results << std::endl;
+                //                results << celgrp->EigenValues() << std::endl;
                 
                 std::cout << "Plotting shape functions\n";
-                if(irefskeleton == 0)
+                if(0 && irefskeleton == 0)
                 {
                     int numshape = 25;
                     if (numshape > SBFem->NEquations()) {
@@ -1047,87 +1012,15 @@ int main(int argc, char *argv[])
                 
                 delete ElasticAnalysis;
                 delete SBFem;
-//                exit(-1);
+                //                exit(-1);
             }
-//            exit(-1);
+            //            exit(-1);
         }
     }
     std::cout << "Check:: Calculation finished successfully" << std::endl;
     return EXIT_SUCCESS;
 }
 
-
-
-void InsertMaterialObjects(TPZCompMesh *cmesh, int problemtype)
-{
-    // Plane strain assumption
-    int planestress = 0;
-    
-    if(problemtype != 0 && problemtype != 1) DebugStop();
-    // Getting mesh dimension
-    int dim = 2;
-    int matId1 = 1;
-    
-    TPZMaterial *material;
-    int nstate = 1;
-    bool elasticity = false;
-    if (problemtype == 0) {
-        elasticity = true;
-    }
-    if (elasticity)
-    {
-        TPZMatElasticity2D *matloc = new TPZMatElasticity2D(matId1);
-        material = matloc;
-        nstate = 2;
-        // Setting up paremeters
-        matloc->SetfPlaneProblem(planestress);
-        //        REAL lamelambda = 1.0e9,lamemu = 0.5e3, fx= 0, fy = 0;
-        REAL lamelambda = 0.,lamemu = 0.5e3, fx= 0, fy = 0;
-        matloc->SetParameters(lamelambda,lamemu, fx, fy);
-        //material->SetElasticParameters(40.0,0.0);
-        REAL Sigmaxx = 0.0, Sigmayx = 0.0, Sigmayy = 0.0, Sigmazz = 0.0;
-        matloc->SetPreStress(Sigmaxx,Sigmayx,Sigmayy,Sigmazz);
-    }
-    else
-    {
-        TPZMatLaplacian *matloc = new TPZMatLaplacian(matId1);
-        matloc->SetDimension(2);
-        matloc->SetSymmetric();
-        material = matloc;
-        nstate = 1;
-    }
-    //material->SetBiotAlpha(Alpha);cade o metodo?
-    
-    
-    TPZFMatrix<STATE> val1(nstate,nstate,0.), val2(nstate,1,0.);
-    val2(0,0) = 0.0;
-    //    val2(1,0) = 0.0;
-    TPZMaterial * BCond1 = material->CreateBC(material,Ebc1,0, val1, val2);
-    
-    val2(0,0) = 1.0*1000.0;
-    //    val2(1,0) = 0.0;
-    TPZMaterial * BCond2 = material->CreateBC(material,Ebc2,1, val1, val2);
-    val2(0,0) = 0.0;
-    //    val2(1,0) = 0.0;
-    TPZMaterial * BCond3 = material->CreateBC(material,Ebc3,0, val1, val2);
-    
-    val2(0,0) = -1.0*1000.0;
-    //    val2(1,0) = 0.0;
-    TPZMaterial * BCond4 = material->CreateBC(material,Ebc4,1, val1, val2);
-    
-    val2(0,0) = 0.0;
-    //    val2(1,0) = 0.0;
-    TPZMaterial * BSkeleton = material->CreateBC(material,ESkeleton,1, val1, val2);
-    
-    
-    cmesh->InsertMaterialObject(material);
-    cmesh->InsertMaterialObject(BCond1);
-    cmesh->InsertMaterialObject(BCond2);
-    cmesh->InsertMaterialObject(BCond3);
-    cmesh->InsertMaterialObject(BCond4);
-    cmesh->InsertMaterialObject(BSkeleton);
-    
-}
 
 
 
@@ -1144,51 +1037,4 @@ void UniformRefinement(TPZGeoMesh *gMesh, int nh)
     }//ref
 }
 
-void SolveSist(TPZAnalysis *an, TPZCompMesh *Cmesh)
-{
-    //    TPZParFrontStructMatrix<TPZFrontSym<STATE> > strmat(Cmesh);
-        TPZSkylineStructMatrix strmat(Cmesh);
-//    TPZSymetricSpStructMatrix strmat(Cmesh);
-    strmat.SetNumThreads(0);
-    an->SetStructuralMatrix(strmat);
-    
-    long neq = Cmesh->NEquations();
-    
-    if(neq > 20000)
-    {
-        std::cout << "Entering Assemble Equations\n";
-        std::cout.flush();
-    }
-#ifdef USING_BOOST
-    boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::local_time();
-#endif
-    TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky);
-    an->SetSolver(step);
-    
-    an->Assemble();
-    
-    //    std::ofstream andrade("../Andrade.mtx");
-    //    andrade.precision(16);
-    //    an->Solver().Matrix()->Print("Andrade",andrade,EMatrixMarket);
-    //    std::cout << "Leaving Assemble\n";
-#ifdef USING_BOOST
-    boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::local_time();
-#endif
-    
-    
-    if(neq > 20000)
-    {
-        std::cout << "Entering Solve\n";
-        std::cout.flush();
-    }
-    
-    an->Solve();
-    
-#ifdef USING_BOOST
-    boost::posix_time::ptime t3 = boost::posix_time::microsec_clock::local_time();
-    std::cout << "Time for assembly " << t2-t1 << " Time for solving " << t3-t2 << std::endl;
-#endif
-    
-    
-}
+

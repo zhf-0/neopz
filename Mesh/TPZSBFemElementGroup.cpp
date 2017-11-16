@@ -70,9 +70,9 @@ void TPZSBFemElementGroup::ComputeMatrices(TPZElementMatrix &E0, TPZElementMatri
                 sout << locindex[cel->ConnectIndex(i)] << " ";
             }
             sout << std::endl;
-            E0.fMat.Print("Matriz elementar E0",sout);
-            E1.fMat.Print("Matriz elementar E1",sout);
-            E2.fMat.Print("Matriz elementar E2",sout);
+            E0Loc.fMat.Print("Matriz elementar E0",sout);
+            E1Loc.fMat.Print("Matriz elementar E1",sout);
+            E2Loc.fMat.Print("Matriz elementar E2",sout);
             LOGPZ_DEBUG(logger, sout.str())
         }
         
@@ -284,7 +284,7 @@ void TPZSBFemElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
     
 //    ek.fMat.Print("Stiffness",std::cout,EMathematicaInput);
 #ifdef PZDEBUG
-    std::cout << "Norm of imaginary part " << Norm(ekimag) << std::endl;
+//    std::cout << "Norm of imaginary part " << Norm(ekimag) << std::endl;
 #endif
 }
 
@@ -362,7 +362,7 @@ void TPZSBFemElementGroup::ComputeMassMatrix(TPZElementMatrix &M0)
     
 //    fMassMatrix.Print("Mass Matrix",std::cout,EMathematicaInput);
 #ifdef PZDEBUG
-    std::cout << "Norm of imaginary part " << Norm(MassLocImag) << std::endl;
+//    std::cout << "Norm of imaginary part " << Norm(MassLocImag) << std::endl;
 #endif
 }
 

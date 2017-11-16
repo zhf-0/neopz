@@ -460,7 +460,7 @@ void TPZCreateApproximationSpace::SetAllCreateFunctionsSBFem(int dimension){
             break;
         case 2:
             fp[EPoint] = CreatePointEl;
-            fp[EOned] = CreateLinearEl;
+            fp[EOned] = CreateSBFemCompEl;
             fp[ETriangle] = CreateNoElement;
             fp[EQuadrilateral] = CreateSBFemCompEl;
             fp[ETetraedro] = CreateNoElement;
