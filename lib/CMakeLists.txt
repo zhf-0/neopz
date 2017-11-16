@@ -156,12 +156,12 @@ if(USING_MKL)
 endif(USING_MKL)
 
 if(USING_PETSC)
-	target_link_libraries(pz ${PETSC_LIBRARIES})
+	target_link_libraries(pz PETSC::petsc_static)
 	target_compile_definitions(pz PRIVATE USING_PETSC)
 endif(USING_PETSC)
 
 if(USING_SLEPC)
-	target_link_libraries(pz ${SLEPC_LIBRARIES})
+	target_link_libraries(pz SLEPC::slepc_static)
 	target_compile_definitions(pz PRIVATE USING_SLEPC)
 endif(USING_SLEPC)
 
