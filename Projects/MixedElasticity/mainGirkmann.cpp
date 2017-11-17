@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
     x[1]=1./2.;
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 4;
+    int h_level = 16;
     
     
     double hx=2,hy=2; //Dimensões em x e y do domínio
@@ -211,7 +211,37 @@ int main(int argc, char *argv[])
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
     int RibpOrder = 1; //Ordem polinomial de aproximação
     int InternalpOrder = 1;
-    TPZGeoMesh *gmesh = CreateGMesh(nx, ny, hx, hy); //Função para criar a malha geometrica
+    //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
+    //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
+    
+    //Gerando malha geométrica:
+    
+    TPZGmshReader Girkmann;
+    
+    Girkmann.fPZMaterialId[2]["ELASTICITY1"] = 1;
+    Girkmann.fPZMaterialId[2]["ELASTICITY2"] = 3;
+    Girkmann.fPZMaterialId[1]["SUPPORT"] = -1;
+    Girkmann.fPZMaterialId[1]["ZERO"] = -2;
+    Girkmann.fPZMaterialId[1]["SYM"] = -3;
+    Girkmann.fPZMaterialId[1]["MOMENT"] = 2;
+    
+
+#ifdef MACOSX
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("../Girkmann.msh");
+#else
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("Girkmann.msh");
+#endif
+    {
+        std::ofstream out("Girkmann.vtk");
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh2,out,true);
+    }
+    std::set<int> matids;
+    matids.insert(3);
+    matids.insert(1);
+    //std::cout << "Axisymmetric area " << AxiArea(gmesh2,matids)*32.69 << std::endl;
+    //std::cout << (43.553)*(15.5807*15.5807/2.-14.9807*14.9807/2.)*2.*M_PI << std::endl;
+
+    TPZGeoMesh *gmesh = gmesh2;
     
 #ifdef PZDEBUG
     std::ofstream fileg("MalhaGeo.txt"); //Impressão da malha geométrica (formato txt)
@@ -219,20 +249,12 @@ int main(int argc, char *argv[])
     gmesh->Print(fileg);
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, filegvtk,true);
 #endif
-  
-  //   std::set<int> matids;
-    //matids.insert(3);
-  //  matids.insert(1);
-    TElasticityExample1 Example;
-    //Gerando malha computacional:
- //   TPZGeoMesh *gmesh=CreateGMesh(nx,ny,hx,hy);
     
     TPZCompMesh *cmesh_S = CMesh_S(gmesh, RibpOrder); //Função para criar a malha computacional da tensão
     ChangeInternalOrder(cmesh_S,InternalpOrder);
     TPZCompMesh *cmesh_U = CMesh_U(gmesh, InternalpOrder); //Função para criar a malha computacional da deslocamento
     TPZCompMesh *cmesh_P = CMesh_P(gmesh, InternalpOrder); //Função para criar a malha computacional da rotação
-    //TPZCompMesh *cmesh_m = CMesh_Girk(gmesh, RibpOrder); //Função para criar a malha computacional multifísica
-    TPZCompMesh *cmesh_m = CMesh_m(gmesh, InternalpOrder,  Example);
+    TPZCompMesh *cmesh_m = CMesh_Girk(gmesh, RibpOrder); //Função para criar a malha computacional multifísica
     #ifdef PZDEBUG
     {
         std::ofstream filecS("MalhaC_S.txt"); //Impressão da malha computacional da tensão (formato txt)
@@ -254,6 +276,11 @@ int main(int argc, char *argv[])
     cmesh_m->LoadReferences();
     CreateCondensedElements(cmesh_m);
     
+    //    AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCtop,matBCtop);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCleft,matBCleft);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCright,matBCright);
     
 #ifdef PZDEBUG
     std::ofstream fileg1("MalhaGeo2.txt"); //Impressão da malha geométrica (formato txt)
@@ -344,18 +371,6 @@ int main(int argc, char *argv[])
     //    std::cout << "Comuting Error " << std::endl;
     
     
-    TPZManVector<REAL,3> Errors;
-    ofstream ErroOut("Erro.txt",std::ios::app);
-    ErroOut << "Number of elements " << h_level << std::endl;
-    ErroOut << "Number of Condensed equations " << cmesh_m->NEquations() << std::endl;
-    ErroOut << "Number of equations before condensation " << cmesh_m->Solution().Rows() << std::endl;
-    
-    an.SetExact(Example.Exact());
-    an.PostProcessError(Errors,ErroOut);
-    
-    std::cout << "Errors = " << Errors << std::endl;
-    
-    //
     //
     //
     //    //Pós-processamento (paraview):

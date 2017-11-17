@@ -263,7 +263,6 @@ int TPZCompMesh::InsertMaterialObject(TPZMaterial * mat) {
 	if(!mat) return -1;
 	int matid = mat->Id();
 	fMaterialVec[matid] = mat;
-        std::cout<<"size ="<< fMaterialVec.size()<<endl;
 	return fMaterialVec.size();
 }
 

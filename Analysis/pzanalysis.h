@@ -60,7 +60,7 @@ protected:
 	REAL fTime;
 	
     /** @brief Number of threads to be used for post-processing error */
-    int fNthreadsError;
+    int fNthreadsError = 0;
     
 	/** @brief Structural matrix */
 	TPZAutoPointer<TPZStructMatrix>  fStructMatrix;

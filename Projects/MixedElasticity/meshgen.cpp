@@ -251,7 +251,7 @@ TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ConstitutiveLawFunction
 {
     TPZAutoPointer<TPZFunction<STATE> > result;
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(TElasticityExample1::ElasticDummy);
-    dummy->SetPolynomialOrder(4);
+    dummy->SetPolynomialOrder(20);
     result = TPZAutoPointer<TPZFunction<STATE> >(dummy);
     return result;
 }
@@ -343,25 +343,54 @@ void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
     graduxy(x,grad);
     //uxy(x,u);
     sigma.Resize(2,2);
-    sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
-    sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
-    sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
-    sigma(1,0) = sigma(0,1);
+    if(fStressState == EPlaneStress)
+    {
+        sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
+        sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
+        sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
+        sigma(1,0) = sigma(0,1);
+    }
+    else if(fStressState == EPlaneStrain)
+    {
+        sigma(0,0) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(0,0)+nu*grad(1,1));
+        sigma(1,1) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(1,1)+nu*grad(0,0));
+        sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
+        sigma(1,0) = sigma(0,1);
+    }
+    else
+    {
+        DebugStop();
+    }
 }
 
 template<>
 void TElasticityExample1::Sigma(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<REAL> > &sigma)
 {
+    typedef Fad<REAL> TVar;
     TPZFNMatrix<4,Fad<REAL> > grad;
     Fad<REAL>  E, nu;
     Elastic(x, E, nu);
     Fad<REAL>  Fac = E/(Fad<REAL>(1.)+nu)/((Fad<REAL>(1.)-Fad<REAL>(2.)*nu));
     graduxy(x,grad);
     sigma.Resize(2,2);
-    sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1));
-    sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
-    sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
-    sigma(1,0) = sigma(0,1);
+    if (fStressState == EPlaneStress)
+    {
+        sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1));
+        sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
+        sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
+        sigma(1,0) = sigma(0,1);
+    }
+    else if(fStressState == EPlaneStrain)
+    {
+        sigma(0,0) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(0,0)+nu*grad(1,1));
+        sigma(1,1) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(1,1)+nu*grad(0,0));
+        sigma(0,1) = E/(Fad<REAL>(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
+        sigma(1,0) = sigma(0,1);
+    }
+    else
+    {
+        DebugStop();
+    }
 
 }
 
@@ -385,7 +414,7 @@ void TElasticityExample1::DivSigma(const TPZVec<TVar> &x, TPZVec<TVar> &divsigma
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ForcingFunction()
 {
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Force);
-    dummy->SetPolynomialOrder(5);
+    dummy->SetPolynomialOrder(30);
     TPZAutoPointer<TPZFunction<STATE> > result(dummy);
     return result;
 }
@@ -393,7 +422,7 @@ TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ForcingFunction()
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ValueFunction()
 {
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(GradU);
-    dummy->SetPolynomialOrder(5);
+    dummy->SetPolynomialOrder(10);
     TPZAutoPointer<TPZFunction<STATE> > result(dummy);
     return result;
     
@@ -407,6 +436,8 @@ void TElasticityExample1::Sigma<Fad<REAL> >(const TPZVec<Fad<REAL> > &x, TPZFMat
 
 
 TElasticityExample1::EDefState TElasticityExample1::fProblemType = TElasticityExample1::EDispx;
+
+TElasticityExample1::EStressState TElasticityExample1::fStressState = TElasticityExample1::EPlaneStrain;
 
 template<class TVar>
 void TElasticityExample2::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)

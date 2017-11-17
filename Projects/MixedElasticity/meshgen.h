@@ -49,6 +49,9 @@ struct TElasticityExample1 : public TAnalyticSolution
     
      static EDefState fProblemType;
     
+    enum EStressState {ENone2, EPlaneStress, EPlaneStrain};
+    
+    static EStressState fStressState;
 
   static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
     {
