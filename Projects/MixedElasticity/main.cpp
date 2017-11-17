@@ -28,6 +28,8 @@
 #include "pzgeopoint.h"
 #include "tpzgeoblend.h"
 
+#include "tpzintpoints.h"
+
 #include "TPZMatElasticity2D.h"
 #include "TPZInterfaceEl.h"
 #include "pzdiscgal.h"
@@ -180,6 +182,9 @@ void sol_exact(const TPZVec<REAL> & x, TPZVec<STATE>& p, TPZFMatrix<STATE>& v);
 REAL AxiArea(TPZGeoMesh * gmesh, std::set<int> matids);
 //Função principal do programa:
 
+// integrate r sig.n on the bottom
+STATE IntegrateBottom(TPZCompMesh *cmesh, int matid);
+
 int main(int argc, char *argv[])
 {
     
@@ -218,9 +223,12 @@ int main(int argc, char *argv[])
     Girkmann.fPZMaterialId[1]["SYM"] = -3;
     Girkmann.fPZMaterialId[1]["MOMENT"] = 2;
     
-   
+
+#ifdef MACOSX
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("../Girkmann.msh");
+#else
     TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("Girkmann.msh");
- 
+#endif
     {
         std::ofstream out("Girkmann.vtk");
         TPZVTKGeoMesh::PrintGMeshVTK(gmesh2,out,true);
@@ -332,6 +340,7 @@ int main(int argc, char *argv[])
     }
     TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(meshvector,cmesh_m);
 
+    std::cout << "Integrated SigY " << IntegrateBottom(cmesh_m, -1) << std::endl;
     TPZStack<std::string> scalnames, vecnames;
     scalnames.Push("SigmaX");
     scalnames.Push("SigmaY");
@@ -1266,3 +1275,47 @@ REAL AxiArea(TPZGeoMesh * gmesh, std::set<int> matids)
     }
     return result;
 }
+
+// integrate r sig.n on the bottom
+STATE IntegrateBottom(TPZCompMesh *cmesh, int targetmatid)
+{
+    long nel = cmesh->NElements();
+    STATE integSigy = 0.;
+    for (long el=0; el<nel; el++) {
+        TPZCompEl *cel = cmesh->Element(el);
+        if (!cel) {
+            continue;
+        }
+        TPZGeoEl *gel = cel->Reference();
+        if(!gel) continue;
+        int matid = gel->MaterialId();
+        if (targetmatid != matid) {
+            continue;
+        }
+        if(gel->Dimension() != 1) DebugStop();
+        TPZGeoElSide gelside(gel,2);
+        TPZGeoElSide neighbour = gelside.Neighbour();
+        int varindex = neighbour.Element()->Reference()->Material()->VariableIndex("SigmaY");
+        if(neighbour.Element()->Dimension() != 2 || neighbour.Element()->Reference() == 0) DebugStop();
+        TPZTransform<REAL> tr(1);
+        gelside.SideTransform3(neighbour, tr);
+        tr = neighbour.Element()->SideToSideTransform(neighbour.Side(), neighbour.Element()->NSides()-1).Multiply(tr);
+        TPZIntPoints *rule = gel->CreateSideIntegrationRule(2, 7);
+        TPZCompEl *neighcel = neighbour.Element()->Reference();
+        int np = rule->NPoints();
+        for (int ip = 0; ip<np; ip++) {
+            TPZManVector<REAL,3> locpoint(1), volpoint(2);
+            REAL weight;
+            rule->Point(ip, locpoint, weight);
+            tr.Apply(locpoint, volpoint);
+            TPZManVector<STATE,3> sol(1),x(3);
+            neighcel->Solution(volpoint, varindex, sol);
+            gel->X(locpoint, x);
+            integSigy += sol[0]*weight*x[0];
+        }
+        
+        delete rule;
+    }
+    return integSigy;
+}
+
