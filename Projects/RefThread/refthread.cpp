@@ -46,7 +46,7 @@
 #include "TPZRefPatternDataBase.h"
 
 #include "pzskylstrmatrix.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 #include "pzanalysis.h"
 #include "pzstepsolver.h"
 #include "pzmaterial.h"

@@ -5,8 +5,9 @@
 
 #ifndef TPZMGSOLVER_H
 #define TPZMGSOLVER_H
-#include "pzsolve.h"
+
 #include "pzstepsolver.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
 #include "pztransfer.h"
 
@@ -18,16 +19,16 @@
  * @brief Represents a solution process in three steps: transfer of the residual, execute a solver on the coarse mesh, extend the solution. \ref solver "Solver"
  */
 template <class TVar>
-class TPZMGSolver: public TPZMatrixSolver<TVar>
+class TPZMGSolver: public TPZAlgebraicSystemSolver<TVar>
 {
 public:
 	/** @brief Default constructor */
-	TPZMGSolver() : TPZMatrixSolver<TVar>() {}
+	TPZMGSolver() : TPZAlgebraicSystemSolver<TVar>() {}
 	/** @brief Constructor of the three steps solver with transfer matrix */
-	TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZMatrixSolver<TVar> &sol,
+	TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZAlgebraicSystemSolver<TVar> &sol,
 				int nvar, TPZAutoPointer<TPZMatrix<TVar> > refmat);
 	/** @brief Constructor of the three steps solver */
-	TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZMatrixSolver<TVar> &sol,
+	TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZAlgebraicSystemSolver<TVar> &sol,
 				int nvar);
 	
 	/** @brief Copy constructor */
@@ -60,11 +61,11 @@ public:
 	
 	
 private:
-	TPZMatrixSolver<TVar> * fCoarse;
+	TPZAlgebraicSystemSolver<TVar> * fCoarse;
 	int fNVar;
 	/** @brief Transfer matrix */
 	TPZAutoPointer<TPZTransfer<TVar> > fStep;
-	//    TPZMatrixSolver::TPZContainer *fTransfer;
+	//    TPZAlgebraicSystemSolver::TPZContainer *fTransfer;
 };
 
 #endif //TPZMGSOLVER_H

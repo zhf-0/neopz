@@ -114,7 +114,7 @@ TVar& TPZMatRed<TVar,TSideMatrix>::s(const long r,const long c ) {
 }
 
 template<class TVar, class TSideMatrix>
-void TPZMatRed<TVar,TSideMatrix>::SetSolver(TPZAutoPointer<TPZMatrixSolver<TVar> > solver)
+void TPZMatRed<TVar,TSideMatrix>::SetSolver(TPZAutoPointer<TPZAlgebraicSystemSolver<TVar> > solver)
 {
 	fK00=solver->Matrix();
 	fSolver = solver;
@@ -554,7 +554,7 @@ void TPZMatRed<TVar, TSideMatrix>::DecomposeK00()
     {
         DebugStop();
     }
-    if(stepsolve->Solver() == TPZMatrixSolver<TVar>::EDirect)
+    if(stepsolve->Solver() == TPZAlgebraicSystemSolver<TVar>::EDirect)
     {
         directsolve = stepsolve;
     }
@@ -562,7 +562,7 @@ void TPZMatRed<TVar, TSideMatrix>::DecomposeK00()
     {
         TPZSolver<TVar> *presolve = stepsolve->PreConditioner();
         TPZStepSolver<TVar> *prestep = dynamic_cast<TPZStepSolver<TVar> *>(presolve);
-        if(prestep->Solver() == TPZMatrixSolver<TVar>::EDirect)
+        if(prestep->Solver() == TPZAlgebraicSystemSolver<TVar>::EDirect)
         {
             prestep->UpdateFrom(stepsolve->Matrix());
             directsolve = prestep;
@@ -687,7 +687,7 @@ void TPZMatRed<TVar, TSideMatrix>::Read(TPZStream &buf, void *context)
 		this->fK10.Read(buf, 0);
 		this->fK11.Read(buf, 0);
         sav = TPZSaveable::Restore(buf, 0);
-        TPZMatrixSolver<TVar> *matsolv = dynamic_cast<TPZMatrixSolver<TVar> *>(sav);
+        TPZAlgebraicSystemSolver<TVar> *matsolv = dynamic_cast<TPZAlgebraicSystemSolver<TVar> *>(sav);
         if (sav && !matsolv) {
             DebugStop();
         }

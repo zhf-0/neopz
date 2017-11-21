@@ -12,7 +12,6 @@
 #include "pzelmat.h"
 #include "pznonlinanalysis.h"
 #include "pzskylmat.h"
-#include "pzsolve.h"
 #include "pzstepsolver.h"
 #include "pzskylstrmatrix.h"
 #include "TPZParSkylineStructMatrix.h"
@@ -1274,8 +1273,8 @@ void TPZSubCompMesh::SetAnalysisSkyline(int numThreads, int preconditioned, TPZA
     step->SetReferenceMatrix(mat2);
 	step->SetDirect(ELDLt);
     gmrs->SetGMRES(20, 20, *step, 1.e-20, 0);
-	TPZAutoPointer<TPZMatrixSolver<STATE> > autostep = step;
-    TPZAutoPointer<TPZMatrixSolver<STATE> > autogmres = gmrs;
+	TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autostep = step;
+    TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autogmres = gmrs;
     if(preconditioned)
     {
         fAnalysis->SetSolver(autogmres);
@@ -1342,8 +1341,8 @@ void TPZSubCompMesh::SetAnalysisSkyline(int numThreads, int preconditioned, TPZA
     step->SetReferenceMatrix(mat2);
     step->SetDirect(ELDLt);
     gmrs->SetGMRES(20, 20, *step, 1.e-20, 0);
-    TPZAutoPointer<TPZMatrixSolver<STATE> > autostep = step;
-    TPZAutoPointer<TPZMatrixSolver<STATE> > autogmres = gmrs;
+    TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autostep = step;
+    TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autogmres = gmrs;
     if(preconditioned)
     {
         fAnalysis->SetSolver(autogmres);

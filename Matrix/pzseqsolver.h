@@ -5,8 +5,8 @@
 
 #ifndef TPZSEQUENCESOLVER_H
 #define TPZSEQUENCESOLVER_H
-#include "pzsolve.h"
 #include "pzstack.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
 
 /** 
@@ -20,7 +20,7 @@
  * @ingroup solver
  */
 template <class TVar>
-class TPZSequenceSolver : public TPZMatrixSolver<TVar> {
+class TPZSequenceSolver : public TPZAlgebraicSystemSolver<TVar> {
 public:
 	/**
      * @brief Constructor with initialization parameter
@@ -47,7 +47,7 @@ public:
 	/** @brief Updates the values of the preconditioner based on the values of the matrix */
 	virtual void UpdateFrom(TPZAutoPointer<TPZMatrix<TVar> > mat);
 	
-	void AppendSolver(TPZMatrixSolver<TVar>& solve);
+	void AppendSolver(TPZAlgebraicSystemSolver<TVar>& solve);
 	
 	virtual TPZSolver<TVar> * Clone() const;
 	
@@ -61,7 +61,7 @@ public:
 	
 	
 private:    
-	TPZStack < TPZMatrixSolver<TVar> * > fSolvers;
+	TPZStack < TPZAlgebraicSystemSolver<TVar> * > fSolvers;
 };
 
 #endif //TPZSEQUENCESOLVER_H

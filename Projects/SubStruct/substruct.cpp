@@ -270,7 +270,7 @@ int main1(int argc, char *argv[])
         TPZStepSolver<STATE> pre(precond);
         pre.SetMultiply();
         TPZStepSolver<STATE> cg(dohr);
-        //  void SetCG(const int numiterations,const TPZMatrixSolver &pre,const STATE tol,const int FromCurrent);
+        //  void SetCG(const int numiterations,const TPZAlgebraicSystemSolver &pre,const STATE tol,const int FromCurrent);
         
         cg.SetCG(500,pre,1.e-8,0);
         cg.Solve(rhs,diag);
@@ -465,7 +465,7 @@ int main3(int argc, char *argv[])
         TPZStepSolver<STATE> pre(precond);
         pre.SetMultiply();
         TPZStepSolver<STATE> cg(dohr);
-        //  void SetCG(const int numiterations,const TPZMatrixSolver &pre,const STATE tol,const int FromCurrent);
+        //  void SetCG(const int numiterations,const TPZAlgebraicSystemSolver &pre,const STATE tol,const int FromCurrent);
         
         cg.SetCG(500,pre,1.e-8,0);
         cg.Solve(rhs,diag);
@@ -645,7 +645,7 @@ int main4(int argc, char *argv[])
         TPZStepSolver<STATE> pre(precond);
         pre.SetMultiply();
         TPZStepSolver<STATE> cg(dohr);
-        //  void SetCG(const int numiterations,const TPZMatrixSolver &pre,const STATE tol,const int FromCurrent);
+        //  void SetCG(const int numiterations,const TPZAlgebraicSystemSolver &pre,const STATE tol,const int FromCurrent);
         
         cg.SetCG(500,pre,1.e-8,0);
         cg.Solve(rhs,diag);
@@ -798,7 +798,7 @@ int main5(int argc, char *argv[])
         TPZStepSolver<STATE> pre(precond);
         pre.SetMultiply();
         TPZStepSolver<STATE> cg(dohr);
-        //  void SetCG(const int numiterations,const TPZMatrixSolver &pre,const STATE tol,const int FromCurrent);
+        //  void SetCG(const int numiterations,const TPZAlgebraicSystemSolver &pre,const STATE tol,const int FromCurrent);
         
         cg.SetCG(500,pre,1.e-8,0);
         cg.Solve(rhs,diag);
@@ -1090,7 +1090,7 @@ int main2(int argc, char *argv[])
 	TPZStepSolver<STATE> pre(precond2);
 	pre.SetMultiply();
 	TPZStepSolver<STATE> cg(dohr2);
-	//  void SetCG(const int numiterations,const TPZMatrixSolver &pre,const STATE tol,const int FromCurrent);
+	//  void SetCG(const int numiterations,const TPZAlgebraicSystemSolver &pre,const STATE tol,const int FromCurrent);
 	
 	cg.SetCG(500,pre,1.e-8,0);
 	cg.Solve(produto,diag);

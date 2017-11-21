@@ -985,6 +985,5 @@ TPZMatrix<TVar>::Swap( long *a, long *b )
 }
 
 #include "pzfmatrix.h"
-#include "pzsolve.h"
 
 #endif

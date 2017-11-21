@@ -13,7 +13,7 @@
 #include "pzstack.h"
 #include "pzvec.h"
 #include "pztrnsform.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 
 #include "pzelmat.h"
 #include "pzelasmat.h"

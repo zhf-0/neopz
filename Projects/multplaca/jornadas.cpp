@@ -5,7 +5,7 @@
 #include "pzgmesh.h"
 #include "pzcmesh.h"
 #include "pzgnode.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 #include "pzmat1dlin.h"
 #include "pzelmat.h"
 #include "pzelasmat.h"
@@ -157,7 +157,7 @@ int main() {
     TPZSkylineStructMatrix stiff (secondmesh);
     an.SetStructuralMatrix(stiff);
     
-    //   TPZMatrixSolver jacobi(stiff);
+    //   TPZAlgebraicSystemSolver jacobi(stiff);
     //   jacobi.SetSSOR(1,1,1.e-6,1);
     //   an.Solver().SetCG(400,jacobi,1.e-6,1);
     TPZStepSolver<STATE> step;

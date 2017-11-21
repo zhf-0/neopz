@@ -31,7 +31,7 @@
 #include "pzgnode.h"
 #include "pzstack.h"
 #include "pzvec.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 #include "pzelmat.h"
 #include "pzelasmat.h"
 #include "pzmattest.h"

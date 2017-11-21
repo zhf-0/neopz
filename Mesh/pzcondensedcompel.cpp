@@ -232,8 +232,8 @@ void TPZCondensedCompEl::Resequence()
     step->SetReferenceMatrix(mat2);
     step->SetDirect(ELDLt);
     gmrs->SetGMRES(20, 20, *step, 1.e-20, 0);
-    TPZAutoPointer<TPZMatrixSolver<STATE> > autostep = step;
-    TPZAutoPointer<TPZMatrixSolver<STATE> > autogmres = gmrs;
+    TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autostep = step;
+    TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autogmres = gmrs;
     
 
     

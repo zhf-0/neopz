@@ -12,7 +12,6 @@
 #include "pzcmesh.h"
 
 #include "pzanalysis.h"
-#include "pzsolve.h"
 #include "pzstepsolver.h"
 
 #include "pzdxmesh.h"

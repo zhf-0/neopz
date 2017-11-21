@@ -35,8 +35,8 @@ template class TPZStack<TPZCompElSide>;
 template class TPZStack<TPZGeoElSide>;
 class TPZCompMesh;
 template class TPZStack<TPZCompMesh *>;
-class TPZMatrixSolver;
-template class TPZStack<TPZMatrixSolver *>;
+class TPZAlgebraicSystemSolver;
+template class TPZStack<TPZAlgebraicSystemSolver *>;
 
 //Including ElementMatrix
 struct TPZElementMatrix;

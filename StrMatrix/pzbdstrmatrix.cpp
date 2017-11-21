@@ -12,7 +12,6 @@
 #include "pzskylmat.h"
 #include "pzsubcmesh.h"
 #include "pzgmesh.h"
-#include "pzsolve.h"
 #include "pzstepsolver.h"
 
 using namespace std;

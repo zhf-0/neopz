@@ -177,8 +177,8 @@ int main()
             step->SetReferenceMatrix(mat2);
             step->SetDirect(ELU);
             gmrs->SetGMRES(20, 20, *step, 1.e-20, 0);
-            TPZAutoPointer<TPZMatrixSolver<STATE> > autostep = step;
-            TPZAutoPointer<TPZMatrixSolver<STATE> > autogmres = gmrs;
+            TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autostep = step;
+            TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autogmres = gmrs;
             analysis.SetSolver(autogmres);
            
             analysis.Run();

@@ -12,8 +12,8 @@
 
 #include "pzmatrix.h"
 #include "pzreal.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
-#include "pzsolve.h"
 
 template<class TVar>
 class TPZVerySparseMatrix;
@@ -128,8 +128,8 @@ public:
         return fDim1;
     }
     
-	void SetSolver(TPZAutoPointer<TPZMatrixSolver<TVar> > solver);
-    TPZAutoPointer<TPZMatrixSolver<TVar> > Solver()
+	void SetSolver(TPZAutoPointer<TPZAlgebraicSystemSolver<TVar> > solver);
+    TPZAutoPointer<TPZAlgebraicSystemSolver<TVar> > Solver()
     {
         return fSolver;
     }
@@ -218,7 +218,7 @@ private:
 	TPZAutoPointer<TPZMatrix<TVar> > fK00;
 	
 	/** @brief Solution method for inverting \f$ fK00 \f$ */
-	TPZAutoPointer<TPZMatrixSolver<TVar> > fSolver;
+	TPZAutoPointer<TPZAlgebraicSystemSolver<TVar> > fSolver;
 	
 	/** @brief Full Stiffnes matrix */
 	TSideMatrix fK11;

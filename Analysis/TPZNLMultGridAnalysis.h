@@ -14,7 +14,7 @@
 
 class TPZCompMesh;
 class TPZMaterial;
-template <class TVar> class TPZMatrixSolver;
+template <class TVar> class TPZAlgebraicSystemSolver;
 
 
 /**
@@ -30,11 +30,11 @@ class TPZNonLinMultGridAnalysis : public TPZAnalysis {
 	TPZStack <TPZFMatrix<STATE> *> fSolutions;
 	
 	/** @brief Contains the solution method applied to the mesh */
-	TPZStack <TPZMatrixSolver<STATE> *> fSolvers;
+	TPZStack <TPZAlgebraicSystemSolver<STATE> *> fSolvers;
 	
 	/** @brief Contains the preconditioner of the solution method */ 
 	/** If the solution method is a krylov method, the preconditioner can be used as a coarse grid iteration */
-	TPZStack <TPZMatrixSolver<STATE> *> fPrecondition;
+	TPZStack <TPZAlgebraicSystemSolver<STATE> *> fPrecondition;
 	
 	/** @brief Times by iteration and accumulated time */
 	clock_t fBegin,fInit;

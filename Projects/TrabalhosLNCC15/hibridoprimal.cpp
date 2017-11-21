@@ -3126,8 +3126,8 @@ bool MyDoubleComparer(REAL a, REAL b)
 //////                step->SetReferenceMatrix(mat2);
 //////                step->SetDirect(ELDLt);
 //////                gmrs->SetGMRES(20, 20, *step, 1.e-20, 0);
-//////                TPZAutoPointer<TPZMatrixSolver<STATE> > autostep = step;
-//////                TPZAutoPointer<TPZMatrixSolver<STATE> > autogmres = gmrs;
+//////                TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autostep = step;
+//////                TPZAutoPointer<TPZAlgebraicSystemSolver<STATE> > autogmres = gmrs;
 //////                
 //////                loc_analysis.SetSolver(autogmres);
 //////                loc_analysis.Assemble();
@@ -3166,7 +3166,7 @@ bool MyDoubleComparer(REAL a, REAL b)
 //////            //            std::stringstream sout;
 //////            //            analysis.StructMatrix()->Print("Matriz de RigidezBLABLA: ",sout,EMathematicaInput);F
 //////            
-//////            TPZMatrixSolver<STATE> &solve = analysis.Solver();
+//////            TPZAlgebraicSystemSolver<STATE> &solve = analysis.Solver();
 //////            TPZMatrix<STATE> *mat = solve.Matrix().operator->();
 //////            TPZFMatrix<STATE> locsol(analysis.Solution()),rhs;
 //////            locsol.Resize(mat->Rows(), 1);

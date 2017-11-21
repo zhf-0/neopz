@@ -10,7 +10,7 @@
 #define TPBRTHERMALDISC
 
 #include "pzreal.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 
 /// Definition of the properties and mesh size of the confining layer
 class TPBRThermalDiscretization 

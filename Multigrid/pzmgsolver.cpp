@@ -8,20 +8,20 @@
 using namespace std;
 
 template <class TVar>
-TPZMGSolver<TVar>::TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZMatrixSolver<TVar> &sol, int nvar, 
+TPZMGSolver<TVar>::TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZAlgebraicSystemSolver<TVar> &sol, int nvar, 
 							   TPZAutoPointer<TPZMatrix<TVar> > refmat) : 
-TPZMatrixSolver<TVar>(refmat), fStep(trf) 
+TPZAlgebraicSystemSolver<TVar>(refmat), fStep(trf) 
 {
-	this->fCoarse = (TPZMatrixSolver<TVar> *) sol.Clone();
+	this->fCoarse = (TPZAlgebraicSystemSolver<TVar> *) sol.Clone();
 	this->fNVar = nvar;
 }
 
 template <class TVar>
-TPZMGSolver<TVar>::TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZMatrixSolver<TVar> &sol, int nvar) : 
-TPZMatrixSolver<TVar>(), fStep(trf) 
+TPZMGSolver<TVar>::TPZMGSolver(TPZAutoPointer<TPZTransfer<TVar> > trf, const TPZAlgebraicSystemSolver<TVar> &sol, int nvar) : 
+TPZAlgebraicSystemSolver<TVar>(), fStep(trf) 
 {
-	this->fCoarse = (TPZMatrixSolver<TVar> *) sol.Clone();
-	//  fTransfer = new TPZMatrixSolver::TPZContainer(trf);
+	this->fCoarse = (TPZAlgebraicSystemSolver<TVar> *) sol.Clone();
+	//  fTransfer = new TPZAlgebraicSystemSolver::TPZContainer(trf);
 	this->fNVar = nvar;
 }
 
@@ -45,8 +45,8 @@ void TPZMGSolver<TVar>::Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &resul
 }
 
 template <class TVar>
-TPZMGSolver<TVar>::TPZMGSolver(const TPZMGSolver<TVar> & copy): TPZMatrixSolver<TVar>(copy), fStep(copy.fStep) {
-    fCoarse = (TPZMatrixSolver<TVar> *) copy.fCoarse->Clone();
+TPZMGSolver<TVar>::TPZMGSolver(const TPZMGSolver<TVar> & copy): TPZAlgebraicSystemSolver<TVar>(copy), fStep(copy.fStep) {
+    fCoarse = (TPZAlgebraicSystemSolver<TVar> *) copy.fCoarse->Clone();
     fNVar = copy.fNVar;
 }
 
@@ -74,7 +74,7 @@ void TPZMGSolver<TVar>::SetTransferMatrix(TPZAutoPointer<TPZTransfer<TVar> > Ref
 template <class TVar>
 void TPZMGSolver<TVar>::Write(TPZStream &buf, int withclassid)
 {
-	TPZMatrixSolver<TVar>::Write(buf, withclassid);
+	TPZAlgebraicSystemSolver<TVar>::Write(buf, withclassid);
 	fCoarse->Write(buf, 1);
 	buf.Write(&fNVar);
 	if(fStep)
@@ -91,8 +91,8 @@ void TPZMGSolver<TVar>::Write(TPZStream &buf, int withclassid)
 template <class TVar>
 void TPZMGSolver<TVar>::Read(TPZStream &buf, void *context)
 {
-	TPZMatrixSolver<TVar>::Read(buf, context);
-	fCoarse = dynamic_cast<TPZMatrixSolver<TVar> *>(TPZSaveable::Restore(buf, context));
+	TPZAlgebraicSystemSolver<TVar>::Read(buf, context);
+	fCoarse = dynamic_cast<TPZAlgebraicSystemSolver<TVar> *>(TPZSaveable::Restore(buf, context));
 	buf.Read(&fNVar, 1);
 	fStep = dynamic_cast<TPZTransfer<TVar> *>(TPZSaveable::Restore(buf, context));
 }
