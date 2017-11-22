@@ -303,12 +303,39 @@ endif(USING_QWT)
 #enabling MKL library
 if(USING_MKL)
 	if(NOT DEFINED ENV{MKLROOT})
-		###################################################################
-		# the script mklvars.sh must be run in order to  				  #
-		# set the environment variables needed to configure 			  #
-		# the MKL library. It is located in the bin folder 				  #
-		# inside your mkl install dir (on macOS it is /opt/intel/mkl/bin) #
-		###################################################################
+###########################################WINDOWS#####################################
+#	1)Run the mklvars.bat script in the bin subdirectory on the 					  #
+#	  Intel MKL installation directory   											  #
+#######################################################################################
+
+######################################UNIX SYSTEMS#####################################
+#	1)Open a command promopt and type:    											  #
+#		> source /mkl-root-dir/mkl/bin/mklvars.sh	intel64                           #
+#	(by default on osx the full path is /opt/intel/mkl/bin/mklvars.sh)                #
+#	2)Check if MKLROOT is set by typing 											  #
+#		> echo $MKLROOT 															  #
+#	If it is set correctly, the result should be something like                       #
+#	/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl 							  #
+#	3)Add the following lines to your .bashrc file (on macOS it is .bash_profile):    #
+#	export MKLROOT=/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl              #
+#	(change it for the result of echo $MKLROOT)										  #
+#				       OPTIONAL(If using CMake Gui Application)						  #
+#								   #####macOS#### 							          #
+#	4)Append the following line to /etc/launchd.conf (it may not exist yet): 		  #
+#		>setenv MKLROOT /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl         #
+#	(change it for the result of echo $MKLROOT)										  #
+#	5)Finally, type																	  #
+#		>grep -E "^setenv" /etc/launchd.conf | xargs -t -L 1 launchctl				  #
+#   and restart the terminal and CMake Gui (if open)								  #
+#								   #####linux#### 		     						  #
+#	4)Append the following line to $HOME/.xsessionrc:						 		  #
+#		>export MKLROOT /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl         #
+#	(change it for the result of echo $MKLROOT)										  #
+#	5)Finally, type																	  #
+#		>grep -E "^setenv" /etc/launchd.conf | xargs -t -L 1 launchctl				  #
+#   and restart the terminal and CMake Gui (if open)								  #
+#######################################################################################
+
     	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
 	find_package(MKL REQUIRED)
@@ -328,7 +355,9 @@ endif(USING_SLEPC)
 if(USING_PETSC)
 	if(NOT DEFINED ENV{PETSC_DIR})
 		###################################################################
-		# 				WRITE DOCUMENTATION FOR PETSC_DIR 			      #
+		# 				See instructions regarding MKLROOT.			      #
+		#				The	value of PETSC_DIR is estabilished by		  #
+		# 				your installation directory.				      #
 		###################################################################
     	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
@@ -341,7 +370,9 @@ endif(USING_PETSC)
 if(USING_SLEPC)
 	if(NOT DEFINED ENV{SLEPC_DIR})
 		###################################################################
-		# 				WRITE DOCUMENTATION FOR SLEPC_DIR 			      #
+		# 				See instructions regarding MKLROOT.			      #
+		#				The	value of SLEPC_DIR is estabilished by		  #
+		# 				your installation directory.				      #
 		###################################################################
     	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
