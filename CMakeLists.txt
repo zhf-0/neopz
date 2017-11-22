@@ -340,10 +340,10 @@ if(USING_MKL)
 	endif()
 	find_package(MKL REQUIRED)
 	include_directories(${MKL_INCLUDE_DIRS})
-	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
-	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
-	#enabling LAPACK library (it wont search for it, though, since MKL contains it)
-	set(USING_LAPACK ON CACHE BOOL "Whether the LAPACK library will be linked in" FORCE)
+	# #enabling BLAS library  (it wont search for it, though, since MKL contains it)
+	# set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+	# #enabling LAPACK library (it wont search for it, though, since MKL contains it)
+	# set(USING_LAPACK ON CACHE BOOL "Whether the LAPACK library will be linked in" FORCE)
 endif(USING_MKL)
 
 #enabling SLEPc library's dependency on PETSc
@@ -361,7 +361,7 @@ if(USING_PETSC)
 		###################################################################
     	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
 	endif()
-	set(ENV{BLA_VENDOR} "OpenBLAS")
+	#set(ENV{BLA_VENDOR} "OpenBLAS")
 	find_package(PETSc REQUIRED)
 	get_target_property(PETSC_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
 	include_directories(${PETSC_INCLUDE_DIRECTORIES})
@@ -386,27 +386,27 @@ endif(USING_SLEPC)
 # must be AFTER if(USING_MKL), if(USING_PETSC) and if(USING_SLEPC) #
 ####################################################################
 
-if(NOT USING_MKL)
-	if(NOT USING_PETSC)
-		#search for BLAS and LAPACK normally
-		set(ENV{BLA_VENDOR} "All")
-	endif(NOT USING_PETSC)
+# if(NOT USING_MKL)
+# 	if(NOT USING_PETSC)
+# 		#search for BLAS and LAPACK normally
+# 		set(ENV{BLA_VENDOR} "All")
+# 	endif(NOT USING_PETSC)
 
-	#enabling LAPACK library's dependency on BLAS
-	if(USING_LAPACK)
-		set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
-	endif(USING_LAPACK)
+# 	#enabling LAPACK library's dependency on BLAS
+# 	if(USING_LAPACK)
+# 		set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+# 	endif(USING_LAPACK)
 
-	#enabling BLAS library
-	if(USING_BLAS)
-		find_package(BLAS REQUIRED)
-	endif(USING_BLAS)
+# 	#enabling BLAS library
+# 	if(USING_BLAS)
+# 		find_package(BLAS REQUIRED)
+# 	endif(USING_BLAS)
 
-	#enabling LAPACK library
-	if(USING_LAPACK)
-		find_package(LAPACK REQUIRED)
-	endif(USING_LAPACK)
-endif(NOT USING_MKL)
+# 	#enabling LAPACK library
+# 	if(USING_LAPACK)
+# 		find_package(LAPACK REQUIRED)
+# 	endif(USING_LAPACK)
+# endif(NOT USING_MKL)
 
 #enabling METIS library
 if(USING_METIS)

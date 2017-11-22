@@ -152,7 +152,7 @@ endif(USING_HWLOC)
 
 if(USING_MKL)
 	target_link_libraries(pz ${MKL_LIBRARIES})
-	target_compile_definitions(pz PRIVATE USING_MKL)
+	target_compile_definitions(pz PUBLIC USING_MKL)
 endif(USING_MKL)
 
 if(USING_PETSC)
