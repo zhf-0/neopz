@@ -35,6 +35,8 @@ public:
 
     void SetSolver(TPZEigenSolver<STATE> * &fSolver);
 
+    void Assemble();
+
     void Solve();
 protected:
     /** @brief Structural matrix A (as in Ax = uBx)*/
@@ -99,6 +101,8 @@ private:
     using TPZAnalysis::GetTime;
     using TPZAnalysis::PostProcess;
     using TPZAnalysis::PrePostProcessTable;
+    using TPZAnalysis::BuildPreconditioner;
+    using TPZAnalysis::AnimateRun;
     using TPZAnalysis::PostProcessTable;
     using TPZAnalysis::LoadSolution;
     using TPZAnalysis::SetExact;
@@ -108,6 +112,7 @@ private:
     using TPZAnalysis::CreateListOfCompElsToComputeError;
 
     using TPZAnalysis::SetStructuralMatrix;
+
 };
 
 

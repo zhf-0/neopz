@@ -28,6 +28,54 @@ void TPZEigenAnalysis::SetSolver(TPZEigenSolver<STATE> * &solver) {
     fSolver = solver;
 }
 
+void TPZEigenAnalysis::Assemble()
+{
+//    if(!fCompMesh || !fStructMatrix || !fSolver)
+//    {
+//        std::stringstream sout;
+//        sout << "TPZAnalysis::Assemble lacking definition for Assemble fCompMesh "<< (void *) fCompMesh
+//             << " fStructMatrix " << (void *) fStructMatrix.operator->()
+//             << " fSolver " << (void *) fSolver;
+//#ifndef WINDOWS
+//        sout << " at file " << __FILE__ << " line " << __LINE__ ;
+//#else
+//        sout << " TPZAnalysis::Assemble() " ;
+//#endif
+//#ifdef LOG4CXX
+//        LOGPZ_ERROR(logger,sout.str().c_str());
+//#else
+//        std::cout << sout.str().c_str() << std::endl;
+//#endif
+//        return;
+//    }
+//    int numloadcases = ComputeNumberofLoadCases();
+//    long sz = fCompMesh->NEquations();
+//    fRhs.Redim(sz,numloadcases);
+//    if(fSolver->Matrix() && fSolver->Matrix()->Rows()==sz)
+//    {
+//        fSolver->Matrix()->Zero();
+//        fStructMatrix->Assemble(*(fSolver->Matrix().operator ->()),fRhs,fGuiInterface);
+//    }
+//    else
+//    {
+//
+//        TPZMatrix<STATE> *mat = fStructMatrix->CreateAssemble(fRhs,fGuiInterface);
+//        fSolver->SetMatrix(mat);
+//        //aqui TPZFMatrix<STATE> nao eh nula
+//    }
+//#ifdef LOG4CXX
+//    if(logger->isDebugEnabled())
+//    {
+//        std::stringstream sout;
+//        PrintVectorByElement(sout, fRhs, 1.e-6);
+////        fRhs.Print("Rhs",sout);
+//        LOGPZ_DEBUG(logger,sout.str())
+//    }
+//#endif
+//
+//    fSolver->UpdateFrom(fSolver->Matrix());
+}
+
 void TPZEigenAnalysis::Solve() {
     long numeq = fCompMesh->NEquations();
     if(fRhs.Rows() != numeq )
