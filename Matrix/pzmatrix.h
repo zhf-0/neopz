@@ -47,6 +47,30 @@ enum DecomposeType {ENoDecompose, ELU, ELUPivot, ECholesky, ELDLt};
 /** @brief Defines output format */
 enum MatrixOutputFormat {EFormatted, EInputFormat, EMathematicaInput, EMatlabNonZeros, EMatrixMarket};
 
+//@TODO:Find PETSc solver options for documentation purposes.
+/**
+ * @brief This is an enumeration type for defining which implementation
+ * is going to be used for a given choice of method for solving an
+ * algebraic system.
+ */
+enum AlgebSysSolver{
+	ENeoPZ,///<Use NeoPZ's implementation of the selected solver algorithm.
+	EMkl,///<Use MKL's implementation (Pardiso) of the selected solver algorithm (if available).
+	EPetsc///<Use MKL's implementation of the selected solver algorithm (if available).
+};
+
+//@TODO:Find SLEPc solver options for documentation purposes.
+/**
+ * @brief This is an enumeration type for defining which implementation
+ * is going to be used for a given choice of method for solving an
+ * eigenvalue problem (generalized or not).
+ */
+enum EigenSysSolver{
+	ENeoPz,///<Use NeoPZ's implementation of the selected solver algorithm.
+	ELapack,///<Use Lapack's implementation of the selected solver algorithm (if available).
+	ESlepc///<Use SLEPc's implementation of the selected solver algorithm (if available).
+};
+
 /** @brief Root matrix class (abstract). \ref matrix "Matrix" */
 /** Abstract class TPZMatrix<TVar>which defines interface of derived matrix classes. */
 template<class TVar>
