@@ -14,7 +14,7 @@ TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, STATE ( &ur)( const 
 TPZVecL2(id), fUr(ur), fEr(er)
 {
     isTesting = false;
-    assembling = NDefined;
+    fAssembling = NDefined;
     fW = 2.*M_PI*freq;
 }
 
@@ -22,7 +22,7 @@ TPZMatModalAnalysis::TPZMatModalAnalysis(int id) : TPZVecL2(id), fUr(urDefault),
 fEr(erDefault)
 {
     isTesting = false;
-    assembling = NDefined;
+    fAssembling = NDefined;
     fW = 2.*M_PI*1e+9;
 }
 
@@ -31,7 +31,7 @@ TPZMatModalAnalysis::TPZMatModalAnalysis() : TPZVecL2(), fUr(urDefault),
 fEr(erDefault)
 {
     isTesting = false;
-    assembling = NDefined;
+    fAssembling = NDefined;
     fW=2.*M_PI*1e+9;
 }
 
@@ -40,7 +40,7 @@ TPZMatModalAnalysis::TPZMatModalAnalysis(const TPZMatModalAnalysis &mat) : TPZVe
 fEr(mat.fEr)
 {
     isTesting = false;
-    assembling = NDefined;
+    fAssembling = NDefined;
     fW = mat.fW;
 }
 
@@ -227,10 +227,10 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             stiffAtt = 1./muR * curlIdotCurlJ;
             stiffAtt -= k0 * k0 * epsilonR * phiIdotPhiJ;
             stiffBtt = 1./muR * phiIdotPhiJ;
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffBtt * weight ;
             }
             else{
@@ -247,10 +247,10 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             phiVecDotGradPhiSca += phiHCurl(iVec , 2) * gradPhiH1(jSca , 2);
             
             stiffBzt = 1./muR * phiVecDotGradPhiSca;
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstHCurl + iVec , firstH1 + jSca ) += stiffBzt * weight ;
             }
             else{
@@ -266,10 +266,10 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             phiVecDotGradPhiSca += phiHCurl(jVec , 1) * gradPhiH1(iSca , 1);
             phiVecDotGradPhiSca += phiHCurl(jVec , 2) * gradPhiH1(iSca , 2);
             stiffBtz = 1./muR * phiVecDotGradPhiSca;
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstHCurl +  jVec ) += stiffBtz * weight ;
             }
             else{
@@ -286,10 +286,10 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             stiffBzz =  1./muR * gradPhiScaDotGradPhiSca;
             stiffBzz -=  k0 * k0 * epsilonR * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
 			
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffBzz * weight ;
             }
             else{
@@ -336,7 +336,7 @@ void TPZMatModalAnalysis::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL we
         switch ( bc.Type() )
         {
             case 0:
-                if(this->assembling == B || this->assembling == A){
+                if(this->fAssembling == B || this->fAssembling == A){
                     for(int i = 0 ; i<nshape ; i++)
                     {
                         const STATE rhs = phiH1(i,0) * BIG  * v2;

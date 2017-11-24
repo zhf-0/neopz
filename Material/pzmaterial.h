@@ -77,6 +77,13 @@ protected:
     
     /** @brief indicates which solution should be used for post processing */
     int fPostProcIndex;
+
+    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
+    /**
+     * @brief defines, for generalised eigenvalue problems, which matrix is being assembled.
+     * It is not used elsewhere.
+     */
+    whichMatrix fAssembling;
     
 public:
     /** @brief Big number to penalization method, used for Dirichlet conditions */
@@ -224,8 +231,24 @@ public:
     virtual void Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout);
 	
 	/** @brief Returns the solution associated with the var index based on the finite element approximation around one interface element */
-    virtual void Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * left, TPZCompEl * ritgh);	
-    
+    virtual void Solution(TPZMaterialData &data, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec, int var, TPZVec<STATE> &Solout, TPZCompEl * left, TPZCompEl * ritgh);
+
+    /**
+     * @brief Sets Matrix A for assembling (eigenvalue problems only).
+     * @details For materials designed for solving the
+     * generalised eigenvalue problem stated as Ax = lBx.
+     * Matrices A and B are assembled at different stages
+     * of the assembly process.
+     */
+    virtual void SetMatrixA(){ fAssembling = A;};
+    /**
+     * @brief Sets Matrix B for assembling (eigenvalue problems only).
+     * @details For materials designed for solving the
+     * generalised eigenvalue problem stated as Ax = lBx.
+     * Matrices A and B are assembled at different stages
+     * of the assembly process.
+     */
+    virtual void SetMatrixB(){ fAssembling = B;};
 protected:
     /** @deprecated Deprecated interface for Solution method which must use material data. */
     virtual void Solution(TPZVec<STATE> &Sol,TPZFMatrix<STATE> &DSol,TPZFMatrix<REAL> &axes,int var,TPZVec<STATE> &Solout);
