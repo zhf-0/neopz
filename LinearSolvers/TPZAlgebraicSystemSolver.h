@@ -17,6 +17,14 @@ class TPZAlgebraicSystemSolver : public TPZSolver<TVar>
     
 public:
     /**
+	 * @brief Solves the system of linear equations
+	 * @param F contains Force vector
+	 * @param result contains the solution
+	 * @param residual contains the residual for that linear system
+	 */
+    virtual void Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &result,
+                       TPZFMatrix<TVar>  *residual = 0) = 0;
+    /**
      * @enum MSolver
      * @brief Defines a series of solvers available in PZ
      * @param ENoSolver No solver selected
