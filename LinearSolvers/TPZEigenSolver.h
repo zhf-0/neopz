@@ -23,6 +23,10 @@ public:
     void SetMatrixA(TPZAutoPointer<TPZMatrix<STATE>> pointer);
 
     void SetMatrixB(TPZAutoPointer<TPZMatrix<STATE>> mat);
+
+    void Solve(TPZVec<TVar> &eigenValues, TPZFMatrix<TVar> &eigenVectors);
+
+    virtual int ClassId() const override;
 protected:
     /** @brief Whether to solve the eigenvalue problem
          *   is generalised (Ax=uBx) or not (Ax=ux)*/
@@ -44,17 +48,18 @@ protected:
         /** Specified Value on the Complex Plane */
                 SVCP
     };
+
     /**
          * @brief Where in the spectrum to search for eigenvalues
          */
     EDesiredEigen fDesiredPartOfSpectrum = MNE;
-
     /**
      * @brief If fDesiredPartOfSpectrum is SVCP, eigenvalues will be
      * searched for around this value. It is always complex, regardless of
      * what type STATE refers to.
      */
     std::complex<REAL> fSpecifiedValue = 0.;
+
     /**
          * @brief Stores the computed eigenvalues
          */
@@ -70,7 +75,6 @@ protected:
 
     /** @brief Container classes */
     TPZAutoPointer<TPZMatrix<TVar> > fMatrixB;
-
 };
 
 

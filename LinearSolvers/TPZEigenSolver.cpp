@@ -29,3 +29,30 @@ void TPZEigenSolver<TVar>::SetMatrixB(TPZAutoPointer<TPZMatrix<STATE>> mat) {
     }
     fMatrixB = mat;
 }
+
+template <class TVar>
+void TPZEigenSolver<TVar>::Solve(TPZVec<TVar> &eigenValues, TPZFMatrix<TVar> &eigenVectors){
+    if(!this->MatrixA() || (!this->MatrixB() && this->IsGeneralised() )) {
+        std::cout << "TPZEigenSolver::Solve called without a matrix pointer"<<std::endl;
+        if(this->MatrixA()){
+            std::cout<<"Missing B matrix."<<std::endl;
+        }
+        DebugStop();
+    }
+
+    TPZAutoPointer<TPZMatrix<TVar> > matA = this->MatrixA();
+    if(eigenValues.size() != matA->Rows()) {
+        eigenValues.Resize(matA->Rows());
+    }
+    if(this->IsGeneralised()){
+        TPZAutoPointer<TPZMatrix<TVar> > matB = this->MatrixB();
+        if(!matA->SolveGeneralisedEigenProblem(matB,eigenValues,eigenVectors)) DebugStop();
+    }else{
+        if(!matA->SolveEigenProblem(eigenValues,eigenVectors)) DebugStop();
+    }
+}
+
+template<typename TVar>
+int TPZEigenSolver<TVar>::ClassId() const{
+    return 666;//@TODO: Implementar corretamente!
+}

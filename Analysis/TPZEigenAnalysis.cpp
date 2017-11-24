@@ -1,10 +1,24 @@
 //
-// Created by Francisco Teixeira Orlandini on 11/17/17.
 //
+// Created by Francisco Teixeira Orlandini on 11/17/17.
 
 #include "TPZEigenAnalysis.h"
 #include "TPZEigenSolver.h"
 #include "pzmaterial.h"
+
+TPZEigenAnalysis::TPZEigenAnalysis() : TPZAnalysis() , fSolver(0){
+
+}
+
+TPZEigenAnalysis::TPZEigenAnalysis(TPZCompMesh *mesh, bool mustOptimizeBandwidth, std::ostream &out)
+        :TPZAnalysis(mesh, mustOptimizeBandwidth,out), fSolver(0) {
+
+}
+
+TPZEigenAnalysis::TPZEigenAnalysis(TPZAutoPointer<TPZCompMesh> mesh, bool mustOptimizeBandwidth, std::ostream &out)
+        : TPZAnalysis(mesh, mustOptimizeBandwidth, out) ,  fSolver(0){
+
+}
 
 TPZEigenSolver<STATE> * TPZEigenAnalysis::GetSolver() const {
     return fSolver;

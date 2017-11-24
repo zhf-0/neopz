@@ -30,6 +30,9 @@ public:
     void Assemble() override;
 
     void Solve() override;
+
+    //@TODO: IMPLEMENTAR CLASSID
+    // virtual int ClassId() const override;
 protected:
     /**
      * @brief Pointer to the Eigen solver
