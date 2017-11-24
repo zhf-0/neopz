@@ -1,0 +1,1 @@
+/usr/bin/c++    -DHAVE_STRUCT_TIMESPEC -fPIC -Wno-narrowing -g -DPZDEBUG   CMakeFiles/MixedElasticity.dir/main.cpp.o CMakeFiles/MixedElasticity.dir/meshgen.cpp.o CMakeFiles/MixedElasticity.dir/pzmixedelasmat.cpp.o  -o MixedElasticity -rdynamic ../../lib/libpz.a -lpthread -lpthread 

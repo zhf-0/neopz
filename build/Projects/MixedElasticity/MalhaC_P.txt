@@ -1,0 +1,771 @@
+
+		COMPUTABLE GRID INFORMATIONS:
+
+TITLE-> 
+
+number of connects            = 144
+number of elements            = 16
+number of materials           = 1
+dimension of the mesh         = 2
+
+	 Connect Information:
+
+ Index 0 TPZConnect : Sequence number = 0  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 0	NumElCon = 1 Block size 1 Solution 0 
+ Index 1 TPZConnect : Sequence number = 1  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 1	NumElCon = 1 Block size 1 Solution 0 
+ Index 2 TPZConnect : Sequence number = 2  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 2	NumElCon = 1 Block size 1 Solution 0 
+ Index 3 TPZConnect : Sequence number = 3  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 3	NumElCon = 1 Block size 1 Solution 0 
+ Index 4 TPZConnect : Sequence number = 4  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 4	NumElCon = 1 Block size 1 Solution 0 
+ Index 5 TPZConnect : Sequence number = 5  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 5	NumElCon = 1 Block size 1 Solution 0 
+ Index 6 TPZConnect : Sequence number = 6  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 6	NumElCon = 1 Block size 1 Solution 0 
+ Index 7 TPZConnect : Sequence number = 7  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 7	NumElCon = 1 Block size 1 Solution 0 
+ Index 8 TPZConnect : Sequence number = 8  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 8	NumElCon = 1 Block size 1 Solution 0 
+ Index 9 TPZConnect : Sequence number = 9  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 9	NumElCon = 1 Block size 1 Solution 0 
+ Index 10 TPZConnect : Sequence number = 10  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 10	NumElCon = 1 Block size 1 Solution 0 
+ Index 11 TPZConnect : Sequence number = 11  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 11	NumElCon = 1 Block size 1 Solution 0 
+ Index 12 TPZConnect : Sequence number = 12  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 12	NumElCon = 1 Block size 1 Solution 0 
+ Index 13 TPZConnect : Sequence number = 13  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 13	NumElCon = 1 Block size 1 Solution 0 
+ Index 14 TPZConnect : Sequence number = 14  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 14	NumElCon = 1 Block size 1 Solution 0 
+ Index 15 TPZConnect : Sequence number = 15  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 15	NumElCon = 1 Block size 1 Solution 0 
+ Index 16 TPZConnect : Sequence number = 16  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 16	NumElCon = 1 Block size 1 Solution 0 
+ Index 17 TPZConnect : Sequence number = 17  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 17	NumElCon = 1 Block size 1 Solution 0 
+ Index 18 TPZConnect : Sequence number = 18  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 18	NumElCon = 1 Block size 1 Solution 0 
+ Index 19 TPZConnect : Sequence number = 19  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 19	NumElCon = 1 Block size 1 Solution 0 
+ Index 20 TPZConnect : Sequence number = 20  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 20	NumElCon = 1 Block size 1 Solution 0 
+ Index 21 TPZConnect : Sequence number = 21  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 21	NumElCon = 1 Block size 1 Solution 0 
+ Index 22 TPZConnect : Sequence number = 22  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 22	NumElCon = 1 Block size 1 Solution 0 
+ Index 23 TPZConnect : Sequence number = 23  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 23	NumElCon = 1 Block size 1 Solution 0 
+ Index 24 TPZConnect : Sequence number = 24  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 24	NumElCon = 1 Block size 1 Solution 0 
+ Index 25 TPZConnect : Sequence number = 25  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 25	NumElCon = 1 Block size 1 Solution 0 
+ Index 26 TPZConnect : Sequence number = 26  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 26	NumElCon = 1 Block size 1 Solution 0 
+ Index 27 TPZConnect : Sequence number = 27  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 27	NumElCon = 1 Block size 1 Solution 0 
+ Index 28 TPZConnect : Sequence number = 28  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 28	NumElCon = 1 Block size 1 Solution 0 
+ Index 29 TPZConnect : Sequence number = 29  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 29	NumElCon = 1 Block size 1 Solution 0 
+ Index 30 TPZConnect : Sequence number = 30  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 30	NumElCon = 1 Block size 1 Solution 0 
+ Index 31 TPZConnect : Sequence number = 31  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 31	NumElCon = 1 Block size 1 Solution 0 
+ Index 32 TPZConnect : Sequence number = 32  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 32	NumElCon = 1 Block size 1 Solution 0 
+ Index 33 TPZConnect : Sequence number = 33  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 33	NumElCon = 1 Block size 1 Solution 0 
+ Index 34 TPZConnect : Sequence number = 34  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 34	NumElCon = 1 Block size 1 Solution 0 
+ Index 35 TPZConnect : Sequence number = 35  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 35	NumElCon = 1 Block size 1 Solution 0 
+ Index 36 TPZConnect : Sequence number = 36  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 36	NumElCon = 1 Block size 1 Solution 0 
+ Index 37 TPZConnect : Sequence number = 37  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 37	NumElCon = 1 Block size 1 Solution 0 
+ Index 38 TPZConnect : Sequence number = 38  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 38	NumElCon = 1 Block size 1 Solution 0 
+ Index 39 TPZConnect : Sequence number = 39  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 39	NumElCon = 1 Block size 1 Solution 0 
+ Index 40 TPZConnect : Sequence number = 40  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 40	NumElCon = 1 Block size 1 Solution 0 
+ Index 41 TPZConnect : Sequence number = 41  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 41	NumElCon = 1 Block size 1 Solution 0 
+ Index 42 TPZConnect : Sequence number = 42  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 42	NumElCon = 1 Block size 1 Solution 0 
+ Index 43 TPZConnect : Sequence number = 43  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 43	NumElCon = 1 Block size 1 Solution 0 
+ Index 44 TPZConnect : Sequence number = 44  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 44	NumElCon = 1 Block size 1 Solution 0 
+ Index 45 TPZConnect : Sequence number = 45  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 45	NumElCon = 1 Block size 1 Solution 0 
+ Index 46 TPZConnect : Sequence number = 46  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 46	NumElCon = 1 Block size 1 Solution 0 
+ Index 47 TPZConnect : Sequence number = 47  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 47	NumElCon = 1 Block size 1 Solution 0 
+ Index 48 TPZConnect : Sequence number = 48  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 48	NumElCon = 1 Block size 1 Solution 0 
+ Index 49 TPZConnect : Sequence number = 49  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 49	NumElCon = 1 Block size 1 Solution 0 
+ Index 50 TPZConnect : Sequence number = 50  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 50	NumElCon = 1 Block size 1 Solution 0 
+ Index 51 TPZConnect : Sequence number = 51  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 51	NumElCon = 1 Block size 1 Solution 0 
+ Index 52 TPZConnect : Sequence number = 52  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 52	NumElCon = 1 Block size 1 Solution 0 
+ Index 53 TPZConnect : Sequence number = 53  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 53	NumElCon = 1 Block size 1 Solution 0 
+ Index 54 TPZConnect : Sequence number = 54  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 54	NumElCon = 1 Block size 1 Solution 0 
+ Index 55 TPZConnect : Sequence number = 55  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 55	NumElCon = 1 Block size 1 Solution 0 
+ Index 56 TPZConnect : Sequence number = 56  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 56	NumElCon = 1 Block size 1 Solution 0 
+ Index 57 TPZConnect : Sequence number = 57  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 57	NumElCon = 1 Block size 1 Solution 0 
+ Index 58 TPZConnect : Sequence number = 58  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 58	NumElCon = 1 Block size 1 Solution 0 
+ Index 59 TPZConnect : Sequence number = 59  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 59	NumElCon = 1 Block size 1 Solution 0 
+ Index 60 TPZConnect : Sequence number = 60  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 60	NumElCon = 1 Block size 1 Solution 0 
+ Index 61 TPZConnect : Sequence number = 61  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 61	NumElCon = 1 Block size 1 Solution 0 
+ Index 62 TPZConnect : Sequence number = 62  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 62	NumElCon = 1 Block size 1 Solution 0 
+ Index 63 TPZConnect : Sequence number = 63  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 63	NumElCon = 1 Block size 1 Solution 0 
+ Index 64 TPZConnect : Sequence number = 64  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 64	NumElCon = 1 Block size 1 Solution 0 
+ Index 65 TPZConnect : Sequence number = 65  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 65	NumElCon = 1 Block size 1 Solution 0 
+ Index 66 TPZConnect : Sequence number = 66  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 66	NumElCon = 1 Block size 1 Solution 0 
+ Index 67 TPZConnect : Sequence number = 67  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 67	NumElCon = 1 Block size 1 Solution 0 
+ Index 68 TPZConnect : Sequence number = 68  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 68	NumElCon = 1 Block size 1 Solution 0 
+ Index 69 TPZConnect : Sequence number = 69  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 69	NumElCon = 1 Block size 1 Solution 0 
+ Index 70 TPZConnect : Sequence number = 70  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 70	NumElCon = 1 Block size 1 Solution 0 
+ Index 71 TPZConnect : Sequence number = 71  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 71	NumElCon = 1 Block size 1 Solution 0 
+ Index 72 TPZConnect : Sequence number = 72  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 72	NumElCon = 1 Block size 1 Solution 0 
+ Index 73 TPZConnect : Sequence number = 73  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 73	NumElCon = 1 Block size 1 Solution 0 
+ Index 74 TPZConnect : Sequence number = 74  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 74	NumElCon = 1 Block size 1 Solution 0 
+ Index 75 TPZConnect : Sequence number = 75  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 75	NumElCon = 1 Block size 1 Solution 0 
+ Index 76 TPZConnect : Sequence number = 76  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 76	NumElCon = 1 Block size 1 Solution 0 
+ Index 77 TPZConnect : Sequence number = 77  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 77	NumElCon = 1 Block size 1 Solution 0 
+ Index 78 TPZConnect : Sequence number = 78  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 78	NumElCon = 1 Block size 1 Solution 0 
+ Index 79 TPZConnect : Sequence number = 79  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 79	NumElCon = 1 Block size 1 Solution 0 
+ Index 80 TPZConnect : Sequence number = 80  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 80	NumElCon = 1 Block size 1 Solution 0 
+ Index 81 TPZConnect : Sequence number = 81  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 81	NumElCon = 1 Block size 1 Solution 0 
+ Index 82 TPZConnect : Sequence number = 82  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 82	NumElCon = 1 Block size 1 Solution 0 
+ Index 83 TPZConnect : Sequence number = 83  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 83	NumElCon = 1 Block size 1 Solution 0 
+ Index 84 TPZConnect : Sequence number = 84  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 84	NumElCon = 1 Block size 1 Solution 0 
+ Index 85 TPZConnect : Sequence number = 85  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 85	NumElCon = 1 Block size 1 Solution 0 
+ Index 86 TPZConnect : Sequence number = 86  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 86	NumElCon = 1 Block size 1 Solution 0 
+ Index 87 TPZConnect : Sequence number = 87  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 87	NumElCon = 1 Block size 1 Solution 0 
+ Index 88 TPZConnect : Sequence number = 88  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 88	NumElCon = 1 Block size 1 Solution 0 
+ Index 89 TPZConnect : Sequence number = 89  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 89	NumElCon = 1 Block size 1 Solution 0 
+ Index 90 TPZConnect : Sequence number = 90  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 90	NumElCon = 1 Block size 1 Solution 0 
+ Index 91 TPZConnect : Sequence number = 91  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 91	NumElCon = 1 Block size 1 Solution 0 
+ Index 92 TPZConnect : Sequence number = 92  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 92	NumElCon = 1 Block size 1 Solution 0 
+ Index 93 TPZConnect : Sequence number = 93  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 93	NumElCon = 1 Block size 1 Solution 0 
+ Index 94 TPZConnect : Sequence number = 94  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 94	NumElCon = 1 Block size 1 Solution 0 
+ Index 95 TPZConnect : Sequence number = 95  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 95	NumElCon = 1 Block size 1 Solution 0 
+ Index 96 TPZConnect : Sequence number = 96  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 96	NumElCon = 1 Block size 1 Solution 0 
+ Index 97 TPZConnect : Sequence number = 97  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 97	NumElCon = 1 Block size 1 Solution 0 
+ Index 98 TPZConnect : Sequence number = 98  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 98	NumElCon = 1 Block size 1 Solution 0 
+ Index 99 TPZConnect : Sequence number = 99  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 99	NumElCon = 1 Block size 1 Solution 0 
+ Index 100 TPZConnect : Sequence number = 100  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 100	NumElCon = 1 Block size 1 Solution 0 
+ Index 101 TPZConnect : Sequence number = 101  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 101	NumElCon = 1 Block size 1 Solution 0 
+ Index 102 TPZConnect : Sequence number = 102  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 102	NumElCon = 1 Block size 1 Solution 0 
+ Index 103 TPZConnect : Sequence number = 103  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 103	NumElCon = 1 Block size 1 Solution 0 
+ Index 104 TPZConnect : Sequence number = 104  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 104	NumElCon = 1 Block size 1 Solution 0 
+ Index 105 TPZConnect : Sequence number = 105  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 105	NumElCon = 1 Block size 1 Solution 0 
+ Index 106 TPZConnect : Sequence number = 106  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 106	NumElCon = 1 Block size 1 Solution 0 
+ Index 107 TPZConnect : Sequence number = 107  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 107	NumElCon = 1 Block size 1 Solution 0 
+ Index 108 TPZConnect : Sequence number = 108  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 108	NumElCon = 1 Block size 1 Solution 0 
+ Index 109 TPZConnect : Sequence number = 109  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 109	NumElCon = 1 Block size 1 Solution 0 
+ Index 110 TPZConnect : Sequence number = 110  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 110	NumElCon = 1 Block size 1 Solution 0 
+ Index 111 TPZConnect : Sequence number = 111  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 111	NumElCon = 1 Block size 1 Solution 0 
+ Index 112 TPZConnect : Sequence number = 112  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 112	NumElCon = 1 Block size 1 Solution 0 
+ Index 113 TPZConnect : Sequence number = 113  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 113	NumElCon = 1 Block size 1 Solution 0 
+ Index 114 TPZConnect : Sequence number = 114  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 114	NumElCon = 1 Block size 1 Solution 0 
+ Index 115 TPZConnect : Sequence number = 115  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 115	NumElCon = 1 Block size 1 Solution 0 
+ Index 116 TPZConnect : Sequence number = 116  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 116	NumElCon = 1 Block size 1 Solution 0 
+ Index 117 TPZConnect : Sequence number = 117  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 117	NumElCon = 1 Block size 1 Solution 0 
+ Index 118 TPZConnect : Sequence number = 118  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 118	NumElCon = 1 Block size 1 Solution 0 
+ Index 119 TPZConnect : Sequence number = 119  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 119	NumElCon = 1 Block size 1 Solution 0 
+ Index 120 TPZConnect : Sequence number = 120  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 120	NumElCon = 1 Block size 1 Solution 0 
+ Index 121 TPZConnect : Sequence number = 121  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 121	NumElCon = 1 Block size 1 Solution 0 
+ Index 122 TPZConnect : Sequence number = 122  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 122	NumElCon = 1 Block size 1 Solution 0 
+ Index 123 TPZConnect : Sequence number = 123  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 123	NumElCon = 1 Block size 1 Solution 0 
+ Index 124 TPZConnect : Sequence number = 124  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 124	NumElCon = 1 Block size 1 Solution 0 
+ Index 125 TPZConnect : Sequence number = 125  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 125	NumElCon = 1 Block size 1 Solution 0 
+ Index 126 TPZConnect : Sequence number = 126  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 126	NumElCon = 1 Block size 1 Solution 0 
+ Index 127 TPZConnect : Sequence number = 127  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 127	NumElCon = 1 Block size 1 Solution 0 
+ Index 128 TPZConnect : Sequence number = 128  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 128	NumElCon = 1 Block size 1 Solution 0 
+ Index 129 TPZConnect : Sequence number = 129  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 129	NumElCon = 1 Block size 1 Solution 0 
+ Index 130 TPZConnect : Sequence number = 130  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 130	NumElCon = 1 Block size 1 Solution 0 
+ Index 131 TPZConnect : Sequence number = 131  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 131	NumElCon = 1 Block size 1 Solution 0 
+ Index 132 TPZConnect : Sequence number = 132  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 132	NumElCon = 1 Block size 1 Solution 0 
+ Index 133 TPZConnect : Sequence number = 133  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 133	NumElCon = 1 Block size 1 Solution 0 
+ Index 134 TPZConnect : Sequence number = 134  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 134	NumElCon = 1 Block size 1 Solution 0 
+ Index 135 TPZConnect : Sequence number = 135  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 135	NumElCon = 1 Block size 1 Solution 0 
+ Index 136 TPZConnect : Sequence number = 136  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 136	NumElCon = 1 Block size 1 Solution 0 
+ Index 137 TPZConnect : Sequence number = 137  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 137	NumElCon = 1 Block size 1 Solution 0 
+ Index 138 TPZConnect : Sequence number = 138  Order = 1  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 138	NumElCon = 1 Block size 1 Solution 0 
+ Index 139 TPZConnect : Sequence number = 139  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 139	NumElCon = 1 Block size 1 Solution 0 
+ Index 140 TPZConnect : Sequence number = 140  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 140	NumElCon = 1 Block size 1 Solution 0 
+ Index 141 TPZConnect : Sequence number = 141  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 141	NumElCon = 1 Block size 1 Solution 0 
+ Index 142 TPZConnect : Sequence number = 142  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 142	NumElCon = 1 Block size 1 Solution 0 
+ Index 143 TPZConnect : Sequence number = 143  Order = 2  NState = 1  NShape 1 IsCondensed 0 IsLagrMult 1	Equation = 143	NumElCon = 1 Block size 1 Solution 0 
+
+	 Computable Element Information:
+
+
+ Index 0 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 0
+fReferenceIndex 0
+Center coordinate: -0.75, -0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 0 1 2 3 4 5 6 7 8 
+PreferredSideOrder 2
+Index = 0 - Center coordinate: [0]-1, -1, 0 [1]-0.5, -1, 0 [2]-0.5, -0.5, 0 [3]-1, -0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 0/1 1/1 2/1 3/1 4/1 5/1 6/1 7/1 8/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 0
+
+
+ Index 1 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 1
+fReferenceIndex 1
+Center coordinate: -0.25, -0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 9 10 11 12 13 14 15 16 17 
+PreferredSideOrder 2
+Index = 1 - Center coordinate: [0]-0.5, -1, 0 [1]0, -1, 0 [2]0, -0.5, 0 [3]-0.5, -0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 9/1 10/1 11/1 12/1 13/1 14/1 15/1 16/1 17/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 1
+
+
+ Index 2 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 2
+fReferenceIndex 2
+Center coordinate: 0.25, -0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 18 19 20 21 22 23 24 25 26 
+PreferredSideOrder 2
+Index = 2 - Center coordinate: [0]0, -1, 0 [1]0.5, -1, 0 [2]0.5, -0.5, 0 [3]0, -0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 18/1 19/1 20/1 21/1 22/1 23/1 24/1 25/1 26/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 2
+
+
+ Index 3 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 3
+fReferenceIndex 3
+Center coordinate: 0.75, -0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 27 28 29 30 31 32 33 34 35 
+PreferredSideOrder 2
+Index = 3 - Center coordinate: [0]0.5, -1, 0 [1]1, -1, 0 [2]1, -0.5, 0 [3]0.5, -0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 27/1 28/1 29/1 30/1 31/1 32/1 33/1 34/1 35/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 3
+
+
+ Index 4 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 4
+fReferenceIndex 4
+Center coordinate: -0.75, -0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 36 37 38 39 40 41 42 43 44 
+PreferredSideOrder 2
+Index = 4 - Center coordinate: [0]-1, -0.5, 0 [1]-0.5, -0.5, 0 [2]-0.5, 0, 0 [3]-1, 0, 0 
+Number of connects = 9 Connect indexes/NShape : 36/1 37/1 38/1 39/1 40/1 41/1 42/1 43/1 44/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 4
+
+
+ Index 5 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 5
+fReferenceIndex 5
+Center coordinate: -0.25, -0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 45 46 47 48 49 50 51 52 53 
+PreferredSideOrder 2
+Index = 5 - Center coordinate: [0]-0.5, -0.5, 0 [1]0, -0.5, 0 [2]0, 0, 0 [3]-0.5, 0, 0 
+Number of connects = 9 Connect indexes/NShape : 45/1 46/1 47/1 48/1 49/1 50/1 51/1 52/1 53/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 5
+
+
+ Index 6 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 6
+fReferenceIndex 6
+Center coordinate: 0.25, -0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 54 55 56 57 58 59 60 61 62 
+PreferredSideOrder 2
+Index = 6 - Center coordinate: [0]0, -0.5, 0 [1]0.5, -0.5, 0 [2]0.5, 0, 0 [3]0, 0, 0 
+Number of connects = 9 Connect indexes/NShape : 54/1 55/1 56/1 57/1 58/1 59/1 60/1 61/1 62/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 6
+
+
+ Index 7 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 7
+fReferenceIndex 7
+Center coordinate: 0.75, -0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 63 64 65 66 67 68 69 70 71 
+PreferredSideOrder 2
+Index = 7 - Center coordinate: [0]0.5, -0.5, 0 [1]1, -0.5, 0 [2]1, 0, 0 [3]0.5, 0, 0 
+Number of connects = 9 Connect indexes/NShape : 63/1 64/1 65/1 66/1 67/1 68/1 69/1 70/1 71/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 7
+
+
+ Index 8 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 8
+fReferenceIndex 8
+Center coordinate: -0.75, 0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 72 73 74 75 76 77 78 79 80 
+PreferredSideOrder 2
+Index = 8 - Center coordinate: [0]-1, 0, 0 [1]-0.5, 0, 0 [2]-0.5, 0.5, 0 [3]-1, 0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 72/1 73/1 74/1 75/1 76/1 77/1 78/1 79/1 80/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 8
+
+
+ Index 9 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 9
+fReferenceIndex 9
+Center coordinate: -0.25, 0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 81 82 83 84 85 86 87 88 89 
+PreferredSideOrder 2
+Index = 9 - Center coordinate: [0]-0.5, 0, 0 [1]0, 0, 0 [2]0, 0.5, 0 [3]-0.5, 0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 81/1 82/1 83/1 84/1 85/1 86/1 87/1 88/1 89/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 9
+
+
+ Index 10 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 10
+fReferenceIndex 10
+Center coordinate: 0.25, 0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 90 91 92 93 94 95 96 97 98 
+PreferredSideOrder 2
+Index = 10 - Center coordinate: [0]0, 0, 0 [1]0.5, 0, 0 [2]0.5, 0.5, 0 [3]0, 0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 90/1 91/1 92/1 93/1 94/1 95/1 96/1 97/1 98/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 10
+
+
+ Index 11 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 11
+fReferenceIndex 11
+Center coordinate: 0.75, 0.25, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 99 100 101 102 103 104 105 106 107 
+PreferredSideOrder 2
+Index = 11 - Center coordinate: [0]0.5, 0, 0 [1]1, 0, 0 [2]1, 0.5, 0 [3]0.5, 0.5, 0 
+Number of connects = 9 Connect indexes/NShape : 99/1 100/1 101/1 102/1 103/1 104/1 105/1 106/1 107/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 11
+
+
+ Index 12 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 12
+fReferenceIndex 12
+Center coordinate: -0.75, 0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 108 109 110 111 112 113 114 115 116 
+PreferredSideOrder 2
+Index = 12 - Center coordinate: [0]-1, 0.5, 0 [1]-0.5, 0.5, 0 [2]-0.5, 1, 0 [3]-1, 1, 0 
+Number of connects = 9 Connect indexes/NShape : 108/1 109/1 110/1 111/1 112/1 113/1 114/1 115/1 116/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 12
+
+
+ Index 13 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 13
+fReferenceIndex 13
+Center coordinate: -0.25, 0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 117 118 119 120 121 122 123 124 125 
+PreferredSideOrder 2
+Index = 13 - Center coordinate: [0]-0.5, 0.5, 0 [1]0, 0.5, 0 [2]0, 1, 0 [3]-0.5, 1, 0 
+Number of connects = 9 Connect indexes/NShape : 117/1 118/1 119/1 120/1 121/1 122/1 123/1 124/1 125/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 13
+
+
+ Index 14 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 14
+fReferenceIndex 14
+Center coordinate: 0.25, 0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 126 127 128 129 130 131 132 133 134 
+PreferredSideOrder 2
+Index = 14 - Center coordinate: [0]0, 0.5, 0 [1]0.5, 0.5, 0 [2]0.5, 1, 0 [3]0, 1, 0 
+Number of connects = 9 Connect indexes/NShape : 126/1 127/1 128/1 129/1 130/1 131/1 132/1 133/1 134/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 14
+
+
+ Index 15 virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 15
+fReferenceIndex 15
+Center coordinate: 0.75, 0.75, 0
+Material id 1
+Number of connects = 9
+Connect indexes : 135 136 137 138 139 140 141 142 143 
+PreferredSideOrder 2
+Index = 15 - Center coordinate: [0]0.5, 0.5, 0 [1]1, 0.5, 0 [2]1, 1, 0 [3]0.5, 1, 0 
+Number of connects = 9 Connect indexes/NShape : 135/1 136/1 137/1 138/1 139/1 140/1 141/1 142/1 143/1 
+Side orders =  side 0 orders 1 
+ side 1 orders 1 
+ side 2 orders 1 
+ side 3 orders 1 
+ side 4 orders 1 1 2 
+ side 5 orders 1 1 2 
+ side 6 orders 1 1 2 
+ side 7 orders 1 1 2 
+ side 8 orders 1 1 1 1 2 2 2 2 2 
+material id 1
+Integration orders : 	4	4	Cubature rule (TPZIntQuad) 9 : Order ( 4 4 ) 
+Number of points 9
+ip 0 pos -0.774597, -0.774597 w 0.308642
+ip 1 pos -0.774597, 0.774597 w 0.308642
+ip 2 pos -0.774597, -0 w 0.493827
+ip 3 pos 0.774597, -0.774597 w 0.308642
+ip 4 pos 0.774597, 0.774597 w 0.308642
+ip 5 pos 0.774597, -0 w 0.493827
+ip 6 pos -0, -0.774597 w 0.493827
+ip 7 pos -0, 0.774597 w 0.493827
+ip 8 pos -0, -0 w 0.790123
+
+	Reference Index = 15
+
+
+	 Material Information:
+
+name of material : TPZMatPoisson3d
+Laplace operator multiplier fK 1
+Convection coeficient fC 0
+Convection direction 0 0 0
+Forcing vector fXf 0
+Penalty constant 1000
+Base Class properties :virtual void TPZMaterial::Print(std::ostream&)
+
+Material Id = 1
+Linear context 1
+Num loadcases 1
+Big number 1e+16
+Has no forcing function
+Has no exact forcing function
+Has no time dependent forcing function
+No time dependent forcing function exact
+

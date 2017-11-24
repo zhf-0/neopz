@@ -1,0 +1,1349 @@
+
+		COMPUTABLE GRID INFORMATIONS:
+
+TITLE-> 
+
+number of connects            = 56
+number of elements            = 32
+number of materials           = 5
+dimension of the mesh         = 2
+
+	 Connect Information:
+
+ Index 0 TPZConnect : Sequence number = 0  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 0	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 1 TPZConnect : Sequence number = 1  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 6	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 2 TPZConnect : Sequence number = 2  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 12	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 3 TPZConnect : Sequence number = 3  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 18	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 4 TPZConnect : Sequence number = 4  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 24	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 5 TPZConnect : Sequence number = 5  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 48	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 6 TPZConnect : Sequence number = 6  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 54	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 7 TPZConnect : Sequence number = 7  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 60	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 8 TPZConnect : Sequence number = 8  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 66	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 9 TPZConnect : Sequence number = 9  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 90	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 10 TPZConnect : Sequence number = 10  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 96	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 11 TPZConnect : Sequence number = 11  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 102	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 12 TPZConnect : Sequence number = 12  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 108	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 13 TPZConnect : Sequence number = 13  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 132	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 14 TPZConnect : Sequence number = 14  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 138	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 15 TPZConnect : Sequence number = 15  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 144	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 16 TPZConnect : Sequence number = 16  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 150	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 17 TPZConnect : Sequence number = 17  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 174	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 18 TPZConnect : Sequence number = 18  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 180	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 19 TPZConnect : Sequence number = 19  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 186	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 20 TPZConnect : Sequence number = 20  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 192	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 21 TPZConnect : Sequence number = 21  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 216	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 22 TPZConnect : Sequence number = 22  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 222	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 23 TPZConnect : Sequence number = 23  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 228	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 24 TPZConnect : Sequence number = 24  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 252	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 25 TPZConnect : Sequence number = 25  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 258	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 26 TPZConnect : Sequence number = 26  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 264	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 27 TPZConnect : Sequence number = 27  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 288	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 28 TPZConnect : Sequence number = 28  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 294	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 29 TPZConnect : Sequence number = 29  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 300	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 30 TPZConnect : Sequence number = 30  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 324	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 31 TPZConnect : Sequence number = 31  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 330	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 32 TPZConnect : Sequence number = 32  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 336	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 33 TPZConnect : Sequence number = 33  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 342	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 34 TPZConnect : Sequence number = 34  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 366	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 35 TPZConnect : Sequence number = 35  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 372	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 36 TPZConnect : Sequence number = 36  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 378	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 37 TPZConnect : Sequence number = 37  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 402	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 38 TPZConnect : Sequence number = 38  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 408	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 39 TPZConnect : Sequence number = 39  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 414	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 40 TPZConnect : Sequence number = 40  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 438	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 41 TPZConnect : Sequence number = 41  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 444	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 42 TPZConnect : Sequence number = 42  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 450	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 43 TPZConnect : Sequence number = 43  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 474	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 44 TPZConnect : Sequence number = 44  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 480	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 45 TPZConnect : Sequence number = 45  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 486	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 46 TPZConnect : Sequence number = 46  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 492	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 47 TPZConnect : Sequence number = 47  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 516	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 48 TPZConnect : Sequence number = 48  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 522	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 49 TPZConnect : Sequence number = 49  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 528	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 50 TPZConnect : Sequence number = 50  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 552	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 51 TPZConnect : Sequence number = 51  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 558	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 52 TPZConnect : Sequence number = 52  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 564	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ Index 53 TPZConnect : Sequence number = 53  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 588	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 54 TPZConnect : Sequence number = 54  Order = 2  NState = 2  NShape 3 IsCondensed 0 IsLagrMult 0	Equation = 594	NumElCon = 2 Block size 6 Solution 0 0 0 0 0 0 
+ Index 55 TPZConnect : Sequence number = 55  Order = 2  NState = 2  NShape 12 IsCondensed 0 IsLagrMult 0	Equation = 600	NumElCon = 1 Block size 24 Solution 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+	 Computable Element Information:
+
+
+ Index 0 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 0
+fReferenceIndex 0
+Center coordinate: -0.75, -0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 0 1 2 3 4 
+PreferredSideOrder 2
+Index = 0 - Center coordinate: [0]-1, -1, 0 [1]-0.5, -1, 0 [2]-0.5, -0.5, 0 [3]-1, -0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 0/3 1/3 2/3 3/3 4/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation 1, 1, 1, 1
+	Reference Index = 0
+
+
+ Index 1 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 1
+fReferenceIndex 1
+Center coordinate: -0.25, -0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 5 6 7 1 8 
+PreferredSideOrder 2
+Index = 1 - Center coordinate: [0]-0.5, -1, 0 [1]0, -1, 0 [2]0, -0.5, 0 [3]-0.5, -0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 5/3 6/3 7/3 1/3 8/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation 1, 1, 1, -1
+	Reference Index = 1
+
+
+ Index 2 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 2
+fReferenceIndex 2
+Center coordinate: 0.25, -0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 9 10 11 6 12 
+PreferredSideOrder 2
+Index = 2 - Center coordinate: [0]0, -1, 0 [1]0.5, -1, 0 [2]0.5, -0.5, 0 [3]0, -0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 9/3 10/3 11/3 6/3 12/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation 1, 1, 1, -1
+	Reference Index = 2
+
+
+ Index 3 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 3
+fReferenceIndex 3
+Center coordinate: 0.75, -0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 13 14 15 10 16 
+PreferredSideOrder 2
+Index = 3 - Center coordinate: [0]0.5, -1, 0 [1]1, -1, 0 [2]1, -0.5, 0 [3]0.5, -0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 13/3 14/3 15/3 10/3 16/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation 1, 1, 1, -1
+	Reference Index = 3
+
+
+ Index 4 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 4
+fReferenceIndex 4
+Center coordinate: -0.75, -0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 2 17 18 19 20 
+PreferredSideOrder 2
+Index = 4 - Center coordinate: [0]-1, -0.5, 0 [1]-0.5, -0.5, 0 [2]-0.5, 0, 0 [3]-1, 0, 0 
+Number of connects = 5 Connect indexes/NShape : 2/3 17/3 18/3 19/3 20/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, 1
+	Reference Index = 4
+
+
+ Index 5 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 5
+fReferenceIndex 5
+Center coordinate: -0.25, -0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 7 21 22 17 23 
+PreferredSideOrder 2
+Index = 5 - Center coordinate: [0]-0.5, -0.5, 0 [1]0, -0.5, 0 [2]0, 0, 0 [3]-0.5, 0, 0 
+Number of connects = 5 Connect indexes/NShape : 7/3 21/3 22/3 17/3 23/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 5
+
+
+ Index 6 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 6
+fReferenceIndex 6
+Center coordinate: 0.25, -0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 11 24 25 21 26 
+PreferredSideOrder 2
+Index = 6 - Center coordinate: [0]0, -0.5, 0 [1]0.5, -0.5, 0 [2]0.5, 0, 0 [3]0, 0, 0 
+Number of connects = 5 Connect indexes/NShape : 11/3 24/3 25/3 21/3 26/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 6
+
+
+ Index 7 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 7
+fReferenceIndex 7
+Center coordinate: 0.75, -0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 15 27 28 24 29 
+PreferredSideOrder 2
+Index = 7 - Center coordinate: [0]0.5, -0.5, 0 [1]1, -0.5, 0 [2]1, 0, 0 [3]0.5, 0, 0 
+Number of connects = 5 Connect indexes/NShape : 15/3 27/3 28/3 24/3 29/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 7
+
+
+ Index 8 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 8
+fReferenceIndex 8
+Center coordinate: -0.75, 0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 18 30 31 32 33 
+PreferredSideOrder 2
+Index = 8 - Center coordinate: [0]-1, 0, 0 [1]-0.5, 0, 0 [2]-0.5, 0.5, 0 [3]-1, 0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 18/3 30/3 31/3 32/3 33/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, 1
+	Reference Index = 8
+
+
+ Index 9 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 9
+fReferenceIndex 9
+Center coordinate: -0.25, 0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 22 34 35 30 36 
+PreferredSideOrder 2
+Index = 9 - Center coordinate: [0]-0.5, 0, 0 [1]0, 0, 0 [2]0, 0.5, 0 [3]-0.5, 0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 22/3 34/3 35/3 30/3 36/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 9
+
+
+ Index 10 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 10
+fReferenceIndex 10
+Center coordinate: 0.25, 0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 25 37 38 34 39 
+PreferredSideOrder 2
+Index = 10 - Center coordinate: [0]0, 0, 0 [1]0.5, 0, 0 [2]0.5, 0.5, 0 [3]0, 0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 25/3 37/3 38/3 34/3 39/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 10
+
+
+ Index 11 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 11
+fReferenceIndex 11
+Center coordinate: 0.75, 0.25, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 28 40 41 37 42 
+PreferredSideOrder 2
+Index = 11 - Center coordinate: [0]0.5, 0, 0 [1]1, 0, 0 [2]1, 0.5, 0 [3]0.5, 0.5, 0 
+Number of connects = 5 Connect indexes/NShape : 28/3 40/3 41/3 37/3 42/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 11
+
+
+ Index 12 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 12
+fReferenceIndex 12
+Center coordinate: -0.75, 0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 31 43 44 45 46 
+PreferredSideOrder 2
+Index = 12 - Center coordinate: [0]-1, 0.5, 0 [1]-0.5, 0.5, 0 [2]-0.5, 1, 0 [3]-1, 1, 0 
+Number of connects = 5 Connect indexes/NShape : 31/3 43/3 44/3 45/3 46/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, 1
+	Reference Index = 12
+
+
+ Index 13 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 13
+fReferenceIndex 13
+Center coordinate: -0.25, 0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 35 47 48 43 49 
+PreferredSideOrder 2
+Index = 13 - Center coordinate: [0]-0.5, 0.5, 0 [1]0, 0.5, 0 [2]0, 1, 0 [3]-0.5, 1, 0 
+Number of connects = 5 Connect indexes/NShape : 35/3 47/3 48/3 43/3 49/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 13
+
+
+ Index 14 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 14
+fReferenceIndex 14
+Center coordinate: 0.25, 0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 38 50 51 47 52 
+PreferredSideOrder 2
+Index = 14 - Center coordinate: [0]0, 0.5, 0 [1]0.5, 0.5, 0 [2]0.5, 1, 0 [3]0, 1, 0 
+Number of connects = 5 Connect indexes/NShape : 38/3 50/3 51/3 47/3 52/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 14
+
+
+ Index 15 void TPZCompElHDiv<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeQuad; std::ostream = std::basic_ostream<char>]
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 15
+fReferenceIndex 15
+Center coordinate: 0.75, 0.75, 0
+Material id 1
+Number of connects = 5
+Connect indexes : 41 53 54 50 55 
+PreferredSideOrder 2
+Index = 15 - Center coordinate: [0]0.5, 0.5, 0 [1]1, 0.5, 0 [2]1, 1, 0 [3]0.5, 1, 0 
+Number of connects = 5 Connect indexes/NShape : 41/3 53/3 54/3 50/3 55/12 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 
+ side 3 orders 
+ side 4 orders 2 
+ side 5 orders 2 
+ side 6 orders 2 
+ side 7 orders 2 
+ side 8 orders 2 
+material id 1
+Integration orders : 	6	6	Cubature rule (TPZIntQuad) 16 : Order ( 6 6 ) 
+Number of points 16
+ip 0 pos -0.861136, -0.861136 w 0.121003
+ip 1 pos -0.861136, 0.861136 w 0.121003
+ip 2 pos -0.861136, -0.339981 w 0.226852
+ip 3 pos -0.861136, 0.339981 w 0.226852
+ip 4 pos 0.861136, -0.861136 w 0.121003
+ip 5 pos 0.861136, 0.861136 w 0.121003
+ip 6 pos 0.861136, -0.339981 w 0.226852
+ip 7 pos 0.861136, 0.339981 w 0.226852
+ip 8 pos -0.339981, -0.861136 w 0.226852
+ip 9 pos -0.339981, 0.861136 w 0.226852
+ip 10 pos -0.339981, -0.339981 w 0.425293
+ip 11 pos -0.339981, 0.339981 w 0.425293
+ip 12 pos 0.339981, -0.861136 w 0.226852
+ip 13 pos 0.339981, 0.861136 w 0.226852
+ip 14 pos 0.339981, -0.339981 w 0.425293
+ip 15 pos 0.339981, 0.339981 w 0.425293
+
+Side orientation -1, 1, 1, -1
+	Reference Index = 15
+
+
+ Index 16 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 16
+fReferenceIndex 16
+Center coordinate: -1, -0.75, 0
+Material id -3
+Number of connects = 1
+Connect indexes : 3 
+PreferredSideOrder 2
+Index = 16 - Center coordinate: [0]-1, -0.5, 0 [1]-1, -1, 0 
+Number of connects = 1 Connect indexes/NShape : 3/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -3
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 16
+
+
+ Index 17 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 17
+fReferenceIndex 17
+Center coordinate: -0.75, -1, 0
+Material id -1
+Number of connects = 1
+Connect indexes : 0 
+PreferredSideOrder 2
+Index = 17 - Center coordinate: [0]-1, -1, 0 [1]-0.5, -1, 0 
+Number of connects = 1 Connect indexes/NShape : 0/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -1
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 17
+
+
+ Index 18 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 18
+fReferenceIndex 18
+Center coordinate: -0.25, -1, 0
+Material id -1
+Number of connects = 1
+Connect indexes : 5 
+PreferredSideOrder 2
+Index = 18 - Center coordinate: [0]-0.5, -1, 0 [1]0, -1, 0 
+Number of connects = 1 Connect indexes/NShape : 5/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -1
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 18
+
+
+ Index 19 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 19
+fReferenceIndex 19
+Center coordinate: 0.25, -1, 0
+Material id -1
+Number of connects = 1
+Connect indexes : 9 
+PreferredSideOrder 2
+Index = 19 - Center coordinate: [0]0, -1, 0 [1]0.5, -1, 0 
+Number of connects = 1 Connect indexes/NShape : 9/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -1
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 19
+
+
+ Index 20 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 20
+fReferenceIndex 20
+Center coordinate: 1, -0.75, 0
+Material id -4
+Number of connects = 1
+Connect indexes : 14 
+PreferredSideOrder 2
+Index = 20 - Center coordinate: [0]1, -1, 0 [1]1, -0.5, 0 
+Number of connects = 1 Connect indexes/NShape : 14/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -4
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 20
+
+
+ Index 21 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 21
+fReferenceIndex 21
+Center coordinate: 0.75, -1, 0
+Material id -1
+Number of connects = 1
+Connect indexes : 13 
+PreferredSideOrder 2
+Index = 21 - Center coordinate: [0]0.5, -1, 0 [1]1, -1, 0 
+Number of connects = 1 Connect indexes/NShape : 13/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -1
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 21
+
+
+ Index 22 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 22
+fReferenceIndex 22
+Center coordinate: -1, -0.25, 0
+Material id -3
+Number of connects = 1
+Connect indexes : 19 
+PreferredSideOrder 2
+Index = 22 - Center coordinate: [0]-1, 0, 0 [1]-1, -0.5, 0 
+Number of connects = 1 Connect indexes/NShape : 19/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -3
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 22
+
+
+ Index 23 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 23
+fReferenceIndex 23
+Center coordinate: 1, -0.25, 0
+Material id -4
+Number of connects = 1
+Connect indexes : 27 
+PreferredSideOrder 2
+Index = 23 - Center coordinate: [0]1, -0.5, 0 [1]1, 0, 0 
+Number of connects = 1 Connect indexes/NShape : 27/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -4
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 23
+
+
+ Index 24 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 24
+fReferenceIndex 24
+Center coordinate: -1, 0.25, 0
+Material id -3
+Number of connects = 1
+Connect indexes : 32 
+PreferredSideOrder 2
+Index = 24 - Center coordinate: [0]-1, 0.5, 0 [1]-1, 0, 0 
+Number of connects = 1 Connect indexes/NShape : 32/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -3
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 24
+
+
+ Index 25 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 25
+fReferenceIndex 25
+Center coordinate: 1, 0.25, 0
+Material id -4
+Number of connects = 1
+Connect indexes : 40 
+PreferredSideOrder 2
+Index = 25 - Center coordinate: [0]1, 0, 0 [1]1, 0.5, 0 
+Number of connects = 1 Connect indexes/NShape : 40/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -4
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 25
+
+
+ Index 26 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 26
+fReferenceIndex 26
+Center coordinate: -1, 0.75, 0
+Material id -3
+Number of connects = 1
+Connect indexes : 45 
+PreferredSideOrder 2
+Index = 26 - Center coordinate: [0]-1, 1, 0 [1]-1, 0.5, 0 
+Number of connects = 1 Connect indexes/NShape : 45/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -3
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 26
+
+
+ Index 27 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 27
+fReferenceIndex 27
+Center coordinate: -0.75, 1, 0
+Material id -2
+Number of connects = 1
+Connect indexes : 44 
+PreferredSideOrder 2
+Index = 27 - Center coordinate: [0]-0.5, 1, 0 [1]-1, 1, 0 
+Number of connects = 1 Connect indexes/NShape : 44/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -2
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 27
+
+
+ Index 28 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 28
+fReferenceIndex 28
+Center coordinate: -0.25, 1, 0
+Material id -2
+Number of connects = 1
+Connect indexes : 48 
+PreferredSideOrder 2
+Index = 28 - Center coordinate: [0]0, 1, 0 [1]-0.5, 1, 0 
+Number of connects = 1 Connect indexes/NShape : 48/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -2
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 28
+
+
+ Index 29 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 29
+fReferenceIndex 29
+Center coordinate: 0.25, 1, 0
+Material id -2
+Number of connects = 1
+Connect indexes : 51 
+PreferredSideOrder 2
+Index = 29 - Center coordinate: [0]0.5, 1, 0 [1]0, 1, 0 
+Number of connects = 1 Connect indexes/NShape : 51/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -2
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 29
+
+
+ Index 30 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 30
+fReferenceIndex 30
+Center coordinate: 1, 0.75, 0
+Material id -4
+Number of connects = 1
+Connect indexes : 53 
+PreferredSideOrder 2
+Index = 30 - Center coordinate: [0]1, 0.5, 0 [1]1, 1, 0 
+Number of connects = 1 Connect indexes/NShape : 53/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -4
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 30
+
+
+ Index 31 void TPZCompElHDivBound2<TSHAPE>::Print(std::ostream&) const [with TSHAPE = pzshape::TPZShapeLinear; std::ostream = std::basic_ostream<char>]
+Side orientation 1
+virtual void TPZInterpolatedElement::Print(std::ostream&) const
+virtual void TPZInterpolationSpace::Print(std::ostream&) const
+
+Output for a computable element index: 31
+fReferenceIndex 31
+Center coordinate: 0.75, 1, 0
+Material id -2
+Number of connects = 1
+Connect indexes : 54 
+PreferredSideOrder 2
+Index = 31 - Center coordinate: [0]1, 1, 0 [1]0.5, 1, 0 
+Number of connects = 1 Connect indexes/NShape : 54/3 
+Side orders =  side 0 orders 
+ side 1 orders 
+ side 2 orders 2 
+material id -2
+Integration orders : 	4	
+Gaussian Quadrature (Legendre) : 
+
+Number of points : 3
+0 :	-0.774597 	0.555556
+1 :	0.774597 	0.555556
+2 :	-0 	0.888889
+
+
+	Reference Index = 31
+
+
+	 Material Information:
+
+ Boundary condition number = -4
+ boundary condition type = 1
+ val1 = 
+Writing matrix 'fBCVal1' (2 x 2):
+	0  0  
+	0  0  
+
+ val2 = 
+Writing matrix 'fBCVal2' (2 x 1):
+	10  
+	0  
+
+has no forcing function
+ Boundary condition number = -3
+ boundary condition type = 1
+ val1 = 
+Writing matrix 'fBCVal1' (2 x 2):
+	0  0  
+	0  0  
+
+ val2 = 
+Writing matrix 'fBCVal2' (2 x 1):
+	10  
+	0  
+
+has no forcing function
+ Boundary condition number = -2
+ boundary condition type = 1
+ val1 = 
+Writing matrix 'fBCVal1' (2 x 2):
+	0  0  
+	0  0  
+
+ val2 = 
+Writing matrix 'fBCVal2' (2 x 1):
+	0  
+	0  
+
+has no forcing function
+ Boundary condition number = -1
+ boundary condition type = 1
+ val1 = 
+Writing matrix 'fBCVal1' (2 x 2):
+	0  0  
+	0  0  
+
+ val2 = 
+Writing matrix 'fBCVal2' (2 x 1):
+	0  
+	0  
+
+has no forcing function
+name of material : TPZElasticityMaterial
+properties : 
+	E   = 206.815
+	nu   = 0.304004
+	F   = 0 0
+	 PreStress: 
+Sigma xx = 	0	Sigma yy = 	0	Sigma xy = 	0Sigma zz = 	0

@@ -1,0 +1,45 @@
+Number of elements 1
+############
+Norma H1 or L2 -> p = 1.17544
+Norma L2 or L2 -> u = 1270.88
+Semi-norma H1 or L2 -> div = 0
+Number of elements 4
+############
+Norma H1 or L2 -> p = 0.519779
+Norma L2 or L2 -> u = 407.813
+Semi-norma H1 or L2 -> div = 0
+Number of elements 8
+############
+Norma H1 or L2 -> p = 0.2255
+Norma L2 or L2 -> u = 250.615
+Semi-norma H1 or L2 -> div = 0
+Number of elements 16
+############
+Norma H1 or L2 -> p = 0.206111
+Norma L2 or L2 -> u = 240.926
+Semi-norma H1 or L2 -> div = 0
+Number of elements 32
+############
+Norma H1 or L2 -> p = 0.204785
+Norma L2 or L2 -> u = 240.309
+Semi-norma H1 or L2 -> div = 0
+Number of elements 8
+############
+Norma H1 or L2 -> p = 8.519e-16
+Norma L2 or L2 -> u = 2.16705e-12
+Semi-norma H1 or L2 -> div = 0
+Number of elements 8
+############
+Norma H1 or L2 -> p = 0.338575
+Norma L2 or L2 -> u = 138.901
+Semi-norma H1 or L2 -> div = 0
+Number of elements 8
+############
+Norma H1 or L2 -> p = 0.338575
+Norma L2 or L2 -> u = 138.901
+Semi-norma H1 or L2 -> div = 0
+Number of elements 4
+############
+Norma H1 or L2 -> p = 0.338325
+Norma L2 or L2 -> u = 138.898
+Semi-norma H1 or L2 -> div = 0
