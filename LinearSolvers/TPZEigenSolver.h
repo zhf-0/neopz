@@ -14,14 +14,62 @@
 template <typename TVar>
 class TPZEigenSolver : public TPZSolver<TVar> {
 public:
+    bool IsGeneralised() const;
+
+    TPZAutoPointer<TPZMatrix<TVar>> MatrixA();
+
+    TPZAutoPointer<TPZMatrix<TVar> > MatrixB();
+
+    void SetMatrixA(TPZAutoPointer<TPZMatrix<STATE>> pointer);
+
+    void SetMatrixB(TPZAutoPointer<TPZMatrix<STATE>> mat);
+protected:
+    /** @brief Whether to solve the eigenvalue problem
+         *   is generalised (Ax=uBx) or not (Ax=ux)*/
+    bool fIsGeneralised = false;
+    /** @brief Desired number of eigenvalues to be computed*/
+    int fHowManyEigenValues = 1;
     /**
-     * @brief Method for solving generalized(or not) eigenvalue problems.
-     * @param B Rhs matrix. For generalized problems.
-     * @param eigenVectors If calculated, eigenvectors are stored in a column-wise fashion
-     * @param eigenValues eigenvalues are stored in the first (and only) column.
+         * @brief Enum for defining ranges in the spectrum
+         */
+    enum EDesiredEigen {
+        /** Most Negative EigenValues */
+                MNE,
+        /** Least Negative Eigenvalues */
+                LNE,
+        /** Least Positive Eigenvalues */
+                LPE,
+        /** Most Positive Eigenvalues */
+                MPE,
+        /** Specified Value on the Complex Plane */
+                SVCP
+    };
+    /**
+         * @brief Where in the spectrum to search for eigenvalues
+         */
+    EDesiredEigen fDesiredPartOfSpectrum = MNE;
+
+    /**
+     * @brief If fDesiredPartOfSpectrum is SVCP, eigenvalues will be
+     * searched for around this value. It is always complex, regardless of
+     * what type STATE refers to.
      */
-//    void Solve(const TPZFMatrix<TVar> &B = 0, TPZFMatrix<TVar> &eigenVectors,
-//                       TPZFMatrix<TVar>  *eigenValues) override;
+    std::complex<REAL> fSpecifiedValue = 0.;
+    /**
+         * @brief Stores the computed eigenvalues
+         */
+    TPZFMatrix<STATE> fEigenvalues;
+
+    /**
+     * @brief Stores the computed eigenvectors
+     */
+    TPZFMatrix<STATE> fEigenvectors;
+
+    /** @brief Container classes */
+    TPZAutoPointer<TPZMatrix<TVar> > fMatrixA;
+
+    /** @brief Container classes */
+    TPZAutoPointer<TPZMatrix<TVar> > fMatrixB;
 
 };
 
