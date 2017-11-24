@@ -66,6 +66,7 @@ TPZElasticityMaterial::TPZElasticityMaterial(int num, REAL E, REAL nu, REAL fx, 
 	ff[0]	= fx; // X component of the body force
 	ff[1]	= fy; // Y component of the body force
 	ff[2] = 0.; // Z component of the body force - not used for this class
+
 	//Added by Cesar 2001/03/16
 	fPreStressXX = 0.;  //Prestress in the x direction
 	fPreStressYY = 0.;  //Prestress in the y direction
@@ -887,7 +888,7 @@ void TPZElasticityMaterial::Solution(TPZMaterialData &data, int var, TPZVec<STAT
         nu = result[1];
     }
     
-    REAL Eover1MinNu2 = E/(1+nu);//???????????
+    REAL Eover1MinNu2 = E/(1-nu*nu);
     REAL Eover21PlusNu = E/(2.*(1+nu));
     
 
@@ -940,6 +941,9 @@ void TPZElasticityMaterial::Solution(TPZMaterialData &data, int var, TPZVec<STAT
     if (this->fPlaneStress == 1){
         SigX = Eover1MinNu2*(epsx+nu/(1-2*nu)*(epsy+epsy))+fPreStressXX;
         SigY = Eover1MinNu2*(nu/(1-2*nu)*(epsx+epsy)+epsy)+fPreStressYY;
+
+        //SigX = Eover1MinNu2*(epsx+nu*epsy)+fPreStressXX;
+        //SigY = Eover1MinNu2*(nu*epsx+epsy)+fPreStressYY;
         SigZ = fPreStressZZ;
     }
     else

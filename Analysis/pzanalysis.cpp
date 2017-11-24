@@ -739,7 +739,6 @@ void TPZAnalysis::PostProcessErrorSerial(TPZVec<REAL> &ervec, std::ostream &out 
             {
                 errors.Fill(0.0);
                 el->EvaluateError(fExact, errors, 0);
-                //std::cout<<"error =  "<<errors <<endl;
                 int nerrors = errors.NElements();
                 values.Resize(nerrors, 0.);
                 for(int ier = 0; ier < nerrors; ier++)
@@ -747,7 +746,6 @@ void TPZAnalysis::PostProcessErrorSerial(TPZVec<REAL> &ervec, std::ostream &out 
                     values[ier] += errors[ier] * errors[ier];
                     
                 }
-                // std::cout<<"element error = "<<values<<std::endl;
             }
         }
     }

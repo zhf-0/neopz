@@ -7,3 +7,4 @@ add_executable(MixedElasticity ${Mymain})
 
 target_link_libraries(MixedElasticity pz)
 
+#configure_file(Girkmann.msh Girkmann.msh COPYONLY)

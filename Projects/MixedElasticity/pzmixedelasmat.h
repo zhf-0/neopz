@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Contains the TPZElasticityMaterial class which implements a two dimensional elastic material in plane stress or strain.
+ * @brief Contains the TPZMixedElasticityMaterial class which implements a two dimensional elastic material in plane stress or strain.
  */
 
 #ifndef MIXEDELASMATHPP
@@ -16,14 +16,14 @@
  * @ingroup material
  * @brief This class implements a two dimensional elastic material in plane stress or strain
  */
-class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
+class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
 	
 	public :
     
     enum MVoight {Exx,Exy,Eyx,Eyy};
 
 	/** @brief Default constructor */
-	TPZElasticityMaterial();
+	TPZMixedElasticityMaterial();
 	/** 
 	 * @brief Creates an elastic material with:
 	 * @param id material id
@@ -33,20 +33,20 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 	 * @param fy forcing function \f$ -y = fy \f$
 	 * @param plainstress \f$ plainstress = 1 \f$ indicates use of plainstress
 	 */
-	TPZElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1, int fDimension=1);
+	TPZMixedElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1, int fDimension=1);
     
     /// dimension of the material
     
-    TPZElasticityMaterial(int id);
+    TPZMixedElasticityMaterial(int id);
 	
-	/** @brief Copies the data of one TPZElasticityMaterial object to another */
-	TPZElasticityMaterial(const TPZElasticityMaterial &copy);
+	/** @brief Copies the data of one TPZMixedElasticityMaterial object to another */
+	TPZMixedElasticityMaterial(const TPZMixedElasticityMaterial &copy);
     
     
     int VariableIndex(const std::string &name);
     
     
-    int NSolutionVariables(int var);
+    virtual int NSolutionVariables(int var);
     
 
     /** index of Stress */
@@ -68,10 +68,10 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
     void ElasticityModulusTensor(TPZFMatrix<STATE> &MatrixElast);
 	
 	/** @brief Creates a new material from the current object   ??*/
-	virtual TPZMaterial * NewMaterial() { return new TPZElasticityMaterial(*this);}
+	virtual TPZMaterial * NewMaterial() { return new TPZMixedElasticityMaterial(*this);}
 	
 	/** @brief Default destructor */
-	virtual ~TPZElasticityMaterial();
+	virtual ~TPZMixedElasticityMaterial();
 	
     /**
      * @brief Set parameters of elastic material:
@@ -109,7 +109,11 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
         ff[1] = fy;
     }
     
-    
+    /// set the material configuration to AxisSymmetric
+    void SetAxisSymmetric()
+    {
+        fAxisSymmetric = 1;
+    }
     /// Set the material configuration to plane strain
     void SetPlaneStrain()
     {
@@ -139,7 +143,7 @@ class TPZElasticityMaterial : public TPZDiscontinuousGalerkin {
 	virtual void Print(std::ostream & out = std::cout);
 	
 	/** @brief Returns the material name*/
-	std::string Name() { return "TPZElasticityMaterial"; }
+	std::string Name() { return "TPZMixedElasticityMaterial"; }
 	
 	/** @brief Returns the number of components which form the flux function */
 	virtual short NumberOfFluxes(){return 3;}
@@ -344,6 +348,8 @@ protected:
     // Matrix A
     TPZFMatrix<STATE> fMatrixA;
     
+    /// flag indicates axix-AxisSymmetric 
+    bool fAxisSymmetric = false;
     
 };
 

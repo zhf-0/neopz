@@ -350,7 +350,6 @@ void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
     sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
     sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
     sigma(1,0) = sigma(0,1);
-    //std::cout<<"Exact sigma = "<<sigma(1,1)<<endl;
 }
 
 template<>
@@ -369,7 +368,6 @@ void TElasticityExample1::Sigma(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<REAL
     sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
     sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
     sigma(1,0) = sigma(0,1);
-    //std::cout<<"Exact sigma Y= "<<sigma(1,1)<<"Exact sigma X = "<<sigma(0,0)<<endl;
 }
 
 template

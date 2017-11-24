@@ -296,20 +296,9 @@ void TPZElementGroup::EvaluateError(void (*fp)(const TPZVec<REAL> &loc,TPZVec<ST
             continue;
         }
         fElGroup[el]->EvaluateError(fp, errloc, flux);
-        //std::cout<<"Index   "<<Index()<<endl;
-        for(int i=0;i<3;++i)
-            {
-            //std::cout<< "2. value = "<< errloc[i]<<"    "<<nerr<<endl;
-            }
         if (errloc.size() != nerr) {
-            //std::cout<< "1. size = "<< errloc.size()<<"    "<<nerr<<endl;
             nerr = errloc.size();
             errors.Resize(nerr, 0.);
-            //std::cout<< "2. size = "<< errloc.size()<<endl;
-            //for(int i=0;i<3;++i)
-           // {
-           // std::cout<< "2. value = "<< errloc[i]<<"    "<<nerr<<endl;
-           // }
         }
         for (int i=0; i<errloc.size(); i++) {
             errors[i] += errloc[i];
