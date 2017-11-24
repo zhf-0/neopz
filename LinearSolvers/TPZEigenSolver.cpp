@@ -18,12 +18,12 @@ TPZAutoPointer<TPZMatrix<TVar>> TPZEigenSolver<TVar>::MatrixB() {
 }
 
 template<typename TVar>
-void TPZEigenSolver<TVar>::SetMatrixA(TPZAutoPointer<TPZMatrix<STATE>> mat) {
+void TPZEigenSolver<TVar>::SetMatrixA(TPZAutoPointer<TPZMatrix<TVar>> mat) {
     fMatrixA = mat;
 }
 
 template<typename TVar>
-void TPZEigenSolver<TVar>::SetMatrixB(TPZAutoPointer<TPZMatrix<STATE>> mat) {
+void TPZEigenSolver<TVar>::SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat) {
     if(!fIsGeneralised){
         DebugStop();//Why are you setting rhs Matrix if is not a generalised eigenvalue problem?
     }

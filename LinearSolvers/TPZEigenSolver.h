@@ -20,11 +20,11 @@ public:
 
     TPZAutoPointer<TPZMatrix<TVar> > MatrixB();
 
-    void SetMatrixA(TPZAutoPointer<TPZMatrix<STATE>> pointer);
+    void SetMatrixA(TPZAutoPointer<TPZMatrix<TVar>> pointer);
 
-    void SetMatrixB(TPZAutoPointer<TPZMatrix<STATE>> mat);
+    void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
-    void Solve(TPZVec<TVar> &eigenValues, TPZFMatrix<TVar> &eigenVectors);
+    void Solve(TPZVec<SPZAlwaysComplex<TVar>> &eigenValues, TPZFMatrix<TVar> &eigenVectors);
 
     virtual int ClassId() const override;
 protected:
@@ -58,17 +58,17 @@ protected:
      * searched for around this value. It is always complex, regardless of
      * what type STATE refers to.
      */
-    std::complex<REAL> fSpecifiedValue = 0.;
+    SPZAlwaysComplex<TVar> fSpecifiedValue;
 
     /**
          * @brief Stores the computed eigenvalues
          */
-    TPZFMatrix<STATE> fEigenvalues;
+    TPZFMatrix<TVar> fEigenvalues;
 
     /**
      * @brief Stores the computed eigenvectors
      */
-    TPZFMatrix<STATE> fEigenvectors;
+    TPZFMatrix<TVar> fEigenvectors;
 
     /** @brief Container classes */
     TPZAutoPointer<TPZMatrix<TVar> > fMatrixA;

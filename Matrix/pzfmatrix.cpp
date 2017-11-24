@@ -125,7 +125,7 @@ TPZFMatrix<TVar>::TPZFMatrix(const TPZFMatrix<TVar> &A)
 template<class TVar>
 TPZFMatrix<TVar>::TPZFMatrix(TPZVerySparseMatrix <TVar> const & A)
 : TPZMatrix<TVar>( A.Rows(), A.Cols() ), fElem(0), fGiven(0), fSize(0) {
-    
+
     long size = this->fRow * this->fCol;
     if(!size) return;
     fElem = new TVar[ size ] ;
@@ -2352,7 +2352,7 @@ int TPZFMatrix<float>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenv
     TPZVec<float> imageigen(dim,0.);
     
     TPZFMatrix<float> temp(*this);
-    TPZVec<float> work(lwork);
+   float> work(lwork);
     sgeev_(jobvl, jobvr, &dim, temp.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
     
     if (info != 0) {
@@ -2385,7 +2385,7 @@ int TPZFMatrix<float>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenv
     TPZVec<float> imageigen(dim,0.);
     
     TPZFMatrix<float> temp(*this);
-    TPZVec<float> work(lwork);
+   float> work(lwork);
     sgeev_(jobvl, jobvr, &dim, temp.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
     
     if (info != 0) {
@@ -2433,7 +2433,7 @@ int TPZFMatrix<double>::SolveEigenProblem(TPZVec < std::complex<double> > &eigen
     TPZVec<double> imageigen(dim,0.);
     
     TPZFMatrix<double> temp(*this);
-    TPZVec<double> work(lwork);
+   double> work(lwork);
     dgeev_(jobvl, jobvr, &dim, temp.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
     
     if (info != 0) {
@@ -2465,7 +2465,7 @@ int TPZFMatrix<double>::SolveEigenProblem(TPZVec < std::complex<double> > &eigen
     TPZVec<double> imageigen(dim,0.);
     
     TPZFMatrix<double> temp(*this);
-    TPZVec<double> work(lwork);
+   double> work(lwork);
     dgeev_(jobvl, jobvr, &dim, temp.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
     
     if (info != 0) {
@@ -2518,7 +2518,7 @@ int TPZFMatrix<complex<double> >::SolveEigenProblem(TPZVec < std::complex<double
     TPZVec< double > rwork( 2 * dim);
     
 
-    
+
     zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)temp.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
     
     if (info != 0) {
@@ -2557,7 +2557,6 @@ int TPZFMatrix<complex<double> >::SolveEigenProblem(TPZVec < std::complex<double
 #elif USING_MKL
     typedef MKL_Complex16 vardoublecomplex;
 #endif
-
 
     zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)temp.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
     
@@ -2600,7 +2599,7 @@ int TPZFMatrix<complex<float> >::SolveEigenProblem(TPZVec < std::complex<double>
     TPZFMatrix<complex<float> > temp(*this);
     TPZVec<complex<float> > work(lwork);
     TPZVec< float > rwork( 2 * dim);
-    
+
     cgeev_(jobvl, jobvr, &dim, (varfloatcomplex *)temp.fElem, &dim, (varfloatcomplex *)&eigen[0], (varfloatcomplex *)VL.fElem, &dim, (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
     
     if (info != 0) {

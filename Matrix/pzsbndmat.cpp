@@ -1301,7 +1301,6 @@ TPZSBMatrix<TVar>::Copy(const TPZSBMatrix<TVar> &A )
     this->fDiag = A.fDiag;
 }
 
-#ifdef USING_LAPACK
 /*** @name Solve eigenvalues ***/
 /** @{ */
 template< class TVar>
@@ -1644,6 +1643,7 @@ template<>
 int
 TPZSBMatrix<float>::SolveGeneralisedEigenProblem(TPZMatrix<float> &Bref , TPZVec <complex<double> > &eigenvalues, TPZFMatrix < complex<double> > &eigenVectors)
 {
+
 	TPZSBMatrix<float> &B = dynamic_cast<TPZSBMatrix<float>& >(Bref);
 #ifdef PZDEBUG
     if (  this->fRow != B.Rows() && this->fCol != B.Cols() )
@@ -2063,9 +2063,6 @@ TPZSBMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<do
     
     return( 1 );
 }
-
-/** @} */
-#endif
 
 
 // Inicializando os templates

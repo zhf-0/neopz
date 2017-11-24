@@ -118,7 +118,6 @@ public:
     
     // @}
     
-#ifdef USING_LAPACK
     /*** @name Solve eigenvalues ***/
     /** @{ */
     
@@ -144,7 +143,6 @@ public:
     virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
     
     /** @} */
-#endif
     
 private:
     

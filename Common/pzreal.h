@@ -35,6 +35,40 @@
  This template would only match with T as char, int, long, float, double, 
  * std::complex<float> etc... (Not composite types).*/
 
+template<class T>
+struct SPZAlwaysComplex{
+
+};
+
+template<>
+struct SPZAlwaysComplex<float>{
+	typedef std::complex<float> val;
+};
+
+template<>
+struct SPZAlwaysComplex<double>{
+	typedef std::complex<double> val;
+};
+
+template<>
+struct SPZAlwaysComplex<long double>{
+	typedef std::complex<long double> val;
+};
+
+template<>
+struct SPZAlwaysComplex<std::complex<float>>{
+	typedef std::complex<float> val;
+};
+
+template<>
+struct SPZAlwaysComplex<std::complex<double>>{
+	typedef std::complex<double> val;
+};
+
+template<>
+struct SPZAlwaysComplex<std::complex<long double>>{
+	typedef std::complex<long double> val;
+};
 /**
  * Matches floating points (float, const double...)
  */

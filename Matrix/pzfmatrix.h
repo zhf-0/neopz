@@ -349,10 +349,7 @@ public:
      */
     virtual int Subst_Diag( TPZFMatrix<TVar>* b ) const;
 #endif
-    
-    /** @} */
-    
-#ifdef USING_LAPACK
+
     /*** @name Solve eigenvalues ***/
     /** @{ */
     /** @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
@@ -375,7 +372,6 @@ public:
      */
     virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
     /** @} */
-#endif
     
     /** @brief Routines to send and receive messages */
     virtual int ClassId() const;

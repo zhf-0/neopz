@@ -720,7 +720,7 @@ public:
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+	virtual int SolveEigenProblem(TPZVec < SPZAlwaysComplex<TVar> > &w, TPZFMatrix < TVar > &eigenVectors){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -729,7 +729,7 @@ public:
 	/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w){
+	virtual int SolveEigenProblem(TPZVec < SPZAlwaysComplex<TVar> > &w){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -740,7 +740,7 @@ public:
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < SPZAlwaysComplex<TVar> > &w, TPZFMatrix < SPZAlwaysComplex<TVar> > &eigenVectors){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -749,7 +749,7 @@ public:
 	/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < SPZAlwaysComplex<TVar> > &w){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
