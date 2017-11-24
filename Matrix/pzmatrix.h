@@ -713,8 +713,7 @@ public:
 	 * @param b right hand side and result after all
 	 */
 	virtual int Subst_Diag( TPZFMatrix<TVar>* b ) const;
-	
-#ifdef USING_LAPACK
+
 	/*** @name Solve eigenvalues ***/
 	/** @{ */
 	/** @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
@@ -722,6 +721,8 @@ public:
 	 * @param Stores the correspondent eigenvectors
 	 */
 	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
@@ -729,6 +730,8 @@ public:
 	 * @param w Stores the eigenvalues
 	 */
 	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
@@ -738,6 +741,8 @@ public:
 	 * @param Stores the correspondent eigenvectors
 	 */
 	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
@@ -745,11 +750,11 @@ public:
 	 * @param w Stores the eigenvalues
 	 */
 	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
-	/** @} */
-#endif
 	
 	/** @} */
 	
