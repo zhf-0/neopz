@@ -200,11 +200,11 @@ void TPZMixedElasticityMaterial::ElasticityModulusTensor(TPZFMatrix<STATE> &Matr
     //Matrix modulus Voigt notation:
     MatrixElast.Redim(4, 4);
     MatrixElast(0,0)=1./(2.*fmu)-flambda/(2.*fmu*(3.*flambda+2.*fmu));
-    MatrixElast(0,1)=-flambda/(2.*fmu*(3.*flambda+2.*fmu));
-    MatrixElast(1,0)=MatrixElast(0,1);
-    MatrixElast(1,1)=MatrixElast(0,0);
+    MatrixElast(0,3)=-flambda/(2.*fmu*(3.*flambda+2.*fmu));
+    MatrixElast(3,0)=MatrixElast(0,3);
+    MatrixElast(3,3)=MatrixElast(0,0);
     MatrixElast(2,2)=1./(2.*fmu);
-    MatrixElast(3,3)=MatrixElast(2,2);
+    MatrixElast(1,1)=MatrixElast(2,2);
 
 
     
@@ -526,11 +526,11 @@ void TPZMixedElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, RE
                 factfx *= R;
                 factfy *= R;
             }
-            if(factfx != 0) DebugStop();
+            //if(factfx != 0) DebugStop();
             ef(nshapeS*2+2*j,0) += factfx;
             ef(nshapeS*2+2*j+1,0) += factfy;
             
-            if(ef(nshapeS*2+2*j) != 0.) DebugStop();
+            //if(ef(nshapeS*2+2*j) != 0.) DebugStop();
             
             
    }
@@ -1910,6 +1910,7 @@ void TPZMixedElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<ST
     {
       errors[1]+= (SigmaV[i]-sigma_exactV[i])*(EPSZV[i]-eps_exactV[i]);
     }
+    std::cout<< "error S = "<<errors[1] << endl;
    //or we can compute as this methods
    //TPZFMatrix<STATE> MatrixElast(4,4,0.);
    //ElasticityModulusTensor(MatrixElast);

@@ -93,8 +93,10 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
-        disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
+        //disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
+        //disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
+        disp[0] = (TVar)cos(M_PI*x[0])*(TVar)sin(2*M_PI*x[1]);
+        disp[1] = (TVar)cos(M_PI*x[1])*(TVar)sin(M_PI*x[0]);
     }
 
     else if(fProblemType ==ERot)//rotation
@@ -160,8 +162,10 @@ void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > 
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
-        disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
+        //disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
+        //disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
+        disp[0] = FADcos(M_PI*x[0])*FADsin(2*M_PI*x[1]);
+        disp[1] = FADcos(M_PI*x[1])*FADsin(M_PI*x[0]);
     }
       
     else if(fProblemType ==ERot)//rotation
@@ -217,8 +221,8 @@ template<class TVar>
 void TElasticityExample1::Elastic(const TPZVec<TVar> &x, TVar &Elast, TVar &nu)
 {
     Elast = (TVar(100.) * (TVar(1.) + TVar(0.3) * sin(TVar(10 * M_PI) * (x[0] - TVar(0.5))) * cos(TVar(10. * M_PI) * x[1])));
-    Elast = TVar(1.);
-    nu = TVar(0.);
+    Elast = TVar(206.815026);
+    nu = TVar(0.30400395);
 }
 
 template<>
@@ -226,8 +230,8 @@ void TElasticityExample1::Elastic(const TPZVec<double> &x, double &Elast, double
 {
 //  Elast = 1000.;
     Elast = (100. * (1. + 0.3 * sin(10 * M_PI * (x[0] - 0.5)) * cos(10. * M_PI * x[1])));
-    Elast = 1.;
-    nu = 0.;
+    Elast = 206.815026;
+    nu = 0.30400395;
 }
 
 void TElasticityExample1::ElasticDummy(const TPZVec<REAL> &x, TPZVec<STATE> &result, TPZFMatrix<STATE> &deriv)
