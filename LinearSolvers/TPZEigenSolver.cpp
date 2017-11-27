@@ -90,6 +90,36 @@ TPZEigenSolver<TVar>::TPZEigenSolver(const TPZEigenSolver &copy) {
     fMatrixB = copy.fMatrixB;
 }
 
+template<typename TVar>
+int TPZEigenSolver<TVar>::GetHowManyEigenvalues() const {
+    return fHowManyEigenValues;
+}
+
+template<typename TVar>
+void TPZEigenSolver<TVar>::SetHowManyEigenValues(int howManyEigenValues) {
+    fHowManyEigenValues = howManyEigenValues;
+}
+
+template<typename TVar>
+EDesiredEigen TPZEigenSolver<TVar>::GetDesiredPartOfSpectrum() const {
+    return fDesiredPartOfSpectrum;
+}
+
+template<typename TVar>
+void TPZEigenSolver<TVar>::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum) {
+    fDesiredPartOfSpectrum = desiredPartOfSpectrum;
+}
+
+template<typename TVar>
+typename SPZAlwaysComplex<TVar>::type TPZEigenSolver<TVar>::GetSpecifiedValue() const {
+    return fSpecifiedValue;
+}
+
+template<typename TVar>
+void TPZEigenSolver<TVar>::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue) {
+    fSpecifiedValue = specifiedValue;
+}
+
 //template<typename TVar>
 //const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &
 //TPZEigenSolver<TVar>::GetEigenvectors() const {

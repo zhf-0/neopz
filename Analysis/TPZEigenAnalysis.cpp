@@ -104,6 +104,7 @@ void TPZEigenAnalysis::Solve() {
         //@TODO:THINK ABOUT EQUATION FILTER
         //fStructMatrix->EquationFilter().Gather(delu,fSolution);
         fSolver->Solve(fEigenvalues, fEigenvectors);
+        //@TODO:Must now select the eigenpairs based on fSolver->fHowManyEigenvalues, fSolver->fDesiredPartOfTheSpectrum...
         TPZFMatrix<STATE> sol(nReducedEq,1);
         TransferEigenVector(fEigenvectors,sol,0, fSolver->IsAbsoluteValue());
         //For now, the first solution is loaded.

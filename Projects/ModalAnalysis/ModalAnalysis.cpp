@@ -156,9 +156,12 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     }
     an.SetStructuralMatrix(fmtrx);
 
+    const int nSolutions = neq >= 10 ? 10 : neq;
     TPZEigenSolver<STATE> solver;
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
+    solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues
+    solver.SetHowManyEigenValues(nSolutions);
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;
@@ -173,11 +176,11 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 #endif
     std::cout << "Finished assembly." << std::endl;
 
-    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
-    stiffAPtr = new TPZFMatrix<STATE>(
-            *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixA().operator->()));
-    stiffBPtr = new TPZFMatrix<STATE>(
-        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixB().operator->()));
+//    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
+//    stiffAPtr = new TPZFMatrix<STATE>(
+//            *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixA().operator->()));
+//    stiffBPtr = new TPZFMatrix<STATE>(
+//        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixB().operator->()));
 
     std::cout << "Solving..." << std::endl;
 #ifdef USING_BOOST
@@ -227,7 +230,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 			}
     }
 	int i = 0;
-    const int nSolutions = neq >= 10 ? 10 : neq;
+
     for (std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
              eigenValuesRe.begin();
          iT != eigenValuesRe.end(); iT++) {

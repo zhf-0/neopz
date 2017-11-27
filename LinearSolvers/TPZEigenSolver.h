@@ -8,6 +8,22 @@
 #include "TPZSolver.h"
 
 /**
+         * @brief Enum for defining ranges in the spectrum
+         */
+enum EDesiredEigen {
+    /** Most Negative EigenValues */
+            MNE,
+    /** Least Negative Eigenvalues */
+            LNE,
+    /** Least Positive Eigenvalues */
+            LPE,
+    /** Most Positive Eigenvalues */
+            MPE,
+    /** Specified Value on the Complex Plane */
+            SVCP
+};
+
+/**
 * @ingroup solver
 * @brief  Defines a class of solvers for eigenvalue problems. \ref solver "Solver"
 */
@@ -15,19 +31,11 @@ template <typename TVar>
 class TPZEigenSolver : public TPZSolver<TVar> {
 public:
     TPZEigenSolver();
+
     TPZEigenSolver(const TPZEigenSolver &copy);
-    bool IsGeneralised() const;
-
-    TPZAutoPointer<TPZMatrix<TVar>> MatrixA();
-
-    TPZAutoPointer<TPZMatrix<TVar> > MatrixB();
-
-    void SetMatrixA(TPZAutoPointer<TPZMatrix<TVar>> pointer);
-
-    void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
     void Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &eigenValues, TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors);
-    
+
     void Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &result,
                        TPZFMatrix<TVar>  *residual = 0) override {
         DebugStop();
@@ -39,17 +47,33 @@ public:
 
     virtual int ClassId() const override;
 
+    TPZAutoPointer<TPZMatrix<TVar>> MatrixA();
+
+    TPZAutoPointer<TPZMatrix<TVar> > MatrixB();
+
+    void SetMatrixA(TPZAutoPointer<TPZMatrix<TVar>> mat);
+
+    void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
+
+    bool IsGeneralised() const;
+
     void SetAsGeneralised(bool isGeneralised);
 
-    void SetAbsoluteValue(bool isAbsoluteValue);
+    int GetHowManyEigenvalues() const;
+
+    void SetHowManyEigenValues(int howManyEigenValues);
 
     bool IsAbsoluteValue();
 
-//    const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &
-//    GetEigenvectors() const;
-//
-//    const TPZManVector<typename SPZAlwaysComplex<TVar>::type> &
-//    GetEigenvalues() const;
+    void SetAbsoluteValue(bool isAbsoluteValue);
+
+    EDesiredEigen GetDesiredPartOfSpectrum() const;
+
+    void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);
+
+    typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;
+
+    void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);
 protected:
     /**
      * @brief Whether to display the absolute value(true) or the real part
@@ -66,24 +90,8 @@ protected:
     /** @brief Desired number of eigenvalues to be computed*/
     int fHowManyEigenValues;
     /**
-         * @brief Enum for defining ranges in the spectrum
-         */
-    enum EDesiredEigen {
-        /** Most Negative EigenValues */
-                MNE,
-        /** Least Negative Eigenvalues */
-                LNE,
-        /** Least Positive Eigenvalues */
-                LPE,
-        /** Most Positive Eigenvalues */
-                MPE,
-        /** Specified Value on the Complex Plane */
-                SVCP
-    };
-
-    /**
-         * @brief Where in the spectrum to search for eigenvalues
-         */
+     * @brief Where in the spectrum to search for eigenvalues
+     */
     EDesiredEigen fDesiredPartOfSpectrum = MNE;
     /**
      * @brief If fDesiredPartOfSpectrum is SVCP, eigenvalues will be
