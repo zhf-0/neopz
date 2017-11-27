@@ -40,6 +40,11 @@ typedef MKL_Complex8 varfloatcomplex;
 #endif
 #endif
 
+#ifdef USING_MKL
+#include <mkl.h>
+typedef MKL_Complex16 vardoublecomplex;
+typedef MKL_Complex8 varfloatcomplex;
+#endif
 template <>
 int TPZLapackWrapper<float>::SolveEigenProblem(TPZFMatrix<float> &A,TPZVec < typename SPZAlwaysComplex<float>::type > &eigenvalues)
 {
@@ -57,7 +62,7 @@ int TPZLapackWrapper<float>::SolveEigenProblem(TPZFMatrix<float> &A,TPZVec < typ
     TPZVec<float> imageigen(dim,0.);
 
     TPZVec<float> work(lwork);
-    //sgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
+    sgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -88,7 +93,7 @@ int TPZLapackWrapper<double>::SolveEigenProblem(TPZFMatrix<double> &A, TPZVec < 
     TPZVec<double> imageigen(dim,0.);
 
     TPZVec<double> work(lwork);
-    //dgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
+    dgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -120,7 +125,7 @@ int TPZLapackWrapper<std::complex<float>>::SolveEigenProblem(TPZFMatrix<std::com
     TPZVec<std::complex<float> > work(lwork);
     TPZVec< float > rwork( 2 * dim);
 
-    //cgeev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim, (varfloatcomplex *)&eigen[0], (varfloatcomplex *)VL.fElem, &dim, (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
+    cgeev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim, (varfloatcomplex *)&eigen[0], (varfloatcomplex *)VL.fElem, &dim, (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -152,7 +157,7 @@ int TPZLapackWrapper<std::complex<double>>::SolveEigenProblem(TPZFMatrix<std::co
     TPZVec<std::complex<double> > work(lwork);
     TPZVec< double > rwork( 2 * dim);
 
-    //zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
+    zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -183,7 +188,7 @@ int TPZLapackWrapper<float>::SolveEigenProblem(TPZFMatrix<float> &A, TPZVec < SP
     TPZVec<float> imageigen(dim,0.);
     TPZVec<float> work(lwork);
 
-    //sgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
+    sgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -229,7 +234,7 @@ int TPZLapackWrapper<double>::SolveEigenProblem(TPZFMatrix<double> &A, TPZVec < 
     TPZVec<double> realeigen(dim,0.);
     TPZVec<double> imageigen(dim,0.);
     TPZVec<double> work(lwork);
-    //dgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
+    dgeev_(jobvl, jobvr, &dim, A.fElem, &dim, &realeigen[0], &imageigen[0], VL.fElem, &dim, VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -278,7 +283,7 @@ int TPZLapackWrapper<std::complex<double> >::SolveEigenProblem(TPZFMatrix<std::c
     TPZVec<std::complex<double> > work(lwork);
     TPZVec< double > rwork( 2 * dim);
 
-//zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
+zgeev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim, (vardoublecomplex *)&eigen[0], (vardoublecomplex *)VL.fElem, &dim, (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -318,7 +323,7 @@ int TPZLapackWrapper<std::complex< float> >::SolveEigenProblem(TPZFMatrix<std::c
     TPZVec<std::complex<float> > work(lwork);
     TPZVec< float > rwork( 2 * dim);
 
-    //cgeev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim, (varfloatcomplex *)&eigen[0], (varfloatcomplex *)VL.fElem, &dim, (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
+    cgeev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim, (varfloatcomplex *)&eigen[0], (varfloatcomplex *)VL.fElem, &dim, (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -362,7 +367,7 @@ int TPZLapackWrapper<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &A, 
     TPZVec<float> beta(dim);
     TPZVec<float> work(lwork);
 
-    //sggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
+    sggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -419,7 +424,7 @@ TPZLapackWrapper<float>::SolveGeneralisedEigenProblem(TPZFMatrix<float> &A, TPZF
     TPZVec<float> beta(dim);
     TPZVec<float> work(lwork);
 
-    //sggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
+    sggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -462,7 +467,7 @@ TPZLapackWrapper<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &A ,TP
 
     TPZVec<double> work(lwork);
 
-//dggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
+dggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -521,7 +526,7 @@ TPZLapackWrapper<double>::SolveGeneralisedEigenProblem(TPZFMatrix<double> &A, TP
 
     TPZVec<double> work(lwork);
 
-//dggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
+dggev_(jobvl, jobvr, &dim, A.fElem, &dim , B.fElem, &dim , &realeigen[0], &imageigen[0], &beta[0]  , VL.fElem, &dim , VR.fElem, &dim, &work[0], &lwork, &info);
 
     if (info != 0) {
         DebugStop();
@@ -563,7 +568,7 @@ TPZLapackWrapper<std::complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<
     TPZVec<std::complex<float> > work(lwork);
     TPZVec<float> rwork( 8 * dim );
 
-//cggev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim , (varfloatcomplex *)B.fElem, &dim , (varfloatcomplex *)&eigen[0], (varfloatcomplex *)&beta[0]  , (varfloatcomplex *)VL.fElem, &dim , (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
+cggev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim , (varfloatcomplex *)B.fElem, &dim , (varfloatcomplex *)&eigen[0], (varfloatcomplex *)&beta[0]  , (varfloatcomplex *)VL.fElem, &dim , (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -612,7 +617,7 @@ TPZLapackWrapper<std::complex<float> >::SolveGeneralisedEigenProblem(TPZFMatrix<
     TPZVec<std::complex<float> > work(lwork);
     TPZVec<float> rwork( 8 * dim );
 
-    //cggev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim , (varfloatcomplex *)B.fElem, &dim , (varfloatcomplex *)&eigen[0], (varfloatcomplex *)&beta[0]  , (varfloatcomplex *)VL.fElem, &dim , (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
+    cggev_(jobvl, jobvr, &dim, (varfloatcomplex *)A.fElem, &dim , (varfloatcomplex *)B.fElem, &dim , (varfloatcomplex *)&eigen[0], (varfloatcomplex *)&beta[0]  , (varfloatcomplex *)VL.fElem, &dim , (varfloatcomplex *)VR.fElem, &dim, (varfloatcomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -654,7 +659,7 @@ TPZLapackWrapper<std::complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix
     TPZVec<std::complex<double> > work(lwork);
     TPZVec<double> rwork( 8 * dim );
 
-//zggev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim , (vardoublecomplex *)B.fElem, &dim , (vardoublecomplex *)&eigen[0], (vardoublecomplex *)&beta[0]  , (vardoublecomplex *)VL.fElem, &dim , (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
+    zggev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim , (vardoublecomplex *)B.fElem, &dim , (vardoublecomplex *)&eigen[0], (vardoublecomplex *)&beta[0]  , (vardoublecomplex *)VL.fElem, &dim , (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();
@@ -673,7 +678,7 @@ TPZLapackWrapper<std::complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix
     }
     for(int i = 0 ; i < dim ; i ++){
         for( int iV = 0 ; iV < dim ; iV++ ){
-            eigenvectors(iV,i) = VR(iV,i);
+            eigenvectors(iV, i) = VR(iV,i);
         }
     }
 
@@ -702,7 +707,7 @@ TPZLapackWrapper<std::complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix
     TPZVec<std::complex<double> > work(lwork);
     TPZVec<double> rwork( 8 * dim );
 
-    //zggev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim , (vardoublecomplex *)B.fElem, &dim , (vardoublecomplex *)&eigen[0], (vardoublecomplex *)&beta[0]  , (vardoublecomplex *)VL.fElem, &dim , (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
+    zggev_(jobvl, jobvr, &dim, (vardoublecomplex *)A.fElem, &dim , (vardoublecomplex *)B.fElem, &dim , (vardoublecomplex *)&eigen[0], (vardoublecomplex *)&beta[0]  , (vardoublecomplex *)VL.fElem, &dim , (vardoublecomplex *)VR.fElem, &dim, (vardoublecomplex *)&work[0], &lwork, &rwork[0], &info);
 
     if (info != 0) {
         DebugStop();

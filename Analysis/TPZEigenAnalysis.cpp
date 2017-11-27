@@ -20,12 +20,13 @@ TPZEigenAnalysis::TPZEigenAnalysis(TPZAutoPointer<TPZCompMesh> mesh, bool mustOp
 
 }
 
-TPZEigenSolver<STATE> * TPZEigenAnalysis::GetSolver() const {
-    return fSolver;
+TPZEigenSolver<STATE> &TPZEigenAnalysis::Solver() const {
+    return *fSolver;
 }
 
-void TPZEigenAnalysis::SetSolver(TPZEigenSolver<STATE> * &solver) {
-    fSolver = solver;
+void TPZEigenAnalysis::SetSolver(TPZEigenSolver<STATE> &solver) {
+    if(fSolver) delete fSolver;
+    fSolver = (TPZEigenSolver<STATE> *) solver.Clone();
 }
 
 void TPZEigenAnalysis::Assemble()
@@ -93,6 +94,8 @@ void TPZEigenAnalysis::Solve() {
         fEigenvalues.Resize(numeq);
         fEigenvectors.Redim(numeq,1);
         fSolver->Solve(fEigenvalues, fEigenvectors);
+        fSolution.Resize(numeq, 1);
+        TransferEigenVector(fEigenvectors,fSolution,0, fSolver->IsAbsoluteValue());
     }
     else
     {
@@ -101,7 +104,10 @@ void TPZEigenAnalysis::Solve() {
         //@TODO:THINK ABOUT EQUATION FILTER
         //fStructMatrix->EquationFilter().Gather(delu,fSolution);
         fSolver->Solve(fEigenvalues, fEigenvectors);
-        //fStructMatrix->EquationFilter().Scatter(delu,fSolution);
+        TPZFMatrix<STATE> sol(nReducedEq,1);
+        TransferEigenVector(fEigenvectors,sol,0, fSolver->IsAbsoluteValue());
+        //For now, the first solution is loaded.
+        fStructMatrix->EquationFilter().Scatter(sol,fSolution);
     }
 #ifdef LOG4CXX
     std::stringstream sout;
@@ -133,4 +139,37 @@ void TPZEigenAnalysis::Solve() {
     fCompMesh->LoadSolution(fSolution);
     fCompMesh->TransferMultiphysicsSolution();
 
+}
+
+TPZFMatrix<typename SPZAlwaysComplex<STATE>::type>
+TPZEigenAnalysis::GetEigenvectors() const {
+    return fEigenvectors;
+}
+
+TPZManVector<typename SPZAlwaysComplex<STATE>::type>
+TPZEigenAnalysis::GetEigenvalues() const {
+    return fEigenvalues;
+}
+
+template <class TVar>
+void TPZEigenAnalysis::TransferEigenVector(const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &originalSol,
+                                           TPZFMatrix<TVar> &newSol, const unsigned int &i, const bool isAbsVal) {
+    originalSol.GetSub(i,0,originalSol.Cols(),1,newSol);
+
+}
+
+template<>
+void TPZEigenAnalysis::TransferEigenVector<float>(const TPZFMatrix<typename SPZAlwaysComplex<float>::type> &originalSol,
+                                           TPZFMatrix<float> &newSol, const unsigned int &i, const bool isAbsVal) {
+    for (int j = 0; j < originalSol.Rows(); ++j) {
+        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
+    }
+}
+
+template<>
+void TPZEigenAnalysis::TransferEigenVector<double>(const TPZFMatrix<typename SPZAlwaysComplex<double>::type> &originalSol,
+                                           TPZFMatrix<double> &newSol, const unsigned int &i, const bool isAbsVal) {
+    for (int j = 0; j < originalSol.Rows(); ++j) {
+        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
+    }
 }

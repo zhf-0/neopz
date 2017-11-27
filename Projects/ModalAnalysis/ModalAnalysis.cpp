@@ -18,15 +18,15 @@
 
 #include <stddef.h>               // for NULL
 #include <fstream>
+#include <TPZEigenAnalysis.h>
+#include <TPZEigenSolver.h>
 #include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzbndcond.h"
 #include "pzlog.h"
-#include "pzanalysis.h"
 #include "pzstrmatrix.h"
-#include "pzstepsolver.h"
 #include "pzl2projection.h"
 #include "pzfstrmatrix.h"
 #include "pzbuildmultiphysicsmesh.h"
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 1;
+    int nDiv = 4;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -140,7 +140,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     temporalMeshVec[matPointer->HCurlIndex()] =
         meshVec[1 + matPointer->HCurlIndex()];
 
-    TPZAnalysis an(cmesh, optimizeBandwidth);
+    TPZEigenAnalysis an(cmesh, optimizeBandwidth);
     
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
@@ -156,26 +156,16 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     }
     an.SetStructuralMatrix(fmtrx);
 
-    TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky); // caso simetrico
-    an.SetSolver(step);
-    int matId = 1;
-    TPZMatModalAnalysis *matAlias =
-        dynamic_cast<TPZMatModalAnalysis *>(cmesh->FindMaterial(matId));
+    TPZEigenSolver<STATE> solver;
+    solver.SetAsGeneralised(true);
+    solver.SetAbsoluteValue(false);
+    an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;
 #ifdef USING_BOOST
     boost::posix_time::ptime t1 =
         boost::posix_time::microsec_clock::local_time();
 #endif
-    matAlias->SetMatrixA();
-    an.Assemble();
-
-    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
-    stiffAPtr = new TPZFMatrix<STATE>(
-        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().Matrix().operator->()));
-
-    matAlias->SetMatrixB();
     an.Assemble();
 #ifdef USING_BOOST
     boost::posix_time::ptime t2 =
@@ -183,26 +173,31 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 #endif
     std::cout << "Finished assembly." << std::endl;
 
+    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
+    stiffAPtr = new TPZFMatrix<STATE>(
+            *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixA().operator->()));
     stiffBPtr = new TPZFMatrix<STATE>(
-        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().Matrix().operator->()));
+        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixB().operator->()));
 
-    TPZVec<STATE> eValues;
-    TPZFMatrix<STATE> eVectors;
     std::cout << "Solving..." << std::endl;
 #ifdef USING_BOOST
     boost::posix_time::ptime t3 =
         boost::posix_time::microsec_clock::local_time();
 #endif
-    stiffAPtr->SolveGeneralisedEigenProblem(*stiffBPtr, eValues, eVectors);
+//    TPZManVector<STATE,10> eValues = solver.GetEigenvalues();
+//    TPZFMatrix<STATE> eVectors = solver.GetEigenvectors();
+//    stiffAPtr->SolveGeneralisedEigenProblem( *stiffBPtr, eValues , eVectors);
+    an.Solve();
 #ifdef USING_BOOST
     boost::posix_time::ptime t4 =
         boost::posix_time::microsec_clock::local_time();
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
 #endif
-
+    TPZManVector<SPZAlwaysComplex<STATE>::type> eValues = an.GetEigenvalues();
+    TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVectors = an.GetEigenvectors();
     std::set<std::pair<REAL, TPZFMatrix<STATE>>> eigenValuesRe;
-    TPZFMatrix<STATE> eVector(eVectors.Rows(), 1);
+    TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVector;
     std::pair<REAL, TPZFMatrix<STATE>> duplet;
 
     for (int i = 0; i < eValues.size(); i++) {
@@ -247,73 +242,73 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 		std::cout << iT->first << std::endl;
 		i++;
     }
-	
-    if (isCutOff) {
-        std::cout << "FINISHED!" << std::endl;
-        return;
-    }
-    if (exportEigen) {
-        std::string fileName("../evectors");
-        fileName.append(std::to_string(nDiv));
-        fileName.append("_p");
-        fileName.append(std::to_string(pOrder));
-        fileName.append(".csv");
-        std::ofstream fileA(fileName.c_str());
-        char number[256];
-        for (int i = 0; i < eigenValuesRe.begin()->second.Rows(); i++) {
-            for (int j = 0; j < eigenValuesRe.begin()->second.Cols(); j++) {
-                sprintf(number, "%32.32Lf",
-                        (long double)TPZExtractVal::val(std::real(
-                            eigenValuesRe.begin()->second.GetVal(i, j))));
-                fileA << number;
-
-                fileA << " + I * ";
-
-                sprintf(number, "%32.32Lf",
-                        (long double)TPZExtractVal::val(std::imag(
-                            eigenValuesRe.begin()->second.GetVal(i, j))));
-                fileA << number;
-                if (j != eigenValuesRe.begin()->second.Cols() - 1) {
-                    fileA << " , ";
-                }
-            }
-            fileA << std::endl;
-        }
-        fileA.close();
-    }
-    if (genVTK) {
-        std::cout << "Post Processing..." << std::endl;
-        TPZFMatrix<STATE> solMat(neqOriginal, 1, 0.);
-
-        TPZStack<std::string> scalnames, vecnames;
-        scalnames.Push("Ez"); // setando para imprimir u
-        vecnames.Push("Et");
-        std::string plotfile = "../waveguideModes.vtk"; // arquivo de saida que
-                                                        // estara na pasta debug
-        int dim = 2;
-        an.DefineGraphMesh(dim, scalnames, vecnames,
-                           plotfile);  // define malha grafica
-        int postProcessResolution = 2; // define resolucao do pos processamento
-
-        std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
-            eigenValuesRe.begin();
-        for (int iSol = 0; iSol < nSolutions; iSol++) {
-            if (iT == eigenValuesRe.end()) {
-                DebugStop();
-            }
-            for (int i = 0; i < neq; i++) {
-                solMat(activeEquations[i], 0) = (iT->second).GetVal(i, 0);
-            }
-            an.LoadSolution(solMat);
-            TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
-                                                               cmesh);
-            an.PostProcess(postProcessResolution);
-            iT++;
-        }
-    }
-    if (l2error) {
-        DebugStop(); // yet to be implemented
-    }
+//
+//    if (isCutOff) {
+//        std::cout << "FINISHED!" << std::endl;
+//        return;
+//    }
+//    if (exportEigen) {
+//        std::string fileName("../evectors");
+//        fileName.append(std::to_string(nDiv));
+//        fileName.append("_p");
+//        fileName.append(std::to_string(pOrder));
+//        fileName.append(".csv");
+//        std::ofstream fileA(fileName.c_str());
+//        char number[256];
+//        for (int i = 0; i < eigenValuesRe.begin()->second.Rows(); i++) {
+//            for (int j = 0; j < eigenValuesRe.begin()->second.Cols(); j++) {
+//                sprintf(number, "%32.32Lf",
+//                        (long double)TPZExtractVal::val(std::real(
+//                            eigenValuesRe.begin()->second.GetVal(i, j))));
+//                fileA << number;
+//
+//                fileA << " + I * ";
+//
+//                sprintf(number, "%32.32Lf",
+//                        (long double)TPZExtractVal::val(std::imag(
+//                            eigenValuesRe.begin()->second.GetVal(i, j))));
+//                fileA << number;
+//                if (j != eigenValuesRe.begin()->second.Cols() - 1) {
+//                    fileA << " , ";
+//                }
+//            }
+//            fileA << std::endl;
+//        }
+//        fileA.close();
+//    }
+//    if (genVTK) {
+//        std::cout << "Post Processing..." << std::endl;
+//        TPZFMatrix<STATE> solMat(neqOriginal, 1, 0.);
+//
+//        TPZStack<std::string> scalnames, vecnames;
+//        scalnames.Push("Ez"); // setando para imprimir u
+//        vecnames.Push("Et");
+//        std::string plotfile = "../waveguideModes.vtk"; // arquivo de saida que
+//                                                        // estara na pasta debug
+//        int dim = 2;
+//        an.DefineGraphMesh(dim, scalnames, vecnames,
+//                           plotfile);  // define malha grafica
+//        int postProcessResolution = 2; // define resolucao do pos processamento
+//
+//        std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
+//            eigenValuesRe.begin();
+//        for (int iSol = 0; iSol < nSolutions; iSol++) {
+//            if (iT == eigenValuesRe.end()) {
+//                DebugStop();
+//            }
+//            for (int i = 0; i < neq; i++) {
+//                solMat(activeEquations[i], 0) = (iT->second).GetVal(i, 0);
+//            }
+//            an.LoadSolution(solMat);
+//            TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
+//                                                               cmesh);
+//            an.PostProcess(postProcessResolution);
+//            iT++;
+//        }
+//    }
+//    if (l2error) {
+//        DebugStop(); // yet to be implemented
+//    }
     std::cout << "FINISHED!" << std::endl;
 }
 
@@ -422,10 +417,10 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     lrCoord[0] = wDomain;
     lrCoord[1] = 0.;
 
-    //nx[0] = nDiv + 1;
-    //nx[1] = nDiv + 1;
-    nx[0] = 2;//REFINEMENT TEST
-    nx[1] = 1;//REFINEMENT TEST
+    nx[0] = nDiv + 1;
+    nx[1] = nDiv + 1;
+//    nx[0] = 2;//REFINEMENT TEST
+//    nx[1] = 1;//REFINEMENT TEST
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {
@@ -463,31 +458,31 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 
     gmesh->BuildConnectivity();
     
-    //REFINEMENT TEST                                                       //
-    TPZManVector<TPZGeoEl *, 3> sons;                                       //
-    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);                                //
-    qsi[0]= 0.5;                                                            //
-    qsi[1]= 0.5;                                                            //
-    TPZManVector<REAL,3> refPointsX(2,0.);                                  //
-    TPZManVector<REAL,2> refPointsY(2,0.);                                  //
-    refPointsX[0] = wDomain/2;                                              //
-    refPointsX[1] = wDomain/2;                                              //
-    refPointsY[0] = 0;                                                      //
-    refPointsY[1] = hDomain/2;                                              //
-    for (int iref = 0; iref < 2; iref++) {                                  //
-        int nel = gmesh->NElements();                                       //
-        for (int iel = 0; iel < nel; iel++) {                               //
-            TPZGeoEl *gel = gmesh->ElementVec()[iel];                       //
-            gel->X(qsi, x);//gets center of element                         //
-                                                                            //
-            if(x[0]>refPointsX[iref] && x[1] > refPointsY[iref]){           //
-                if (gel->HasSubElement()) {                                 //
-                    continue;                                               //
-                }                                                           //
-                gel->Divide(sons);                                          //
-            }                                                               //
-        }                                                                   //
-    }                                                                       //
+//    //REFINEMENT TEST                                                       //
+//    TPZManVector<TPZGeoEl *, 3> sons;                                       //
+//    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);                                //
+//    qsi[0]= 0.5;                                                            //
+//    qsi[1]= 0.5;                                                            //
+//    TPZManVector<REAL,3> refPointsX(2,0.);                                  //
+//    TPZManVector<REAL,2> refPointsY(2,0.);                                  //
+//    refPointsX[0] = wDomain/2;                                              //
+//    refPointsX[1] = wDomain/2;                                              //
+//    refPointsY[0] = 0;                                                      //
+//    refPointsY[1] = hDomain/2;                                              //
+//    for (int iref = 0; iref < 2; iref++) {                                  //
+//        int nel = gmesh->NElements();                                       //
+//        for (int iel = 0; iel < nel; iel++) {                               //
+//            TPZGeoEl *gel = gmesh->ElementVec()[iel];                       //
+//            gel->X(qsi, x);//gets center of element                         //
+//                                                                            //
+//            if(x[0]>refPointsX[iref] && x[1] > refPointsY[iref]){           //
+//                if (gel->HasSubElement()) {                                 //
+//                    continue;                                               //
+//                }                                                           //
+//                gel->Divide(sons);                                          //
+//            }                                                               //
+//        }                                                                   //
+//    }                                                                       //
     
 #ifdef PZDEBUG
     std::ofstream outTxt, outVtk;

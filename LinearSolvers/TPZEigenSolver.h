@@ -14,6 +14,8 @@
 template <typename TVar>
 class TPZEigenSolver : public TPZSolver<TVar> {
 public:
+    TPZEigenSolver();
+    TPZEigenSolver(const TPZEigenSolver &copy);
     bool IsGeneralised() const;
 
     TPZAutoPointer<TPZMatrix<TVar>> MatrixA();
@@ -31,19 +33,38 @@ public:
         DebugStop();
     }
 
+    TPZSolver<TVar> *Clone() const override{
+        return new TPZEigenSolver<TVar>(*this);
+    }
+
     virtual int ClassId() const override;
 
-    void SetAsGeneralised(bool fIsGeneralised);
+    void SetAsGeneralised(bool isGeneralised);
+
+    void SetAbsoluteValue(bool isAbsoluteValue);
+
+    bool IsAbsoluteValue();
+
+//    const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &
+//    GetEigenvectors() const;
+//
+//    const TPZManVector<typename SPZAlwaysComplex<TVar>::type> &
+//    GetEigenvalues() const;
 protected:
+    /**
+     * @brief Whether to display the absolute value(true) or the real part
+     * of the eigenvectors over the computational mesh
+     */
+    bool fShowAbsoluteValue;
     /** @brief Whether to solve the eigenvalue problem
          *   is generalised (Ax=uBx) or not (Ax=ux)*/
-    bool fIsGeneralised = false;
+    bool fIsGeneralised;
     /**
      * @brief Whether to calculate the eigenvectors (and not the eigenvalues only)
      */
-    bool fMustCalculateEigenVectors = false;
+    bool fMustCalculateEigenVectors;
     /** @brief Desired number of eigenvalues to be computed*/
-    int fHowManyEigenValues = 1;
+    int fHowManyEigenValues;
     /**
          * @brief Enum for defining ranges in the spectrum
          */
@@ -69,7 +90,7 @@ protected:
      * searched for around this value. It is always complex, regardless of
      * what type STATE refers to.
      */
-    SPZAlwaysComplex<TVar> fSpecifiedValue;
+    typename SPZAlwaysComplex<TVar>::type fSpecifiedValue;
 
     /**
          * @brief Stores the computed eigenvalues
