@@ -25,6 +25,11 @@ public:
     void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
     void Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &eigenValues, TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors);
+    
+    void Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &result,
+                       TPZFMatrix<TVar>  *residual = 0) override {
+        DebugStop();
+    }
 
     virtual int ClassId() const override;
 

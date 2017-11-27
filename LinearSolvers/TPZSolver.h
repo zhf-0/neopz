@@ -26,6 +26,15 @@ public:
      */
     TPZSolver() = default;
 
+    /**
+     * @brief Solves the system of linear equations
+     * @param F contains Force vector
+     * @param result contains the solution
+     * @param residual contains the residual for that linear system
+     */
+    virtual void Solve(const TPZFMatrix<TVar> &F, TPZFMatrix<TVar> &result,
+                       TPZFMatrix<TVar>  *residual = 0) = 0;
+    
 	/** @brief Decompose the system of equations if a direct solver is used */
 	virtual void Decompose()
 	{
@@ -33,6 +42,7 @@ public:
 	
 	/** @brief Clones the current object returning a pointer of type TPZSolver */
 	virtual TPZSolver *Clone() const = 0;
+    
 	/** @brief Destructor */
 	virtual ~TPZSolver();
 	

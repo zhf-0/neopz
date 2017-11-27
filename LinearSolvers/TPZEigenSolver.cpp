@@ -57,6 +57,7 @@ int TPZEigenSolver<TVar>::ClassId() const{
     return 666;//@TODO: Implementar corretamente!
 }
 
-void TPZEigenSolver::SetAsGeneralised(bool isGeneralised) {
+template<typename TVar>
+void TPZEigenSolver<TVar>::SetAsGeneralised(bool isGeneralised) {
    fIsGeneralised = isGeneralised;
 }
