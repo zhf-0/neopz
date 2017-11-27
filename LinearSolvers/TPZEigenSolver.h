@@ -74,12 +74,12 @@ protected:
     /**
          * @brief Stores the computed eigenvalues
          */
-    TPZManVector<SPZAlwaysComplex<TVar>::type,10> fEigenvalues;
+    TPZManVector<typename SPZAlwaysComplex<TVar>::type,10> fEigenvalues;
 
     /**
      * @brief Stores the computed eigenvectors
      */
-    TPZFMatrix<SPZAlwaysComplex<TVar>::type> fEigenvectors;
+    TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> fEigenvectors;
 
     /** @brief Container classes */
     TPZAutoPointer<TPZMatrix<TVar> > fMatrixA;
