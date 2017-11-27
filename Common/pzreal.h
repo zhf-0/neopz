@@ -23,6 +23,7 @@
 #include <config.h>
 #include "fpo_exceptions.h"
 
+class TPZFlopCounter;
 /*structs used for help identifying fundamental types in template parameters.
  For instance,
  
@@ -42,32 +43,48 @@ struct SPZAlwaysComplex{
 
 template<>
 struct SPZAlwaysComplex<float>{
-	typedef std::complex<float> val;
+	typedef std::complex<float> type;
 };
 
 template<>
 struct SPZAlwaysComplex<double>{
-	typedef std::complex<double> val;
+	typedef std::complex<double> type;
 };
 
 template<>
 struct SPZAlwaysComplex<long double>{
-	typedef std::complex<long double> val;
+	typedef std::complex<long double> type;
 };
 
 template<>
 struct SPZAlwaysComplex<std::complex<float>>{
-	typedef std::complex<float> val;
+	typedef std::complex<float> type;
 };
 
 template<>
 struct SPZAlwaysComplex<std::complex<double>>{
-	typedef std::complex<double> val;
+	typedef std::complex<double> type;
 };
 
 template<>
 struct SPZAlwaysComplex<std::complex<long double>>{
-	typedef std::complex<long double> val;
+	typedef std::complex<long double> type;
+};
+
+template<>
+struct SPZAlwaysComplex<long>{
+	typedef std::complex<long> type;
+};
+
+template<>
+struct SPZAlwaysComplex<int>{
+	typedef std::complex<int> type;
+};
+//@TODO: This makes no sense. But since TPZMatrix<TPZFlopCounter> is declared, this must exist.
+
+template<>
+struct SPZAlwaysComplex<TPZFlopCounter>{
+	typedef TPZFlopCounter type;
 };
 /**
  * Matches floating points (float, const double...)
@@ -176,7 +193,6 @@ struct TPZCounter {
 /** @brief Re-implements << operator to show the counter (count) data */
 std::ostream &operator<<(std::ostream &out,const TPZCounter &count);
 
-class TPZFlopCounter;
 
 /** @brief This is the type of floating point number PZ will use. */
 #ifdef REALfloat

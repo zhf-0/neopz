@@ -2321,20 +2321,34 @@ int TPZFMatrix<TVar>::SetSize(const long newRows,const long newCols) {
     return( 1 );
 }
 
-#ifdef USING_LAPACK
-
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenvalues)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues)
 {
     DebugStop();
 }
 
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenvalues, TPZFMatrix < std::complex<double> > &eigenvectors)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenvectors)
 {
     DebugStop();
 }
 
+template< class TVar>
+int
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix <typename SPZAlwaysComplex<TVar>::type > &eigenVectors)
+{
+    TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
+    return( 0 );
+}
+template< class TVar>
+int
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w)
+{
+    TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
+    return( 0 );
+}
+
+/***
 template <>
 int TPZFMatrix<float>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenvalues)
 {
@@ -2654,22 +2668,6 @@ int TPZFMatrix<complex< float> >::SolveEigenProblem(TPZVec < std::complex<double
     }
     
     return 1;
-}
-
-
-template< class TVar>
-int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w, TPZFMatrix < complex<double> > &eigenVectors)
-{
-    TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
-    return( 0 );
-}
-template< class TVar>
-int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < complex<double> > &w)
-{
-    TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem <LAPACK does not support this specific data type>" );
-    return( 0 );
 }
 
 template<>
@@ -3066,7 +3064,7 @@ TPZFMatrix<complex<double> >::SolveGeneralisedEigenProblem(TPZMatrix<complex<dou
     
 }
 
-#endif // USING_LAPACK
+**/
 
 
 #ifdef _AUTODIFF

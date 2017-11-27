@@ -24,13 +24,19 @@ public:
 
     void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
-    void Solve(TPZVec<SPZAlwaysComplex<TVar>> &eigenValues, TPZFMatrix<TVar> &eigenVectors);
+    void Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &eigenValues, TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors);
 
     virtual int ClassId() const override;
+
+    void SetAsGeneralised(bool fIsGeneralised);
 protected:
     /** @brief Whether to solve the eigenvalue problem
          *   is generalised (Ax=uBx) or not (Ax=ux)*/
     bool fIsGeneralised = false;
+    /**
+     * @brief Whether to calculate the eigenvectors (and not the eigenvalues only)
+     */
+    bool fMustCalculateEigenVectors = false;
     /** @brief Desired number of eigenvalues to be computed*/
     int fHowManyEigenValues = 1;
     /**

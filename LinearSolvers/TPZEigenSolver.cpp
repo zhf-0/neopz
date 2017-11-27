@@ -31,7 +31,7 @@ void TPZEigenSolver<TVar>::SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat) {
 }
 
 template <class TVar>
-void TPZEigenSolver<TVar>::Solve(TPZVec<TVar> &eigenValues, TPZFMatrix<TVar> &eigenVectors){
+void TPZEigenSolver<TVar>::Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &eigenValues, TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors){
     if(!this->MatrixA() || (!this->MatrixB() && this->IsGeneralised() )) {
         std::cout << "TPZEigenSolver::Solve called without a matrix pointer"<<std::endl;
         if(this->MatrixA()){
@@ -55,4 +55,8 @@ void TPZEigenSolver<TVar>::Solve(TPZVec<TVar> &eigenValues, TPZFMatrix<TVar> &ei
 template<typename TVar>
 int TPZEigenSolver<TVar>::ClassId() const{
     return 666;//@TODO: Implementar corretamente!
+}
+
+void TPZEigenSolver::SetAsGeneralised(bool isGeneralised) {
+   fIsGeneralised = isGeneralised;
 }
