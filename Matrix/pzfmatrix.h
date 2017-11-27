@@ -56,18 +56,23 @@ template<class TVar>
 TVar Norm(const TPZFMatrix<TVar> &A);
 
 
+template<class TVar>
+class TPZLapackWrapper;
+
 /**
  * @brief Full matrix class. \ref matrix "Matrix"
  * @note The full matrix class is special in that the data is stored column wise
  * @author Misael Mandujano
  * @since 04/1996
  */
-
 template<class TVar=REAL>
 class TPZFMatrix: public TPZMatrix<TVar> {
-    
+
 public:
-    
+    friend class TPZLapackWrapper<TVar>;
+    friend class TPZFMatrix<float>;
+    friend class TPZFMatrix<double>;
+
     /** @brief Simple constructor */
     TPZFMatrix() : TPZMatrix<TVar>( 0, 0 ), fElem(0),fGiven(0),fSize(0) {}
     /**
@@ -123,9 +128,6 @@ public:
     {
         return fElem;
     }
-    
-    friend class TPZFMatrix<float>;
-    friend class TPZFMatrix<double>;
 
     /// copy the values from a matrix with a different precision
     template<class TVar2>

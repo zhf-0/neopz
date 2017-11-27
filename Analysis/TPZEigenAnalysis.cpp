@@ -86,54 +86,22 @@ void TPZEigenAnalysis::Assemble()
 
 void TPZEigenAnalysis::Solve() {
     long numeq = fCompMesh->NEquations();
-    if(fRhs.Rows() != numeq )
-    {
-        DebugStop();
-    }
     long nReducedEq = fStructMatrix->NReducedEquations();
     if (nReducedEq == numeq)
     {
-//        TPZFMatrix<STATE> residual(fRhs);
-//        TPZFMatrix<STATE> delu(numeq,1,0.);
-#ifdef LOG4CXX
-        if (logger->isDebugEnabled())
-        {
-            TPZFMatrix<STATE> res2(fRhs);
-            fSolver->Matrix()->Residual(fSolution,fRhs,res2);
-            std::stringstream sout;
-            sout << "Residual norm " << Norm(res2) << std::endl;
-    //		res2.Print("Residual",sout);
-            LOGPZ_DEBUG(logger,sout.str())
-        }
-#endif
 //        @TODO: Fix this call
-//        fSolver->Solve(residual, delu);
-//        fSolution = delu;
-#ifdef LOG4CXX
-        if (logger->isDebugEnabled())
-        {
-            if(!fSolver->Matrix()->IsDecomposed())
-            {
-                TPZFMatrix<STATE> res2(fRhs);
-                fSolver->Matrix()->Residual(delu,fRhs,res2);
-                std::stringstream sout;
-                sout << "Residual norm " << Norm(res2) << std::endl;
-                //            res2.Print("Residual",sout);
-                LOGPZ_DEBUG(logger,sout.str())
-            }
-        }
-#endif
-
+        fEigenvalues.Resize(numeq);
+        fEigenvectors.Redim(numeq,1);
+        fSolver->Solve(fEigenvalues, fEigenvectors);
     }
     else
     {
-//        TPZFMatrix<STATE> residual(nReducedEq,1,0.);
-//        TPZFMatrix<STATE> delu(nReducedEq,1,0.);
-//        fStructMatrix->EquationFilter().Gather(fRhs,residual);
-//        @TODO: Fix this call
-//        fSolver->Solve(residual, delu);
-//        fSolution.Redim(numeq,1);
-//        fStructMatrix->EquationFilter().Scatter(delu,fSolution);
+        fEigenvalues.Resize(nReducedEq);
+        fEigenvectors.Redim(nReducedEq,1);
+        //@TODO:THINK ABOUT EQUATION FILTER
+        //fStructMatrix->EquationFilter().Gather(delu,fSolution);
+        fSolver->Solve(fEigenvalues, fEigenvectors);
+        //fStructMatrix->EquationFilter().Scatter(delu,fSolution);
     }
 #ifdef LOG4CXX
     std::stringstream sout;

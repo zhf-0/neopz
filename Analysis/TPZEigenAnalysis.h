@@ -38,7 +38,14 @@ protected:
      * @brief Pointer to the Eigen solver
      */
     TPZEigenSolver<STATE> * fSolver;
-
+    /**
+    * @brief Stores the computed eigenvalues
+    */
+    TPZManVector<SPZAlwaysComplex<STATE>::type,10> fEigenvalues;
+    /**
+     * @brief Stores the computed eigenvectors
+     */
+    TPZFMatrix<SPZAlwaysComplex<STATE>::type> fEigenvectors;
 /************************************************************************************
  * These private members are not really related to TPZEigenAnalysis.                *
  * Until TPZAnalysis is refactored, they are set as private in order to not be used *
