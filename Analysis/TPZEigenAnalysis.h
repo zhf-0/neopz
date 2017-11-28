@@ -53,26 +53,25 @@ protected:
      */
     TPZFMatrix<SPZAlwaysComplex<STATE>::type> fEigenvectors;
 
-/************************************************************************************
- * These private members are not really related to TPZEigenAnalysis.                *
- * Until TPZAnalysis is refactored, they are set as private in order to not be used *
- ************************************************************************************/
+/**************************************************************************************
+ * These private members and deleted functions are not related to TPZEigenAnalysis.   *
+ * Until TPZAnalysis is refactored, they are set as private in order to not be used   *
+ **************************************************************************************/
+    TPZFMatrix<STATE> &Rhs() = delete;
+    void SetStep(int step) = delete;
+    int GetStep() = delete;
+    void SetTime(REAL time) = delete;
+    TPZAlgebraicSystemSolver<STATE> *BuildPreconditioner(EPrecond preconditioner, bool overlap) = delete;
+    void AnimateRun(long num_iter, int steps, TPZVec<std::string> &scalnames,
+                    TPZVec<std::string> &vecnames, const std::string &plotfile) = delete;
+    void CreateListOfCompElsToComputeError(TPZAdmChunkVector<TPZCompEl *> &elvecToComputeError) = delete;
 private:
-    using TPZAnalysis::Rhs;
-    using TPZAnalysis::SetStep;
-    using TPZAnalysis::GetStep;
-    using TPZAnalysis::SetTime;
-    using TPZAnalysis::GetTime;
     using TPZAnalysis::PostProcess;
     using TPZAnalysis::PrePostProcessTable;
-    using TPZAnalysis::BuildPreconditioner;
-    using TPZAnalysis::AnimateRun;
     using TPZAnalysis::PostProcessTable;
     using TPZAnalysis::PostProcessError;
     using TPZAnalysis::PostProcessErrorSerial;
     using TPZAnalysis::PostProcessErrorParallel;
-
-    using TPZAnalysis::CreateListOfCompElsToComputeError;
 };
 
 
