@@ -85,6 +85,29 @@ void TPZEigenAnalysis::Assemble()
     }
 }
 
+template <class TVar>
+void TPZEigenAnalysis::TransferEigenVector(const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &originalSol,
+                                           TPZFMatrix<TVar> &newSol, const unsigned int &i, const bool isAbsVal) {
+    originalSol.GetSub(i,0,originalSol.Cols(),1,newSol);
+
+}
+
+template<>
+void TPZEigenAnalysis::TransferEigenVector<float>(const TPZFMatrix<typename SPZAlwaysComplex<float>::type> &originalSol,
+                                                  TPZFMatrix<float> &newSol, const unsigned int &i, const bool isAbsVal) {
+    for (int j = 0; j < originalSol.Rows(); ++j) {
+        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
+    }
+}
+
+template<>
+void TPZEigenAnalysis::TransferEigenVector<double>(const TPZFMatrix<typename SPZAlwaysComplex<double>::type> &originalSol,
+                                                   TPZFMatrix<double> &newSol, const unsigned int &i, const bool isAbsVal) {
+    for (int j = 0; j < originalSol.Rows(); ++j) {
+        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
+    }
+}
+
 void TPZEigenAnalysis::Solve() {
     long numeq = fCompMesh->NEquations();
     long nReducedEq = fStructMatrix->NReducedEquations();
@@ -150,27 +173,4 @@ TPZEigenAnalysis::GetEigenvectors() const {
 TPZManVector<typename SPZAlwaysComplex<STATE>::type>
 TPZEigenAnalysis::GetEigenvalues() const {
     return fEigenvalues;
-}
-
-template <class TVar>
-void TPZEigenAnalysis::TransferEigenVector(const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &originalSol,
-                                           TPZFMatrix<TVar> &newSol, const unsigned int &i, const bool isAbsVal) {
-    originalSol.GetSub(i,0,originalSol.Cols(),1,newSol);
-
-}
-
-template<>
-void TPZEigenAnalysis::TransferEigenVector<float>(const TPZFMatrix<typename SPZAlwaysComplex<float>::type> &originalSol,
-                                           TPZFMatrix<float> &newSol, const unsigned int &i, const bool isAbsVal) {
-    for (int j = 0; j < originalSol.Rows(); ++j) {
-        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
-    }
-}
-
-template<>
-void TPZEigenAnalysis::TransferEigenVector<double>(const TPZFMatrix<typename SPZAlwaysComplex<double>::type> &originalSol,
-                                           TPZFMatrix<double> &newSol, const unsigned int &i, const bool isAbsVal) {
-    for (int j = 0; j < originalSol.Rows(); ++j) {
-        newSol(j,0) = isAbsVal ? std::abs(originalSol.GetVal(j,i)) : std::real(originalSol.GetVal(j,i));
-    }
 }

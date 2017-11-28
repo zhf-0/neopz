@@ -10,6 +10,9 @@
 #include "pzmatrix.h"
 #include "pzfmatrix.h"
 
+template<typename TVar>
+class TPZLapackWrapper;
+
 #ifdef OOPARLIB
 
 #include "pzsaveable.h"
@@ -25,6 +28,7 @@ template<class TVar>
 class TPZSBMatrix : public TPZMatrix<TVar>
 {
 public:
+    friend class TPZLapackWrapper<TVar>;
     TPZSBMatrix() : TPZMatrix<TVar>() , fDiag() { fBand = 0; }
     TPZSBMatrix(const long dim,const long band );
     TPZSBMatrix(const TPZSBMatrix<TVar> &A ) : TPZMatrix<TVar>(A)  { Copy(A); }
@@ -129,9 +133,9 @@ public:
      */
     int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors) override;
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
-     * @param w Stores the eigenvalues
+     * @param eigenvalues Stores the eigenvalues
      */
-    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w) override;
+    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues) override;
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
