@@ -24,6 +24,26 @@ int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &A, TP
     DebugStop();
 }
 
+/*******************
+*    TPZSBMATRIX    *
+*******************/
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
+    DebugStop();
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+    DebugStop();
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+    DebugStop();
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+    DebugStop();
+}
+//@TODO: decide whether setting USING_MKL will also set USING_LAPACK and then change this logic
 #ifdef USING_LAPACK
 /** CBlas Math Library */
 #ifdef MACOSX
@@ -34,17 +54,26 @@ typedef __CLPK_complex varfloatcomplex;
 #include <mkl.h>
 typedef MKL_Complex16 vardoublecomplex;
 typedef MKL_Complex8 varfloatcomplex;
+#elif WIN32
+#define lapack_complex_double std::complex<double>
+#define lapack_complex_float std::complex<float>
+#include "lapacke.h"
+typedef lapack_complex_double vardoublecomplex;
+typedef lapack_complex_float varfloatcomplex;
 #else
-#include "cblas.h"
-#define BLAS_MULT
-#endif
+#include "clapack.h"
 #endif
 
-#ifdef USING_MKL
-#include <mkl.h>
-typedef MKL_Complex16 vardoublecomplex;
-typedef MKL_Complex8 varfloatcomplex;
-#endif
+//#ifdef USING_MKL
+//#include <mkl.h>
+//typedef MKL_Complex16 vardoublecomplex;
+//typedef MKL_Complex8 varfloatcomplex;
+//#endif
+
+/*******************
+*    TPZFMATRIX    *
+*******************/
+
 template <>
 int TPZLapackWrapper<float>::SolveEigenProblem(TPZFMatrix<float> &A,TPZVec < typename SPZAlwaysComplex<float>::type > &eigenvalues)
 {
@@ -731,22 +760,6 @@ TPZLapackWrapper<std::complex<double> >::SolveGeneralisedEigenProblem(TPZFMatrix
 /*******************
 *    TPZSBMATRIX    *
 *******************/
-template<class TVar>
-int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
-    DebugStop();
-}
-template<class TVar>
-int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-    DebugStop();
-}
-template<class TVar>
-int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
-    DebugStop();
-}
-template<class TVar>
-int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-    DebugStop();
-}
 
 template<>
 int
@@ -1390,6 +1403,7 @@ TPZLapackWrapper<std::complex<double>>::SolveGeneralisedEigenProblem(TPZSBMatrix
 
     return( 1 );
 }
+#endif//USING_LAPACK
 
 template class TPZLapackWrapper< std::complex<float> >;
 template class TPZLapackWrapper< std::complex<double> >;
