@@ -42,14 +42,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+unset(SLEPC_FOUND CACHE)
+unset(SLEPC_INCLUDE_DIRS CACHE)
+unset(SLEPC_LIBRARY_DIRS CACHE)
+unset(SLEPC_LIBARIES CACHE)
+unset(SLEPC_STATIC_LIBARIES CACHE)
+unset(SLEPC_VERSION CACHE)
+unset(SLEPC_VERSION_MAJOR CACHE)
+unset(SLEPC_VERSION_MINOR CACHE)
+unset(SLEPC_VERSION_SUBMINOR CACHE)
+
 # Load CMake pkg-config module
 find_package(PkgConfig REQUIRED)
 find_package(MPI REQUIRED)
 
 # Find SLEPc pkg-config file
-set(ENV{PKG_CONFIG_PATH} "$ENV{SLEPC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:$ENV{SLEPC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-set(ENV{PKG_CONFIG_PATH} "$ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:$ENV{PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-set(ENV{PKG_CONFIG_PATH} "$ENV{PETSC_DIR}/$ENV{PETSC_ARCH}:$ENV{PETSC_DIR}:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${SLEPC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:${SLEPC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:${PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/$ENV{PETSC_ARCH}:${PETSC_DIR}:$ENV{PKG_CONFIG_PATH}")
 pkg_search_module(SLEPC SLEPc)
 
 # Extract major, minor, etc from version string

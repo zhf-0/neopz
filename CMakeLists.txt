@@ -301,8 +301,10 @@ endif(USING_QWT)
 
 
 #enabling MKL library
-if(USING_MKL)
-	if(NOT DEFINED ENV{MKLROOT})
+#######################################################################################
+#	Define CMake custom variable MKLROOT with MKL install directory.			      #
+#	Or, set the environment variable according to the following procedures.           #
+#######################################################################################
 ###########################################WINDOWS#####################################
 #	1)Run the mklvars.bat script in the bin subdirectory on the 					  #
 #	  Intel MKL installation directory   											  #
@@ -335,8 +337,13 @@ if(USING_MKL)
 #		>grep -E "^setenv" /etc/launchd.conf | xargs -t -L 1 launchctl				  #
 #   and restart the terminal and CMake Gui (if open)								  #
 #######################################################################################
-
-    	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info.")
+if(USING_MKL)
+	if(NOT DEFINED MKLROOT)
+		if(DEFINED ENV{MKLROOT})
+			set(MKLROOT $ENV{MKLROOT})
+		else()
+    		message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info.")
+		endif()
 	endif()
 	find_package(MKL REQUIRED)
 	include_directories(${MKL_INCLUDE_DIRS})
@@ -353,14 +360,19 @@ endif(USING_SLEPC)
 
 #enabling PETSc library
 if(USING_PETSC)
-	if(NOT DEFINED ENV{PETSC_DIR})
-		###################################################################
-		# 				See instructions regarding MKLROOT.			      #
-		#				The	value of PETSC_DIR is estabilished by		  #
-		# 				your installation directory.				      #
-		###################################################################
-    	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
+	if(NOT DEFINED PETSC_DIR)
+		if(DEFINED ENV{PETSC_DIR})
+			set(PETSC_DIR $ENV{PETSC_DIR})
+		else()
+			###################################################################
+			# 				See instructions regarding MKLROOT.			      #
+			#				The	value of PETSC_DIR is estabilished by		  #
+			# 				your installation directory.				      #
+			###################################################################
+			message(FATAL_ERROR "PETSC_DIR variable is not defined. See CMakeLists.txt for further info.")
+		endif()
 	endif()
+
 	#set(ENV{BLA_VENDOR} "OpenBLAS")
 	find_package(PETSc REQUIRED)
 	get_target_property(PETSC_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
@@ -368,13 +380,17 @@ if(USING_PETSC)
 endif(USING_PETSC)
 
 if(USING_SLEPC)
-	if(NOT DEFINED ENV{SLEPC_DIR})
-		###################################################################
-		# 				See instructions regarding MKLROOT.			      #
-		#				The	value of SLEPC_DIR is estabilished by		  #
-		# 				your installation directory.				      #
-		###################################################################
-    	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
+	if(NOT DEFINED SLEPC_DIR)
+		if(DEFINED ENV{SLEPC_DIR})
+			set(SLEPC_DIR $ENV{SLEPC_DIR})
+		else()
+			###################################################################
+			# 				See instructions regarding MKLROOT.			      #
+			#				The	value of SLEPC_DIR is estabilished by		  #
+			# 				your installation directory.				      #
+			###################################################################
+			message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
+		endif()
 	endif()
 	find_package(SLEPc REQUIRED)
 	get_target_property(SLEPC_INCLUDE_DIRECTORIES SLEPC::slepc INTERFACE_INCLUDE_DIRECTORIES)

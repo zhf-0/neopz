@@ -10,7 +10,7 @@
 #  PETSC_VERSION_MAJOR     - First number in PETSC_VERSION
 #  PETSC_VERSION_MINOR     - Second number in PETSC_VERSION
 #  PETSC_VERSION_SUBMINOR  - Third number in PETSC_VERSION
-#  PETSC_INT_SIZE          - sizeof(PetscInt)
+#  PETSC_SCALAR_SIZE       - sizeof(PetscScalar)
 #
 #=============================================================================
 # Copyright (C) 2010-2016 Garth N. Wells, Anders Logg and Johannes Ring
@@ -40,6 +40,19 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
+unset(PETSC_FOUND CACHE)
+unset(PETSC_INCLUDE_DIRS CACHE)
+unset(PETSC_LIBRARY_DIRS CACHE)
+unset(PETSC_LIBRARIES CACHE)
+unset(PETSC_STATIC_LIBRARIES CACHE)
+unset(PETSC_VERSION CACHE)
+unset(PETSC_VERSION_MAJOR CACHE)
+unset(PETSC_VERSION_MINOR CACHE)
+unset(PETSC_VERSION_SUBMINOR CACHE)
+unset(PETSC_SCALAR_SIZE CACHE)
+unset(HAVE_PETSC_SCALAR_SIZE CACHE)
+unset(PETSC_INT_SIZE CACHE)
+unset(HAVE_PETSC_INT_SIZE CACHE)
 
 # Outline:
 # 1. Get flags from PETSc-generated pkg-config file
@@ -49,9 +62,8 @@
 # Load pkg-config module (provided by CMake)
 find_package(PkgConfig REQUIRED)
 find_package(MPI REQUIRED)
-
 # Find PETSc pkg-config file.
-set(ENV{PKG_CONFIG_PATH} "$ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:$ENV{PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_search_module(PETSC PETSc)
 
 # Extract major, minor, etc from version string
@@ -74,11 +86,9 @@ endif()
 # and attaching 'properties')
 if (PETSC_FOUND AND NOT TARGET PETSC::petsc)
   add_library(PETSC::petsc INTERFACE IMPORTED)
-
   # Add include paths
   set_property(TARGET PETSC::petsc PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${PETSC_INCLUDE_DIRS})
-
   # Add libraries
   unset(_libs)
   foreach (lib ${PETSC_LIBRARIES})
@@ -178,6 +188,62 @@ if (PETSC_INCLUDE_DIRS)
   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${PETSC_INCLUDE_DIRS})
   set(CMAKE_EXTRA_INCLUDE_FILES petscsys.h)
   check_type_size("PetscInt" PETSC_INT_SIZE)
+  unset(CMAKE_EXTRA_INCLUDE_FILES)
+  unset(CMAKE_REQUIRED_INCLUDES)
+  unset(CMAKE_REQUIRED_LIBRARIES)
+  unset(CMAKE_REQUIRED_FLAGS)
+endif()
+
+# Check compatibility of PetscScalar and STATE
+if (PETSC_INCLUDE_DIRS)
+  include(CheckTypeSize)
+  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${PETSC_INCLUDE_DIRS})
+  set(CMAKE_EXTRA_INCLUDE_FILES petscsys.h)
+  check_type_size("PetscScalar" PETSC_SCALAR_SIZE)
+  set(PETSC_TEST_SCALAR_CPP
+          "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/petsc_test_scalar.cpp")
+  file(WRITE ${PETSC_TEST_SCALAR_CPP} "
+  #include \"petscts.h\"
+  #include \"petsc.h\"
+  int main()
+  {
+    #if defined(PETSC_USE_COMPLEX)
+      return 0;
+      #else
+      return 1;
+      #endif
+    return 0;
+  }
+  ")
+  try_run(
+          PETSC_TEST_SCALAR_EXITCODE
+          PETSC_TEST_SCALAR_COMPILED
+          ${CMAKE_CURRENT_BINARY_DIR}
+          ${PETSC_TEST_SCALAR_CPP}
+          CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}"
+          LINK_LIBRARIES PETSC::petsc ${CMAKE_REQUIRED_LIBRARIES}
+          COMPILE_OUTPUT_VARIABLE PETSC_TEST_SCALAR_COMPILE_OUTPUT
+          RUN_OUTPUT_VARIABLE PETSC_TEST_SCALAR_OUTPUT)
+
+  if (PETSC_TEST_SCALAR_COMPILED AND PETSC_TEST_SCALAR_EXITCODE EQUAL 0)
+    ##PETSC_USE_COMPLEX IS DEFINED
+    if(STATE_TYPE STREQUAL "complex<float>" AND PETSC_SCALAR_SIZE EQUAL 8)
+    elseif(STATE_TYPE STREQUAL "complex<double>" AND PETSC_SCALAR_SIZE EQUAL 16)
+    else()
+      message(${STATE_TYPE})
+      message(${PETSC_SCALAR_SIZE})
+      message(FATAL_ERROR "PetscScalar and STATE type are incompatible")
+    endif()
+  elseif(PETSC_TEST_SCALAR_COMPILED AND PETSC_TEST_SCALAR_EXITCODE EQUAL 1)
+    ##PETSC_USE_COMPLEX IS NOT DEFINED
+    if(STATE_TYPE STREQUAL "float" AND PETSC_SCALAR_SIZE EQUAL 4)
+    elseif(STATE_TYPE STREQUAL "double" AND PETSC_SCALAR_SIZE EQUAL 8)
+    else()
+      message(${STATE_TYPE})
+      message(${PETSC_SCALAR_SIZE})
+      message(FATAL_ERROR "PetscScalar and STATE type are incompatible")
+    endif()
+  endif()
 
   unset(CMAKE_EXTRA_INCLUDE_FILES)
   unset(CMAKE_REQUIRED_INCLUDES)
