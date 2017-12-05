@@ -37,16 +37,6 @@ void TPZEigenAnalysis::Assemble()
         sout << "TPZAnalysis::Assemble lacking definition for Assemble fCompMesh "<< (void *) fCompMesh
              << " fStructMatrix " << (void *) fStructMatrix.operator->()
              << " fSolver " << (void *) fSolver;
-#ifndef WINDOWS
-        sout << " at file " << __FILE__ << " line " << __LINE__ ;
-#else
-        sout << " TPZAnalysis::Assemble() " ;
-#endif
-#ifdef LOG4CXX
-        LOGPZ_ERROR(logger,sout.str().c_str());
-#else
-        std::cout << sout.str().c_str() << std::endl;
-#endif
         return;
     }
     int numloadcases = ComputeNumberofLoadCases();
@@ -133,33 +123,6 @@ void TPZEigenAnalysis::Solve() {
         //For now, the first solution is loaded.
         fStructMatrix->EquationFilter().Scatter(sol,fSolution);
     }
-#ifdef LOG4CXX
-    std::stringstream sout;
-    TPZStepSolver<STATE> *step = dynamic_cast<TPZStepSolver<STATE> *> (fSolver);
-    if(!step) DebugStop();
-    long nsing = step->Singular().size();
-	if(nsing && logger->isWarnEnabled()) {
-		sout << "Number of singular equations " << nsing;
-		std::list<long>::iterator it = step->Singular().begin();
-		if(nsing) sout << "\nSingular modes ";
-		while(it != step->Singular().end())
-		{
-			sout << *it << " ";
-			it++;
-		}
-		if(nsing) sout << std::endl;
-		LOGPZ_WARN(logger,sout.str())
-	}
-#endif
-#ifdef LOG4CXX
-    if (logger->isDebugEnabled())
-	{
-		std::stringstream sout;
-		sout << "Solution norm " << Norm(fSolution) << std::endl;
-		fSolution.Print("delu",sout);
-		LOGPZ_DEBUG(logger,sout.str())
-	}
-#endif
     fCompMesh->LoadSolution(fSolution);
     fCompMesh->TransferMultiphysicsSolution();
 

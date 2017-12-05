@@ -51,34 +51,23 @@ int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, T
   DebugStop();
   return 0;
 }
-//@TODO: Decide which lapack version to link against
 
 #ifdef USING_LAPACK
-/** CBlas Math Library */
-#ifdef MACOSX
-#include <Accelerate/Accelerate.h>
-typedef __CLPK_doublecomplex vardoublecomplex;
-typedef __CLPK_complex varfloatcomplex;
-#elif USING_MKL
+
+#ifdef USING_MKL //mkl version is faster
 #include <mkl.h>
 typedef MKL_Complex16 vardoublecomplex;
 typedef MKL_Complex8 varfloatcomplex;
-#elif WIN32
+#elif MACOSX //accelerate
+#include <Accelerate/Accelerate.h>
+typedef __CLPK_doublecomplex vardoublecomplex;
+typedef __CLPK_complex varfloatcomplex;
+#else //openblas, standalone lapack, etc
 #define lapack_complex_double std::complex<double>
 #define lapack_complex_float std::complex<float>
 #include "lapacke.h"
 typedef lapack_complex_double vardoublecomplex;
 typedef lapack_complex_float varfloatcomplex;
-#else
-#include "clapack.h"
-#endif
-
-//#ifdef USING_MKL
-//#include <mkl.h>
-//typedef MKL_Complex16 vardoublecomplex;
-//typedef MKL_Complex8 varfloatcomplex;
-//#endif
-
 /*******************
 *    TPZFMATRIX    *
 *******************/
