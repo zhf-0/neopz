@@ -418,11 +418,17 @@ endif(USING_SLEPC)
 # 		find_package(BLAS REQUIRED)
 # 	endif(USING_BLAS)
 
-# 	#enabling LAPACK library
-# 	if(USING_LAPACK)
-# 		find_package(LAPACK REQUIRED)
-# 	endif(USING_LAPACK)
 # endif(NOT USING_MKL)
+#enabling LAPACK library
+if(USING_LAPACK)
+	if(NOT WHICH_LAPACK)
+		if(APPLE)
+			set(ENV{BLA_VENDOR} "Apple")
+		endif()
+	endif()
+	find_package(LAPACK REQUIRED)
+	message(${LAPACK_LIBRARIES})
+endif(USING_LAPACK)
 
 #enabling METIS library
 if(USING_METIS)

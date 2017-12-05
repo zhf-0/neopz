@@ -137,6 +137,7 @@ if(USING_BLAS)
 endif(USING_BLAS)
 
 if(USING_LAPACK)
+	target_link_libraries(pz ${LAPACK_LIBRARIES})
   target_compile_definitions(pz PRIVATE USING_LAPACK)
 endif(USING_LAPACK)
 

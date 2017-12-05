@@ -43,7 +43,8 @@ template<class TVar>
 int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
     DebugStop();
 }
-//@TODO: decide whether setting USING_MKL will also set USING_LAPACK and then change this logic
+//@TODO: Decide which lapack version to link against
+
 #ifdef USING_LAPACK
 /** CBlas Math Library */
 #ifdef MACOSX
