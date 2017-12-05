@@ -71,14 +71,10 @@ if(USING_FAD)
 endif(USING_FAD)
 
 
-target_link_libraries(pz Threads::Threads)
-
-if(APPLE)
-	target_link_libraries(pz ${ACCELERATE_LIB})
-endif(APPLE)
+#target_link_libraries(pz Threads::Threads)
 
 if(USING_BOOST)
-	target_link_libraries(pz ${Boost_LIBRARIES})
+	#target_link_libraries(pz ${Boost_LIBRARIES})
 	target_compile_definitions(pz PRIVATE USING_BOOST)
 	if(BUILD_UNITTESTING)
 		target_compile_definitions(pz PRIVATE BUILD_UNITTESTING)
@@ -90,40 +86,30 @@ if (USING_IPO)
 endif(USING_IPO)
 
 if (USING_LOG4CXX)
-  target_link_libraries(pz ${LOG4CXX_LIB})
-  if(WIN32)
-		target_link_libraries(pz odbc32.lib ws2_32.lib mswsock.lib)
-  endif(WIN32)
+  #target_link_libraries(pz ${LOG4CXX_LIB})
+#  if(WIN32)
+#		target_link_libraries(pz odbc32.lib ws2_32.lib mswsock.lib)
+#  endif(WIN32)
   target_compile_definitions(pz PRIVATE LOG4CXX)#should it be public?
 endif(USING_LOG4CXX)
 
-if (USING_METIS)
-  target_link_libraries(pz ${METIS_LIB})
-target_compile_definitions(pz PRIVATE USING_METIS)
-endif(USING_METIS)
-
-if(USING_OPENSSL)
-	target_link_libraries(crypto)
-	target_compile_definitions(pz PRIVATE USING_OPENSSL)
-endif(USING_OPENSSL)
-
 if(USING_TBB)
-	target_link_libraries(pz ${TBB_LIB})
+	#target_link_libraries(pz ${TBB_LIB})
 	target_compile_definitions(pz PRIVATE USING_TBB)
 endif(USING_TBB)
 
 if (USING_OPENMP)
-	target_link_libraries(pz ${OPENMP_LIB})
+	#target_link_libraries(pz ${OPENMP_LIB})
 	target_compile_definitions(pz PRIVATE USING_OPENMP)
 endif(USING_OPENMP)
 
 if (USING_LIKWID)
-	target_link_libraries(pz ${LIKWID_LIB})
+	#target_link_libraries(pz ${LIKWID_LIB})
 	target_compile_definitions(pz PRIVATE USING_LIKWID)
 endif(USING_LIKWID)
 
 if (USING_LIBNUMA)
-	target_link_libraries(pz ${LIBNUMA_LIB})
+	#target_link_libraries(pz ${LIBNUMA_LIB})
 	target_compile_definitions(pz PRIVATE USING_LIBNUMA)
 endif(USING_LIBNUMA)
 
@@ -131,45 +117,58 @@ if(USING_MATLAB_ENGINE)
 	target_compile_definitions(pz PRIVATE USING_MATLAB)
 endif(USING_MATLAB_ENGINE)
 
-if(USING_BLAS)
-  target_link_libraries(pz ${BLAS_LIBRARIES})
-  target_compile_definitions(pz PRIVATE USING_BLAS)
-endif(USING_BLAS)
-
-if(USING_LAPACK)
-	target_link_libraries(pz ${LAPACK_LIBRARIES})
-  target_compile_definitions(pz PRIVATE USING_LAPACK)
-endif(USING_LAPACK)
-
 if(USING_PAPI)
-  target_link_libraries(pz ${PAPI_LIB})
-  target_compile_definitions(pz PRIVATE USING_PAPI)
+	#target_link_libraries(pz ${PAPI_LIB})
+	target_compile_definitions(pz PRIVATE USING_PAPI)
 endif(USING_PAPI)
 
 if(USING_HWLOC)
-	target_link_libraries(pz ${HWLOC_LIB})
+	#target_link_libraries(pz ${HWLOC_LIB})
 	target_compile_definitions(pz PRIVATE USING_HWLOC)
 endif(USING_HWLOC)
 
+if (USING_METIS)
+	#target_link_libraries(pz ${METIS_LIB})
+	target_compile_definitions(pz PRIVATE USING_METIS)
+endif(USING_METIS)
+
+if(USING_QWT)
+	target_compile_definitions(pz PRIVATE USING_QWT)
+endif(USING_QWT)
+
+if(USING_OPENSSL)
+	target_link_libraries(pz crypto)###what?
+	target_compile_definitions(pz PRIVATE USING_OPENSSL)
+endif(USING_OPENSSL)
+
 if(USING_MKL)
-	target_link_libraries(pz ${MKL_LIBRARIES})
+	#target_link_libraries(pz ${MKL_LIBRARIES})
 	target_compile_definitions(pz PUBLIC USING_MKL)
 endif(USING_MKL)
 
+if(USING_LAPACK)
+	#target_link_libraries(pz ${LAPACK_LIBRARIES})
+	target_compile_definitions(pz PRIVATE USING_LAPACK)
+endif(USING_LAPACK)
+
+if(USING_BLAS)
+	#target_link_libraries(pz ${BLAS_LIBRARIES})
+	target_compile_definitions(pz PRIVATE USING_BLAS)
+endif(USING_BLAS)
+
+
 if(USING_PETSC)
-	target_link_libraries(pz PETSC::petsc_static)
+	#target_link_libraries(pz PETSC::petsc)
 	target_compile_definitions(pz PRIVATE USING_PETSC)
 endif(USING_PETSC)
 
 if(USING_SLEPC)
-	target_link_libraries(pz SLEPC::slepc_static)
+	#target_link_libraries(pz SLEPC::slepc)
 	target_compile_definitions(pz PRIVATE USING_SLEPC)
 endif(USING_SLEPC)
 
-if(USING_QWT)
-  target_compile_definitions(pz PRIVATE USING_QWT)
-endif(USING_QWT)
 
+target_link_libraries(pz ${PZ_LIBRARIES})
 ## inserting definitions
 #specifying the path to neopz source code
 set(PZSOURCEDIR ${PROJECT_SOURCE_DIR})
