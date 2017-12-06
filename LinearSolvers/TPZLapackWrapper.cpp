@@ -68,6 +68,7 @@ typedef __CLPK_complex varfloatcomplex;
 #include "lapacke.h"
 typedef lapack_complex_double vardoublecomplex;
 typedef lapack_complex_float varfloatcomplex;
+#endif
 /*******************
 *    TPZFMATRIX    *
 *******************/
