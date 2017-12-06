@@ -35,7 +35,7 @@ void TPZFYsmpMatrix<TVar>::MultiplyDummy(TPZFYsmpMatrix<TVar> & B, TPZFYsmpMatri
     long i,j,k;
     if (B.Rows()!=this->Rows()) return;
     long rows = this->Rows();
-    REAL aux=0.;
+    TVar aux=0.;
     for(i=0;i<rows;i++){
         for(j=0;j<rows;j++){
             for(k=0;k<rows;k++){
@@ -43,7 +43,7 @@ void TPZFYsmpMatrix<TVar>::MultiplyDummy(TPZFYsmpMatrix<TVar> & B, TPZFYsmpMatri
 				aux+=GetVal(i,k)*B.GetVal(i,k);
 			}
 			Res.PutVal(i,j,aux);
-			aux=0.;
+			aux=(TVar)0.;
 		}
     }
 }
@@ -156,7 +156,7 @@ void TPZFYsmpMatrix<TVar>::AddKel(TPZFMatrix<TVar> & elmat, TPZVec<long> & desti
             jpos=destinationindex[j];
             value=elmat.GetVal(i,j);
             //cout << "j= " << j << endl;
-            if(value != 0.){
+            if(value != (TVar)0.){
                 //cout << "fIA[ipos] " << fIA[ipos] << "     fIA[ipos+1] " << fIA[ipos+1] << endl;
                 int flag = 0;
 				k++;
@@ -199,7 +199,7 @@ void TPZFYsmpMatrix<TVar>::AddKel(TPZFMatrix<TVar> & elmat, TPZVec<long> & sourc
 			jpos=destinationindex[j];
 			value=elmat.GetVal(sourceindex[i],sourceindex[j]);
             //cout << "j= " << j << endl;
-			if(value != 0.){
+			if(value != (TVar)0.){
                 //cout << "fIA[ipos] " << fIA[ipos] << "     fIA[ipos+1] " << fIA[ipos+1] << endl;
 				int flag = 0;
 				k++;
@@ -313,16 +313,13 @@ void TPZFYsmpMatrix<TVar>::AddKelOld(TPZFMatrix<TVar> & elmat, TPZVec < int > & 
 }
 
 template<class TVar>
-TPZFYsmpMatrix<TVar>::TPZFYsmpMatrix(const long rows,const long cols ) : TPZMatrix<TVar>(rows,cols) {
+TPZFYsmpMatrix<TVar>::TPZFYsmpMatrix(const long rows,const long cols ) : TPZMatrix<TVar>(rows,cols) ,
+fDiag(0.), fA(0.), fIA(0), fJA(0){
 	// Constructs an empty TPZFYsmpMatrix
 	//    fSolver = -1;
 	fSymmetric = 0;
 	//    fMaxIterations = 4;
 	//    fSORRelaxation = 1.;
-	fDiag = 0;
-	fA = 0;
-	fIA = 0;
-	fJA = 0;
 #ifdef CONSTRUCTOR
 	cerr << "TPZFYsmpMatrix(int rows,int cols)\n";
 #endif
@@ -387,7 +384,7 @@ void TPZFYsmpMatrix<TVar>::MultAddMT(const TPZFMatrix<TVar> &x,const TPZFMatrix<
 	// Determine how to initialize z
 	for(ic=0; ic<xcols; ic++) {
 		TVar *zp = &(z(0,ic));
-		if(beta != 0) {
+		if(beta != (TVar)0) {
 			const TVar *yp = &(y.g(0,0));
 			TVar *zlast = zp+r;
 
@@ -477,7 +474,7 @@ void TPZFYsmpMatrix<TVar>::MultAdd(const TPZFMatrix<TVar> &x,const TPZFMatrix<TV
         std::cout << "TPZFMatrix::MultAdd matrix x with incompatible dimensions>" ;
         return;
     }
-    if(beta != (double)0. && ((!opt && this->Rows() != y.Rows()) || (opt && this->Cols() != y.Rows()) || y.Cols() != x.Cols())) {
+    if(beta != (TVar)0. && ((!opt && this->Rows() != y.Rows()) || (opt && this->Cols() != y.Rows()) || y.Cols() != x.Cols())) {
         std::cout << "TPZFMatrix::MultAdd matrix y with incompatible dimensions>";
         return;
     }
@@ -503,10 +500,10 @@ void TPZFYsmpMatrix<TVar>::MultAdd(const TPZFMatrix<TVar> &x,const TPZFMatrix<TV
 	// Determine how to initialize z
 	for(ic=0; ic<xcols; ic++) {
 		TVar *zp = &(z(0,ic));
-		if(beta != 0) {
+		if(beta != (TVar)0.) {
 			const TVar *yp = &(y.g(0,0));
 			TVar *zlast = zp+r;
-			if(beta != 1.) {
+			if(beta != (TVar)1.) {
 				while(zp < zlast) {
 					*zp = beta * (*yp);
 					zp ++;
@@ -607,7 +604,7 @@ void TPZFYsmpMatrix<TVar>::ComputeDiagonal() {
 		fDiag[ir] = GetVal(ir,ir);
 	}
 }
-
+//@TODO: Does this make sense for complex numbers?
 template<class TVar>
 void TPZFYsmpMatrix<TVar>::SolveSOR( long &numiterations, const TPZFMatrix<TVar> &rhs, TPZFMatrix<TVar> &x,
 							  TPZFMatrix<TVar> *residual, TPZFMatrix<TVar> &/*scratch*/,
@@ -624,7 +621,7 @@ void TPZFYsmpMatrix<TVar>::SolveSOR( long &numiterations, const TPZFMatrix<TVar>
 	if(!FromCurrent) x.Zero();
 	TVar eqres = 2.*tol;
 	long iteration;
-	for(iteration=0; iteration<numiterations && eqres >= tol; iteration++) {
+	for(iteration=0; iteration<numiterations && fabs(eqres) >= tol; iteration++) {
 		eqres = 0.;
 		long ir=irStart;
 		while(ir != irLast) {
@@ -633,12 +630,12 @@ void TPZFYsmpMatrix<TVar>::SolveSOR( long &numiterations, const TPZFMatrix<TVar>
 				xnewval -= fA[ic] * x(fJA[ic],0);
 			}
 			eqres += xnewval*xnewval;
-			x(ir,0) += overrelax*(xnewval/fDiag[ir]);
+			x(ir,0) += (TVar)overrelax*(xnewval/fDiag[ir]);
 			ir += irInc;
 		}
 		eqres = sqrt(eqres);
 	}
-	tol = eqres;
+	tol = fabs(eqres);
 	numiterations = iteration;
 	if(residual) this->Residual(x,rhs,*residual);
 }
@@ -696,7 +693,7 @@ void TPZFYsmpMatrix<TVar>::SolveJacobi(long & numiterations, const TPZFMatrix<TV
 	{
 		this->Residual(result,F,scratch);
 		TVar res = Norm(scratch);
-		for(long it=1; it<numiterations && res > tol; it++) {
+		for(long it=1; it<numiterations && (fabs(res)) > tol; it++) {
 			for(long ic=0; ic<c; ic++) {
 				for(long i=0; i<r; i++) {
 					result(i,ic) += (scratch)(i,ic)/(fDiag)[i];
@@ -848,24 +845,26 @@ void TPZFYsmpMatrix<TVar>::RowLUUpdate(long sourcerow, long destrow)
 		cout << __PRETTY_FUNCTION__ << " at line " << __LINE__ << " destrow not found\n";
 		return;
 	}
-	if(fA[sourcedist] < 1.e-15)
+	const REAL tol = 1.e-15;
+	//@TODO: Should it be the abs val or the real part of fA[srcdist]?
+	if(fabs(fA[sourcedist]) < fabs(tol))
 	{
 		cout << __PRETTY_FUNCTION__ << " at line " << __LINE__ << " small pivot " << fA[sourcedist] << "\n";
 		return;
 	}
 	TVar mult = fA[destdist]/fA[sourcedist];
-	if(mult == 0.) return;
+	if(mult == (TVar)0.) return;
 	destdist++;
 	sourcedist++;
 	while(destdist < fIA[destrow+1] && sourcedist < fIA[sourcerow+1])
 	{
-		if(fJA[destdist] == fJA[sourcedist])
+		if(fabs(fJA[destdist] - fJA[sourcedist])<tol)
 		{
 			fA[destdist] -= fA[sourcedist]*mult;
 			destdist++;
 			sourcedist++;
-		}
-		else if(fJA[destdist] < fJA[sourcedist])
+		}//@TODO:Should it be the abs val or the real part?
+		else if(fabs(fJA[destdist]) < fabs(fJA[sourcedist]))
 		{
 			destdist++;
 		}
@@ -1003,3 +1002,7 @@ int TPZFYsmpMatrix<TVar>::Substitution( TPZFMatrix<TVar> *B ) const
 template class TPZFYsmpMatrix<long double>;
 template class TPZFYsmpMatrix<double>;
 template class TPZFYsmpMatrix<float>;
+
+template class TPZFYsmpMatrix<std::complex<long double>>;
+template class TPZFYsmpMatrix<std::complex<double>>;
+template class TPZFYsmpMatrix<std::complex<float>>;
