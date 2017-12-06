@@ -20,6 +20,7 @@
 #include <fstream>
 #include <TPZEigenAnalysis.h>
 #include <TPZEigenSolver.h>
+#include <TPZSpStructMatrix.h>
 #include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
@@ -146,13 +147,22 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     int neq = 0;
     int neqOriginal = 0;
 
-    TPZAutoPointer<TPZFStructMatrix> fmtrx;
+//    TPZAutoPointer<TPZFStructMatrix> fmtrx;
+//
+//    fmtrx = new TPZFStructMatrix(cmesh);
+//    fmtrx->SetNumThreads(nThreads);
+//    if (filterEquations) {
+//        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+//        fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+//    }
+//    an.SetStructuralMatrix(fmtrx);
+    TPZAutoPointer<TPZSpStructMatrix> fmtrx;
 
-    fmtrx = new TPZFStructMatrix(cmesh);
+    fmtrx = new TPZSpStructMatrix(cmesh);
     fmtrx->SetNumThreads(nThreads);
     if (filterEquations) {
-        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
-        fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+      FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+      fmtrx->EquationFilter().SetActiveEquations(activeEquations);
     }
     an.SetStructuralMatrix(fmtrx);
 
