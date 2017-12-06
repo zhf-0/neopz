@@ -43,41 +43,12 @@ static LoggerPtr loggerCheck(Logger::getLogger("pz.checkconsistency"));
 
 #ifdef USING_LAPACK
 /** CBlas Math Library */
-#ifdef MACOSX
-#include <Accelerate/Accelerate.h>
-typedef __CLPK_doublecomplex vardoublecomplex;
-typedef __CLPK_complex varfloatcomplex;
-#elif USING_MKL
-#include <mkl.h>
-typedef MKL_Complex16 vardoublecomplex;
-typedef MKL_Complex8 varfloatcomplex;
-#else
-#include "cblas.h"
+#include "TPZLapack.h"
 #define BLAS_MULT
-#endif
 #endif
 
 
 //#define IsZero( a )  ( fabs(a) < 1.e-20)
-
-// #ifdef USING_ATLAS
-// extern "C"{
-// #include <cblas.h>
-// };
-// double cblas_ddot(const int N, const double *X, const int incX,
-//                   const double *Y, const int incY);
-// void cblas_daxpy(const int N, const void *alpha, const void *X,
-//                  const int incX, void *Y, const int incY);
-// #endif
-// #ifdef USING_BLAS
-// extern "C"{
-// #include "cblas.h"
-// };
-// double cblas_ddot(const int N, const double *X, const int incX,
-//                   const double *Y, const int incY);
-// void cblas_daxpy(const int N, const void *alpha, const void *X,
-//                  const int incX, void *Y, const int incY);
-// #endif
 
 
 using namespace std;
@@ -1908,7 +1879,7 @@ int TPZFMatrix<double>::Subst_LForward( TPZFMatrix<double>* b ) const
     double B  = 0.;
     int info;
     if (dim == 0 || nrhs == 0) {
-        return;
+        return 0;
     }
     dsytrs_(&uplo, &dim, &nrhs, fElem, &dim, &fPivot[0], b->fElem, &dim, &info);
     return 1;
@@ -2331,12 +2302,14 @@ template <class TVar>
 int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenvalues)
 {
     DebugStop();
+	return 1;
 }
 
 template <class TVar>
 int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < std::complex<double> > &eigenvalues, TPZFMatrix < std::complex<double> > &eigenvectors)
 {
     DebugStop();
+	return 1;
 }
 
 template <>
@@ -2616,7 +2589,7 @@ int TPZFMatrix<complex<float> >::SolveEigenProblem(TPZVec < std::complex<double>
     for(int i = 0 ; i < dim ; i ++){
         eigenvalues[i] = eigen[i];
     }
-
+	return 1;
 }
 
 template <>

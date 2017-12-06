@@ -601,6 +601,6 @@ void TLaplaceExampleSmooth::DivSigma(const TPZVec<TVar> &x, TVar &divsigma)
     
 }
 
-
+template void TLaplaceExampleSmooth::DivSigma<REAL>(const TPZVec<REAL> &x, REAL& divsigma);
 
 #endif

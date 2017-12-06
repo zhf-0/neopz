@@ -72,7 +72,7 @@ if(${val} LESS 0)
 endif()
 
 # Location to search files or libraries
-set(SEARCH_DIRS ENV PATH /usr/local/opt/ /usr/local/opt/qt5/lib/cmake/ /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/local/include/tbb /usr/lib /usr/lib64 /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/pthread ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib ./externallibs/lib ./externallibs/include ./../externallibs/lib ./../externallibs/include /usr/lib/atlas-base/ /usr/include/atlas /usr/local/atlas/include /usr/local/atlas/lib )
+set(SEARCH_DIRS ENV PATH /usr/local/opt/ /usr/local/opt/qt5/lib/cmake/ /usr/include /usr/local/include /usr/local/include/boost /usr/local/include/log4cxx /usr/local/include/tbb /usr/lib /usr/lib64 /usr/local/lib ./. ./.. ./../libs ./../libs/fad ./../libs/metis ./../libs/metis/include ./../libs/metis/lib ./../externallibs ./../externallibs/fad ./../externallibs/pthread ./../externallibs/metis ./../externallibs/metis/include ./../externallibs/metis/lib ./..metis ./../metis/include ./../metis/lib ./externallibs/lib ./externallibs/include ./../externallibs/lib ./../externallibs/include ./../externallibs/include/lapack /usr/lib/atlas-base/ /usr/include/atlas /usr/local/atlas/include /usr/local/atlas/lib )
 
 # INSTALL part
 #To install neopz/include
@@ -159,7 +159,7 @@ if(USING_LOG4CXX)
 	find_path(LOG4CXX_INCLUDE log4cxx PATHS ${SEARCH_DIRS} ${PROJECT_SOURCE_DIR}/../log4cxx ${PROJECT_SOURCE_DIR}/../log4cxx_src/include ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src ${PROJECT_SOURCE_DIR}/../externallibs/log4cxx_src/include)
 	find_library(LOG4CXX_LIB_RELEASE
 		         NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a
-				 PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib ./../externallibs/lib/Release
+				 PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib ./../externallibs/lib/Release 
 				)
 	find_library(LOG4CXX_LIB_DEBUG
 				 NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a       # Change name here if debug lib has different name.
@@ -174,7 +174,7 @@ if(USING_LOG4CXX)
 	else()
 		include_directories(${LOG4CXX_INCLUDE})
 	endif()
-
+	
 	if(LOG4CXX_LIB-NOTFOUND)
 		set (LOG4CXX_LIB "" CACHE PATH "Directory where the log4cxx library can be found")
 	endif()
@@ -297,13 +297,35 @@ if(USING_MATLAB_ENGINE)
 
 endif(USING_MATLAB_ENGINE)
 
-#enabling BLAS library
+#enabling LAPACK library
+option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
 option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
+if(USING_LAPACK)
+	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+	add_definitions(-DUSING_LAPACK)
+	if(APPLE)
+	else()
+		find_path(LAPACK_INCLUDE clapack.h lapacke.h PATHS ${SEARCH_DIRS})
+		find_library(LAPACK_LIB NAMES liblapack libclapack PATHS ${SEARCH_DIRS})#no need to specify .lib, .so, .dylib, etc
+		if(LAPACK_INCLUDE-NOTFOUND)
+			set (LAPACK_INCLUDE "" CACHE PATH "Directory where LAPACK header files can be found")
+		else()
+			include_directories(${LAPACK_INCLUDE})
+		endif()
+		if(LAPACK_LIB-NOTFOUND)
+			set (LAPACK_LIB "" CACHE PATH "Directory where the LAPACK library can be found")
+		endif()
+	endif(APPLE)
+endif(USING_LAPACK)
+
+#enabling BLAS library
+#option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
 if(USING_BLAS)
 	add_definitions(-DUSING_BLAS)
 	find_path(CBLAS_INCLUDE cblas.h PATHS ${SEARCH_DIRS})
 	#find_library(ATLAS_LIB NAMES libatlas.dylib libtatlas.dylib atlas.lib libatlas.so libtatlas.so libatlas.a PATHS ${SEARCH_DIRS})
-	find_library(CBLAS_LIB NAMES libcblas.dylib libtcblas.dylib cblas.lib libcblas.so libtcblas.so libcblas.a PATHS ${SEARCH_DIRS})
+	find_library(CBLAS_LIB NAMES libcblas cblas libtcblas PATHS ${SEARCH_DIRS})
+	#find_library(CBLAS_LIB NAMES cblas libcblas.lib libcblas.dylib libtcblas.dylib cblas.lib libcblas.so libtcblas.so libcblas.a PATHS ${SEARCH_DIRS})
 	if(CBLAS_INCLUDE-NOTFOUND)
 		set (CBLAS_INCLUDE "" CACHE PATH "Directory where CBLAS header files can be found")
 	else()
@@ -317,24 +339,6 @@ if(USING_BLAS)
 	endif()
 endif(USING_BLAS)
 
-#enabling LAPACK library
-option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
-if(USING_LAPACK)
-	add_definitions(-DUSING_LAPACK)
-	if(APPLE)
-	else()
-		find_path(LAPACK_INCLUDE clapack.h PATHS ${SEARCH_DIRS})
-		find_library(LAPACK_LIB NAMES libclapack.dylib PATHS ${SEARCH_DIRS})
-		if(LAPACK_INCLUDE-NOTFOUND)
-			set (LAPACK_INCLUDE "" CACHE PATH "Directory where LAPACK header files can be found")
-		else()
-			include_directories(${LAPACK_INCLUDE})
-		endif()
-		if(LAPACK_LIB-NOTFOUND)
-			set (LAPACK_LIB "" CACHE PATH "Directory where the LAPACK library can be found")
-		endif()
-	endif(APPLE)
-endif(USING_LAPACK)
 
 #enabling the new skyline matrix format
 option(USING_NEW_SKYLMAT "Enable the new skyline matrix format" OFF)
@@ -558,7 +562,7 @@ configure_file ("${PROJECT_SOURCE_DIR}/Common/config.h.in" ${CONFIG_H})
 # add it to include search path
 include_directories("${PROJECT_BINARY_DIR}/Common")
 # add the .h file in the install target
-install (FILES ${CONFIG_H} DESTINATION ${NEOPZ_INCLUDE})
+install (FILES ${CONFIG_H} DESTINATION ${NEOPZ_INCLUDE} COMPONENT libraries)
 # End of config.h part
 
 #increment all the directories where the sources files is
