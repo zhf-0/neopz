@@ -108,7 +108,23 @@ public:
 	
 	/** @brief Print the matrix along with a identification title */
 	virtual void Print(const char *title, std::ostream &out = std::cout , const MatrixOutputFormat form = EFormatted) const;
-	
+
+  virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
+  /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   */
+  virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+
+  /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   * @param Stores the correspondent eigenvectors
+   */
+  virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
+  /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   */
+  virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+
 	/**
 	 * @name Solvers
 	 * @brief Linear system solvers. \n

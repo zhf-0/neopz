@@ -11,7 +11,9 @@
 #include <string>
 #include <map>
 #include <pthread.h>
-
+#ifdef USING_SLEPC
+#include <slepceps.h>
+#endif
 #include "tpzverysparsematrix.h"
 #include "pz_pthread.h"
 
@@ -646,6 +648,88 @@ int TPZFYsmpMatrix<TVar>::Zero()
     fA.Fill(TVar(0.));
     fDiag.Fill(TVar(0.));
 	return 1;
+}
+
+template<class TVar>
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
+  //@TODO: Write better error message.
+  TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
+  DebugStop();//this should never be called. Must implement it in child class.
+  return 1;
+}
+/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ */
+template<class TVar>
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  //@TODO: Write better error message.
+  TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
+  DebugStop();//this should never be called. Must implement it in child class.
+  return 1;
+}
+
+/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ * @param Stores the correspondent eigenvectors
+ */
+template<class TVar>
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+  //@TODO: Write better error message.
+	#ifdef USING_SLEPC
+  EPS eps;
+  EPSCreate( PETSC_COMM_WORLD, &eps);
+	Mat Amat, Bmat;
+	PetscReal error;
+	const int blockSize = 1;
+	const int nRows = this->Rows();
+	const int nCols = this->Cols();
+	TPZVec<int> iaP(this->fIA.size(),0);
+	TPZVec<int> jaP(this->fJA.size(),0);
+	for (int j = 0; j < this->fIA.size(); ++j) {
+		iaP[j]=this->fIA[j];
+	}
+	for (int j = 0; j < this->fJA.size(); ++j) {
+		jaP[j]=this->fJA[j];
+	}
+	error=MatCreateSeqSBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)this->fA.begin(),&Amat);
+	TPZFYsmpMatrix<TVar>& Bsparse = dynamic_cast<TPZFYsmpMatrix<TVar> &> (B);
+	for (int j = 0; j < this->fIA.size(); ++j) {
+		iaP[j]=Bsparse.fIA[j];
+	}
+	for (int j = 0; j < this->fJA.size(); ++j) {
+		jaP[j]=Bsparse.fJA[j];
+	}
+	error=MatCreateSeqSBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)Bsparse.fA.begin(),&Bmat);
+	EPSSetOperators(eps, Amat, Bmat);
+	EPSSetProblemType(eps, EPS_GNHEP);
+	EPSSetWhichEigenpairs(eps, EPS_SMALLEST_REAL);
+	EPSSetFromOptions(eps);
+	EPSSolve(eps);
+	PetscInt nconv;
+	EPSGetConverged(eps, &nconv);
+	PetscScalar kr, ki;
+	Vec xr, xi;
+	for (int i = 0; i < nconv; ++i) {
+		EPSGetEigenpair(eps, i, &kr, &ki, xr, xi);
+		EPSComputeError(eps, i, EPS_ERROR_RELATIVE, &error);
+		std::cout<<kr<<std::endl;
+		std::cout<<error<<std::endl;
+	}
+	EPSDestroy(&eps);
+  #endif
+  //TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
+  //DebugStop();//this should never be called. Must implement it in child class.
+  return 1;
+}
+/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+ * @param w Stores the eigenvalues
+ */
+template<class TVar>
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  //@TODO: Write better error message.
+  TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
+  DebugStop();//this should never be called. Must implement it in child class.
+  return 1;
 }
 
 
