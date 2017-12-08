@@ -78,8 +78,7 @@ void TPZEigenAnalysis::Assemble()
 template <class TVar>
 void TPZEigenAnalysis::TransferEigenVector(const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &originalSol,
                                            TPZFMatrix<TVar> &newSol, const unsigned int &i, const bool isAbsVal) {
-    originalSol.GetSub(i,0,originalSol.Cols(),1,newSol);
-
+    originalSol.GetSub(i,0,originalSol.Rows(),1,newSol);
 }
 
 template<>
