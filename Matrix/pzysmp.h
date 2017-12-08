@@ -109,21 +109,21 @@ public:
 	/** @brief Print the matrix along with a identification title */
 	virtual void Print(const char *title, std::ostream &out = std::cout , const MatrixOutputFormat form = EFormatted) const;
 
-  virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
+  int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors) override;
   /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
    * @param w Stores the eigenvalues
    */
-  virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+  int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w) override;
 
   /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
    * @param w Stores the eigenvalues
    * @param Stores the correspondent eigenvectors
    */
-  virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
+  int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors) override;
   /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
    * @param w Stores the eigenvalues
    */
-  virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+  int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w) override;
 
 	/**
 	 * @name Solvers

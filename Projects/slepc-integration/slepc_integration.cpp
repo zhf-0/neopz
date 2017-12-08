@@ -1,5 +1,6 @@
 
 #include <pzsysmp.h>
+#include <pzysmp.h>
 #include "petscmat.h"
 #include "slepceps.h"
 
@@ -23,7 +24,8 @@ int TestintTPZSYsmpMatrix() {
   static char help[] = "Testing MatCreateSeqSBAIJWithArrays().\n\n";
   const int nRows = 3;
   const int nCols = nRows;
-  TPZSYsmpMatrix<STATE> matrix(nRows,nCols);
+
+  TPZFYsmpMatrix<STATE> matrix(nRows,nCols);
   TPZVec<long> ia ({0,1,3,4});
   TPZVec<long> ja({0,1,2,2});
 

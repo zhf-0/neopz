@@ -13,6 +13,8 @@
 #include <pthread.h>
 #ifdef USING_SLEPC
 #include <slepceps.h>
+#include <ldap.h>
+
 #endif
 #include "tpzverysparsematrix.h"
 #include "pz_pthread.h"
@@ -677,6 +679,7 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
   //@TODO: Write better error message.
 	#ifdef USING_SLEPC
   EPS eps;
+	SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
   EPSCreate( PETSC_COMM_WORLD, &eps);
 	Mat Amat, Bmat;
 	PetscReal error;
@@ -691,7 +694,7 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
 	for (int j = 0; j < this->fJA.size(); ++j) {
 		jaP[j]=this->fJA[j];
 	}
-	error=MatCreateSeqSBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)this->fA.begin(),&Amat);
+	error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)this->fA.begin(),&Amat);
 	TPZFYsmpMatrix<TVar>& Bsparse = dynamic_cast<TPZFYsmpMatrix<TVar> &> (B);
 	for (int j = 0; j < this->fIA.size(); ++j) {
 		iaP[j]=Bsparse.fIA[j];
@@ -699,16 +702,20 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
 	for (int j = 0; j < this->fJA.size(); ++j) {
 		jaP[j]=Bsparse.fJA[j];
 	}
-	error=MatCreateSeqSBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)Bsparse.fA.begin(),&Bmat);
+	error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)Bsparse.fA.begin(),&Bmat);
 	EPSSetOperators(eps, Amat, Bmat);
 	EPSSetProblemType(eps, EPS_GNHEP);
-	EPSSetWhichEigenpairs(eps, EPS_SMALLEST_REAL);
+	const PetscScalar target = -600000;
+	EPSSetTarget(eps, target);
+	EPSSetWhichEigenpairs(eps, 	EPS_TARGET_REAL);
 	EPSSetFromOptions(eps);
 	EPSSolve(eps);
 	PetscInt nconv;
 	EPSGetConverged(eps, &nconv);
 	PetscScalar kr, ki;
 	Vec xr, xi;
+	MatCreateVecs(Amat,NULL,&xr);
+	MatCreateVecs(Amat,NULL,&xi);
 	for (int i = 0; i < nconv; ++i) {
 		EPSGetEigenpair(eps, i, &kr, &ki, xr, xi);
 		EPSComputeError(eps, i, EPS_ERROR_RELATIVE, &error);

@@ -185,19 +185,14 @@ endif()
 # Check sizeof(PetscInt)
 if (PETSC_INCLUDE_DIRS)
   include(CheckTypeSize)
-  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${PETSC_INCLUDE_DIRS})
   set(CMAKE_EXTRA_INCLUDE_FILES petscsys.h)
   check_type_size("PetscInt" PETSC_INT_SIZE)
   unset(CMAKE_EXTRA_INCLUDE_FILES)
-  unset(CMAKE_REQUIRED_INCLUDES)
-  unset(CMAKE_REQUIRED_LIBRARIES)
-  unset(CMAKE_REQUIRED_FLAGS)
 endif()
 
 # Check compatibility of PetscScalar and STATE
 if (PETSC_INCLUDE_DIRS)
   include(CheckTypeSize)
-  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${PETSC_INCLUDE_DIRS})
   set(CMAKE_EXTRA_INCLUDE_FILES petscsys.h)
   check_type_size("PetscScalar" PETSC_SCALAR_SIZE)
   set(PETSC_TEST_SCALAR_CPP
@@ -246,9 +241,6 @@ if (PETSC_INCLUDE_DIRS)
   endif()
 
   unset(CMAKE_EXTRA_INCLUDE_FILES)
-  unset(CMAKE_REQUIRED_INCLUDES)
-  unset(CMAKE_REQUIRED_LIBRARIES)
-  unset(CMAKE_REQUIRED_FLAGS)
 endif()
 
 # Standard package handling

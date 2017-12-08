@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 15;
+    int nDiv = 10;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -156,6 +156,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 //        fmtrx->EquationFilter().SetActiveEquations(activeEquations);
 //    }
 //    an.SetStructuralMatrix(fmtrx);
+
     TPZAutoPointer<TPZSpStructMatrix> fmtrx;
 
     fmtrx = new TPZSpStructMatrix(cmesh);
