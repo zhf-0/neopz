@@ -97,7 +97,6 @@ ENABLE_TESTING()
 
 	if(BUILD_PROJECTS)
 		if(USING_SLEPC)
-			add_subdirectory(petsc-test)
 			add_subdirectory(slepc-integration)
 		endif(USING_SLEPC)
 		#
