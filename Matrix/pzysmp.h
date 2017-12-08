@@ -9,7 +9,7 @@
 #ifdef MACOSX
 #include <Accelerate/Accelerate.h>
 #elif USING_MKL
-#include <mkl.h>
+//#include <mkl.h>
 #else
 extern "C"{
      #include "cblas.h"
@@ -216,8 +216,8 @@ protected:
 	
 #ifdef USING_MKL
     friend class TPZPardisoControl<TVar>;
-    
-    TPZPardisoControl<TVar> fPardisoControl;
+
+//    TPZPardisoControl<TVar> fPardisoControl;
 #endif
 protected:
 	
