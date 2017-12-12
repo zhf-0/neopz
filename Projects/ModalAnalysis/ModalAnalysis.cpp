@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 10;
+    int nDiv = 15;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -123,16 +123,35 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
                    bool l2error, bool exportEigen, const int nThreads,
                    bool optimizeBandwidth, bool filterEquations) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
-	
+    std::cout<<"Creating GMesh...";
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t1_g =
+            boost::posix_time::microsec_clock::local_time();
+    #endif
 	if (isRectangularWG) {
 		CreateGMeshRectangularWaveguide(gmesh, meshType, geoParams[0], geoParams[1], nDiv);
 	}
 	else{
 		CreateGMeshCircularWaveguide(gmesh, meshType, geoParams[0], nDiv);
 	}
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t2_g =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
+    #endif
     TPZVec<TPZCompMesh *> meshVec(1);
+    std::cout<<"Creating CMesh...";
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t1_c =
+            boost::posix_time::microsec_clock::local_time();
+    #endif
     CreateCMesh(meshVec, gmesh, pOrder, ur, er, f0,
                 isCutOff); // funcao para criar a malha computacional
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t2_c =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
+    #endif
     TPZCompMesh *cmesh = meshVec[0];
     TPZMatModalAnalysis *matPointer =
         dynamic_cast<TPZMatModalAnalysis *>(cmesh->MaterialVec()[1]);
@@ -148,7 +167,6 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     int neqOriginal = 0;
 
 //    TPZAutoPointer<TPZFStructMatrix> fmtrx;
-//
 //    fmtrx = new TPZFStructMatrix(cmesh);
 //    fmtrx->SetNumThreads(nThreads);
 //    if (filterEquations) {
@@ -158,7 +176,6 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 //    an.SetStructuralMatrix(fmtrx);
 
     TPZAutoPointer<TPZSpStructMatrix> fmtrx;
-
     fmtrx = new TPZSpStructMatrix(cmesh);
     fmtrx->SetNumThreads(nThreads);
     if (filterEquations) {
@@ -208,6 +225,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
 #endif
+    return;
     TPZManVector<SPZAlwaysComplex<STATE>::type> eValues = an.GetEigenvalues();
     TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVectors = an.GetEigenvectors();
     std::set<std::pair<REAL, TPZFMatrix<STATE>>> eigenValuesRe;

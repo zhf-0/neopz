@@ -14,7 +14,8 @@
 #ifdef USING_SLEPC
 #include <slepceps.h>
 #include <ldap.h>
-
+#include <petsctime.h>
+#include "slepcrg.h"
 #endif
 #include "tpzverysparsematrix.h"
 #include "pz_pthread.h"
@@ -679,37 +680,143 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
   //@TODO: Write better error message.
 	#ifdef USING_SLEPC
   EPS eps;
+
 	SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
+
   EPSCreate( PETSC_COMM_WORLD, &eps);
 	Mat Amat, Bmat;
 	PetscReal error;
 	const int blockSize = 1;
 	const int nRows = this->Rows();
 	const int nCols = this->Cols();
-	TPZVec<int> iaP(this->fIA.size(),0);
-	TPZVec<int> jaP(this->fJA.size(),0);
+
+//	for (int i = 0; i < nRows; ++i) {
+//		for (int j = 0; j < nRows; ++j) {
+//
+//			if(std::imag(this->GetVal(i,j))!=0){
+//				std::cout<<"A("<<i<<","<<j<<") = "<<this->GetVal(i,j)<<std::endl;
+//			}
+//			if(std::imag(B.GetVal(i,j))!=0){
+//				std::cout<<"A("<<i<<","<<j<<") = "<<this->GetVal(i,j)<<std::endl;
+//			}
+//		}
+//	}
+
+	bool parallelStructures = false;
+	PetscErrorCode ierr;
+	PetscInt *iaP, *jaP;
+	std::cout<<"Creating PETSc Amat...";
+	ierr = PetscMalloc1(this->fIA.size(),&iaP);CHKERRQ(ierr);
+	ierr = PetscMalloc1(this->fJA.size(),&jaP);CHKERRQ(ierr);
+
 	for (int j = 0; j < this->fIA.size(); ++j) {
 		iaP[j]=this->fIA[j];
 	}
 	for (int j = 0; j < this->fJA.size(); ++j) {
 		jaP[j]=this->fJA[j];
 	}
-	error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)this->fA.begin(),&Amat);
+	if (parallelStructures)
+	{
+		ierr = MatCreate(PETSC_COMM_WORLD,&Amat);CHKERRQ(ierr);
+		ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
+		ierr = MatSetType(Amat,MATMPIAIJ);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocationCSR(Amat,iaP,jaP,(PetscScalar *)this->fA.begin());CHKERRQ(ierr);
+		ierr = PetscFree(iaP);CHKERRQ(ierr);
+		ierr = PetscFree(jaP);CHKERRQ(ierr);
+	}
+	else
+	{
+		error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,iaP,jaP,(PetscScalar *)this->fA.begin(),&Amat);
+	}
+	std::cout<<"Created!"<<std::endl;
 	TPZFYsmpMatrix<TVar>& Bsparse = dynamic_cast<TPZFYsmpMatrix<TVar> &> (B);
-	for (int j = 0; j < this->fIA.size(); ++j) {
-		iaP[j]=Bsparse.fIA[j];
+	std::cout<<"Creating PETSc Bmat...";
+	PetscInt *ibP, *jbP;
+	ierr = PetscMalloc1(Bsparse.fIA.size(),&ibP);CHKERRQ(ierr);
+	ierr = PetscMalloc1(Bsparse.fJA.size(),&jbP);CHKERRQ(ierr);
+	for (int j = 0; j < Bsparse.fIA.size(); ++j) {
+		ibP[j]=Bsparse.fIA[j];
 	}
-	for (int j = 0; j < this->fJA.size(); ++j) {
-		jaP[j]=Bsparse.fJA[j];
+	for (int j = 0; j < Bsparse.fJA.size(); ++j) {
+		jbP[j]=Bsparse.fJA[j];
 	}
-	error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,(PetscInt *)iaP.begin(),(PetscInt *)jaP.begin(),(PetscScalar *)Bsparse.fA.begin(),&Bmat);
+	if(parallelStructures)
+	{
+		ierr = MatCreate(PETSC_COMM_WORLD,&Bmat);CHKERRQ(ierr);
+		ierr = MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
+		ierr = MatSetType(Bmat,MATMPIAIJ);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocationCSR(Bmat,ibP,jbP,(PetscScalar *)Bsparse.fA.begin());CHKERRQ(ierr);
+		ierr = PetscFree(ibP);CHKERRQ(ierr);
+		ierr = PetscFree(jbP);CHKERRQ(ierr);
+	}
+	else
+	{
+		ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)Bsparse.fA.begin(),&Bmat);CHKERRQ(ierr);
+	}
+	std::cout<<"Created!"<<std::endl;
 	EPSSetOperators(eps, Amat, Bmat);
 	EPSSetProblemType(eps, EPS_GNHEP);
+	//EPSSetType(eps,EPSPOWER);
+	//EPSSetType(eps,EPSLANCZOS);
+	//EPSSetType(eps,EPSARPACK);
+	//EPSSetType(eps,EPSGD);
+	//EPSSetType(eps,EPSJD);
+	//EPSSetType(eps,EPSCISS);
+	EPSSetType(eps,EPSKRYLOVSCHUR);
+	RG rg;
+	EPSGetRG(eps,&rg);
+	{
+		PetscScalar center = -150000;
+		PetscReal radius=125000, vscale=1;
+		RGSetType(rg,RGELLIPSE);
+		RGEllipseSetParameters(rg,center,radius,vscale);
+	}
+//	{
+//		RGSetType(rg,RGINTERVAL);
+//		PetscReal ra=-300000,rb=-5000,ia=-1,ib=1;
+//		RGIntervalSetEndpoints(rg,ra,rb,ia,ib);
+//	}
 	const PetscScalar target = -600000;
-	EPSSetTarget(eps, target);
 	EPSSetWhichEigenpairs(eps, 	EPS_TARGET_REAL);
-	EPSSetFromOptions(eps);
-	EPSSolve(eps);
+	EPSSetTarget(eps, target);
+	PetscInt nev = 8;
+	PetscInt ncv = nRows;
+  PetscInt mpd = nRows - nev;
+  EPSSetDimensions(eps,nev,PETSC_DECIDE,PETSC_DECIDE);
+//	ierr = EPSSetTolerances(eps, 1e+2, 6); CHKERRQ(ierr);
+
+
+  ST st;
+	EPSGetST(eps,&st);
+	ierr = STSetType(st, STSINVERT); CHKERRQ(ierr);
+
+	KSP ksp;
+	STGetKSP(st,&ksp);
+	ierr = KSPSetType(ksp, KSPPREONLY); CHKERRQ(ierr); // because we're using a direct solver (PCLU)
+	KSPSetErrorIfNotConverged(ksp,PETSC_FALSE);
+	PetscReal rtol, abstol, dtol;
+	PetscInt maxits;
+	ierr = KSPGetTolerances(ksp, &rtol, &abstol, &dtol, &maxits);CHKERRQ(ierr);
+	rtol=1e-2;//it was 1e-8
+	//abstol=1e-6;//it was 1e-50
+	ierr = KSPSetTolerances(ksp, rtol, abstol, dtol, maxits);CHKERRQ(ierr);
+
+	PC pc;
+	ierr = KSPGetPC(ksp, &pc); CHKERRQ(ierr);
+	ierr = PCSetType(pc, PCLU); CHKERRQ(ierr);
+  //#ifdef USING_MKL
+	//ierr = PCFactorSetMatSolverPackage(pc, MATSOLVERMKL_PARDISO); CHKERRQ(ierr);
+  //#else
+	ierr = PCFactorSetMatSolverPackage(pc, MATSOLVERMUMPS); CHKERRQ(ierr);
+  //#endif
+
+	//EPSView(eps,PETSC_VIEWER_STDOUT_WORLD);
+
+	PetscLogDouble t1,t2;
+	ierr = PetscTime(&t1);CHKERRQ(ierr);
+	ierr = EPSSolve(eps);CHKERRQ(ierr);
+	ierr = PetscTime(&t2);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Elapsed Time in EPSSolve: %f\n",t2-t1);
 	PetscInt nconv;
 	EPSGetConverged(eps, &nconv);
 	PetscScalar kr, ki;
@@ -723,6 +830,14 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
 		std::cout<<error<<std::endl;
 	}
 	EPSDestroy(&eps);
+	MatDestroy(&Amat);
+	MatDestroy(&Bmat);
+	VecDestroy(&xr);
+	VecDestroy(&xi);
+	if(!parallelStructures){
+		ierr = PetscFree(ibP);CHKERRQ(ierr);
+		ierr = PetscFree(jbP);CHKERRQ(ierr);
+	}
   #endif
   //TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
   //DebugStop();//this should never be called. Must implement it in child class.
