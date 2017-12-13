@@ -8,21 +8,21 @@
 #include "TPZQuadSphere.h"
 #include "tpzgeoblend.h"
 #include "TPZWavyLine.h"
-
+#include "tpztriangle.h"
 #include "TPZVTKGeoMesh.h"
-
 #include "tpzgeoelmapped.h"
+
 
 void QuadWavy();
 void QuadWavyMapped();
+void TriWavyMapped();
 void CubeWavyMapped();
 void QuadSphere();
 void ExemploIni();
 
 int main(int argc, char *argv[])
 {
-    QuadWavyMapped();
-	//CubeWavyMapped();
+    TriWavyMapped();
 	return 0;
 }
 
@@ -206,17 +206,19 @@ void QuadWavyMapped()
     TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy1 =
     new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy1,materialIdW,*geomesh);
     
-    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy2 =
-    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy2,materialIdW,*geomesh);
-    
-    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy3 =
-    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy3,materialIdW,*geomesh);
-
-    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy4 =
-    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy4,materialIdW,*geomesh);
+//    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy2 =
+//    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy2,materialIdW,*geomesh);
+//    
+//    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy3 =
+//    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy3,materialIdW,*geomesh);
+//
+//    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy4 =
+//    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy4,materialIdW,*geomesh);
     
     TPZVec<REAL> wavedir0(3,0.);
     TPZVec<REAL> wavedir1(3,0);
+    TPZVec<REAL> wavedir2(3,0);
+
     
     wavedir0[0] = 0.;
     wavedir0[1] = 0.03;
@@ -224,12 +226,15 @@ void QuadWavyMapped()
     wavedir1[0] = 0.03;
     wavedir1[1] = 0;
     
-    int numwaves = 5;
+    wavedir2[0] = 0;
+    wavedir2[2] = 0.03;
     
-    wavy1->Geom().SetData(wavedir0,numwaves);
-    wavy2->Geom().SetData(wavedir1,numwaves);
-    wavy3->Geom().SetData(wavedir0,numwaves);
-    wavy4->Geom().SetData(wavedir1,numwaves);
+    int numwaves = 1;
+    
+    wavy1->Geom().SetData(wavedir2,numwaves);
+//    wavy2->Geom().SetData(wavedir1,numwaves);
+//    wavy3->Geom().SetData(wavedir0,numwaves);
+//    wavy4->Geom().SetData(wavedir1,numwaves);
     
     ///DEFININDO QSI ETA
     TPZVec<REAL> qsi(2,0.), xqsi(3,0.);
@@ -259,6 +264,140 @@ void QuadWavyMapped()
     }
     
     std::ofstream outfile("malha_TESTE.vtk");
+    TPZVTKGeoMesh::PrintGMeshVTK(geomesh, outfile,true);
+    
+}
+
+void TriWavyMapped()
+{
+    ///INSTANCIACAO DA MALHA GEOMETRICA
+    TPZGeoMesh * geomesh = new TPZGeoMesh;
+    
+    int nnodes = 3;//quantidade de nos da malha geometrica
+    geomesh->NodeVec().Resize(nnodes);
+    
+    ///INICIALIZACAO DA MALHA GEOMETRICA PELA INSTANCIACAO E INICIALIZACAO DOS NOS
+    TPZGeoNode node0, node1, node2;
+    
+    TPZVec<REAL> coord(3,0.);
+    
+    //no 0
+    coord[0] = 0.;
+    coord[1] = 0.;
+    coord[2] = 0.;
+    node0.SetNodeId(0);
+    node0.SetCoord(coord);
+    geomesh->NodeVec()[0] = node0;
+    
+    //no 1
+    coord[0] = 1.;
+    coord[1] = 0.;
+    coord[2] = 0.;
+    node1.SetNodeId(1);
+    node1.SetCoord(coord);
+    geomesh->NodeVec()[1] = node1;
+    
+    //no 2
+    coord[0] = 1.;
+    coord[1] = 2.;
+    coord[2] = 0.;
+    node2.SetNodeId(2);
+    node2.SetCoord(coord);
+    geomesh->NodeVec()[2] = node2;
+    
+    
+    //INSTANCIACAO E INICIALIZACAO DO ELEMENTO TRIANGULAR
+    TPZVec<long> topology(3);//Quadrilatero ira utilizar 4 nos
+    topology[0] = 0;//no local 0 do triangulo corresponde ao no 0 da malha geometrica
+    topology[1] = 1;//no local 1 do triangulo corresponde ao no 1 da malha geometrica
+    topology[2] = 2;//no local 2 do triangulo corresponde ao no 2 da malha geometrica
+    
+    int materialId = 1;
+
+
+    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle> > * triangulo =
+    new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle > > (topology,materialId,*geomesh);
+
+    //INSTANCIACAO E INICIALIZACAO DO ELEMENTO SENOIDAL
+    TPZVec<long> topologyWavy0(2);//Primeiro lado da senoidal
+    topologyWavy0[0] = 0;//no local 0 da senoide corresponde ao no 0 da malha geometrica
+    topologyWavy0[1] = 1;//no local 1 da senoide corresponde ao no 1 da malha geometrica
+    
+    TPZVec<long> topologyWavy1(2);//Segundo lado da senoidal
+    topologyWavy1[0] = 1;// no local 0 da senoide corresponde ao no 1 da malha geometrica
+    topologyWavy1[1] = 2;// no local 1 da senoide corresponde ao no 2 da malha geometrica
+    
+    TPZVec<long> topologyWavy2(2);//Segundo lado da senoidal
+    topologyWavy2[0] = 2;// no local 0 da senoide corresponde ao no 2 da malha geometrica
+    topologyWavy2[1] = 0;// no local 1 da senoide corresponde ao no 0 da malha geometrica
+   
+    
+    
+    int materialIdW = -1;
+
+    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy0 =
+    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy0,materialIdW,*geomesh);
+    
+//    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy1 =
+//    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy1,materialIdW,*geomesh);
+//    
+//    TPZGeoElRefPattern< pzgeom::TPZWavyLine > *wavy2 =
+//    new TPZGeoElRefPattern< pzgeom::TPZWavyLine > (topologyWavy2,materialIdW,*geomesh);
+    
+    
+    TPZVec<REAL> wavedir0(3,0.);
+    TPZVec<REAL> wavedir1(3,0);
+    TPZVec<REAL> wavedir2(3,0);
+    TPZVec<REAL> wavedir3(3,0);
+
+    
+    wavedir0[0] = 0.;
+    wavedir0[1] = 0.05;
+    
+    wavedir1[0] = 0.05;
+    wavedir1[1] = 0;
+    
+    wavedir2[0] = 0.05;
+    wavedir2[1] = 0.05;
+    
+    wavedir3[0] = 0;
+    wavedir3[2] = 0.05;
+
+    
+    int numwaves = 3;
+    
+    wavy0->Geom().SetData(wavedir3,numwaves);
+//    wavy1->Geom().SetData(wavedir1,numwaves);
+//    wavy2->Geom().SetData(wavedir2,numwaves);
+    
+    ///DEFININDO QSI ETA
+    TPZVec<REAL> qsi(2,0.), xqsi(3,0.);
+    
+    //CONCLUINDO A CONSTRUCAO DA MALHA GEOMETRICA
+    geomesh->BuildConnectivity();
+    
+    ///EXEMPLOS DE MAPEAMENTO GEOMETRICO ATRAVES DO METODO X
+    
+    triangulo -> X(qsi,xqsi);
+    std::cout << "qsi = { " << qsi[0] << " , " << qsi[1] << " }  ;  x(qsi) = { " << xqsi[0] << " , " << xqsi[1] << " , " << xqsi[2] << " }\n";
+    //quadrilatero->Jacobian(qsi, jac, axes, detjac, jacinv);
+    //jac.Print("Jac:");
+    //axes.Print("axes");
+    //std::cout << "detjac = " << detjac << std::endl;
+    
+    ///Refinando o elemento quadrilateral em subelementos (chamados de "filhos")
+    TPZVec<TPZGeoEl *> sons;
+    
+    const int nref = 7;
+    for (int iref = 0; iref < nref; iref++) {
+        int nel = geomesh->NElements();
+        for (int iel = 0; iel < nel; iel++) {
+            TPZGeoEl *gel = geomesh->ElementVec()[iel];
+            if(!gel->HasSubElement()) gel->Divide(sons);
+        }
+    }
+    
+    std::ofstream outfile("malha_triang.vtk");
     TPZVTKGeoMesh::PrintGMeshVTK(geomesh, outfile,true);
     
 }
@@ -345,8 +484,8 @@ void CubeWavyMapped()
 //    topologyCube[4] = 4; topologyCube[5] = 5; topologyCube[6] = 6; topologyCube[7] = 7; //no local 4,5,6,7 correspondem aos nos 4,5,6,7 na malha global
 //
 //    
-//    TPZGeoElRefPattern< pzgeom::TPZGeoCube > *cube =
-//    new TPZGeoElRefPattern< pzgeom::TPZGeoCube > (topologyCube,materialId,*geomesh);
+//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > > *cube =
+//    new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > >(topologyCube,materialId,*geomesh);
     
     //Instanciacao e inicializacao do elemento quadrilateral 0
     TPZVec<long> topologyQuad0(4);
@@ -420,8 +559,8 @@ void CubeWavyMapped()
     
     TPZVec<REAL> wavydir (3,0);
     wavydir[0] = 0;
-    wavydir[1] = 0;
-    wavydir[2] = 0.1;
+    wavydir[1] = 0.1;
+    wavydir[2] = 0;
     int numwaves;
     numwaves = 4;
     wavy->Geom().SetData(wavydir, numwaves);
@@ -438,7 +577,7 @@ void CubeWavyMapped()
     ///Refinando o elemento quadrilateral em subelementos (chamados de "filhos")
     TPZVec<TPZGeoEl *> sons;
     
-    const int nref = 3;
+    const int nref = 7;
     for (int iref = 0; iref < nref; iref++) {
         int nel = geomesh->NElements();
         for (int iel = 0; iel < nel; iel++) {
