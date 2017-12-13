@@ -11,10 +11,11 @@
 #include "tpztriangle.h"
 #include "TPZVTKGeoMesh.h"
 #include "tpzgeoelmapped.h"
-
+#include <tpzarc3d.h>
 
 void QuadWavy();
 void QuadWavyMapped();
+void TriCircleMapped();
 void TriWavyMapped();
 void CubeWavyMapped();
 void QuadSphere();
@@ -266,6 +267,81 @@ void QuadWavyMapped()
     std::ofstream outfile("malha_TESTE.vtk");
     TPZVTKGeoMesh::PrintGMeshVTK(geomesh, outfile,true);
     
+}
+
+void TriCircleMapped()
+{
+  const int nNodes = 4 + 4 + 1;
+  const int matId = 1; // define id para um material(formulacao fraca)
+  const int bc0 = -1;  // define id para um material(cond contorno dirichlet)
+
+  gmesh = new TPZGeoMesh;
+  gmesh->NodeVec().Resize(nNodes);
+
+  // create 4 nodes which will be triangle vertices
+  // r arg 0, r arg pi/2, r arg pi, r arg 3pi/2
+  int nodeId = 0;
+  for (int iNode = 0; iNode < 4; iNode++) {
+    TPZManVector<REAL, 3> node(3, 0.);
+    const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);//expected: 1 0 -1 0
+    const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);//expected: 0 1 0 -1
+    node[0] = c0*rDomain;
+    node[1] = c1*rDomain;
+    gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
+    nodeId++;
+  }
+  // create 4 nodes which will be triangle midsides points @ boundary
+  // r arg pi/4, r arg 3pi/4, r arg 5pi/4, r arg 7pi/4
+  for (int iNode = 0; iNode < 4; iNode++) {
+    TPZManVector<REAL, 3> node(3, M_SQRT1_2 * rDomain);
+    const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);
+    const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);
+    node[0] *= c0 - c1;//expected: +1 -1 -1 +1
+    node[1] *= c0 + c1;//expected: +1 +1 -1 -1
+    node[2] = 0.;
+    gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
+    nodeId++;
+  }
+  // create center node
+  {
+    TPZManVector<REAL, 3> node(3, 0.);
+    gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
+  }
+
+  TPZManVector<long, 3> nodesIdVec(3, 0);
+  // creates volumetric elements
+  for (int iTri = 0; iTri < 4; iTri++) {
+    nodesIdVec[0] = (iTri) % 4;
+    nodesIdVec[1] = (iTri + 1) % 4;
+    nodesIdVec[2] = 8;
+    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle> > * triangulo =
+            new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle > > (nodesIdVec,matId,*gmesh);
+  }
+  // creates boundary elements
+  for (int iArc = 0; iArc < 4; iArc++) {
+    nodesIdVec[0] = (iArc) % 4;
+    nodesIdVec[1] = (iArc + 1) % 4;
+    nodesIdVec[2] = iArc + 4;//midpoint
+    TPZGeoElRefPattern< pzgeom::TPZArc3D > *arc =
+            new TPZGeoElRefPattern< pzgeom::TPZArc3D > (nodesIdVec,bc0,*gmesh);
+  }
+
+  gmesh->BuildConnectivity();
+
+
+  TPZVec<TPZGeoEl *> sons;
+
+  const int nref = 6;
+  for (int iref = 0; iref < nref; iref++) {
+    int nel = gmesh->NElements();
+    for (int iel = 0; iel < nel; iel++) {
+      TPZGeoEl *gel = gmesh->ElementVec()[iel];
+      if(!gel->HasSubElement()) gel->Divide(sons);
+    }
+  }
+
+  std::ofstream outfile("malha_circular.vtk");
+  TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outfile,true);
 }
 
 void TriWavyMapped()
