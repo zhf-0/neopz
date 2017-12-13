@@ -72,6 +72,54 @@ namespace pzgeom {
             TShape(loc, phi, dphi);
         }
         
+        static void CorrectFact (TPZVec<REAL> &ksi, int &EdgeSides ,REAL &cf)
+        {
+            if (EdgeSides == 3)
+            {
+                cf = (1 - ksi[1])*(1 - ksi[1]);
+            }
+            else if (EdgeSides == 4)
+            {
+                cf = (ksi[0] + ksi[1])*(ksi[0] + ksi[1]);
+            }
+            else if (EdgeSides == 5)
+            {
+                cf = (1 - ksi[0])*(1 - ksi[0]);
+            }
+        }
+        
+        /** @brief Returns the equivalent ksi from a triangle element to a linear element */
+        
+        static void LinearKsi(int &EdgeSides, TPZVec<REAL> &ksi, TPZVec<REAL> &s)
+        {
+            
+            if (EdgeSides == 3) {
+                if(1-ksi[1]<=1e-6) {
+                    s[0] = -1;
+                }
+                else {
+                    s[0] = 2*ksi[0]/(1-ksi[1]) - 1;
+                }
+                
+            }
+            else if (EdgeSides == 4) {
+                if((ksi[0] && ksi[1] <= 1e-6) || ksi[0] == ksi[1]) {
+                    s[0] = 0;
+                }
+                else {
+                    s[0] = (ksi[1] - ksi[0])/(ksi[0] + ksi[1]);
+                }
+            }
+            else if (EdgeSides == 5) {
+                if(1-ksi[0]<=1e-6) {
+                    s[0] = 1;
+                }
+                else {
+                    s[0] = - 2*ksi[1]/(1-ksi[0]) + 1;
+                }
+            }
+        }
+
         //Needs implementation
         template<class T>
         void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
