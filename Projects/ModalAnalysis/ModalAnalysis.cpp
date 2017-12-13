@@ -21,6 +21,8 @@
 #include <TPZEigenAnalysis.h>
 #include <TPZEigenSolver.h>
 #include <TPZSpStructMatrix.h>
+#include <tpzgeoelmapped.h>
+#include <tpzarc3d.h>
 #include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
@@ -69,7 +71,7 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
                                   const REAL rDomain, const int nDiv);
 
-const bool usingGMSH = true;
+const bool usingGMSH = false;
 const bool usingHDivRot = false;
 
 int main(int argc, char *argv[]) {
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]) {
     InitializePZLOG();
 #endif
 	
-	bool isRectangularWG = true;//true = rectangular , false = circular
+	bool isRectangularWG = false;//true = rectangular , false = circular
     bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
     const meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
@@ -564,7 +566,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
             DebugStop(); // HCurl quadrilateral elements not implemented!
         }
         
-        const int nNodes = 4 + 4 + 4 + 1;
+        const int nNodes = 4 + 4 + 1;
         const int matId = 1; // define id para um material(formulacao fraca)
         const int bc0 = -1;  // define id para um material(cond contorno dirichlet)
         
@@ -595,89 +597,55 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
             gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
             nodeId++;
         }
-        // create 4 nodes which will be triangle midsides points @ interior
-        // r/2 arg 0, r/2 arg pi/2, r/2 arg pi, r/2 arg 3pi/2
-        for (int iNode = 0; iNode < 4; iNode++) {
-            TPZManVector<REAL, 3> node(3, 0.);
-            const int c0 = (1+(iNode/2)*(-2))*((iNode+1)%2);//expected: 1 0 -1 0
-            const int c1 = (1+((iNode-1)/2)*(-2))*(iNode%2);//expected: 0 1 0 -1
-            node[0] = c0*rDomain/2;
-            node[1] = c1*rDomain/2;
-            gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
-            nodeId++;
-        }
         // create center node
         {
             TPZManVector<REAL, 3> node(3, 0.);
             gmesh->NodeVec()[nodeId].Initialize(node, *gmesh);
         }
-        
-        int elementid = 0;
-        TPZManVector<long, 6> nodesIdVec(3, 0.0);
-        gRefDBase.InitializeUniformRefPattern(MElementType::ETriangle);
-        TPZAutoPointer<TPZRefPattern> uniformTri = gRefDBase.GetUniformRefPattern(MElementType::ETriangle);
-        gRefDBase.InitializeUniformRefPattern(MElementType::EOned);
-        TPZAutoPointer<TPZRefPattern> uniformArc = gRefDBase.GetUniformRefPattern(MElementType::EOned);
+
+        TPZManVector<long, 3> nodesIdVec(3, 0);
         // creates volumetric elements
-        nodesIdVec.resize(6);
         for (int iTri = 0; iTri < 4; iTri++) {
             nodesIdVec[0] = (iTri) % 4;
             nodesIdVec[1] = (iTri + 1) % 4;
-            nodesIdVec[2] = 12;
-            nodesIdVec[3] = 4 + iTri;//midside side 3
-            nodesIdVec[5] = 8 + (iTri) % 4;//midside side 4
-            nodesIdVec[4] = 8 + (iTri + 1) % 4;//midside side 5
-            new TPZGeoElRefPattern<pzgeom::TPZQuadraticTrig>(
-                                                             elementid, nodesIdVec, matId, *gmesh);
-            gmesh->ElementVec()[elementid]->Initialize();
-            gmesh->ElementVec()[elementid]->SetRefPattern(uniformTri);
-            elementid++;
+            nodesIdVec[2] = 8;
+          TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle> > * triangulo =
+                  new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoTriangle > > (nodesIdVec,matId,*gmesh);
         }
         // creates boundary elements
-        nodesIdVec.resize(3);
         for (int iArc = 0; iArc < 4; iArc++) {
             nodesIdVec[0] = (iArc) % 4;
             nodesIdVec[1] = (iArc + 1) % 4;
-            nodesIdVec[2] = iArc + 4;
-            new TPZGeoElRefPattern<pzgeom::TPZQuadraticLine>(elementid, nodesIdVec, bc0,
-                                                             *gmesh);
-            gmesh->ElementVec()[elementid]->Initialize();
-            gmesh->ElementVec()[elementid]->SetRefPattern(uniformArc);
-            elementid++;
+            nodesIdVec[2] = iArc + 4;//midpoint
+          TPZGeoElRefPattern< pzgeom::TPZArc3D > *arc =
+                  new TPZGeoElRefPattern< pzgeom::TPZArc3D > (nodesIdVec,bc0,*gmesh);
         }
         
         gmesh->BuildConnectivity();
-        
-        TPZManVector<TPZGeoEl *, 3> sons;
-        TPZManVector<REAL,3> qsi(3,0.), x(3,0.);
-        qsi[0]= 0.5;
-        qsi[1]= 0.5;
-        for (int iref = 0; iref < nDiv; iref++) {
-            int nel = gmesh->NElements();
-            for (int iel = 0; iel < nel; iel++) {
-                TPZGeoEl *gel = gmesh->ElementVec()[iel];
-                gel->X(qsi, x);//gets center of element
-                const REAL pos = sqrt(x[0]*x[0]+x[1]*x[1]);
-                if(pos>(rDomain-(rDomain/(iref+1)))){
-                    if (gel->HasSubElement()) {
-                        continue;
-                    }
-                    gel->Divide(sons);
-                }
-            }
+
+
+      TPZVec<TPZGeoEl *> sons;
+
+      const int nref = 6;
+      for (int iref = 0; iref < nref; iref++) {
+        int nel = gmesh->NElements();
+        for (int iel = 0; iel < nel; iel++) {
+          TPZGeoEl *gel = gmesh->ElementVec()[iel];
+          if(!gel->HasSubElement()) gel->Divide(sons);
         }
+      }
     }
     else{
         TPZGmshReader meshReader;
         gmesh = meshReader.GeometricGmshMesh("../circlequad.msh");
     }
 #ifdef PZDEBUG
-	TPZCheckGeom * Geometrytest = new TPZCheckGeom(gmesh);
-	int isBadMeshQ = Geometrytest->PerformCheck();
-	
-	if (isBadMeshQ) {
-		DebugStop();
-	}
+//	TPZCheckGeom * Geometrytest = new TPZCheckGeom(gmesh);
+//	int isBadMeshQ = Geometrytest->PerformCheck();
+//
+//	if (isBadMeshQ) {
+//		DebugStop();
+//	}
 #endif
     std::string meshFileName("../gmeshCirc");
     meshFileName.append(std::to_string(nDiv));
