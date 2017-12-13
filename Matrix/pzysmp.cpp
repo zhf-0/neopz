@@ -650,14 +650,16 @@ int TPZFYsmpMatrix<TVar>::Zero()
 
 template<class TVar>
 int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
-    return TPZSlepcHandler<TVar>::SolveEigenProblem(*this,w,eigenVectors);
+  TPZSlepcHandler<TVar> slepHandler;
+	return slepHandler.SolveEigenProblem(*this,w,eigenVectors);
 }
 /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
  * @param w Stores the eigenvalues
  */
 template<class TVar>
 int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-  return TPZSlepcHandler<TVar>::SolveEigenProblem(*this,w);
+  TPZSlepcHandler<TVar> slepHandler;
+	return slepHandler.SolveEigenProblem(*this,w);
 }
 
 /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
@@ -675,7 +677,8 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
   }
   #endif
 
-  return TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w,eigenVectors);
+  TPZSlepcHandler<TVar> slepHandler;
+	return slepHandler.SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w,eigenVectors);
 }
 /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
  * @param w Stores the eigenvalues
@@ -691,7 +694,8 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
   }
   #endif
 
-  return TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w);
+  TPZSlepcHandler<TVar> slepHandler;
+	return slepHandler.SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w);
 }
 
 

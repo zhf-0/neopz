@@ -38,6 +38,10 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
 *******************/
 template<>
 int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &A, TPZFYsmpMatrix< STATE > &B , TPZVec < typename SPZAlwaysComplex<STATE>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<STATE>::type > &eigenVectors){
+  /*****************************
+   *  INITIALIZE STRUCTURES
+   *****************************/
+
   EPS eps;
 
   bool parallelStructures = true;
@@ -51,6 +55,9 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
 
   EPSCreate( PETSC_COMM_WORLD, &eps);
+  /*****************************
+   *  CREATE MATRICES
+   *****************************/
   Mat Amat, Bmat;
   PetscReal error;
   const int blockSize = 1;
@@ -119,6 +126,10 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
     ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)B.fA.begin(),&Bmat);CHKERRQ(ierr);
   }
   std::cout<<"Created!"<<std::endl;
+
+  /*****************************
+   *  DEFINE PROBLEM TYPE
+   *****************************/
   EPSSetOperators(eps, Amat, Bmat);
   EPSSetProblemType(eps, EPS_GNHEP);
   //EPSSetType(eps,EPSPOWER);
@@ -127,6 +138,10 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   //EPSSetType(eps,EPSGD);
   //EPSSetType(eps,EPSJD);
   //EPSSetType(eps,EPSCISS);
+
+  /*****************************
+   *  SET SOLVER OPTIONS
+   *****************************/
   EPSSetType(eps,EPSKRYLOVSCHUR);
   RG rg;
   EPSGetRG(eps,&rg);
@@ -177,6 +192,9 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
 
   EPSView(eps,PETSC_VIEWER_STDOUT_WORLD);
 
+  /*****************************
+   *  SOLVE
+   *****************************/
   PetscLogDouble t1,t2;
   ierr = PetscTime(&t1);CHKERRQ(ierr);
   ierr = EPSSolve(eps);CHKERRQ(ierr);
