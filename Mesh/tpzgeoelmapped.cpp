@@ -118,14 +118,14 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 				(nodeindexes, matid, mesh, index);
 				return gel;
 			}
-			/*case 2://triangle
+			case 2://triangle
 			{
 				TPZGeoEl *gel =
 				new TPZGeoElMapped<TPZGeoElRefPattern < TPZGeoTriangle > >
 				(nodeindexes, matid, mesh, index);
 				return gel;
 			}
-                 */
+                
 			case 3://quadrilatera
 			{
 				TPZGeoEl* gel =
@@ -187,7 +187,7 @@ template class TPZGeoElMapped<TPZGeoElRefPattern<TCL> >;
 
 //INSERTCLASS(TPZGeoPoint,TPZGEOELMAPPEDPOINTID)
 INSERTCLASS(TPZGeoLinear,TPZGEOELMAPPEDLINEID)
-//INSERTCLASS(TPZGeoTriangle,TPZGEOELMAPPEDTRIANGLEID)
+INSERTCLASS(TPZGeoTriangle,TPZGEOELMAPPEDTRIANGLEID)
 INSERTCLASS(TPZGeoQuad,TPZGEOELREFPATMAPPEDQUADRILATERALID)
 //INSERTCLASS(TPZGeoCube,TPZGEOELMAPPEDCUBEID)
 //INSERTCLASS(TPZGeoPrism,TPZGEOELMAPPEDPRISMID)
