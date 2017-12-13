@@ -123,7 +123,9 @@ namespace pzgeom
         template<class T>
         void XLinearMapping(const TPZGeoEl &gel, TPZVec<T> &ksi,TPZVec<T> &result) const
         {
-        
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            TPZGeoLinear::X(coord,ksi,result);
         }
         
         
