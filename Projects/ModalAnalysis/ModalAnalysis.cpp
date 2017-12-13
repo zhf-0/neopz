@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
-    int nDiv = 15;
+    int nDiv = 25;
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;

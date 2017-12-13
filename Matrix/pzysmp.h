@@ -20,6 +20,9 @@ extern "C"{
 template<class TVar>
 class TPZVerySparseMatrix;
 
+template<typename TVar>
+class TPZSlepcHandler;
+
 #include "pzmatrix.h"
 #include "pzfmatrix.h"
 
@@ -38,7 +41,7 @@ template<class TVar>
 class TPZFYsmpMatrix : public TPZMatrix<TVar> {
 	
 	public :
-	
+	friend class TPZSlepcHandler<TVar>;
 	/** @brief An auxiliary structure to hold the data of the subset \n of equations used to multiply in a multitrheaded environment */
 	/**
 	 In future versions this structure should be defined in a derived class
