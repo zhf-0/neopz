@@ -11,6 +11,7 @@
 #include "tpzline.h"
 #include "tpzgeoelrefpattern.h"
 #include "tpzgeomid.h"
+#include "TPZGeoLinear.h"
 
 #include <iostream>
 
