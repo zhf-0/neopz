@@ -3,6 +3,74 @@
 //
 
 #include "TPZLapackWrapper.h"
+/*******************
+*    GENERAL       *
+*******************/
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
+  TPZFMatrix<TVar> *Afull = dynamic_cast<TPZFMatrix<TVar>* >(&A);
+  TPZSBMatrix<TVar> *Absym = dynamic_cast<TPZSBMatrix<TVar>* >(&A);
+  if(Afull){
+    return SolveEigenProblem((TPZFMatrix<TVar>&)A,w,eigenVectors);
+  }
+  else if (Absym){
+    return SolveEigenProblem((TPZSBMatrix<TVar>&)A,w,eigenVectors);
+  }else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  TPZFMatrix<TVar> *Afull = dynamic_cast<TPZFMatrix<TVar>* >(&A);
+  TPZSBMatrix<TVar> *Absym = dynamic_cast<TPZSBMatrix<TVar>* >(&A);
+  if(Afull){
+    return SolveEigenProblem((TPZFMatrix<TVar>&)A,w);
+  }
+  else if (Absym){
+    return SolveEigenProblem((TPZSBMatrix<TVar>&)A,w);
+  }else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+  TPZFMatrix<TVar> *Afull = dynamic_cast<TPZFMatrix<TVar>* >(&A);
+  TPZFMatrix<TVar> *Bfull = dynamic_cast<TPZFMatrix<TVar>* >(&B);
+  TPZSBMatrix<TVar> *Absym = dynamic_cast<TPZSBMatrix<TVar>* >(&A);
+  TPZSBMatrix<TVar> *Bbsym = dynamic_cast<TPZSBMatrix<TVar>* >(&B);
+  if(Afull && Bfull){
+    return SolveGeneralisedEigenProblem((TPZFMatrix<TVar>&)A,(TPZFMatrix<TVar>&)B,w,eigenVectors);
+  }
+  else if (Absym && Bbsym){
+    return SolveGeneralisedEigenProblem((TPZSBMatrix<TVar>&)A,(TPZSBMatrix<TVar>&)B,w,eigenVectors);
+  }else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  TPZFMatrix<TVar> *Afull = dynamic_cast<TPZFMatrix<TVar>* >(&A);
+  TPZFMatrix<TVar> *Bfull = dynamic_cast<TPZFMatrix<TVar>* >(&B);
+  TPZSBMatrix<TVar> *Absym = dynamic_cast<TPZSBMatrix<TVar>* >(&A);
+  TPZSBMatrix<TVar> *Bbsym = dynamic_cast<TPZSBMatrix<TVar>* >(&B);
+  if(Afull && Bfull){
+    return SolveGeneralisedEigenProblem((TPZFMatrix<TVar>&)A,(TPZFMatrix<TVar>&)B,w);
+  }
+  else if (Absym && Bbsym){
+    return SolveGeneralisedEigenProblem((TPZSBMatrix<TVar>&)A,(TPZSBMatrix<TVar>&)B,w);
+  }else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+
 
 /*******************
 *    TPZFMATRIX    *

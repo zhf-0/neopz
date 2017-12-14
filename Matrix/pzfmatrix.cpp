@@ -2323,47 +2323,47 @@ int TPZFMatrix<TVar>::SetSize(const long newRows,const long newCols) {
 }
 //@TODO:Implement selection of library to be used
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenHandler<TVar> *eig)
 {
-    TPZLapackWrapper<TVar>::SolveEigenProblem(*this, eigenvalues);
+    eig->SolveEigenProblem(*this, eigenvalues);
     return 1;
 }
 
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenvectors)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenvectors, TPZEigenHandler<TVar> *eig)
 {
-    TPZLapackWrapper<TVar>::SolveEigenProblem(*this, eigenvalues, eigenvectors);
+    eig->SolveEigenProblem(*this, eigenvalues, eigenvectors);
     return 1;
 }
 
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix <typename SPZAlwaysComplex<TVar>::type > &eigenVectors)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix <typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig)
 {
-    #ifdef PZDEBUG
-    try{
-        TPZFMatrix<TVar> &Btest = dynamic_cast<TPZFMatrix<TVar>& >(B);
-    }
-    catch(const std::bad_cast& Btest){
-        DebugStop();
-    }
-    #endif
-    TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(*this, (TPZFMatrix<TVar> &)B, w, eigenVectors);
+//    #ifdef PZDEBUG
+//    try{
+//        TPZFMatrix<TVar> &Btest = dynamic_cast<TPZFMatrix<TVar>& >(B);
+//    }
+//    catch(const std::bad_cast& Btest){
+//        DebugStop();
+//    }
+//    #endif
+    eig->SolveGeneralisedEigenProblem(*this, B, w, eigenVectors);
     return 1;
 }
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig)
 {
-    #ifdef PZDEBUG
-    try{
-        TPZFMatrix<TVar> &Btest = dynamic_cast<TPZFMatrix<TVar>& >(B);
-    }
-    catch(const std::bad_cast& Btest){
-        DebugStop();
-    }
-    #endif
-    TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(*this, (TPZFMatrix<TVar> &)B, w);
+//    #ifdef PZDEBUG
+//    try{
+//        TPZFMatrix<TVar> &Btest = dynamic_cast<TPZFMatrix<TVar>& >(B);
+//    }
+//    catch(const std::bad_cast& Btest){
+//        DebugStop();
+//    }
+//    #endif
+    eig->SolveGeneralisedEigenProblem(*this, B, w);
     return 1;
 }
 

@@ -131,20 +131,20 @@ public:
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors) override;
+    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param eigenvalues Stores the eigenvalues
      */
-    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues) override;
+    int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenHandler<TVar> *eig) override;
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors) override;
+    int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w) override;
+    int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig) override;
     
     /** @} */
     

@@ -4,6 +4,62 @@
 #include "TPZSlepcHandler.h"
 
 /*******************
+*    GENERAL       *
+*******************/
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
+
+  TPZFYsmpMatrix<TVar> *Afsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&A);
+  if(Afsparse){
+    return SolveEigenProblem((TPZFYsmpMatrix<TVar>&)A,w,eigenVectors);
+  }
+  else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  TPZFYsmpMatrix<TVar> *Afsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&A);
+  if(Afsparse){
+    return SolveEigenProblem((TPZFYsmpMatrix<TVar>&)A,w);
+  }
+  else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+  TPZFYsmpMatrix<TVar> *Afsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&A);
+  TPZFYsmpMatrix<TVar> *Bfsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&B);
+  if(Afsparse && Bfsparse){
+    return SolveGeneralisedEigenProblem((TPZFYsmpMatrix<TVar>&)A,(TPZFYsmpMatrix<TVar>&)B,w,eigenVectors);
+  }
+  else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  TPZFYsmpMatrix<TVar> *Afsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&A);
+  TPZFYsmpMatrix<TVar> *Bfsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&B);
+  if(Afsparse && Bfsparse){
+    return SolveGeneralisedEigenProblem((TPZFYsmpMatrix<TVar>&)A,(TPZFYsmpMatrix<TVar>&)B,w);
+  }
+  else{
+    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    DebugStop();
+  }
+  return 0;
+}
+
+
+/*******************
 *    TPZFYSMPMATRIX    *
 *******************/
 template<class TVar>
@@ -28,11 +84,8 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
 }
 
 #ifdef USING_SLEPC
-
 #include <slepceps.h>
-#include <ldap.h>
 #include <petsctime.h>
-#include "slepcrg.h"
 /*******************
 *    TPZFYSMPMATRIX    *
 *******************/
@@ -43,7 +96,6 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
    *****************************/
 
   EPS eps;
-
   bool parallelStructures = true;
   if(parallelStructures){
     char *var;
@@ -58,7 +110,6 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   /*****************************
    *  CREATE MATRICES
    *****************************/
-  Mat Amat, Bmat;
   PetscReal error;
   const int blockSize = 1;
   const int nRows = A.Rows();
@@ -75,34 +126,35 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
 //			}
 //		}
 //	}
-
+  Mat fAmat, fBmat;
   PetscErrorCode ierr;
-  PetscInt *iaP, *jaP;
+  PetscInt *fIaP, *jaP;
   std::cout<<"Creating PETSc Amat...";
-  ierr = PetscMalloc1(A.fIA.size(),&iaP);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A.fIA.size(),&fIaP);CHKERRQ(ierr);
   ierr = PetscMalloc1(A.fJA.size(),&jaP);CHKERRQ(ierr);
 
   for (int j = 0; j < A.fIA.size(); ++j) {
-    iaP[j]=A.fIA[j];
+    fIaP[j]=A.fIA[j];
   }
   for (int j = 0; j < A.fJA.size(); ++j) {
     jaP[j]=A.fJA[j];
   }
-  if (parallelStructures)
+  bool fIsParallelStorage;
+  if (fIsParallelStorage)
   {
-    ierr = MatCreate(PETSC_COMM_WORLD,&Amat);CHKERRQ(ierr);
-    ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
-    ierr = MatSetType(Amat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(Amat,iaP,jaP,(PetscScalar *)A.fA.begin());CHKERRQ(ierr);
-    ierr = PetscFree(iaP);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&fAmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(fAmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
+    ierr = MatSetType(fAmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocationCSR(fAmat,fIaP,jaP,(PetscScalar *)A.fA.begin());CHKERRQ(ierr);
+    ierr = PetscFree(fIaP);CHKERRQ(ierr);
     ierr = PetscFree(jaP);CHKERRQ(ierr);
   }
   else
   {
-    error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,iaP,jaP,(PetscScalar *)A.fA.begin(),&Amat);
+    error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,fIaP,jaP,(PetscScalar *)A.fA.begin(),&fAmat);
   }
   std::cout<<"Created!"<<std::endl;
-  std::cout<<"Creating PETSc Bmat...";
+  std::cout<<"Creating PETSc fBmat...";
   PetscInt *ibP, *jbP;
   ierr = PetscMalloc1(B.fIA.size(),&ibP);CHKERRQ(ierr);
   ierr = PetscMalloc1(B.fJA.size(),&jbP);CHKERRQ(ierr);
@@ -112,25 +164,25 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   for (int j = 0; j < B.fJA.size(); ++j) {
     jbP[j]=B.fJA[j];
   }
-  if(parallelStructures)
+  if(fIsParallelStorage)
   {
-    ierr = MatCreate(PETSC_COMM_WORLD,&Bmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
-    ierr = MatSetType(Bmat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(Bmat,ibP,jbP,(PetscScalar *)B.fA.begin());CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&fBmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(fBmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
+    ierr = MatSetType(fBmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocationCSR(fBmat,ibP,jbP,(PetscScalar *)B.fA.begin());CHKERRQ(ierr);
     ierr = PetscFree(ibP);CHKERRQ(ierr);
     ierr = PetscFree(jbP);CHKERRQ(ierr);
   }
   else
   {
-    ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)B.fA.begin(),&Bmat);CHKERRQ(ierr);
+    ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)B.fA.begin(),&fBmat);CHKERRQ(ierr);
   }
   std::cout<<"Created!"<<std::endl;
 
   /*****************************
    *  DEFINE PROBLEM TYPE
    *****************************/
-  EPSSetOperators(eps, Amat, Bmat);
+  EPSSetOperators(eps, fAmat, fBmat);
   EPSSetProblemType(eps, EPS_GNHEP);
   //EPSSetType(eps,EPSPOWER);
   //EPSSetType(eps,EPSLANCZOS);
@@ -204,23 +256,25 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
   EPSGetConverged(eps, &nconv);
   PetscScalar kr, ki;
   Vec xr, xi;
-  MatCreateVecs(Amat,NULL,&xr);
-  MatCreateVecs(Amat,NULL,&xi);
+  MatCreateVecs(fAmat,NULL,&xr);
+  MatCreateVecs(fAmat,NULL,&xi);
   for (int i = 0; i < nconv; ++i) {
     EPSGetEigenpair(eps, i, &kr, &ki, xr, xi);
     EPSComputeError(eps, i, EPS_ERROR_RELATIVE, &error);
     std::cout<<kr<<std::endl;
     std::cout<<error<<std::endl;
   }
+
   EPSDestroy(&eps);
-  MatDestroy(&Amat);
-  MatDestroy(&Bmat);
-  VecDestroy(&xr);
-  VecDestroy(&xi);
-  if(!parallelStructures){
+  ierr=MatDestroy(&fAmat);CHKERRQ(ierr);
+  ierr=MatDestroy(&fBmat);CHKERRQ(ierr);
+  if(fIsParallelStorage){
     ierr = PetscFree(ibP);CHKERRQ(ierr);
     ierr = PetscFree(jbP);CHKERRQ(ierr);
   }
+  VecDestroy(&xr);
+  VecDestroy(&xi);
+
   return 1;
 }
 template<>

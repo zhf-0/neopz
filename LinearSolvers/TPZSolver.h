@@ -10,7 +10,6 @@
 #include "pzsave.h"
 #include "pzfmatrix.h"
 
-
 /**
  * @ingroup solver
  * @brief Defines a abstract class of solvers  which will be used by matrix classes. \ref solver "Solver"

@@ -92,22 +92,23 @@ int main(int argc, char *argv[]) {
 	
 	TPZManVector<REAL, 2> geoParams(1,-1);
     REAL fOp = -1;//operational frequency
+    int nDiv = -1;//number of mesh divisions
 	if (isRectangularWG) { //WR-90 waveguide
 		geoParams.Resize(2, 0.);
 		geoParams[0] = 9 * 2.54 * 1e-3;//width
 		geoParams[1] = 4 * 2.54 * 1e-3;//height
         fOp = 25e+9;
+      nDiv = 25;
 	}
 	else{
 		geoParams.Resize(1, 0.);
-        geoParams[0] = 0.01;//radius
+        geoParams[0] = 1.;//radius
         fOp = 9e+9;
+      nDiv = 2;
 //        geoParams[0] = 1.00;//radius
 //        fOp = 25e+9;
 	}
-	
-	
-    int nDiv = 25;
+
     const int nSim = 1;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
@@ -168,23 +169,15 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     int neq = 0;
     int neqOriginal = 0;
 
-//    TPZAutoPointer<TPZFStructMatrix> fmtrx;
-//    fmtrx = new TPZFStructMatrix(cmesh);
-//    fmtrx->SetNumThreads(nThreads);
-//    if (filterEquations) {
-//        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
-//        fmtrx->EquationFilter().SetActiveEquations(activeEquations);
-//    }
-//    an.SetStructuralMatrix(fmtrx);
-
-    TPZAutoPointer<TPZSpStructMatrix> fmtrx;
-    fmtrx = new TPZSpStructMatrix(cmesh);
-    fmtrx->SetNumThreads(nThreads);
+  TPZAutoPointer<TPZStructMatrix> strmtrx;
+  strmtrx = new TPZSpStructMatrix(cmesh);
+//    strmtrx = new TPZFStructMatrix(cmesh);
+  strmtrx->SetNumThreads(nThreads);
     if (filterEquations) {
       FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
-      fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+      strmtrx->EquationFilter().SetActiveEquations(activeEquations);
     }
-    an.SetStructuralMatrix(fmtrx);
+    an.SetStructuralMatrix(strmtrx);
 
     const int nSolutions = neq >= 10 ? 10 : neq;
     TPZEigenSolver<STATE> solver;
@@ -243,7 +236,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     if (exportEigen) {
 		int i = 0;
 		std::string fileName;
-		fileName = "../ev";
+		fileName = "ev";
 		fileName.append(std::to_string(nDiv));
 		fileName.append("_p");
 		fileName.append(std::to_string(pOrder));
@@ -282,7 +275,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 //        return;
 //    }
 //    if (exportEigen) {
-//        std::string fileName("../evectors");
+//        std::string fileName("evectors");
 //        fileName.append(std::to_string(nDiv));
 //        fileName.append("_p");
 //        fileName.append(std::to_string(pOrder));
@@ -317,7 +310,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 //        TPZStack<std::string> scalnames, vecnames;
 //        scalnames.Push("Ez"); // setando para imprimir u
 //        vecnames.Push("Et");
-//        std::string plotfile = "../waveguideModes.vtk"; // arquivo de saida que
+//        std::string plotfile = "waveguideModes.vtk"; // arquivo de saida que
 //                                                        // estara na pasta debug
 //        int dim = 2;
 //        an.DefineGraphMesh(dim, scalnames, vecnames,
@@ -520,7 +513,7 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     
 #ifdef PZDEBUG
     std::ofstream outTxt, outVtk;
-	std::string meshFileName("../gmesh");
+	std::string meshFileName("gmesh");
     switch (meshType) {
     case createRectangular: {
 		meshFileName.append("Rectangular");
@@ -623,10 +616,18 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
         
         gmesh->BuildConnectivity();
 
+        TPZVec<REAL> qsi(2,0.), xqsi(3,0.);
+        qsi[0]=0.49;
+        qsi[1]=0.49;
+        gmesh->ElementVec()[0]->X(qsi,xqsi);
+        std::cout << "qsi = { ";
+        std::cout << qsi[0] << " , " << qsi[1];
+        std::cout << " }  ;  x(qsi) = { ";
+        std::cout << xqsi[0] << " , " << xqsi[1] << " , " << xqsi[2] << " }\n";
 
       TPZVec<TPZGeoEl *> sons;
 
-      const int nref = 6;
+      const int nref = nDiv;
       for (int iref = 0; iref < nref; iref++) {
         int nel = gmesh->NElements();
         for (int iel = 0; iel < nel; iel++) {
@@ -637,7 +638,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
     }
     else{
         TPZGmshReader meshReader;
-        gmesh = meshReader.GeometricGmshMesh("../circlequad.msh");
+        gmesh = meshReader.GeometricGmshMesh("circlequad.msh");
     }
 #ifdef PZDEBUG
 //	TPZCheckGeom * Geometrytest = new TPZCheckGeom(gmesh);
@@ -647,7 +648,8 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 //		DebugStop();
 //	}
 #endif
-    std::string meshFileName("../gmeshCirc");
+
+    std::string meshFileName("gmeshCirc");
     meshFileName.append(std::to_string(nDiv));
     const size_t strlen = meshFileName.length();
     meshFileName.append(".vtk");
@@ -771,11 +773,11 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshMF->CleanUpUnconnectedNodes();
     cmeshMF->ComputeNodElCon();
     cmeshMF->CleanUpUnconnectedNodes();
-    std::ofstream fileH1("../cmeshH1.txt");
+    std::ofstream fileH1("cmeshH1.txt");
     cmeshH1->Print(fileH1);
-    std::ofstream fileHCurl("../cmeshHCurl.txt");
+    std::ofstream fileHCurl("cmeshHCurl.txt");
     cmeshHCurl->Print(fileHCurl);
-    std::ofstream fileMF("../cmeshMFHCurl.txt");
+    std::ofstream fileMF("cmeshMFHCurl.txt");
     cmeshMF->Print(fileMF);
 
     meshVecOut.resize(3);

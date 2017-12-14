@@ -5,6 +5,7 @@
 #ifndef PZ_TPZLAPACKWRAPPER_H
 #define PZ_TPZLAPACKWRAPPER_H
 
+#include <TPZEigenHandler.h>
 #include <pzfmatrix.h>
 #include <pzsbndmat.h>
 
@@ -12,48 +13,89 @@ template<class TVar>
 class SPZAlwaysComplex;
 
 template<class TVar>
-class TPZLapackWrapper {
+class TPZLapackWrapper : public TPZEigenHandler<TVar> {
     friend class TPZFMatrix<TVar>;
     friend class TPZSBMatrix<TVar>;
+  /**
+   * @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
+   * @param A The matrix (input)
+   * @param w Stores the eigenvalues
+   * @param eigenVectors Stores the correspondent eigenvectors
+   * @return it returns 1 if executed correctly
+   */
+  int SolveEigenProblem(TPZMatrix <TVar> &A, TPZVec<typename SPZAlwaysComplex<TVar>::type> &w,
+                                TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors) override;
+
+  /**
+   * @brief Solves the Ax=w*x eigenvalue problem and does not calculate the eigenvectors
+   * @param A The matrix (input)
+   * @param w Stores the eigenvalues
+   * @return it returns 1 if executed correctly
+   */
+  int SolveEigenProblem(TPZMatrix <TVar> &A, TPZVec<typename SPZAlwaysComplex<TVar>::type> &w) override;
+
+  /**
+   * @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+   * @param A The lhs matrix (input)
+   * @param B The rhs matrix (input)
+   * @param w Stores the eigenvalues
+   * @param eigenVectors Stores the correspondent eigenvectors
+   * @return it returns 1 if executed correctly
+   */
+  int SolveGeneralisedEigenProblem(TPZMatrix <TVar> &A, TPZMatrix <TVar> &B,
+                                           TPZVec<typename SPZAlwaysComplex<TVar>::type> &w,
+                                           TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors) override;
+
+  /**
+   * @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param A The lhs matrix (input)
+   * @param B The rhs matrix (input)
+   * @param w Stores the eigenvalues
+   * @return it returns 1 if executed correctly
+   */
+  int SolveGeneralisedEigenProblem(TPZMatrix <TVar> &A, TPZMatrix <TVar> &B,
+                                           TPZVec<typename SPZAlwaysComplex<TVar>::type> &w) override;
+
+
     /*******************
     *    TPZFMATRIX    *
     *******************/
-    static int SolveEigenProblem(TPZFMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
+    int SolveEigenProblem(TPZFMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
 
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    static int SolveEigenProblem(TPZFMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+    int SolveEigenProblem(TPZFMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    static int SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &A, TPZFMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
+    int SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &A, TPZFMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    static int SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &A, TPZFMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+    int SolveGeneralisedEigenProblem(TPZFMatrix<TVar> &A, TPZFMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 
     /*******************
     *    TPSBMATRIX    *
     *******************/
-    static int SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
+    int SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors);
 
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    static int SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+    int SolveEigenProblem(TPZSBMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    static int SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
+    int SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors);
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    static int SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+    int SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 };
 
 #endif //PZ_TPZLAPACKWRAPPER_H

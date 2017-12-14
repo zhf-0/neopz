@@ -649,17 +649,15 @@ int TPZFYsmpMatrix<TVar>::Zero()
 }
 
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
-  TPZSlepcHandler<TVar> slepHandler;
-	return slepHandler.SolveEigenProblem(*this,w,eigenVectors);
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenHandler<TVar> *eig){
+  return eig->SolveEigenProblem(*this,w,eigenVectors);
 }
 /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
  * @param w Stores the eigenvalues
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-  TPZSlepcHandler<TVar> slepHandler;
-	return slepHandler.SolveEigenProblem(*this,w);
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+  return eig->SolveEigenProblem(*this,w);
 }
 
 /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
@@ -667,35 +665,33 @@ int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<T
  * @param Stores the correspondent eigenvectors
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
-  #ifdef PZDEBUG
-  try{
-    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);
-  }
-  catch(const std::bad_cast& Btest){
-    DebugStop();
-  }
-  #endif
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig){
+//  #ifdef PZDEBUG
+//  try{
+//    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);
+//  }
+//  catch(const std::bad_cast& Btest){
+//    DebugStop();
+//  }
+//  #endif
 
-  TPZSlepcHandler<TVar> slepHandler;
-	return slepHandler.SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w,eigenVectors);
+  return eig->SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w,eigenVectors);
 }
 /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
  * @param w Stores the eigenvalues
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-  #ifdef PZDEBUG
-  try{
-    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);
-  }
-  catch(const std::bad_cast& Btest){
-    DebugStop();
-  }
-  #endif
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+//  #ifdef PZDEBUG
+//  try{
+//    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);
+//  }
+//  catch(const std::bad_cast& Btest){
+//    DebugStop();
+//  }
+//  #endif
 
-  TPZSlepcHandler<TVar> slepHandler;
-	return slepHandler.SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w);
+  return eig->SolveGeneralisedEigenProblem(*this,(TPZFYsmpMatrix<TVar> &)B,w);
 }
 
 
