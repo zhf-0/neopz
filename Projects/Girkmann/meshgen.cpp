@@ -1,4 +1,4 @@
-// 
+
 #include "meshgen.h"
 
 #include "pzgmesh.h"
@@ -93,10 +93,10 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        //disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
-        //disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
-        disp[0] = (TVar)cos(M_PI*x[0])*(TVar)sin(2*M_PI*x[1]);
-        disp[1] = (TVar)cos(M_PI*x[1])*(TVar)sin(M_PI*x[0]);
+        //disp[1] = (TVar)sin(M_PI*x[0])*(TVar)cos(M_PI*x[1]);
+        //disp[0] = (TVar)cos(M_PI*x[0])*(TVar)sin(2*M_PI*x[1]);
+        disp[0] += (TVar)x[0]*x[0];
+        disp[1] += (TVar)x[1]*x[1];
     }
 
     else if(fProblemType ==ERot)//rotation
@@ -118,7 +118,7 @@ void TElasticityExample1::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)
     {    
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] += (TVar) x[0]*x[0];
+        disp[0] += (TVar) x[0];
         disp[1] += (TVar) 0.;
     }
     else if(fProblemType ==EStretchy)//strech y
@@ -162,10 +162,10 @@ void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > 
     {
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        //disp[0] = ((1-x[0]*x[0])*(1+x[1]*x[1]*x[1]*x[1]));
-        //disp[1] = ((1-x[1]*x[1])*(1+x[0]*x[0]*x[0]*x[0]));
-        disp[0] = FADcos(M_PI*x[0])*FADsin(2*M_PI*x[1]);
-        disp[1] = FADcos(M_PI*x[1])*FADsin(M_PI*x[0]);
+        //disp[1] = FADsin(M_PI*x[0])*FADcos(M_PI*x[1]);
+        //disp[0] = FADcos(M_PI*x[0])*FADsin(2*M_PI*x[1]);
+        disp[0] += (FADFADREAL)x[0]*(FADFADREAL)x[0];
+        disp[1] += (FADFADREAL)x[1]*(FADFADREAL)x[1];
     }
       
     else if(fProblemType ==ERot)//rotation
@@ -188,7 +188,7 @@ void TElasticityExample1::uxy(const TPZVec<FADFADREAL > &x, TPZVec<FADFADREAL > 
     {     
         disp[0] = x[0]*0.;
         disp[1] = x[0]*0.;
-        disp[0] += (FADFADREAL) x[0]*x[0];
+        disp[0] += (FADFADREAL) x[0];
         disp[1] += (FADFADREAL) 0.;
     }
     else if(fProblemType ==EStretchy)//strech y
@@ -221,8 +221,8 @@ template<class TVar>
 void TElasticityExample1::Elastic(const TPZVec<TVar> &x, TVar &Elast, TVar &nu)
 {
     Elast = (TVar(100.) * (TVar(1.) + TVar(0.3) * sin(TVar(10 * M_PI) * (x[0] - TVar(0.5))) * cos(TVar(10. * M_PI) * x[1])));
-    Elast = TVar(1.);//TVar(206.815026);
-    nu = TVar(0.);//TVar(0.30400395);
+    Elast = TVar(206.815026);
+    nu =  TVar(0.30400395);
 }
 
 template<>
@@ -230,8 +230,8 @@ void TElasticityExample1::Elastic(const TPZVec<double> &x, double &Elast, double
 {
 //  Elast = 1000.;
     Elast = (100. * (1. + 0.3 * sin(10 * M_PI * (x[0] - 0.5)) * cos(10. * M_PI * x[1])));
-    Elast = 1.;//206.815026;
-    nu = 0.;//0.30400395;
+    Elast = 206.815026;
+    nu = 0.30400395;
 }
 
 void TElasticityExample1::ElasticDummy(const TPZVec<REAL> &x, TPZVec<STATE> &result, TPZFMatrix<STATE> &deriv)
@@ -251,7 +251,7 @@ TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ConstitutiveLawFunction
 {
     TPZAutoPointer<TPZFunction<STATE> > result;
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(TElasticityExample1::ElasticDummy);
-    dummy->SetPolynomialOrder(20);
+    dummy->SetPolynomialOrder(4);
     result = TPZAutoPointer<TPZFunction<STATE> >(dummy);
     return result;
 }
@@ -262,10 +262,9 @@ void TElasticityExample1::graduxy(const TPZVec<TVar> &x, TPZFMatrix<TVar> &grad)
     TPZManVector<Fad<TVar>,3> xfad(x.size());
     for(int i=0; i<2; i++)
     {
-
         Fad<TVar> temp = Fad<TVar>(2,i,x[i]);
-        xfad[i] = temp;        
-    
+        xfad[i] = temp;
+        
     }
     xfad[2] = x[2];
     TPZManVector<Fad<TVar>,3> result(2);
@@ -276,7 +275,8 @@ void TElasticityExample1::graduxy(const TPZVec<TVar> &x, TPZFMatrix<TVar> &grad)
         {
             grad(i,j) = result[i].d(j);
         }
-    }    
+    }
+
 }
 
 void TElasticityExample1::GradU(const TPZVec<REAL> &x, TPZVec<STATE> &u, TPZFMatrix<STATE> &gradu)
@@ -290,7 +290,6 @@ void TElasticityExample1::GradU(const TPZVec<REAL> &x, TPZVec<STATE> &u, TPZFMat
     xfad[2] = x[2];
     TPZManVector<Fad<REAL>,3> result(2);
     uxy(xfad,result);
-    //std::cout<<"result  "<<result[0].d(0)<<endl;
     gradu.Redim(2,2);
     u[0] = result[0].val();
     u[1] = result[1].val();
@@ -338,83 +337,39 @@ template<class TVar>
 void TElasticityExample1::Sigma(const TPZVec<TVar> &x, TPZFMatrix<TVar> &sigma)
 {
     TPZFNMatrix<4,TVar> grad;
-    TVar E, nu;
+    TVar E, nu ;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
     Elastic(x, E, nu);
-    TVar Fac = E/((TVar)1.+nu)/((TVar(1.)-TVar(2.)*nu));
+    TVar Fac = E/((TVar)1.+nu)/((TVar(1.)-TVar(2.)*nu));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ //   std::cout<< "Fac =  "<< Fac<< " E = "<< E<< "nu =" << nu<<endl;
+   
     graduxy(x,grad);
-    TPZVec<TVar> result(2,0.);
-    uxy(x,result);
     sigma.Resize(2,2);
-    if(fStressState == EPlaneStress)
-    {
-        sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
-        sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
-        sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-    else if(fStressState == EPlaneStrain)
-    {
-        sigma(0,0) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(0,0)+nu*grad(1,1));
-        sigma(1,1) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(1,1)+nu*grad(0,0));
-        sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-    else
-    {
-        DebugStop();
-    }
-    if( fAxisState == EAxisSymmetric )
-    {
-
-        std::cout<<"use EAxisSymmetric"<<endl;
-        sigma(0,0) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(0,0)+nu*grad(1,1)+nu*result[0]/x[0]);
-        sigma(1,1) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(1,1)+nu*grad(0,0)+nu*result[0]/x[0]);
-        sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-
+    //sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
+    //sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
+    sigma(0,0) = Fac*((TVar(1.)-nu)*grad(0,0)+nu*grad(1,1));
+    sigma(1,1) = Fac*((TVar(1.)-nu)*grad(1,1)+nu*grad(0,0));
+    sigma(0,1) = E/(TVar(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
+    sigma(1,0) = sigma(0,1);
+    //std::cout<<"Exact sigma = "<<sigma(1,1)<<endl;
 }
 
 template<>
 void TElasticityExample1::Sigma(const TPZVec<Fad<REAL> > &x, TPZFMatrix<Fad<REAL> > &sigma)
 {
-    typedef Fad<REAL> TVar;
     TPZFNMatrix<4,Fad<REAL> > grad;
-    Fad<REAL>  E, nu;
+    Fad<REAL>  E, nu;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     Elastic(x, E, nu);
     Fad<REAL>  Fac = E/(Fad<REAL>(1.)+nu)/((Fad<REAL>(1.)-Fad<REAL>(2.)*nu));
     graduxy(x,grad);
     sigma.Resize(2,2);
-    TPZVec<Fad<REAL> > result(2,0.);
-    uxy(x,result);
-    if (fStressState == EPlaneStress)
-    {
-        sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1));
-        sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
-        sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-    else if(fStressState == EPlaneStrain)
-    {
-        sigma(0,0) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(0,0)+nu*grad(1,1));
-        sigma(1,1) = (E/((1.+nu)*(1.-2.*nu)))*((1.-nu)*grad(1,1)+nu*grad(0,0));
-        sigma(0,1) = E/(Fad<REAL>(2.)*(TVar(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-    else
-    {
-        DebugStop();
-    }
-    if( fAxisState == EAxisSymmetric)
-    {
-        std::cout<<"use EAxisSymmetric"<<endl;
-        sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1)+nu*(result[0]/x[0]));
-        sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0)+nu*(result[0]/x[0]));
-        sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
-        sigma(1,0) = sigma(0,1);
-    }
-    
-
+    //std::cout<< "Fac =  "<< Fac<< " E = "<< E<< "nu =" << nu<<endl;
+    //sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1));
+    //sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
+    sigma(0,0) = Fac*((Fad<REAL>(1.)-nu)*grad(0,0)+nu*grad(1,1));
+    sigma(1,1) = Fac*((Fad<REAL>(1.)-nu)*grad(1,1)+nu*grad(0,0));
+    sigma(0,1) = E/(Fad<REAL>(2.)*(Fad<REAL>(1.)+nu))*(grad(0,1)+grad(1,0));
+    sigma(1,0) = sigma(0,1);
+    //std::cout<<"Exact sigma Y= "<<sigma(1,1)<<"Exact sigma X = "<<sigma(0,0)<<endl;
 }
 
 template
@@ -423,10 +378,6 @@ void TElasticityExample1::Sigma<REAL>(const TPZVec<REAL> &x, TPZFMatrix<REAL> &d
 template<class TVar>
 void TElasticityExample1::DivSigma(const TPZVec<TVar> &x, TPZVec<TVar> &divsigma)
 {
-    TPZVec<TVar> result(2,0.);
-    uxy(x,result);
-    TVar E, nu;
-    Elastic(x, E, nu);
     TPZManVector<Fad<TVar>,3> xfad(x.size());
     for(int i=0; i<2; i++)
     {
@@ -434,25 +385,14 @@ void TElasticityExample1::DivSigma(const TPZVec<TVar> &x, TPZVec<TVar> &divsigma
     }
     TPZFNMatrix<4, Fad<TVar> > sigma(2,2);
     Sigma(xfad,sigma);
-    TPZFNMatrix<4,TVar> sigma1(2,2); 
-    Sigma(x,sigma1);
-    if( fAxisState  !=  EAxisSymmetric )
-    {
     divsigma[0] = sigma(0,0).dx(0)+sigma(0,1).dx(1);
     divsigma[1] = sigma(1,0).dx(0)+sigma(1,1).dx(1);
-    }
-    else{
-        std::cout<<"use EAxisSymmetric"<<endl;
-    divsigma[0] = sigma(0,0).dx(0)+sigma(0,1).dx(1)+sigma1(0,0)/x[0]-result[0]/(E*x[0]*x[0]);
-    divsigma[1] = sigma(1,0).dx(0)+sigma(1,1).dx(1)+sigma1(1,0)/x[0];    
-    }
-        
-    }
+}
 
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ForcingFunction()
 {
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(Force);
-    dummy->SetPolynomialOrder(30);
+    dummy->SetPolynomialOrder(5);
     TPZAutoPointer<TPZFunction<STATE> > result(dummy);
     return result;
 }
@@ -460,7 +400,7 @@ TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ForcingFunction()
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ValueFunction()
 {
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(GradU);
-    dummy->SetPolynomialOrder(10);
+    dummy->SetPolynomialOrder(5);
     TPZAutoPointer<TPZFunction<STATE> > result(dummy);
     return result;
     
@@ -474,10 +414,6 @@ void TElasticityExample1::Sigma<Fad<REAL> >(const TPZVec<Fad<REAL> > &x, TPZFMat
 
 
 TElasticityExample1::EDefState TElasticityExample1::fProblemType = TElasticityExample1::EDispx;
-
-TElasticityExample1::EStressState TElasticityExample1::fStressState = TElasticityExample1::EPlaneStrain;
-
-TElasticityExample1::EAxisState TElasticityExample1::fAxisState =    TElasticityExample1::ENone3;
 
 template<class TVar>
 void TElasticityExample2::uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp)

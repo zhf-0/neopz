@@ -49,16 +49,7 @@ struct TElasticityExample1 : public TAnalyticSolution
     
      static EDefState fProblemType;
     
-    enum EStressState {ENone2, EPlaneStress, EPlaneStrain };
-     
-    
-    static EStressState fStressState;
 
-    
-    enum EAxisState {ENone3, EAxisSymmetric};
-    
-    static EAxisState fAxisState;
-    
   static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
     {
         TPZManVector<REAL,3> locforce(2);
