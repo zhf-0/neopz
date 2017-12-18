@@ -203,25 +203,45 @@ int main(int argc, char *argv[])
     x[1]=1./2.;
     test.Sigma(x,sigma);
     test.Force(x,force);
-    int h_level = 4;
+    int h_level = 16;
     
     
     double hx=2,hy=2; //Dimensões em x e y do domínio
     int nelx=h_level, nely=h_level; //Número de elementos em x e y
     int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
-<<<<<<< HEAD
-    int RibpOrder = 2; //Ordem polinomial de aproximação
-    int InternalpOrder = 2;
+    int RibpOrder = 1; //Ordem polinomial de aproximação
+    int InternalpOrder = 1;
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
     
     //Gerando malha geométrica:
     
-=======
-    int RibpOrder = 1; //Ordem polinomial de aproximação
-    int InternalpOrder = 1;
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
-    TPZGeoMesh *gmesh = CreateGMesh(nx, ny, hx, hy); //Função para criar a malha geometrica
+    TPZGmshReader Girkmann;
+    
+    Girkmann.fPZMaterialId[2]["ELASTICITY1"] = 1;
+    Girkmann.fPZMaterialId[2]["ELASTICITY2"] = 3;
+    Girkmann.fPZMaterialId[1]["SUPPORT"] = -1;
+    Girkmann.fPZMaterialId[1]["ZERO"] = -2;
+    Girkmann.fPZMaterialId[1]["SYM"] = -3;
+    Girkmann.fPZMaterialId[1]["MOMENT"] = 2;
+    
+
+#ifdef MACOSX
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("../Girkmann.msh");
+#else
+    TPZGeoMesh *gmesh2 = Girkmann.GeometricGmshMesh("Girkmann.msh");
+#endif
+    {
+        std::ofstream out("Girkmann.vtk");
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh2,out,true);
+    }
+    std::set<int> matids;
+    matids.insert(3);
+    matids.insert(1);
+    //std::cout << "Axisymmetric area " << AxiArea(gmesh2,matids)*32.69 << std::endl;
+    //std::cout << (43.553)*(15.5807*15.5807/2.-14.9807*14.9807/2.)*2.*M_PI << std::endl;
+
+    TPZGeoMesh *gmesh = gmesh2;
     
 #ifdef PZDEBUG
     std::ofstream fileg("MalhaGeo.txt"); //Impressão da malha geométrica (formato txt)
@@ -229,25 +249,13 @@ int main(int argc, char *argv[])
     gmesh->Print(fileg);
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, filegvtk,true);
 #endif
-  
-  //   std::set<int> matids;
-    //matids.insert(3);
-  //  matids.insert(1);
-    TElasticityExample1 Example;
-    //Gerando malha computacional:
- //   TPZGeoMesh *gmesh=CreateGMesh(nx,ny,hx,hy);
     
     TPZCompMesh *cmesh_S = CMesh_S(gmesh, RibpOrder); //Função para criar a malha computacional da tensão
     ChangeInternalOrder(cmesh_S,InternalpOrder);
     TPZCompMesh *cmesh_U = CMesh_U(gmesh, InternalpOrder); //Função para criar a malha computacional da deslocamento
     TPZCompMesh *cmesh_P = CMesh_P(gmesh, InternalpOrder); //Função para criar a malha computacional da rotação
-<<<<<<< HEAD
     TPZCompMesh *cmesh_m = CMesh_Girk(gmesh, RibpOrder); //Função para criar a malha computacional multifísica
-=======
-    //TPZCompMesh *cmesh_m = CMesh_Girk(gmesh, RibpOrder); //Função para criar a malha computacional multifísica
-    TPZCompMesh *cmesh_m = CMesh_m(gmesh, InternalpOrder,  Example);
     #ifdef PZDEBUG
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     {
         std::ofstream filecS("MalhaC_S.txt"); //Impressão da malha computacional da tensão (formato txt)
         std::ofstream filecU("MalhaC_U.txt"); //Impressão da malha computacional da deslocamento (formato txt)
@@ -267,11 +275,12 @@ int main(int argc, char *argv[])
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshvector, cmesh_m);
     cmesh_m->LoadReferences();
     CreateCondensedElements(cmesh_m);
-<<<<<<< HEAD
- //   CreateCondensedElements(cmesh_m);
-=======
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     
+    //    AddMultiphysicsInterfaces(*cmesh_m,matInterface,matID);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCbott,matBCbott);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCtop,matBCtop);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCleft,matBCleft);
+    //    AddMultiphysicsInterfaces(*cmesh_m,matIntBCright,matBCright);
     
 #ifdef PZDEBUG
     std::ofstream fileg1("MalhaGeo2.txt"); //Impressão da malha geométrica (formato txt)
@@ -299,7 +308,7 @@ int main(int argc, char *argv[])
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
     
-#ifdef PZDEBUG
+#ifdef PZDEBUG0
     //Imprimir Matriz de rigidez Global:
     {
         std::ofstream filestiff("stiffness.txt");
@@ -309,11 +318,7 @@ int main(int argc, char *argv[])
         an.Rhs().Print("R = ",filerhs,EMathematicaInput);
     }
 #endif
-<<<<<<< HEAD
-    /* 
-=======
     /*
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     REAL sumrhs = 0.;
     TPZFMatrix<STATE> &rhs = an.Rhs();
     for(long i=0; i< rhs.Rows(); i++)
@@ -323,10 +328,6 @@ int main(int argc, char *argv[])
     std::cout << " sumrhs "  << sumrhs << std::endl;
     std::cout << "Solving Matrix " << std::endl;
     */
-<<<<<<< HEAD
-    
-=======
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     an.Solve();
     
     {
@@ -359,21 +360,6 @@ int main(int argc, char *argv[])
     }
 #endif
     
-<<<<<<< HEAD
-    //    //Calculo do erro
-    //    std::cout << "Comuting Error " << std::endl;
-    /*TPZManVector<REAL,3> Errors;
-    ofstream ErroOut("Erro.txt",std::ios::app);
-    ErroOut << "Number of elements " << h_level << std::endl;
-    an.SetExact(Example.Exact());
-    an.PostProcessError(Errors,ErroOut);
-    */
-    matids.clear();
-    matids.insert(-1);
-    TPZManVector<STATE,3> result;
-    result = cmesh_m->Integrate("state",matids);
-    std::cout << "Sigma Y"  << result << std::endl;
-=======
  //   matids.clear();
  //   matids.insert(-1);
  //   TPZManVector<STATE,3> result;
@@ -381,23 +367,10 @@ int main(int argc, char *argv[])
   //  std::cout << "Sigma Y"  << result << std::endl;
    
     
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     //    //Calculo do erro
     //    std::cout << "Comuting Error " << std::endl;
     
     
-    TPZManVector<REAL,3> Errors;
-    ofstream ErroOut("Erro.txt",std::ios::app);
-    ErroOut << "Number of elements " << h_level << std::endl;
-    ErroOut << "Number of Condensed equations " << cmesh_m->NEquations() << std::endl;
-    ErroOut << "Number of equations before condensation " << cmesh_m->Solution().Rows() << std::endl;
-    
-    an.SetExact(Example.Exact());
-    an.PostProcessError(Errors,ErroOut);
-    
-    std::cout << "Errors = " << Errors << std::endl;
-    
-    //
     //
     //
     //    //Pós-processamento (paraview):
@@ -533,23 +506,6 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     //Vetor auxiliar para armazenar coordenadas:
     
     TPZVec <REAL> coord (3,0.);
-<<<<<<< HEAD
-    TPZVec <REAL> newcoord(3,0.);
-    TPZVec <REAL> gcoord1(4,0.);
-    TPZVec <REAL> gcoord2(4,0.);
-    double theta=M_PI/4;
-    gcoord1[0]=-0.3;
-    gcoord2[0]=0;
-    gcoord1[1]=1.7;
-    gcoord2[1]=0.7;
-    gcoord1[3]=1;
-    gcoord2[3]=1;
-    gcoord1[2]=0;
-    gcoord2[2]=1;
-    //Inicialização dos nós:
-    
-    
-=======
 //    TPZVec <REAL> newcoord(3,0.);
 //    TPZVec <REAL> gcoord1(3,0.);
 //    TPZVec <REAL> gcoord2(3,0.);
@@ -567,11 +523,9 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
   // nelem[1] = ny;
     
    // TPZGenGrid gengrid(nelem,gcoord1,gcoord2);
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     
+//    gengrid.SetElementType(ETriangle);
     
-<<<<<<< HEAD
-=======
     REAL distort = 0.7;
 //    gengrid.SetDistortion(distort);
     
@@ -582,11 +536,10 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     //gengrid.SetBC(gmesh,7,matBCleft);
    
    
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     for(i = 0; i < ny; i++){
         for(j = 0; j < nx; j++){
             id = i*nx + j;
-            coord[0] = (j)*hx/(nx - 1)-1;
+            coord[0] = (j)*hx/(nx - 1)-1;           
             coord[1] = (i)*hy/(ny - 1)-1;
 //          coord[0]=gcoord1[2*i+j];
 //          coord[1]=gcoord2[2*i+j];
@@ -601,10 +554,7 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
         }
     }
     
-<<<<<<< HEAD
-=======
     
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
 //  Ponto 1
 //  TPZVec<long> pointtopology(1);
 //  pointtopology[0] = 1;
@@ -613,8 +563,6 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
     
     
     //Vetor auxiliar para armazenar as conecções entre elementos:
-<<<<<<< HEAD
-=======
     
     TPZVec <long> connect(4,0);
     
@@ -657,7 +605,6 @@ TPZGeoMesh *CreateGMesh(int nx, int ny, double hx, double hy)
             }
         }
     }
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
 
     {
         TPZCheckGeom check(gmesh);
@@ -700,30 +647,17 @@ TPZCompMesh *CMesh_S(TPZGeoMesh *gmesh, int pOrder)
     //Criando material cujo nSTATE = 2:
     
     REAL E = 206.815026; //* @param E elasticity modulus
-<<<<<<< HEAD
-    REAL nu= 0.30400395; //* @param nu poisson coefficient
-=======
     REAL nu=0.30400395; //* @param nu poisson coefficient
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress
     
-    TPZMaterial * material = new TPZElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
-    cmesh->InsertMaterialObject(material); //Insere material na malha
-    /*
     TPZMaterial * material = new TPZMixedElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
     cmesh->InsertMaterialObject(material); //Insere material na malha
-<<<<<<< HEAD
-    TPZMaterial * material2 = new TPZMixedElasticityMaterial(3,E,nu,fx,fy,plain,dim);
-    cmesh->InsertMaterialObject(material2); //Insere material na malha
-    */
-=======
     
     //TPZMaterial * material2 = new TPZMixedElasticityMaterial(3,E,nu,fx,fy,plain,dim);
     //cmesh->InsertMaterialObject(material2); //Insere material na malha
     
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     
     //Dimensões do material (para H1 e descontinuo):
     //TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
@@ -748,6 +682,9 @@ TPZCompMesh *CMesh_S(TPZGeoMesh *gmesh, int pOrder)
     
     TPZMaterial * BCond3 = material->CreateBC(material, matBCright, neumann, val1, val2s); //Cria material que implementa a condicao de contorno direita
     cmesh->InsertMaterialObject(BCond3); //Insere material na malha
+    
+    TPZMaterial * BCond4 = material->CreateBC(material, 2, neumann, val1, val2s); //Cria material que implementa a condicao de contorno direita
+    cmesh->InsertMaterialObject(BCond4); //Insere material na malha
     
     
     //Criando elementos computacionais que gerenciarão o espaco de aproximacao da malha:
@@ -787,26 +724,19 @@ TPZCompMesh *CMesh_U(TPZGeoMesh *gmesh, int pOrder)
     //Criando material cujo nSTATE = 2:
     
     REAL E = 206.815026; //* @param E elasticity modulus
-<<<<<<< HEAD
-    REAL nu= 0.30400395; //* @param nu poisson coefficient
-=======
     REAL nu=0.30400395; //* @param nu poisson coefficient
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress
     
-    TPZMaterial * material = new TPZElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
+    TPZMaterial * material = new TPZMixedElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
     
     cmesh->InsertMaterialObject(material); //Insere material na malha
     
-<<<<<<< HEAD
-=======
     //TPZMaterial * material2 = new TPZMixedElasticityMaterial(3,E,nu,fx,fy,plain,dim);
     
     //cmesh->InsertMaterialObject(material2); //Insere material na malha
     
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     //Dimensões do material (para H1 e descontinuo):
     //    TPZFMatrix<STATE> xkin(2,2,0.), xcin(2,2,0.), xfin(2,2,0.);
     //    material->SetMaterial(xkin, xcin, xfin);
@@ -836,10 +766,7 @@ TPZCompMesh *CMesh_U(TPZGeoMesh *gmesh, int pOrder)
     }
     std::set<int> materialids;
     materialids.insert(matID);
-<<<<<<< HEAD
-=======
     //materialids.insert(3);
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     cmesh->AutoBuild(materialids);
     cmesh->LoadReferences();
     cmesh->ApproxSpace().CreateDisconnectedElements(false);
@@ -869,6 +796,7 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder)
     //pOrder--; // Space restriction apapapa
     
     //Criando malha computacional:
+    
     TPZCompMesh * cmesh = new TPZCompMesh(gmesh);
     cmesh->SetDefaultOrder(pOrder); //Insere ordem polimonial de aproximação
     cmesh->SetDimModel(dim); //Insere dimensão do modelo
@@ -879,18 +807,16 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder)
 //    cmesh->SetAllCreateFunctionsContinuous(); //Criando funções H1
     cmesh->ApproxSpace().CreateDisconnectedElements(true);
     
+    
     //Criando material cujo nSTATE = 1:
     
     TPZMaterial *material = new TPZMatPoisson3d(matID,dim);//criando material que implementa a formulacao fraca do problema modelo
     
     cmesh->InsertMaterialObject(material); //Insere material na malha
     
-<<<<<<< HEAD
-=======
     //TPZMaterial *material2 = new TPZMatPoisson3d(3,dim);//criando material que implementa a formulacao fraca do problema modelo
     
     //cmesh->InsertMaterialObject(material2); //Insere material na malha
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     //    //Dimensões do material (para H1 e descontínuo):
     //    TPZFMatrix<STATE> xkin(1,1,0.), xcin(1,1,0.), xfin(1,1,0.);
     //    material->SetMaterial(xkin, xcin, xfin);
@@ -927,10 +853,7 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder)
     
     std::set<int> materialids;
     materialids.insert(matID);
-<<<<<<< HEAD
-=======
     //materialids.insert(3); 
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     cmesh->AutoBuild(materialids);
     cmesh->LoadReferences();
 //    cmesh->ApproxSpace().CreateDisconnectedElements(false);
@@ -964,7 +887,6 @@ TPZCompMesh *CMesh_P(TPZGeoMesh *gmesh, int pOrder)
 
 
 
-/*
 TPZCompMesh *CMesh_Girk(TPZGeoMesh *gmesh, int pOrder)
 {
     
@@ -1064,7 +986,6 @@ TPZCompMesh *CMesh_Girk(TPZGeoMesh *gmesh, int pOrder)
     
 }
 
-*/
 TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example)
 {
     
@@ -1081,22 +1002,14 @@ TPZCompMesh *CMesh_m(TPZGeoMesh *gmesh, int pOrder, TElasticityExample1 &example
     example.fProblemType = TElasticityExample1::Etest2;
     
     REAL E = 206.815026; //* @param E elasticity modulus
-<<<<<<< HEAD
-    REAL nu= 0.30400395; //* @param nu poisson coefficient
-=======
     REAL nu=0.30400395; //* @param nu poisson coefficient
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     
     
     REAL fx=0.;//* @param fx forcing function \f$ -x = fx \f$
     REAL fy=0.;//* @param fx forcing function \f$ -x = fx \f$
     int plain=0.; //* @param plainstress = 1 \f$ indicates use of plainstress
     
-<<<<<<< HEAD
-    TPZMaterial * material = new TPZElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
-=======
     TPZMixedElasticityMaterial * material = new TPZMixedElasticityMaterial(matID,E,nu,fx,fy,plain,dim);
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f
     
     material->SetPlaneStrain();
     material->SetForcingFunction(example.ForcingFunction());
@@ -1210,7 +1123,6 @@ void Error(TPZCompMesh *cmesh, std::ostream &out, int p, int ndiv)
         }
         
     }
-
     out << "Errors associated with HDiv space - ordem polinomial = " << p << "- divisoes = " << ndiv << endl;
     out << "L2 Norm for flux - L2 Norm for divergence - Hdiv Norm for flux " << endl;
     out <<  setw(16) << sqrt(globalerrors[1]) << setw(25)  << sqrt(globalerrors[2]) << setw(21)  << sqrt(globalerrors[3]) << endl;
@@ -1300,9 +1212,29 @@ void CreateCondensedElements2(TPZCompMesh *cmesh)
     }
 }
 
+/// change the order of the internal connect to the given order
+void ChangeInternalOrder(TPZCompMesh *cmesh, int pOrder)
+{
+    long nel = cmesh->NElements();
+    for(long el = 0; el<nel; el++)
+    {
+        TPZCompEl *cel = cmesh->Element(el);
+        if(!cel) continue;
+        
+        TPZGeoEl *gel = cel->Reference();
+        if(gel->Dimension() != cmesh->Dimension())
+        {
+            continue;
+        }
+        int nc = cel->NConnects();
+        TPZInterpolatedElement *intel = dynamic_cast<TPZInterpolatedElement *>(cel);
+        if(!intel) DebugStop();
+        
+        intel->ForceSideOrder(gel->NSides()-1,pOrder);
+    }
+    cmesh->ExpandSolution();
+}
 
-<<<<<<< HEAD
-=======
 // Compute the area
 
 /*
@@ -1394,4 +1326,3 @@ STATE IntegrateBottom(TPZCompMesh *cmesh, int targetmatid)
     return integSigy;
 }
 
->>>>>>> 7796a936dc57cf33e95fd16f0240ef84bf791d2f

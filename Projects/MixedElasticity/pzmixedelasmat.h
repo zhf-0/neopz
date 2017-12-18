@@ -20,7 +20,7 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
 	
 	public :
     
-    enum MVoight {Exx,Exy,Eyx,Eyy};
+    enum MVoight {Exx,Eyy,Exy,Eyx};
 
 	/** @brief Default constructor */
 	TPZMixedElasticityMaterial();
@@ -90,23 +90,19 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
     {
         fE	= E;  // Young modulus
         fnu	= nu;   // poisson coefficient
-        fEover1MinNu2 = E/(1-fnu*fnu);  //G = E/2(1-nu);
-        fEover21PlusNu = E/(2.*(1+fnu));//E/(1-nu)
         flambda = (E*nu)/((1+nu)*(1-2*nu));
         fmu = E/(2*(1+nu));
 
     }
     
     /** @brief Set elasticity parameters */
-    void SetParameters(REAL Lambda, REAL mu, REAL fx, REAL fy)
+    void SetLameParameters(REAL Lambda, REAL mu)
     {
         fE = (mu*(3.0*Lambda+2.0*mu))/(Lambda+mu);
         fnu = (Lambda)/(2*(Lambda+mu));
         
         flambda = Lambda;
         fmu = mu;
-        ff[0] = fx;
-        ff[1] = fy;
     }
     
     /// set the material configuration to AxisSymmetric
@@ -129,9 +125,9 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
     /** @brief Set forcing function */
     void SetBodyForce(REAL fx, REAL fy)
     {
-        ff[0] = fx;
-        ff[1] = fy;
-        ff[2] = 0.;
+        fForce[0] = fx;
+        fForce[1] = fy;
+        fForce[2] = 0.;
     }
 	/** @brief Returns the model dimension */
 	int Dimension() const { return 2;}
@@ -167,8 +163,6 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
 //    }
     
     
-    void ContributeVecShape(TPZMaterialData &data,REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef);
-	
 	/** @brief Calculates the element stiffness matrix */
 	virtual void Contribute(TPZMaterialData &data, REAL weight,TPZFMatrix<STATE> &ef)
 	{
@@ -183,10 +177,7 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
 	/** @brief Applies the element boundary conditions */
 	virtual void ContributeBC(TPZMaterialData &data,REAL weight,
 							  TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
-    
-    void ContributeVecShapeBC(TPZMaterialData &data,REAL weight,
-                              TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc);
-	
+    	
 	/** @brief Applies the element boundary conditions */
 	virtual void ContributeBC(TPZMaterialData &data,REAL weight,
 							  TPZFMatrix<STATE> &ef,TPZBndCond &bc)
@@ -294,9 +285,6 @@ public:
 	/** @brief Returns the poison coefficient modulus E */
 	REAL Nu() {return fnu;}
 	
-	/** @brief Set PresStress Tensor */
-	void SetPreStress(REAL Sigxx, REAL Sigyy, REAL Sigxy, REAL Sigzz);
-    
 	virtual int ClassId() const;
 	
 	virtual void Read(TPZStream &buf, void *context);
@@ -319,31 +307,14 @@ protected:
     REAL fmu;
     
 	/** @brief Forcing vector */
-	REAL ff[3];
+	TPZManVector<REAL,3> fForce = TPZManVector<REAL,3>(2,0.);
 	
-	/** @brief \f$ G = E/2(1-nu) \f$ */
-	REAL fEover21PlusNu;
-	
-	/** @brief \f$ E/(1-nu) \f$ */
-	REAL fEover1MinNu2;
-	
-	/** @brief Pre Stress Tensor - Sigma XX */
-	REAL fPreStressXX;
-	
-	/** @brief Pre Stress Tensor - Sigma YY */
-	REAL fPreStressYY;
-	
-	/** @brief Pre Stress Tensor - Sigma XY */
-	REAL fPreStressXY;
-    
-    /** @brief Pre Stress Tensor - Sigma ZZ */
-    REAL fPreStressZZ;
 	
 	/** @brief Uses plain stress */
-	int fPlaneStress;
+	int fPlaneStress = 1;
     
     /// dimension of the material
-    int fDimension;
+    int fDimension = 2;
     
     // Matrix A
     TPZFMatrix<STATE> fMatrixA;

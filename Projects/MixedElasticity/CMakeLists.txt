@@ -1,10 +1,16 @@
 file(GLOB headers *.h)
-file(GLOB sources *.cpp)
+file(GLOB sources meshgen.cpp pzmixedelasmat.cpp)
 
 set(Mymain main.cpp ${sources} ${headers})
 
-add_executable(MixedElasticity ${Mymain})
+add_executable(MixedElasticitySquare ${Mymain})
 
-target_link_libraries(MixedElasticity pz)
+target_link_libraries(MixedElasticitySquare pz)
+
+set(MymainG mainGirkmann.cpp ${sources} ${headers})
+
+add_executable(MixedElasticityGirkmann ${MymainG})
+
+target_link_libraries(MixedElasticityGirkmann pz)
 
 #configure_file(Girkmann.msh Girkmann.msh COPYONLY)

@@ -200,7 +200,6 @@ void TPZElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
             for (int i=0; i<cel->NConnects(); i++) {
                 sout << cel->ConnectIndex(i) << " ";
             }
-            efloc.Print(sout);
             sout << std::endl;
             sout << "Local indexes ";
             for (int i=0; i<cel->NConnects(); i++) {
@@ -234,7 +233,7 @@ void TPZElementGroup::CalcStiff(TPZElementMatrix &ek,TPZElementMatrix &ef)
             }
 
         }
-#ifdef LOG4CXX
+#ifdef LOG4CXX2
         if (logger->isDebugEnabled()) {
             std::stringstream sout;
             sout << "Connect indices " << fConnectIndexes << std::endl;
