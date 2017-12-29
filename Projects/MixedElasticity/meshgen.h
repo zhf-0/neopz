@@ -45,20 +45,18 @@ struct TAnalyticSolution
 
 struct TElasticityExample1 : public TAnalyticSolution
 {
-     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest1,Etest2 };
+     enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest1, EThiago, EPoly };
     
      static EDefState fProblemType;
     
-    enum EStressState {ENone2, EPlaneStress, EPlaneStrain };
-     
+    enum EStressState {ENone2, EPlaneStress, EPlaneStrain, EAxiSymmetric };
+    
+    static REAL fElast;
+    
+    static REAL fNu;
     
     static EStressState fStressState;
 
-    
-    enum EAxisState {ENone3, EAxisSymmetric};
-    
-    static EAxisState fAxisState;
-    
   static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
     {
         TPZManVector<REAL,3> locforce(2);

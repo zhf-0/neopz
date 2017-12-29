@@ -496,12 +496,12 @@ void TPZMixedElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, RE
         
     }
     
-   for (int j = 0; j < nshapeU; j++) {
+   for (int i = 0; i < nshapeU; i++) {
             
             
-            phiUj1x[0] =phiU(j,0);
+            phiUj1x[0] =phiU(i,0);
             
-            phiUj1y[1] =phiU(j,0);
+            phiUj1y[1] =phiU(i,0);
             
 
             //Vetor de carga f:
@@ -513,11 +513,14 @@ void TPZMixedElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, RE
                 factfy *= R;
             }
             //if(factfx != 0) DebugStop();
-            ef(nshapeS*2+2*j,0) += factfx;
-            ef(nshapeS*2+2*j+1,0) += factfy;
+            ef(nshapeS*2+2*i,0) += factfx;
+            ef(nshapeS*2+2*i+1,0) += factfy;
             
             //if(ef(nshapeS*2+2*j) != 0.) DebugStop();
-            
+       
+       for (int j=0; j< nshapeU; j++) {
+           ek(nshapeS*2+2*i,nshapeS*2+2*j) -= weight*phiU(i,0)*phiU(j,0)/(fE*R);
+       }
             
    }
 
@@ -1513,19 +1516,17 @@ void TPZMixedElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<ST
     TPZManVector<REAL,4> SigmaV(4,0.),sigma_exactV(4,0.),eps_exactV(4,0.),EPSZV(4,0.);
     TPZFNMatrix<9,STATE> sigma(2,2,0.),eps(2,2,0.),grad(2,2,0.);
     TPZFNMatrix<4,STATE> eps_exact(2,2,0.);
-    REAL sigx,sigy,sigxy,gamma;
-    REAL lambda = GetLambda();
-    REAL mu = this->GetMU();
-    REAL E = this->fE;
-    REAL R;
+    REAL sigx,sigy,sigxy;
     TPZManVector<REAL,3> x = data[0].x;
-    R=x[0];
+    REAL R = x[0];
     //TPZManVector<REAL,4> SIGMA(4,0.) , EPSZ(4,0.), eps_exact(4,0.);
     int dim = Dimension();
     for (int i=0; i<dim; i++) {
         for (int j=0; j<dim; j++) {
-            //sigma(i,j) = data[0].sol[0][j+i*3];
-            sigma(i,j) = data[0].sol[0][j+i*3]/R;
+            sigma(i,j) = data[0].sol[0][j+i*3];
+            if (fAxisSymmetric) {
+                sigma(i,j) /= R;
+            }
         }
     }
     ToVoight(sigma,SigmaV);
@@ -1537,7 +1538,8 @@ void TPZMixedElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<ST
     for (int i=0; i<dim; i++) {
         disp[i] = data[1].sol[0][i];
     }
-       
+    
+    
 #ifdef LOG4CXX
     if(logdata->isDebugEnabled())
 
@@ -1604,14 +1606,22 @@ void TPZMixedElasticityMaterial::Errors(TPZVec<TPZMaterialData> &data, TPZVec<ST
     //SIGMA[1] = sigxy;
     //SIGMA[2] = sigxy;
     //SIGMA[3] = sigy;
-    errors[1] =0;
+    errors[1] =0.;
+    errors[2] = 0.;
     for(int i=0; i<4 ;i++)
     {
-      errors[1]+= (SigmaV[i]-sigma_exactV[i])*(EPSZV[i]-eps_exactV[i]);
+        errors[1]+= (SigmaV[i]-sigma_exactV[i])*(EPSZV[i]-eps_exactV[i]);
+        errors[2] += (SigmaV[i]-sigma_exactV[i])*(SigmaV[i]-sigma_exactV[i]);
     }
     if (errors[1] < 0.) {
         std::cout << "I should stop \n";
     }
+    
+//    std::cout << "x " << data[0].x << std::endl;
+//    std::cout << "disp " << u_exact << std::endl;
+//    du_exact.Print("du ",std::cout);
+//    std::cout << "sigma_exact " << sigma_exactV << std::endl;
+//    std::cout << errors << std::endl;
    //or we can compute as this methods
    //TPZFMatrix<STATE> MatrixElast(4,4,0.);
    //ElasticityModulusTensor(MatrixElast);

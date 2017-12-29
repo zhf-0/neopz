@@ -43,6 +43,7 @@ TPZGmshReader::~TPZGmshReader() {
 
 
 TPZGeoMesh * TPZGmshReader::GeometricGmshMesh(std::string file_name, TPZGeoMesh *gmeshinput)
+{
     TPZGeoMesh * gmesh = gmeshinput;
     if(!gmesh) gmesh = new TPZGeoMesh;
     {
