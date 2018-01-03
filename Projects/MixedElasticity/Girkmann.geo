@@ -64,3 +64,7 @@ Physical Line("SUPPORT") = {8};
 Physical Line("ZERO") = {9, 10, 7, 3, 4, 2, 1};
 //+
 Physical Line("MOMENT") = {6};
+
+Physical Line("SYMMETRY") = {5};
+
+Physical Point("POINTBC") = {6};
