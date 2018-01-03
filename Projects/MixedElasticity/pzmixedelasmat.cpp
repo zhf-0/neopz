@@ -657,9 +657,10 @@ void TPZMixedElasticityMaterial::FillBoundaryConditionDataRequirement(int type,T
 
 void TPZMixedElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
     
-    if (datavec[0].fVecShapeIndex.size() == 0) {
-        FillVecShapeIndex(datavec[0]);
+    if (datavec[0].phi.Rows() != 0 && datavec[0].fShapeType != TPZMaterialData::EScalarShape) {
+        DebugStop();
     }
+    int ndisp = datavec[1].phi.Rows();
     
     TPZFNMatrix<2,STATE> v_2=bc.Val2();
     TPZFNMatrix<4,STATE> v_1=bc.Val1();
@@ -674,12 +675,6 @@ void TPZMixedElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, 
         v_2(1,0) = res[1];
      }
      
-    // v_2(0,0) = -datavec[0].x[1];
-    // v_2(1,0) = datavec[0].x[0];
-    //Gravity
-    STATE rhoi = 1;//900.; //itapopo 
-    STATE g = 9.81; //itapopo
-    STATE force = rhoi*g;
     
     // Setting the phis
     // E
@@ -695,6 +690,8 @@ void TPZMixedElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, 
 //        return;
 //    }
     
+    REAL R = datavec[0].x[0];
+    if(R<1.e-6) R = 1.e-6;
 
     
     switch (bc.Type()) {
@@ -724,8 +721,16 @@ void TPZMixedElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, 
                 
                 for (int jq = 0; jq < nshapeS; jq++){
                 
-                    ek(2*iq,2*jq) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
-                    ek(2*iq+1,2*jq+1) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
+                    if(fAxisSymmetric)
+                    {
+                        ek(2*iq,2*jq) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight/R;
+                        ek(2*iq+1,2*jq+1) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight/R;
+                    }
+                    else
+                    {
+                        ek(2*iq,2*jq) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
+                        ek(2*iq+1,2*jq+1) += gBigNumber*phiS(iq,0)*phiS(jq,0)*weight;
+                    }
                 }
                     ef(2*iq,0) += gBigNumber * v_2(0,0) * phiS(iq,0) * weight;        // normal stress in x direction
                     ef(2*iq+1,0) += gBigNumber*  v_2(1,0) * phiS(iq,0) * weight;      // normal stress in y direction
@@ -740,19 +745,41 @@ void TPZMixedElasticityMaterial::ContributeBC(TPZVec<TPZMaterialData> &datavec, 
             {
                 
                 
-                for (int jq = 0; jq < nshapeS; jq++){
-                
-                    ek(2*iq,2*jq) += v_1(0,0)*phiS(iq,0)*phiS(jq,0)*weight;
-                    ek(2*iq+1,2*jq+1) += v_1(1,1)*(iq,0)*phiS(jq,0)*weight;
-                    ek(2*iq+1,2*jq) += v_1(1,0)*phiS(iq,0)*phiS(jq,0)*weight;
-                    ek(2*iq,2*jq+1) += v_1(0,1)*(iq,0)*phiS(jq,0)*weight;
+                for (int jq = 0; jq < nshapeS; jq++)
+                {
+                    if(fAxisSymmetric)
+                    {
+                        ek(2*iq,2*jq) += v_1(0,0)*phiS(iq,0)*phiS(jq,0)*weight/R;
+                        ek(2*iq+1,2*jq+1) += v_1(1,1)*phiS(iq,0)*phiS(jq,0)*weight/R;
+                        ek(2*iq+1,2*jq) += v_1(1,0)*phiS(iq,0)*phiS(jq,0)*weight/R;
+                        ek(2*iq,2*jq+1) += v_1(0,1)*phiS(iq,0)*phiS(jq,0)*weight/R;
+                    }
+                    else
+                    {
+                        ek(2*iq,2*jq) += v_1(0,0)*phiS(iq,0)*phiS(jq,0)*weight;
+                        ek(2*iq+1,2*jq+1) += v_1(1,1)*phiS(iq,0)*phiS(jq,0)*weight;
+                        ek(2*iq+1,2*jq) += v_1(1,0)*phiS(iq,0)*phiS(jq,0)*weight;
+                        ek(2*iq,2*jq+1) += v_1(0,1)*phiS(iq,0)*phiS(jq,0)*weight;
+                    }
                 }
-                    ef(2*iq,0) +=  v_2(0,0) * phiS(iq,0) * weight;        // normal stress in x direction
-                    ef(2*iq+1,0) += v_2(1,0) * phiS(iq,0) * weight;      // normal stress in y direction
+                ef(2*iq,0) +=  v_2(0,0) * phiS(iq,0) * weight;        // normal stress in x direction
+                ef(2*iq+1,0) += v_2(1,0) * phiS(iq,0) * weight;      // normal stress in y direction
             }
         }
             break;
-            
+        case 5:
+            if (ndisp != 1) {
+                DebugStop();
+            }
+            if(v_1(0,0) > 1.e-1)
+            {
+                ek(2*nshapeS,2*nshapeS) = 1.;
+            }
+            if(v_1(1,1) > 1.e-1)
+            {
+                ek(2*nshapeS+1,2*nshapeS+1) = 1.;
+            }
+            break;
         default:
             DebugStop();
             
@@ -1036,7 +1063,7 @@ int TPZMixedElasticityMaterial::NSolutionVariables(int var){
         case 9:
             return 3;
         case 10 : //Stress Tensor
-            return 3;
+            return 4;
         case 11 : //Strain Tensor
             return 3;
             // SigZ
@@ -1199,9 +1226,10 @@ void TPZMixedElasticityMaterial::Solution(TPZMaterialData &data, int var, TPZVec
             }
             if (var ==10)
             {
-                Solout[0] = SigX;
-                Solout[1] = SigY;
-                Solout[2] = TauXY;
+                Solout[Exx] = SigX;
+                Solout[Eyy] = SigY;
+                Solout[Exy] = TauXY;
+                Solout[Eyx] = TauXY;
                 return;
             }
             cout << "Very critical error TPZMixedElasticityMaterial::Solution\n";
@@ -1283,12 +1311,22 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
 #endif
     TPZManVector<REAL,3> x = data[0].x;
     REAL R = x[0];
+    if(R < 1.e-6)
+    {
+        R = 1.e-6;
+    }
     TPZFNMatrix<9,STATE> sigma(3,3,0.), sigmah(3,3,0.), eps(3,3,0.);
     int dim = Dimension();
     for (int i=0; i<dim; i++) {
         for (int j=0; j<3; j++) {
-            sigma(i,j) = data[0].sol[0][j+i*3]/R;
-            //sigma(i,j) = data[0].sol[0][j+i*3];
+            if (fAxisSymmetric)
+            {
+                sigma(i,j) = data[0].sol[0][j+i*3]/R;
+            }
+            else
+            {
+                sigma(i,j) = data[0].sol[0][j+i*3];
+            }
         }
     }
     TPZManVector<STATE,2> disp(2);
@@ -1376,10 +1414,10 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
     
    //Stress
     if(var == 10) {
-        Solout[0] = sigma(0,0);
-        Solout[1] = sigma(1,0);
-        Solout[2] = sigma(0,1);
-        Solout[3] = sigma(1,1);
+        Solout[Exx] = sigma(0,0);
+        Solout[Eyx] = sigma(1,0);
+        Solout[Exy] = sigma(0,1);
+        Solout[Eyy] = sigma(1,1);
         return;
     }
             
