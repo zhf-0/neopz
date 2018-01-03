@@ -1319,7 +1319,7 @@ REAL AxiArea(TPZGeoMesh * gmesh, std::set<int> matids)
             intpoints->Point(ip,point,weight);
             gel->Jacobian(point, jac, axes, detjac, jacinv);
             gel->X(point,x);
-            elarea += abs(detjac)*weight*x[0]*2.*M_PI;
+            elarea += abs(detjac)*weight*x[0];
         }
         //         std::cout << "elarea " << elarea << std::endl;
         result += elarea;
