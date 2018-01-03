@@ -22,6 +22,8 @@
 #include "tpzquadratictetra.h"
 #include "tpzquadraticprism.h"
 #include "tpzgeoblend.h"
+#include "tpzpoint.h"
+#include "pzrefpoint.h"
 
 #include "pzgeoelside.h"
 #include "tpzgeoblend.h"
@@ -29,6 +31,7 @@
 
 #include "TPZRefPattern.h"
 #include "tpzgeoelrefpattern.h"
+#include "TPZGeoElement.h"
 
 TPZGmshReader::TPZGmshReader() : fMaterialDataVec(4), fPZMaterialId(4),fMatIdTranslate(4) {
     fVolNumber = 0;
@@ -50,6 +53,10 @@ TPZGeoMesh * TPZGmshReader::GeometricGmshMesh(std::string file_name, TPZGeoMesh 
         
         // reading a general mesh information by filter
         std::ifstream read (file_name.c_str());
+        if(!read)
+        {
+            std::cout << file_name << " could not open correctly\n";
+        }
         
         while(read)
         {
@@ -215,7 +222,11 @@ bool TPZGmshReader::InsertElement(TPZGeoMesh * gmesh, std::ifstream & line){
     
     long element_id, type_id, div_id, physical_id, elementary_id;
     
-    int dimensions[] = {-1,1,2,2,3,3,3,3,3,3,3,3,3,3};
+    int dimloc[] = {-1,1,2,2,3,3,3,3,3,3,3,3,3,3,-1,0};
+    TPZManVector<int,20> dimensions(16,-1);
+    for (int i=0; i<16; i++) {
+        dimensions[i] = dimloc[i];
+    }
     
     char buf[1024];
     line.getline(buf, 1024);
@@ -512,6 +523,12 @@ bool TPZGmshReader::InsertElement(TPZGeoMesh * gmesh, std::ifstream & line){
             
             new TPZGeoElRefPattern< pzgeom::TPZQuadraticPrism> (element_id, TopolPrismQ, matid, *gmesh);
         }
+            break;
+        case 15:
+            line >> TopolPoint[0];
+            TopolPoint[0]--;
+            element_id--;
+            new TPZGeoElement< pzgeom::TPZGeoPoint, pzrefine::TPZRefPoint> (element_id, TopolPoint, matid, *gmesh);
             break;
         default:
         {
