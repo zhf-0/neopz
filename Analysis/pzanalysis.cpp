@@ -1283,6 +1283,87 @@ static STATE ConnectNorm(long cindex, TPZCompMesh *cmesh, TPZFMatrix<STATE> &glo
 }
 
 /// Print the residual vector for those elements with entry above a given tolerance
+void TPZAnalysis::PrintVectorByElement(std::ostream &out, TPZFMatrix<STATE> &vec, const std::set<int> &excludematids, REAL tol)
+{
+    long nel = fCompMesh->NElements();
+    std::set<long> excludeconnects;
+    for (long el=0; el<nel; el++) {
+        TPZCompEl *cel = fCompMesh->Element(el);
+        if (!cel) {
+            continue;
+        }
+        TPZGeoEl *gel = cel->Reference();
+        if(!gel) continue;
+        if (excludematids.find(gel->MaterialId()) != excludematids.end()) {
+            int nc = cel->NConnects();
+            for (int ic=0; ic<nc; ic++) {
+                long cindex = cel->ConnectIndex(ic);
+                excludeconnects.insert(cindex);
+            }
+        }
+    }
+    for (long el=0; el<nel; el++) {
+        TPZCompEl *cel = fCompMesh->Element(el);
+        if (!cel) {
+            continue;
+        }
+        int nc = cel->NConnects();
+        int ic;
+        for (ic=0; ic<nc; ic++) {
+            long cindex = cel->ConnectIndex(ic);
+            if (excludeconnects.find(cindex) != excludeconnects.end()) {
+                continue;
+            }
+            TPZConnect &c = cel->Connect(ic);
+            if(c.HasDependency() || c.IsCondensed())
+            {
+                continue;
+            }
+#ifndef STATE_COMPLEX
+            if (ConnectNorm(cindex, fCompMesh, vec) >= tol) {
+                break;
+            }
+#endif
+        }
+        // if all connects have norm below tol, do not print the element
+        if (ic == nc) {
+            continue;
+        }
+        bool hasgeometry = false;
+        TPZManVector<REAL> xcenter(3,0.);
+        TPZGeoEl *gel = cel->Reference();
+        // if a geometric element exists, extract its center coordinate
+        if (gel) {
+            hasgeometry = true;
+            TPZManVector<REAL,3> xicenter(gel->Dimension(),0.);
+            gel->CenterPoint(gel->NSides()-1, xicenter);
+            gel->X(xicenter,xcenter);
+        }
+        out << "CompEl " << el;
+        if (hasgeometry) {
+            out << " Gel " << gel->Index() << " matid " << gel->MaterialId() << " Center " << xcenter << std::endl;
+        }
+        for (ic = 0; ic<nc; ic++) {
+            TPZManVector<STATE> connectsol;
+            long cindex = cel->ConnectIndex(ic);
+            TPZConnect &c = fCompMesh->ConnectVec()[cindex];
+            if(c.HasDependency() || c.IsCondensed()) {
+                out << "connect " << ic << " is restrained\n";
+                continue;
+            }
+            ConnectSolution(cindex, fCompMesh, vec, connectsol);
+            for (int i=0; i<connectsol.size(); i++) {
+                if (fabs(connectsol[i]) < tol) {
+                    connectsol[i] = 0.;
+                }
+            }
+            out << ic << " index " << cindex << " values " << connectsol << std::endl;
+        }
+    }
+
+}
+
+/// Print the residual vector for those elements with entry above a given tolerance
 void TPZAnalysis::PrintVectorByElement(std::ostream &out, TPZFMatrix<STATE> &vec, REAL tol)
 {
     long nel = fCompMesh->NElements();
