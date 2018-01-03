@@ -226,10 +226,10 @@ class TPZMixedElasticityMaterial : public TPZDiscontinuousGalerkin {
     STATE Inner(TPZFMatrix<STATE> &S, TPZFMatrix<STATE> &T);
     
     /// Transform a tensor to a voight notation
-    void ToVoight(TPZFMatrix<STATE> &S, TPZVec<STATE> &Svoight);
+    static void ToVoight(TPZFMatrix<STATE> &S, TPZVec<STATE> &Svoight);
     
     /// Transform a voight notation to a tensor
-    void FromVoight(TPZVec<STATE> &Svoight, TPZFMatrix<STATE> &S);
+    static void FromVoight(TPZVec<STATE> &Svoight, TPZFMatrix<STATE> &S);
     
     /** inner product of two vectors. See Gurtin (2003), p. 5. */
     template<class TVar>
