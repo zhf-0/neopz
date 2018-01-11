@@ -175,8 +175,8 @@ int main(int argc, char *argv[])
     //Dados do problema:
    
     
-    int RibpOrder = 1; //Ordem polinomial de aproximação
-    int InternalpOrder = 1;
+    int RibpOrder = 2; //Ordem polinomial de aproximação
+    int InternalpOrder = 2;
     //double elsizex=hx/nelx, elsizey=hy/nely; //Tamanho dos elementos
     //int nel = elsizex*elsizey; //Número de elementos a serem utilizados
   
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
     TPZCompMesh *cmesh_S = CMesh_S(gmesh, RibpOrder); //Função para criar a malha computacional da tensão
     ChangeInternalOrder(cmesh_S,InternalpOrder);
     TPZCompMesh *cmesh_U = CMesh_U(gmesh, InternalpOrder); //Função para criar a malha computacional da deslocamento
-    TPZCompMesh *cmesh_P = CMesh_P(gmesh, InternalpOrder); //Função para criar a malha computacional da rotação
+    TPZCompMesh *cmesh_P = CMesh_P(gmesh, RibpOrder); //Função para criar a malha computacional da rotação
     //TPZCompMesh *cmesh_m = CMesh_Girktest(gmesh, RibpOrder); //Função para criar a malha computacional multifísica
     TPZCompMesh  *cmesh_m = CMesh_Girk(gmesh,InternalpOrder);
     #ifdef PZDEBUG
@@ -271,6 +271,8 @@ int main(int argc, char *argv[])
     
     //Resolvendo o Sistema:
     int numthreads = 0;
+    
+    std::cout << "Number of equations " << cmesh_m->NEquations() << std::endl;
     
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
@@ -630,7 +632,7 @@ TPZCompMesh *CMesh_Girk(TPZGeoMesh *gmesh, int pOrder)
     // Criando material:
 
     
-    REAL E = 1.e6; //* @param E elasticity modulus
+    REAL E = 20.59e6; //* @param E elasticity modulus
     REAL nu=0.; //* @param nu poisson coefficient
     
     
@@ -1026,12 +1028,14 @@ void IntegrateForceOnInterface(TPZCompMesh *cmesh, TPZVec<STATE> &ForceCartesian
             STATE sigNN = sigbound[0]*normal[0]+sigbound[1]*normal[1];
             STATE sigNT = sigbound[0]*tangent[0]+sigbound[1]*tangent[1];
             REAL radius = sqrt(x[0]*x[0]+x[1]*x[1]);
-            Shear += sigNT*weight*x[0]*fabs(detjac);
-            Moment += sigNN*weight*x[0]*fabs(detjac)*(radius-averageR);
+            Shear += sigNT*x[0]*weight*fabs(detjac);
+            Moment += sigNN*x[0]*weight*fabs(detjac)*(radius-averageR);
         }
         
         delete rule;
     }
+//    Shear *= 2.*M_PI;
+//    Moment *= 2.*M_PI;
     std::cout << "ringwidth = " << ringwidth << std::endl;
 }
 
