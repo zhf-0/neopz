@@ -6,11 +6,6 @@
 #define PZ_TPZEIGENSOLVER_H
 
 #include "TPZSolver.h"
-#include "TPZEigenHandler.h"
-
-
-template<typename TVar>
-class TPZEigenHandler;
 /**
          * @brief Enum for defining ranges in the spectrum
          */
@@ -34,9 +29,51 @@ enum EDesiredEigen {
 template <typename TVar>
 class TPZEigenSolver : public TPZSolver<TVar> {
 public:
+  
+
   TPZEigenSolver();
 
   TPZEigenSolver(const TPZEigenSolver &copy);
+
+  /**
+   * @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
+   * @param A The matrix (input)
+   * @param w Stores the eigenvalues
+   * @param eigenVectors Stores the correspondent eigenvectors
+   * @return it returns 1 if executed correctly
+   */
+  virtual int SolveEigenProblem(TPZMatrix <TVar> &A, TPZVec<typename SPZAlwaysComplex<TVar>::type> &w,
+                                TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors) = 0;
+
+  /**
+   * @brief Solves the Ax=w*x eigenvalue problem and does not calculate the eigenvectors
+   * @param A The matrix (input)
+   * @param w Stores the eigenvalues
+   * @return it returns 1 if executed correctly
+   */
+  virtual int SolveEigenProblem(TPZMatrix <TVar> &A, TPZVec<typename SPZAlwaysComplex<TVar>::type> &w) = 0;
+
+  /**
+   * @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+   * @param A The lhs matrix (input)
+   * @param B The rhs matrix (input)
+   * @param w Stores the eigenvalues
+   * @param eigenVectors Stores the correspondent eigenvectors
+   * @return it returns 1 if executed correctly
+   */
+  virtual int SolveGeneralisedEigenProblem(TPZMatrix <TVar> &A, TPZMatrix <TVar> &B,
+                                           TPZVec<typename SPZAlwaysComplex<TVar>::type> &w,
+                                           TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors) = 0;
+
+  /**
+   * @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param A The lhs matrix (input)
+   * @param B The rhs matrix (input)
+   * @param w Stores the eigenvalues
+   * @return it returns 1 if executed correctly
+   */
+  virtual int SolveGeneralisedEigenProblem(TPZMatrix <TVar> &A, TPZMatrix <TVar> &B,
+                                           TPZVec<typename SPZAlwaysComplex<TVar>::type> &w) = 0;
 
   void Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &eigenValues, TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &eigenVectors);
 
@@ -45,11 +82,7 @@ public:
     DebugStop();
   }
 
-  TPZSolver<TVar> *Clone() const override{
-    return new TPZEigenSolver<TVar>(*this);
-  }
-
-  virtual int ClassId() const override;
+  int ClassId() const override;//implement me
 
   TPZAutoPointer<TPZMatrix<TVar>> MatrixA();
 
@@ -59,41 +92,33 @@ public:
 
   void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
-  bool IsGeneralised() const;
+  virtual bool IsGeneralised() const;//just set its attribute. must be implemented in child class
 
-  void SetAsGeneralised(bool isGeneralised);
+  virtual void SetAsGeneralised(bool isGeneralised);//just set its attribute. must be implemented in child class
 
-  int GetHowManyEigenvalues() const;
+  virtual int GetHowManyEigenvalues() const;//just set its attribute. must be implemented in child class
 
-  void SetHowManyEigenValues(int howManyEigenValues);
+  virtual void SetHowManyEigenValues(int howManyEigenValues);//just set its attribute. must be implemented in child class
 
-  TPZEigenHandler<TVar> &GetEigenHandler() const;
+  virtual bool IsAbsoluteValue();//just set its attribute. must be implemented in child class
 
-  void SetEigenHandler(TPZEigenHandler<TVar> &eig);
+  virtual void SetAbsoluteValue(bool isAbsoluteValue);//just set its attribute. must be implemented in child class
 
-  void SetEigenHandler(TPZAutoPointer<TPZEigenHandler<TVar>> &eig);
+  virtual EDesiredEigen GetDesiredPartOfSpectrum() const;//just set its attribute. must be implemented in child class
 
-  bool IsAbsoluteValue();
+  virtual void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);//just set its attribute. must be implemented in child class
 
-  void SetAbsoluteValue(bool isAbsoluteValue);
+  virtual typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;//just set its attribute. must be implemented in child class
 
-  EDesiredEigen GetDesiredPartOfSpectrum() const;
-
-  void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);
-
-  typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;
-
-  void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);
+  virtual void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);//just set its attribute. must be implemented in child class
 protected:
-
-  void AutoSetEigenHandler();
   /**
    * @brief Whether to display the absolute value(true) or the real part
    * of the eigenvectors over the computational mesh
    */
   bool fShowAbsoluteValue;
   /** @brief Whether to solve the eigenvalue problem
-       *   is generalised (Ax=uBx) or not (Ax=ux)*/
+   *   is generalised (Ax=uBx) or not (Ax=ux)*/
   bool fIsGeneralised;
   /**
    * @brief Whether to calculate the eigenvectors (and not the eigenvalues only)
@@ -113,8 +138,8 @@ protected:
   typename SPZAlwaysComplex<TVar>::type fSpecifiedValue;
 
   /**
-       * @brief Stores the computed eigenvalues
-       */
+   * @brief Stores the computed eigenvalues
+   */
   TPZManVector<typename SPZAlwaysComplex<TVar>::type,10> fEigenvalues;
 
   /**
@@ -127,8 +152,6 @@ protected:
 
   /** @brief Container classes */
   TPZAutoPointer<TPZMatrix<TVar> > fMatrixB;
-
-  TPZAutoPointer<TPZEigenHandler<TVar>> fEig;
 };
 
 

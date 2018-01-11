@@ -34,13 +34,14 @@ void TPZEigenAnalysis::Assemble()
     if(!fCompMesh || !fStructMatrix || !fSolver)
     {
         std::stringstream sout;
-        sout << "TPZAnalysis::Assemble lacking definition for Assemble fCompMesh "<< (void *) fCompMesh
+        sout << "TPZAnalysis::Assemble lacking definition for Assemble\n fCompMesh "<< (void *) fCompMesh
              << " fStructMatrix " << (void *) fStructMatrix.operator->()
              << " fSolver " << (void *) fSolver;
         return;
     }
     int numloadcases = ComputeNumberofLoadCases();
     long sz = fCompMesh->NEquations();
+    //@TODO: Get rid of this fRhs
     fRhs.Redim(sz,numloadcases);
 
     if(fSolver->IsGeneralised()){
