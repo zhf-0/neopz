@@ -5,7 +5,7 @@
 #ifndef PZ_TPZLAPACKWRAPPER_H
 #define PZ_TPZLAPACKWRAPPER_H
 
-#include <TPZEigenHandler.h>
+#include <TPZEigenSolver.h>
 #include <pzfmatrix.h>
 #include <pzsbndmat.h>
 
@@ -13,7 +13,7 @@ template<class TVar>
 class SPZAlwaysComplex;
 
 template<class TVar>
-class TPZLapackWrapper : public TPZEigenHandler<TVar> {
+class TPZLapackWrapper : public TPZEigenSolver<TVar> {
     friend class TPZFMatrix<TVar>;
     friend class TPZSBMatrix<TVar>;
   /**

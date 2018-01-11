@@ -92,25 +92,25 @@ public:
 
   void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
-  virtual bool IsGeneralised() const;//just set its attribute. must be implemented in child class
+  bool IsGeneralised();
 
-  virtual void SetAsGeneralised(bool isGeneralised);//just set its attribute. must be implemented in child class
+  virtual void SetAsGeneralised(bool isGeneralised);
 
-  virtual int GetHowManyEigenvalues() const;//just set its attribute. must be implemented in child class
+  int GetHowManyEigenvalues();
 
-  virtual void SetHowManyEigenValues(int howManyEigenValues);//just set its attribute. must be implemented in child class
+  virtual void SetHowManyEigenValues(int howManyEigenValues);
 
-  virtual bool IsAbsoluteValue();//just set its attribute. must be implemented in child class
+  bool IsAbsoluteValue() const;
 
-  virtual void SetAbsoluteValue(bool isAbsoluteValue);//just set its attribute. must be implemented in child class
+  virtual void SetAbsoluteValue(bool isAbsoluteValue);
 
-  virtual EDesiredEigen GetDesiredPartOfSpectrum() const;//just set its attribute. must be implemented in child class
+  EDesiredEigen GetDesiredPartOfSpectrum();
 
-  virtual void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);//just set its attribute. must be implemented in child class
+  virtual void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);
 
-  virtual typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;//just set its attribute. must be implemented in child class
+  typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue();
 
-  virtual void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);//just set its attribute. must be implemented in child class
+  virtual void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);
 protected:
   /**
    * @brief Whether to display the absolute value(true) or the real part

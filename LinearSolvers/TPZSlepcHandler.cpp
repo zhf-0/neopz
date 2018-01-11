@@ -3,6 +3,88 @@
 //
 #include "TPZSlepcHandler.h"
 
+#ifndef USING_SLEPC
+
+void SlepcErrorMessage(){
+  std::cout<<"SLEPc is not available. NeoPZ must be reconfigured."<<std::endl;
+  DebugStop();
+}
+template<class TVar>
+void TPZSlepcHandler::SetAsGeneralised(bool isGeneralised){
+  SlepcErrorMessage();
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetHowManyEigenValues(int howManyEigenValues){
+  SlepcErrorMessage();
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetAbsoluteValue(bool isAbsoluteValue){
+  SlepcErrorMessage();
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum){
+  SlepcErrorMessage();
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue){
+  SlepcErrorMessage();
+}
+
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
+  SlepcErrorMessage();
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  SlepcErrorMessage();
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+  SlepcErrorMessage();
+  return 0;
+}
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  SlepcErrorMessage();
+  return 0;
+}
+
+#else
+#include <slepceps.h>
+#include <petsctime.h>
+
+template<class TVar>
+void TPZSlepcHandler::SetAsGeneralised(bool isGeneralised){
+  TPZEigenSolver::SetAsGeneralised(isGeneralised);
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetHowManyEigenValues(int howManyEigenValues){
+  TPZEigenSolver::SetHowManyEigenValues(howManyEigenValues);
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetAbsoluteValue(bool isAbsoluteValue){
+  TPZEigenSolver::SetAbsoluteValue(isAbsoluteValue);
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum){
+  TPZEigenSolver::SetDesiredPartOfSpectrum(desiredPartOfSpectrum);
+}
+
+template<class TVar>
+void TPZSlepcHandler::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue){
+  TPZEigenSolver::SetSpecifiedValue(specifiedValue);
+}
+
+
 /*******************
 *    GENERAL       *
 *******************/
@@ -63,47 +145,10 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZM
 *    TPZFYSMPMATRIX    *
 *******************/
 template<class TVar>
-int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
-  DebugStop();
-  return 0;
-}
-template<class TVar>
-int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-  DebugStop();
-  return 0;
-}
-template<class TVar>
 int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZFYsmpMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
-  DebugStop();
-  return 0;
-}
-template<class TVar>
-int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZFYsmpMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
-  DebugStop();
-  return 0;
-}
-
-#ifdef USING_SLEPC
-#include <slepceps.h>
-#include <petsctime.h>
-/*******************
-*    TPZFYSMPMATRIX    *
-*******************/
-template<>
-int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &A, TPZFYsmpMatrix< STATE > &B , TPZVec < typename SPZAlwaysComplex<STATE>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<STATE>::type > &eigenVectors){
   /*****************************
    *  INITIALIZE STRUCTURES
    *****************************/
-
-  EPS eps;
-  bool parallelStructures = true;
-  if(parallelStructures){
-    char *var;
-    setenv("OMP_NUM_THREADS", "8", 1);
-    var = getenv("OMP_NUM_THREADS");
-    setenv("MPC_NUM_THREADS", "8", 1);
-    std::cout<<var<<std::endl;
-  }
   SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
 
   EPSCreate( PETSC_COMM_WORLD, &eps);
@@ -277,13 +322,24 @@ int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &
 
   return 1;
 }
-template<>
-int TPZSlepcHandler<STATE>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<STATE> &A, TPZFYsmpMatrix< STATE > &B , TPZVec < typename SPZAlwaysComplex<STATE>::type > &w){
+
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZFYsmpMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
   DebugStop();
   return 0;
 }
 
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors){
+  DebugStop();
+  return 0;
+}
 
+template<class TVar>
+int TPZSlepcHandler<TVar>::SolveEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w){
+  DebugStop();
+  return 0;
+}
 
 #endif
 

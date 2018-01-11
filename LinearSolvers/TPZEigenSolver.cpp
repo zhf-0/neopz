@@ -94,7 +94,7 @@ void TPZEigenSolver<TVar>::SetAbsoluteValue(bool isAbsoluteValue){
 }
 
 template<typename TVar>
-bool TPZEigenSolver<TVar>::IsAbsoluteValue(){
+bool TPZEigenSolver<TVar>::IsAbsoluteValue() const{
   return fShowAbsoluteValue;
 }
 

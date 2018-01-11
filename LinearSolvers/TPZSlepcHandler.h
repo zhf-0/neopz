@@ -6,14 +6,14 @@
 #define PZ_TPZSLEPCHANDLER_H
 
 #include <pzysmp.h>
-#include <TPZEigenHandler.h>
+#include <TPZEigenSolver.h>
 
 template<class TVar>
 class SPZAlwaysComplex;
 
 
 template<class TVar>
-class TPZSlepcHandler : public TPZEigenHandler<TVar> {
+class TPZSlepcHandler : public TPZEigenSolver<TVar> {
   friend class TPZFYsmpMatrix<TVar>;
 public:
   int SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors) override;
@@ -52,6 +52,16 @@ public:
    * @param w Stores the eigenvalues
    */
   int SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZFYsmpMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
+
+  void SetAsGeneralised(bool isGeneralised) override;
+
+  void SetHowManyEigenValues(int howManyEigenValues) override;
+
+  void SetAbsoluteValue(bool isAbsoluteValue) override;
+
+  void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum) override;
+
+  void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue) override;
 
 private:
   bool fAmIInitialised = false;
