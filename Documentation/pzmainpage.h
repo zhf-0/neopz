@@ -290,7 +290,7 @@
  
  Instead, a TPZSolver<T> class (where T is the data type e.g. float, double, etc) was idealized which represents a transformation process applied to a matrix object
  and a right hand side. Its derived class
- TPZMatrixSolver<T> stands for the same concept, but has a matrix object associated with it. TPZStepSolver<T> presents an interface allowing to choose between a
+ TPZAlgebraicSystemSolver<T> stands for the same concept, but has a matrix object associated with it. TPZStepSolver<T> presents an interface allowing to choose between a
  direct solver a regular iterative solver (e.g. Jacobi, SOR, SSOR) or de preconditioned Krylov solver. The preconditioner is represented by a Solver<T> object.
  
  Most known solution procedures can and have been implemented using this class structure.

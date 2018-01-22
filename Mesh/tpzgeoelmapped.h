@@ -6,13 +6,13 @@
 #ifndef TPZGEOELMAPPED_H
 #define TPZGEOELMAPPED_H
 
+#include "pzgeoelrefless.h"
 #include "pzmanvector.h"
 #include "pzfmatrix.h"
 #include "pzgeoel.h"
 #include "pzgeoelside.h"
 #include "pzaxestools.h"
 #include "pzgmesh.h"
-
 #include "pzlog.h"
 #include <sstream>
 
@@ -366,12 +366,32 @@ public:
 	/** @brief Returns the coordinate in real space of the point coordinate in the master element space*/
 	virtual void X(TPZVec<REAL> &ksi,TPZVec<REAL> &result) const
 	{
+        
+        
 		TPZGeoEl *father = TBase::Father();
 		
 		if(!father)
 		{
-			return TBase::X(ksi,result);
-		}
+            TBase::X(ksi,result);
+            TPZVec<int> LowEdgeSides;
+            TPZVec<REAL> nonlinear(3), s(3), linear(3);
+            double cf;
+            for(int side = Geo::NNodes; side < Geo::NSides-1; side ++)
+            {
+                TPZGeoElSide gelside(TBase::Neighbour(side));
+                if (gelside.Id()!=TBase::Id()) {
+                    if(!gelside.Element()->IsLinearMapping(gelside.Side())) {
+                        Geo::CorrectFact(ksi,side,cf);
+                        Geo::LinearKsi(side,ksi,s);
+                        gelside.Element()->X(s,nonlinear);
+                        gelside.Element()->XLinearMapping(s,linear);
+                        for (int i=0; i<=2; i++) {
+                            result[i] = result[i] + (nonlinear[i] - linear[i])*cf;
+                        }
+                    }
+                }
+            }
+        }
 		
 		else
 		{
@@ -387,6 +407,7 @@ public:
 			KsiBar(ksi,ksibar);
 			father->X(ksibar,result);
 		}
+        
 	}
 	
 	virtual void Print(std::ostream & out = std::cout)

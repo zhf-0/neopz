@@ -9,7 +9,7 @@
 #ifdef MACOSX
 #include <Accelerate/Accelerate.h>
 #elif USING_MKL
-#include <mkl.h>
+//#include <mkl.h>
 #else
 extern "C"{
      #include "cblas.h"
@@ -19,6 +19,9 @@ extern "C"{
 
 template<class TVar>
 class TPZVerySparseMatrix;
+
+template<typename TVar>
+class TPZSlepcHandler;
 
 #include "pzmatrix.h"
 #include "pzfmatrix.h"
@@ -38,7 +41,7 @@ template<class TVar>
 class TPZFYsmpMatrix : public TPZMatrix<TVar> {
 	
 	public :
-	
+	friend class TPZSlepcHandler<TVar>;
 	/** @brief An auxiliary structure to hold the data of the subset \n of equations used to multiply in a multitrheaded environment */
 	/**
 	 In future versions this structure should be defined in a derived class
@@ -108,7 +111,23 @@ public:
 	
 	/** @brief Print the matrix along with a identification title */
 	virtual void Print(const char *title, std::ostream &out = std::cout , const MatrixOutputFormat form = EFormatted) const;
-	
+
+  int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
+  /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   */
+  int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig) override;
+
+  /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   * @param Stores the correspondent eigenvectors
+   */
+  int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
+  /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
+   * @param w Stores the eigenvalues
+   */
+  int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig) override;
+
 	/**
 	 * @name Solvers
 	 * @brief Linear system solvers. \n
@@ -200,8 +219,8 @@ protected:
 	
 #ifdef USING_MKL
     friend class TPZPardisoControl<TVar>;
-    
-    TPZPardisoControl<TVar> fPardisoControl;
+
+//    TPZPardisoControl<TVar> fPardisoControl;
 #endif
 protected:
 	

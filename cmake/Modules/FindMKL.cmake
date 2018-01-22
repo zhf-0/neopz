@@ -34,7 +34,7 @@ if (MKL_INCLUDE_DIRS AND MKL_LIBRARIES AND MKL_INTERFACE_LIBRARY AND
   set (MKL_FIND_QUIETLY TRUE)
 endif()
 
-set(INT_LIB "mkl_intel_ilp64")
+set(INT_LIB "mkl_intel_lp64")
 set(OMP_LIB "iomp5")
 set(THR_LIB "mkl_intel_thread")
 set(COR_LIB "mkl_core")
@@ -43,45 +43,35 @@ find_path(MKL_INCLUDE_DIR NAMES mkl.h HINTS $ENV{MKLROOT}/include)
 find_library(MKL_INTERFACE_LIBRARY
              NAMES ${INT_LIB}
              PATHS $ENV{MKLROOT}/lib
-                   $ENV{MKLROOT}/lib/intel64
-                   $ENV{INTEL}/mkl/lib/intel64
-             NO_DEFAULT_PATH)
-
-find_library(MKL_OMP_LIBRARY
-             NAMES ${OMP_LIB}
-             PATHS $ENV{MKLROOT}/lib
-                   $ENV{MKLROOT}/lib/intel64
-                   $ENV{INTEL}/mkl/lib/intel64
-             NO_DEFAULT_PATH)
-
-find_library(MKL_THREAD_LAYER_LIBRARY
-             NAMES ${THR_LIB}
-             PATHS $ENV{MKLROOT}/lib
-                   $ENV{MKLROOT}/lib/intel64
-                   $ENV{INTEL}/mkl/lib/intel64
+                   $ENV{MKLROOT}/../../../lib
              NO_DEFAULT_PATH)
 
 find_library(MKL_CORE_LIBRARY
              NAMES ${COR_LIB}
              PATHS $ENV{MKLROOT}/lib
-                   $ENV{MKLROOT}/lib/intel64
-                   $ENV{INTEL}/mkl/lib/intel64
+                   $ENV{MKLROOT}/../../../lib
+             NO_DEFAULT_PATH)
+
+
+find_library(MKL_THREAD_LAYER_LIBRARY
+             NAMES ${THR_LIB}
+             PATHS $ENV{MKLROOT}/lib
+                   $ENV{MKLROOT}/../../../lib
+             NO_DEFAULT_PATH)
+
+find_library(MKL_OMP_LIBRARY
+             NAMES ${OMP_LIB}
+             PATHS $ENV{MKLROOT}/lib
+                   $ENV{MKLROOT}/../../../lib
              NO_DEFAULT_PATH)
 
 set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
-if(MKL_INCLUDE_DIRS)
-  include_directories(${MKL_INCLUDE_DIRS})
-endif()
-#I guess libiomp5 is not quite necessary
-if(NOT MKL_OMP_LIBRARY)
-  set(MKL_OMP_LIBRARY "")
-endif()
-set(MKL_LIBRARIES ${MKL_INTERFACE_LIBRARY} ${MKL_OMP_LIBRARY} ${MKL_THREAD_LAYER_LIBRARY} ${MKL_CORE_LIBRARY})
 
 
 if (NOT MKL_INCLUDE_DIR OR
     NOT MKL_INTERFACE_LIBRARY OR
     NOT MKL_THREAD_LAYER_LIBRARY OR
+    NOT MKL_OMP_LIBRARY OR
     NOT MKL_CORE_LIBRARY)
   set(MKL_INCLUDE_DIRS "")
   set(MKL_LIBRARIES "")
@@ -89,8 +79,9 @@ if (NOT MKL_INCLUDE_DIR OR
   set(MKL_OMP_LIBRARY "")
   set(MKL_THREAD_LAYER_LIBRARY "")
   set(MKL_CORE_LIBRARY "")
-
 endif()
+
+set(MKL_LIBRARIES ${MKL_INTERFACE_LIBRARY} ${MKL_CORE_LIBRARY} ${MKL_THREAD_LAYER_LIBRARY} ${MKL_OMP_LIBRARY})
 
 # Handle the QUIETLY and REQUIRED arguments and set MKL_FOUND to TRUE if
 # all listed variables are TRUE.

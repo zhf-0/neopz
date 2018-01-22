@@ -17,7 +17,6 @@
 
 
 #include "pzanalysis.h"
-#include "pzsolve.h"
 #include "pzstepsolver.h"
 #include "TPZFrontMatrix.h"
 

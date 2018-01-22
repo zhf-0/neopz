@@ -8,7 +8,6 @@
 #include "pzcompel.h"
 #include "pzintel.h"
 #include "pzfmatrix.h"
-#include "pzsolve.h"
 #include "pzmaterial.h"
 #include "pzelmat.h"
 #include "pzvec.h"

@@ -9,6 +9,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <pzsbstrmatrix.h>
+#include <pzstepsolver.h>
+#include <pzfstrmatrix.h>
 #include "pzgmesh.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
@@ -54,6 +57,15 @@ int main(int argc, char *argv[])
 	// Resolvendo o Sistema
     bool optimizeBandwidth = false; //impede a renumeracao das equacoes do problema(para obter o mesmo resultado do Oden)
 	TPZAnalysis an(cmesh, optimizeBandwidth); //cria objeto de analise que gerenciaria a analise do problema
+//	TPZFStructMatrix matrix(cmesh);
+//	matrix.SetNumThreads(4);
+//	an.SetStructuralMatrix(matrix);
+    TPZSBandStructMatrix matrix(cmesh);
+	matrix.SetNumThreads(4);
+	an.SetStructuralMatrix(matrix);
+	TPZStepSolver<STATE> solver;
+	solver.SetDirect(ELDLt);
+	an.SetSolver(solver);
 	an.Run();//assembla a matriz de rigidez (e o vetor de carga) global e inverte o sistema de equacoes
     
 	TPZFMatrix<STATE> solucao=cmesh->Solution();//Pegando o vetor de solucao, alphaj

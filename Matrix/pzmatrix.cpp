@@ -12,7 +12,6 @@
 
 //#include "pzfmatrix.h"
 #include "pzmatrix.h"
-#include "pzsolve.h"
 #include "pzvec.h"
 #include "pzextractval.h"
 

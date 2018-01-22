@@ -56,18 +56,23 @@ template<class TVar>
 TVar Norm(const TPZFMatrix<TVar> &A);
 
 
+template<class TVar>
+class TPZLapackWrapper;
+
 /**
  * @brief Full matrix class. \ref matrix "Matrix"
  * @note The full matrix class is special in that the data is stored column wise
  * @author Misael Mandujano
  * @since 04/1996
  */
-
 template<class TVar=REAL>
 class TPZFMatrix: public TPZMatrix<TVar> {
-    
+
 public:
-    
+    friend class TPZLapackWrapper<TVar>;
+    friend class TPZFMatrix<float>;
+    friend class TPZFMatrix<double>;
+
     /** @brief Simple constructor */
     TPZFMatrix() : TPZMatrix<TVar>( 0, 0 ), fElem(0),fGiven(0),fSize(0) {}
     /**
@@ -123,9 +128,6 @@ public:
     {
         return fElem;
     }
-    
-    friend class TPZFMatrix<float>;
-    friend class TPZFMatrix<double>;
 
     /// copy the values from a matrix with a different precision
     template<class TVar2>
@@ -349,33 +351,29 @@ public:
      */
     virtual int Subst_Diag( TPZFMatrix<TVar>* b ) const;
 #endif
-    
-    /** @} */
-    
-#ifdef USING_LAPACK
+
     /*** @name Solve eigenvalues ***/
     /** @{ */
     /** @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
+    virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
     /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w);
+    virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig) override;
 
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and calculates the eigenvectors
      * @param w Stores the eigenvalues
      * @param Stores the correspondent eigenvectors
      */
-    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors);
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig) override;
     /** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
      * @param w Stores the eigenvalues
      */
-    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w);
+    virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig) override;
     /** @} */
-#endif
     
     /** @brief Routines to send and receive messages */
     virtual int ClassId() const;

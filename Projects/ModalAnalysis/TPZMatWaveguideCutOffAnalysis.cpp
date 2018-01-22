@@ -79,10 +79,10 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             
             stiffAtt = 1./muR * curlIdotCurlJ;
             stiffBtt = epsilonR * phiIdotPhiJ;
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffBtt * weight ;
             }
             else{
@@ -102,10 +102,10 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             
             stiffAzz =  1./muR * gradPhiScaDotGradPhiSca;
             stiffBzz = epsilonR * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffAzz * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffBzz * weight ;
             }
             else{

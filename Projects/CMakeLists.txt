@@ -96,7 +96,9 @@ ENABLE_TESTING()
 	endif(BUILD_BROKEN)
 
 	if(BUILD_PROJECTS)
-
+		if(USING_SLEPC)
+			add_subdirectory(slepc-integration)
+		endif(USING_SLEPC)
 		#
 		# COMPLEX NUMBER PROJECTS
 		#

@@ -38,7 +38,7 @@
 #include "pzmetis.h"                       // for TPZMetis
 #include "pzmvmesh.h"                      // for TPZMVGraphMesh
 #include "pzseqsolver.h"                   // for TPZSequenceSolver
-#include "pzsolve.h"                       // for TPZMatrixSolver, TPZSolver
+#include "TPZAlgebraicSystemSolver.h"      // for TPZAlgebraicSystemSolver, TPZSolver
 #include "pzstack.h"                       // for TPZStack
 #include "pzstepsolver.h"                  // for TPZStepSolver
 #include "pzstrmatrix.h"                   // for TPZStructMatrix, TPZStruct...
@@ -1086,19 +1086,19 @@ void TPZAnalysis::PostProcessTable() {
 	}
 	*(fTable.fOutfile) << endl;
 }
-void TPZAnalysis::SetSolver(TPZMatrixSolver<STATE> &solver){
+void TPZAnalysis::SetSolver(TPZAlgebraicSystemSolver<STATE> &solver){
 	if(fSolver) delete fSolver;
-    fSolver = (TPZMatrixSolver<STATE> *) solver.Clone();
+    fSolver = (TPZAlgebraicSystemSolver<STATE> *) solver.Clone();
 }
 
-TPZMatrixSolver<STATE> *TPZAnalysis::BuildPreconditioner(EPrecond preconditioner, bool overlap)
+TPZAlgebraicSystemSolver<STATE> *TPZAnalysis::BuildPreconditioner(EPrecond preconditioner, bool overlap)
 {
 	if(!fSolver || !fSolver->Matrix())
 	{
 #ifndef BORLAND
 		cout << __FUNCTION__ << " called with uninitialized stiffness matrix\n";
 #else
-		cout << "TPZMatrixSolver *TPZAnalysis::BuildPreconditioner" << " called with uninitialized stiffness matrix\n";
+		cout << "TPZAlgebraicSystemSolver *TPZAnalysis::BuildPreconditioner" << " called with uninitialized stiffness matrix\n";
 #endif
 		
 	}
@@ -1187,7 +1187,7 @@ TPZMatrixSolver<STATE> *TPZAnalysis::BuildPreconditioner(EPrecond preconditioner
 }
 
 /** @brief Build a sequence solver based on the block graph and its colors */
-TPZMatrixSolver<STATE> *TPZAnalysis::BuildSequenceSolver(TPZVec<long> &graph, TPZVec<long> &graphindex, long neq, int numcolors, TPZVec<int> &colors)
+TPZAlgebraicSystemSolver<STATE> *TPZAnalysis::BuildSequenceSolver(TPZVec<long> &graph, TPZVec<long> &graphindex, long neq, int numcolors, TPZVec<int> &colors)
 {
 	TPZVec<TPZMatrix<STATE> *> blmat(numcolors);
 	TPZVec<TPZStepSolver<STATE> *> steps(numcolors);

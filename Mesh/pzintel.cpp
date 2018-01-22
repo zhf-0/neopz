@@ -10,7 +10,6 @@
 #include "pztrnsform.h"
 #include "pztransfer.h"
 #include "pzbndcond.h"
-#include "pzsolve.h"
 #include "pzstepsolver.h"
 #include "pzquad.h"
 #include "pzelmat.h"

@@ -66,6 +66,7 @@ namespace pzgeom {
 
 		/** @brief Returns the type name of the element */
 		static std::string TypeName() { return "Wavy";}
+        
 		
 		/* @brief Computes the coordinate of a point given in parameter space */
         template<class T>
@@ -74,6 +75,15 @@ namespace pzgeom {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
             X(coord,loc,result);
+        }
+        
+        /* @brief Computes the coordinate of a point given in parameter space */
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+         {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            TPZGeoLinear::X(coord,ksi,result);
         }
         
         template<class T>
@@ -112,6 +122,7 @@ namespace pzgeom {
                 axes(0,i) = gradx[i]/normv;
             }
         }
+        
         
         template<class T>
         void X(const TPZFMatrix<REAL> &nodes,TPZVec<T> &loc,TPZVec<T> &result) const

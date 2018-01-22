@@ -104,12 +104,13 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 {
 	{
 		switch( type ){
+                /*
 			case 0://point
 			{
 				TPZGeoEl * gel =
 				new TPZGeoElMapped<TPZGeoElRefPattern<TPZGeoPoint> > (nodeindexes, matid, mesh, index);
 				return gel;
-			}
+			}*/
 			case 1://line
 			{
 				TPZGeoEl *gel =
@@ -124,6 +125,7 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 				(nodeindexes, matid, mesh, index);
 				return gel;
 			}
+                
 			case 3://quadrilatera
 			{
 				TPZGeoEl* gel =
@@ -131,6 +133,7 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 				(nodeindexes, matid, mesh, index);
 				return gel;
 			}
+                /*
 			case 4://tetraedra
 			{
 				TPZGeoEl*gel =
@@ -158,7 +161,7 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 				new TPZGeoElMapped<TPZGeoElRefPattern < TPZGeoCube > >
 				(nodeindexes, matid, mesh, index);
 				return gel;
-			}
+			} */
 			default:
 			{
 				PZError << "TPZGeoMesh::CreateGeoElement type element not exists:"
@@ -174,19 +177,21 @@ using namespace pzgeom;
 /// Macro to define templates to TPZGeoElMapped for all the geometric element types
 #define INSERTCLASS(TCL,CLID) \
 template<> \
-int TPZGeoElMapped<TPZGeoElRefPattern< TCL > >::ClassId() const \
+int TPZGeoElMapped<TPZGeoElRefPattern<TCL> >::ClassId() const \
 { \
 return CLID; \
 } \
 template class \
-TPZRestoreClass< TPZGeoElMapped<TPZGeoElRefPattern<TCL > >, CLID>; \
-template class TPZGeoElMapped< TPZGeoElRefPattern<TCL> >;
+TPZRestoreClass< TPZGeoElMapped<TPZGeoElRefPattern<TCL> >, CLID>; \
+template class TPZGeoElMapped<TPZGeoElRefPattern<TCL> >;
 
-INSERTCLASS(TPZGeoPoint,TPZGEOELREFPATMAPPEDPOINTID)
-INSERTCLASS(TPZGeoLinear,TPZGEOELREFPATMAPPEDLINEID)
-INSERTCLASS(TPZGeoTriangle,TPZGEOELREFPATMAPPEDTRIANGLEID)
+//INSERTCLASS(TPZGeoPoint,TPZGEOELMAPPEDPOINTID)
+INSERTCLASS(TPZGeoLinear,TPZGEOELMAPPEDLINEID)
+INSERTCLASS(TPZGeoTriangle,TPZGEOELMAPPEDTRIANGLEID)
 INSERTCLASS(TPZGeoQuad,TPZGEOELREFPATMAPPEDQUADRILATERALID)
-INSERTCLASS(TPZGeoCube,TPZGEOELREFPATMAPPEDCUBEID)
-INSERTCLASS(TPZGeoPrism,TPZGEOELREFPATMAPPEDPRISMID)
-INSERTCLASS(TPZGeoTetrahedra,TPZGEOELREFPATMAPPEDTETRAHEDRAID)
-INSERTCLASS(TPZGeoPyramid,TPZGEOELREFPATMAPPEDPYRAMIDID)
+//INSERTCLASS(TPZGeoCube,TPZGEOELMAPPEDCUBEID)
+//INSERTCLASS(TPZGeoPrism,TPZGEOELMAPPEDPRISMID)
+//INSERTCLASS(TPZGeoTetrahedra,TPZGEOELMAPPEDTETRAHEDRAID)
+//INSERTCLASS(TPZGeoPyramid,TPZGEOELMAPPEDPYRAMIDID)
+
+#undef INSERTCLASS

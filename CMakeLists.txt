@@ -92,16 +92,16 @@ option(USING_HWLOC "Whether the HWLOC library will be linked in" OFF)
 option(USING_PAPI "Whether the PAPI library will be linked in" OFF)
 #enabling MKL library (enables BLAS and LAPACK)
 option(USING_MKL "Whether the MKL library will be linked in" OFF)
-#enabling SLEPc library (enables PETSc, BLAS, LAPACK, ARPACK, SUPERLU and METIS)
-option(USING_SLEPC "Whether the SLEPc library will be linked in" OFF)
-#enabling PETSc library (enables BLAS, LAPACK, ARPACK, SUPERLU and METIS)
-option(USING_PETSC "Whether the PETSC library will be linked in" OFF)
 #enabling BLAS library
 option(USING_BLAS "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" OFF)
 #enabling LAPACK library
 option(USING_LAPACK "Whether the LAPACK library will be linked in" OFF)
 #enabling METIS library
 option(USING_METIS "Whether the METIS library will be linked in" OFF)
+#enabling SLEPc library (enables PETSc, BLAS, LAPACK, ARPACK, SUPERLU and METIS)
+option(USING_SLEPC "Whether the SLEPc library will be linked in" OFF)
+#enabling PETSc library (enables BLAS, LAPACK, ARPACK, SUPERLU and METIS)
+option(USING_PETSC "Whether the PETSC library will be linked in" OFF)
 ##############PZ configuration##############
 #enabling the new skyline matrix format
 option(USING_NEW_SKYLMAT "Enable the new skyline matrix format" OFF)
@@ -138,12 +138,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-IF(APPLE)
-   # Mac OS X specific code
-   #find_library(ACCELERATE_LIB Accelerate)
-#   SET(OperatingSystem "Mac OS X")
-ENDIF(APPLE)
-
+set(PZ_LIBRARIES Threads::Threads)
 
 #To enable unit test using boost UnitTest framework
 if(BUILD_UNITTESTING)
@@ -157,7 +152,8 @@ if(USING_BOOST)
 		set(BOOST_ROOT "../externallibs/lib/boost_1_65_0")	
 	ENDIF()
 	find_package( Boost COMPONENTS unit_test_framework REQUIRED )
-   	include_directories(${Boost_INCLUDE_DIR})
+	include_directories(${Boost_INCLUDE_DIRS})
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${Boost_LIBRARIES})
 endif(USING_BOOST)
 
 
@@ -176,7 +172,7 @@ if(USING_LOG4CXX)
 				 NAMES liblog4cxx.dylib log4cxx.lib liblog4cxx.so liblog4cxx.a       # Change name here if debug lib has different name.
 				 PATHS ${SEARCH_DIRS} ./../log4cxx_src ./../log4cxx_src/lib ./../externallibs/log4cxx_src ./../externallibs/log4cxx_src/lib ./../externallibs/lib ./../externallibs/lib/Debug
 				)
-	set(LOG4CXX_LIB
+	set(LOG4CXX_LIBRARIES
 	    debug ${LOG4CXX_LIB_DEBUG}
 	    optimized ${LOG4CXX_LIB_RELEASE}
 	   )
@@ -187,10 +183,16 @@ if(USING_LOG4CXX)
 		include_directories(${LOG4CXX_INCLUDE})
 	endif()
 
-	if(NOT LOG4CXX_LIB)
-		set (LOG4CXX_LIB "" CACHE PATH "Directory where the log4cxx library can be found")
+	if(NOT LOG4CXX_LIBRARIES)
+		set (LOG4CXX_LIBRARIES "" CACHE PATH "Directory where the log4cxx library can be found")
 		message(FATAL_ERROR "log4cxx lib not found")
 	endif()
+
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LOG4CXX_LIBRARIES})
+	if(WIN32)
+		set(PZ_LIBRARIES ${PZ_LIBRARIES} odbc32.lib ws2_32.lib mswsock.lib)
+	endif(WIN32)
+
 endif(USING_LOG4CXX)
 
 
@@ -210,6 +212,7 @@ if(USING_TBB)
 		set (TBB_LIB "" CACHE PATH "Directory where the tbb library can be found")
 		message(FATAL_ERROR "tbb lib not found")
 	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${TBB_LIB})
 endif(USING_TBB)
 
 #enabling OpenMP runtime and library
@@ -225,6 +228,7 @@ if(USING_OPENMP)
 		set (TBB_OPENMP "" CACHE PATH "Directory where the OpenMP library can be found")
 		message(FATAL_ERROR "openmp lib not found")
 	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${OPENMP_LIB})
 endif(USING_OPENMP)
 
 #enabling LIKWID library
@@ -241,6 +245,7 @@ if(USING_LIKWID)
 		set (LIKWID_LIB "" CACHE PATH "Directory where the likwid library can be found")
 		message(FATAL_ERROR "likwid lib not found")
 	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LIKWID_LIB})
 endif(USING_LIKWID)
 
 #enabling numa library
@@ -257,6 +262,7 @@ if(USING_LIBNUMA)
 		set (LIBNUMA_LIB "" CACHE PATH "Directory where the libnuma library can be found")
 		message(FATAL_ERROR "Lib NUMA lib not found")
 	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LIBNUMA_LIB})
 endif(USING_LIBNUMA)
 
 #enabling MatLab library
@@ -265,112 +271,33 @@ if(USING_MATLAB_ENGINE)
 	include_directories(${Matlab_ROOT_DIR}/extern/include)
 endif(USING_MATLAB_ENGINE)
 
-
 #enabling PAPI library
 if(USING_PAPI)
-		find_path(PAPI_INCLUDE NAMES papi.h PATHS ${SEARCH_DIRS})
-		find_library(PAPI_LIB NAMES libpapi.a libpapi.so PATHS ${SEARCH_DIRS})
-		if(NOT PAPI_INCLUDE)
-			set (PAPI_INCLUDE "" CACHE PATH "Directory where papi.h can be found")
-		endif()
-		if(NOT PAPI_LIB)
-			set (PAPI_LIB "" CACHE PATH "Directory where the papi library can be found")
-		endif()
+	find_path(PAPI_INCLUDE NAMES papi.h PATHS ${SEARCH_DIRS})
+	find_library(PAPI_LIB NAMES libpapi.a libpapi.so PATHS ${SEARCH_DIRS})
+	if(NOT PAPI_INCLUDE)
+		set (PAPI_INCLUDE "" CACHE PATH "Directory where papi.h can be found")
+	endif()
+	if(NOT PAPI_LIB)
+		set (PAPI_LIB "" CACHE PATH "Directory where the papi library can be found")
+		message(FATAL_ERROR "Lib PAPI lib not found")
+	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${PAPI_LIB})
 endif(USING_PAPI)
 
 #enabling HWLOC library
 if(USING_HWLOC)
-		find_path(HWLOC_INCLUDE NAMES hwloc.h PATHS ${SEARCH_DIRS})
-		find_library(HWLOC_LIB NAMES hwloc.a libhwloc.so libhwloc.dylib PATHS ${SEARCH_DIRS})
-		if(NOT HWLOC_INCLUDE)
-			set (HWLOC_INCLUDE "" CACHE PATH "Directory where hwloc.h can be found")
-		endif()
-		if(NOT HWLOC_LIB)
-			set (HWLOC_LIB "" CACHE PATH "Directory where the hwloc library can be found")
-		endif()
+	find_path(HWLOC_INCLUDE NAMES hwloc.h PATHS ${SEARCH_DIRS})
+	find_library(HWLOC_LIB NAMES hwloc.a libhwloc.so libhwloc.dylib PATHS ${SEARCH_DIRS})
+	if(NOT HWLOC_INCLUDE)
+		set (HWLOC_INCLUDE "" CACHE PATH "Directory where hwloc.h can be found")
+	endif()
+	if(NOT HWLOC_LIB)
+		set (HWLOC_LIB "" CACHE PATH "Directory where the hwloc library can be found")
+	endif()
+		message(FATAL_ERROR "Lib HWLOC lib not found")
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${HWLOC_LIB})
 endif(USING_HWLOC)
-
-#enabling QWT library
-if(USING_QWT)
-	if (WIN32)
-		set(QWT_ROOT "C:/Qwt-6.1.3")
-	else()
-		set(QWT_ROOT "" CACHE PATH "Root directory where the QWT library is istalled")
-	endif()
-endif(USING_QWT)
-
-
-#enabling MKL library
-if(USING_MKL)
-	if(NOT DEFINED ENV{MKLROOT})
-		###################################################################
-		# the script mklvars.sh must be run in order to  				  #
-		# set the environment variables needed to configure 			  #
-		# the MKL library. It is located in the bin folder 				  #
-		# inside your mkl install dir(on macOS it is /opt/intel/mkl/bin). #
-		###################################################################
-    	message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info")
-	endif()
-	find_package(MKL REQUIRED)
-	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
-	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
-	#enabling LAPACK library (it wont search for it, though, since MKL contains it)
-	set(USING_LAPACK ON CACHE BOOL "Whether the LAPACK library will be linked in" FORCE)
-endif(USING_MKL)
-
-#enabling SLEPc library's dependency on PETSc
-if(USING_SLEPC)
-	set(USING_PETSC ON CACHE BOOL "Whether the PETSC library will be linked in" FORCE)
-endif(USING_SLEPC)
-
-#enabling PETSc library
-if(USING_PETSC)
-	if(NOT DEFINED ENV{PETSC_DIR})
-		###################################################################
-		# 				WRITE DOCUMENTATION FOR PETSC_DIR 			      #
-		###################################################################
-    	message(FATAL_ERROR "PETSC_DIR environment variable is not defined. See CMakeLists.txt for further info")
-	endif()
-	set(ENV{BLA_VENDOR} "OpenBLAS")
-	find_package(PETSc REQUIRED)
-endif(USING_PETSC)
-
-if(USING_SLEPC)
-	if(NOT DEFINED ENV{SLEPC_DIR})
-		###################################################################
-		# 				WRITE DOCUMENTATION FOR SLEPC_DIR 			      #
-		###################################################################
-    	message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info")
-	endif()
-	find_package(SLEPc REQUIRED)
-endif(USING_SLEPC)
-
-####################################################################
-#   The following instructions regarding BLAS, LAPACK and METIS    #
-# must be AFTER if(USING_MKL), if(USING_PETSC) and if(USING_SLEPC) #
-####################################################################
-
-if(NOT USING_MKL)
-	if(NOT USING_PETSC)
-		#search for BLAS and LAPACK normally
-		set(ENV{BLA_VENDOR} "All")
-	endif(NOT USING_PETSC)
-
-	#enabling LAPACK library's dependency on BLAS
-	if(USING_LAPACK)
-		set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
-	endif(USING_LAPACK)
-
-	#enabling BLAS library
-	if(USING_BLAS)
-		find_package(BLAS REQUIRED)
-	endif(USING_BLAS)
-
-	#enabling LAPACK library
-	if(USING_LAPACK)
-		find_package(LAPACK REQUIRED)
-	endif(USING_LAPACK)
-endif(NOT USING_MKL)
 
 #enabling METIS library
 if(USING_METIS)
@@ -386,7 +313,145 @@ if(USING_METIS)
 		set (METIS_LIB "" CACHE PATH "Directory where the metis library can be found")
 		message(FATAL_ERROR "metis lib not found")
 	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${METIS_LIB})
 endif(USING_METIS)
+
+#enabling QWT library
+if(USING_QWT)
+	if (WIN32)
+		set(QWT_ROOT "C:/Qwt-6.1.3")
+	else()
+		set(QWT_ROOT "" CACHE PATH "Root directory where the QWT library is istalled")
+	endif()
+endif(USING_QWT)
+
+
+#enabling MKL library
+#######################################################################################
+#	Define CMake custom variable MKLROOT with MKL install directory.			      #
+#	Or, set the environment variable according to the following procedures.           #
+#######################################################################################
+###########################################WINDOWS#####################################
+#	1)Run the mklvars.bat script in the bin subdirectory on the 					  #
+#	  Intel MKL installation directory   											  #
+#######################################################################################
+
+######################################UNIX SYSTEMS#####################################
+#	1)Open a command promopt and type:    											  #
+#		> source /mkl-root-dir/mkl/bin/mklvars.sh	intel64                           #
+#	(by default on osx the full path is /opt/intel/mkl/bin/mklvars.sh)                #
+#	2)Check if MKLROOT is set by typing 											  #
+#		> echo $MKLROOT 															  #
+#	If it is set correctly, the result should be something like                       #
+#	/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl 							  #
+#	3)Add the following lines to your .bashrc file (on macOS it is .bash_profile):    #
+#	export MKLROOT=/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl              #
+#	(change it for the result of echo $MKLROOT)										  #
+#				       OPTIONAL(If using CMake Gui Application)						  #
+#								   #####macOS#### 							          #
+#	4)Append the following line to /etc/launchd.conf (it may not exist yet): 		  #
+#		>setenv MKLROOT /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl         #
+#	(change it for the result of echo $MKLROOT)										  #
+#	5)Finally, type																	  #
+#		>grep -E "^setenv" /etc/launchd.conf | xargs -t -L 1 launchctl				  #
+#   and restart the terminal and CMake Gui (if open)								  #
+#								   #####linux#### 		     						  #
+#	4)Append the following line to $HOME/.xsessionrc:						 		  #
+#		>export MKLROOT /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl         #
+#	(change it for the result of echo $MKLROOT)										  #
+#	5)Finally, type																	  #
+#		>grep -E "^setenv" /etc/launchd.conf | xargs -t -L 1 launchctl				  #
+#   and restart the terminal and CMake Gui (if open)								  #
+#######################################################################################
+if(USING_MKL)
+	if(NOT DEFINED MKLROOT)
+		if(DEFINED ENV{MKLROOT})
+			set(MKLROOT $ENV{MKLROOT})
+		else()
+			message(FATAL_ERROR "MKLROOT environment variable is not defined. See CMakeLists.txt for further info.")
+		endif()
+	endif()
+	find_package(MKL REQUIRED)
+	include_directories(${MKL_INCLUDE_DIRS})
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${MKL_LIBRARIES})
+	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
+	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+	#enabling LAPACK library (it wont search for it, though, since MKL contains it)
+	set(USING_LAPACK ON CACHE BOOL "Whether the LAPACK library will be linked in" FORCE)
+elseif(USING_LAPACK)
+	if(APPLE)
+		set(BLA_VENDOR "Apple")
+	else()
+		set(BLA_VENDOR "OpenBLAS")
+	endif(APPLE)
+	find_package(LAPACK)
+	unset(BLA_VENDOR)
+	if(NOT LAPACK_FOUND)#trying other LAPACK implementations
+		find_package(LAPACK REQUIRED)
+	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LAPACK_LIBRARIES})
+	#enabling BLAS library  (it wont search for it, though, since LAPACK contains it)
+	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
+elseif(USING_BLAS)
+	if(APPLE)
+		set(BLA_VENDOR "Apple")
+	else()
+		set(BLA_VENDOR "OpenBLAS")
+	endif(APPLE)
+	find_package(BLAS)
+	#due to the uncertainty whether
+	#openBLAS contains lapack or not, USING_LAPACK must be set explicitly.
+	unset(BLA_VENDOR)
+	if(NOT BLAS_FOUND)#trying other BLAS implementations
+		find_package(BLAS REQUIRED)
+	endif()
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${BLAS_LIBRARIES})
+endif(USING_MKL)
+
+#enabling SLEPc library's dependency on PETSc
+if(USING_SLEPC)
+	set(USING_PETSC ON CACHE BOOL "Whether the PETSC library will be linked in" FORCE)
+endif(USING_SLEPC)
+
+#enabling PETSc library
+if(USING_PETSC)
+	if(NOT DEFINED PETSC_DIR)
+		if(DEFINED ENV{PETSC_DIR})
+			set(PETSC_DIR $ENV{PETSC_DIR})
+		else()
+			###################################################################
+			# 				See instructions regarding MKLROOT.			      #
+			#				The	value of PETSC_DIR is estabilished by		  #
+			# 				your installation directory.				      #
+			###################################################################
+			message(FATAL_ERROR "PETSC_DIR variable is not defined. See CMakeLists.txt for further info.")
+		endif()
+	endif()
+
+	find_package(PETSc REQUIRED)
+	get_target_property(PETSC_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
+	include_directories(${PETSC_INCLUDE_DIRECTORIES})
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} PETSC::petsc mpi)
+endif(USING_PETSC)
+
+if(USING_SLEPC)
+	if(NOT DEFINED SLEPC_DIR)
+		if(DEFINED ENV{SLEPC_DIR})
+			set(SLEPC_DIR $ENV{SLEPC_DIR})
+		else()
+			###################################################################
+			# 				See instructions regarding MKLROOT.			      #
+			#				The	value of SLEPC_DIR is estabilished by		  #
+			# 				your installation directory.				      #
+			###################################################################
+			message(FATAL_ERROR "SLEPC_DIR environment variable is not defined. See CMakeLists.txt for further info.")
+		endif()
+	endif()
+	find_package(SLEPc REQUIRED)
+	get_target_property(SLEPC_INCLUDE_DIRECTORIES SLEPC::slepc INTERFACE_INCLUDE_DIRECTORIES)
+	include_directories(${SLEPC_INCLUDE_DIRECTORIES})
+	set(PZ_LIBRARIES ${PZ_LIBRARIES} SLEPC::slepc)
+endif(USING_SLEPC)
 
 ##############PZ configuration##############
 #To select type of REAL

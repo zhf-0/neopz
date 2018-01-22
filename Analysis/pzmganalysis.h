@@ -75,11 +75,11 @@ private:
 	TPZStack <TPZFMatrix<STATE> *> fSolutions;
 	
 	/** @brief Contains the solution method applied to the mesh */
-	TPZStack <TPZMatrixSolver<STATE> *> fSolvers;
+	TPZStack <TPZAlgebraicSystemSolver<STATE> *> fSolvers;
 	
 	/** @brief Contains the preconditioner of the solution method if the solution method is a krylov method. */
 	/** The preconditioner can be used as a coarse grid iteration */
-	TPZStack <TPZMatrixSolver<STATE> *> fPrecondition;
+	TPZStack <TPZAlgebraicSystemSolver<STATE> *> fPrecondition;
 	
 	
 	/**

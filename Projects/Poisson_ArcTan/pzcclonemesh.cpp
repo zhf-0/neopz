@@ -12,7 +12,7 @@
 #include "pzconnect.h"
 #include "pzbndcond.h"
 #include "pzmaterial.h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 #include "pzmatrix.h"
 #include "pzfmatrix.h"
 #include "pzblock.h"

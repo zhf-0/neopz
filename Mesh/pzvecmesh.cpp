@@ -56,8 +56,8 @@ template class TPZVec<TPZGraphNode **>;
 template class TPZVec<TPZGraphNode *>;
 class TPZCompMesh;
 template class TPZVec<TPZCompMesh *>;
-class TPZMatrixSolver;
-template class TPZVec<TPZMatrixSolver *>;
+class TPZAlgebraicSystemSolver;
+template class TPZVec<TPZAlgebraicSystemSolver *>;
 
 class TPZCompCloneMesh;
 template class TPZVec<TPZCompCloneMesh *>;

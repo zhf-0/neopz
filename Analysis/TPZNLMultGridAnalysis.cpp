@@ -25,7 +25,7 @@
 #include "pzgmesh.h"             // for TPZGeoMesh
 #include "pzmaterial.h"          // for TPZMaterial
 #include "pzskylstrmatrix.h"     // for TPZSkylineStructMatrix
-#include "pzsolve.h"             // for TPZMatrixSolver, TPZSolver, TPZMatri...
+#include "TPZAlgebraicSystemSolver.h" // for TPZAlgebraicSystemSolver, TPZSolver, TPZMatri...
 #include "pzstepsolver.h"        // for TPZStepSolver
 #include "pzstrmatrix.h"         // for TPZStructMatrixOR
 #include "pztransfer.h"          // for TPZTransfer
@@ -49,7 +49,7 @@ TPZAnalysis(cmesh), fBegin(0), fInit(0) {
 	fMeshes.Push(cmesh);
 	TPZStepSolver<STATE> solver;
 	solver.SetDirect(ELDLt);
-	TPZMatrixSolver<STATE> *clone = dynamic_cast<TPZMatrixSolver<STATE> *>(solver.Clone());
+	TPZAlgebraicSystemSolver<STATE> *clone = dynamic_cast<TPZAlgebraicSystemSolver<STATE> *>(solver.Clone());
 	SetSolver(*clone);
 	fSolvers.Push(clone);
 	fSolutions.Push(new TPZFMatrix<STATE>(fSolution));
@@ -603,7 +603,7 @@ void TPZNonLinMultGridAnalysis::TwoGridAlgorithm(std::ostream &out,int nummat){
 	coarsean.SetStructuralMatrix(coarsestiff);
 	TPZStepSolver<STATE> coarsesolver;
 	coarsesolver.SetDirect(ELDLt);
-	TPZMatrixSolver<STATE> *clone = dynamic_cast<TPZMatrixSolver<STATE> *>(coarsesolver.Clone());
+	TPZAlgebraicSystemSolver<STATE> *clone = dynamic_cast<TPZAlgebraicSystemSolver<STATE> *>(coarsesolver.Clone());
 	coarsean.SetSolver(*clone);
 	fSolvers.Push(clone);
 	coarsean.Solution().Zero();
@@ -616,7 +616,7 @@ void TPZNonLinMultGridAnalysis::TwoGridAlgorithm(std::ostream &out,int nummat){
 	finean.SetStructuralMatrix(finestiff);
 	TPZStepSolver<STATE> finesolver;
 	finesolver.SetDirect(ELDLt);
-	clone = dynamic_cast<TPZMatrixSolver<STATE> *>(finesolver.Clone());
+	clone = dynamic_cast<TPZAlgebraicSystemSolver<STATE> *>(finesolver.Clone());
 	finean.SetSolver(*clone);
 	fSolvers.Push(clone);
 	finean.Solution().Zero();

@@ -1,6 +1,6 @@
 #include "pzfmatrix.h"
 //#include ".h"
-#include "pzsolve.h"
+#include "TPZSolver.h"
 
 void Orthogonalization_CGS(TPZFMatrix<REAL> &a, TPZFMatrix<REAL> &q,TPZFMatrix<REAL> &r);
 
@@ -28,7 +28,7 @@ int main() {
     for(int j=0; j<b.Cols(); j++)
        b(i,j)=(i+1)*(j+2);
 
-   TPZMatrixSolver f(&b);
+   TPZAlgebraicSystemSolver f(&b);
    f.SetDirect(2);
    f.Solve(e,e,&h);
    e.Print();
@@ -48,7 +48,7 @@ int main() {
 void Orthogonalization_CGS(TPZFMatrix<REAL> &a, TPZFMatrix<REAL> &q,TPZFMatrix<REAL> &r) {
 
       if(a.Rows()!=q.Rows() && a.Cols()!=q.Cols()) {
-      	std::cout << "TPZMatrixSolver::Orthogonalization_CGS isn't compatible dimension\n";
+      	std::cout << "TPZAlgebraicSystemSolver::Orthogonalization_CGS isn't compatible dimension\n";
       }
 
       int rows = a.Rows();

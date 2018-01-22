@@ -24,6 +24,9 @@ class TPZFMatrix;
 template<class TVar>
 class TPZSolver;
 
+template<class TVar>
+class TPZEigenHandler;
+
 #ifndef USING_MKL
 extern "C"{
 	/// Extern BLAS FUNCTION 
@@ -46,6 +49,30 @@ enum DecomposeType {ENoDecompose, ELU, ELUPivot, ECholesky, ELDLt};
 
 /** @brief Defines output format */
 enum MatrixOutputFormat {EFormatted, EInputFormat, EMathematicaInput, EMatlabNonZeros, EMatrixMarket};
+
+//@TODO:Find PETSc solver options for documentation purposes.
+/**
+ * @brief This is an enumeration type for defining which implementation
+ * is going to be used for a given choice of method for solving an
+ * algebraic system.
+ */
+enum AlgebSysSolver{
+	ENeoPZ,///<Use NeoPZ's implementation of the selected solver algorithm.
+	EMkl,///<Use MKL's implementation (Pardiso) of the selected solver algorithm (if available).
+	EPetsc///<Use MKL's implementation of the selected solver algorithm (if available).
+};
+
+//@TODO:Find SLEPc solver options for documentation purposes.
+/**
+ * @brief This is an enumeration type for defining which implementation
+ * is going to be used for a given choice of method for solving an
+ * eigenvalue problem (generalized or not).
+ */
+enum EigenSysSolver{
+	ENeoPz,///<Use NeoPZ's implementation of the selected solver algorithm.
+	ELapack,///<Use Lapack's implementation of the selected solver algorithm (if available).
+	ESlepc///<Use SLEPc's implementation of the selected solver algorithm (if available).
+};
 
 /** @brief Root matrix class (abstract). \ref matrix "Matrix" */
 /** Abstract class TPZMatrix<TVar>which defines interface of derived matrix classes. */
@@ -689,22 +716,25 @@ public:
 	 * @param b right hand side and result after all
 	 */
 	virtual int Subst_Diag( TPZFMatrix<TVar>* b ) const;
-	
-#ifdef USING_LAPACK
+
 	/*** @name Solve eigenvalues ***/
 	/** @{ */
 	/** @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenHandler<TVar> *eig){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
 	/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveEigenProblem(TPZVec < std::complex<double> > &w){
+	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
@@ -713,19 +743,21 @@ public:
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w, TPZFMatrix < std::complex<double> > &eigenVectors){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
 	/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < std::complex<double> > &w){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+		//@TODO: Write better error message.
+		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
 		return 1;
 	}
-	/** @} */
-#endif
 	
 	/** @} */
 	
@@ -985,6 +1017,5 @@ TPZMatrix<TVar>::Swap( long *a, long *b )
 }
 
 #include "pzfmatrix.h"
-#include "pzsolve.h"
 
 #endif

@@ -68,6 +68,15 @@ namespace pzgeom {
             TShape(loc, phi, dphi);
         }
 		
+        //Needs implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            X(coord,ksi,result);
+        }
+        
         /* @brief Compute x mapping from local parametric coordinates */
         template<class T>
         void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &x) const

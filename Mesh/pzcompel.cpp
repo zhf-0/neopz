@@ -19,7 +19,6 @@
 #include "pzmatrix.h"
 #include "pzfmatrix.h"
 #include "pzblock.h"
-#include "pzsolve.h"
 
 #include "pzmanvector.h"
 #include "pzstack.h"

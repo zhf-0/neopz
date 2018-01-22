@@ -5,10 +5,9 @@
 
 #ifndef TPZSTEPSOLVER_H
 #define TPZSTEPSOLVER_H
-#include "pzsolve.h"
 
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
-
 #include "pzfilebuffer.h"
 
 #include <list>
@@ -18,7 +17,7 @@
  * @ingroup solver
  */
 template<class TVar>
-class TPZStepSolver: public TPZMatrixSolver<TVar>
+class TPZStepSolver: public TPZAlgebraicSystemSolver<TVar>
 {
 public:
 	TPZStepSolver(TPZAutoPointer<TPZMatrix<TVar> > refmat = 0);
@@ -33,11 +32,11 @@ public:
 	
 	void SetJacobi(const long numiterations, const REAL tol, const long FromCurrent);
 	
-	void SetCG(const long numiterations, const TPZMatrixSolver<TVar> &pre, const REAL tol, const long FromCurrent);
+	void SetCG(const long numiterations, const TPZAlgebraicSystemSolver<TVar> &pre, const REAL tol, const long FromCurrent);
 	
-	void SetGMRES(const long numiterations, const int numvectors, const TPZMatrixSolver<TVar> &pre, const REAL tol, const long FromCurrent);
+	void SetGMRES(const long numiterations, const int numvectors, const TPZAlgebraicSystemSolver<TVar> &pre, const REAL tol, const long FromCurrent);
 	
-	void SetBiCGStab(const long numiterations, const TPZMatrixSolver<TVar> &pre, const REAL tol, const long FromCurrent);
+	void SetBiCGStab(const long numiterations, const TPZAlgebraicSystemSolver<TVar> &pre, const REAL tol, const long FromCurrent);
 	
 	void SetDirect(const DecomposeType decomp);
 	
@@ -62,7 +61,7 @@ public:
     /** @brief reset the data structure of the solver object */
 	void ResetSolver();
     
-    virtual typename TPZMatrixSolver<TVar>::MSolver Solver()
+    virtual typename TPZAlgebraicSystemSolver<TVar>::MSolver Solver()
     {
         return fSolver;
     }
@@ -82,7 +81,7 @@ public:
 	{
 		if (fPrecond)
 			fPrecond->UpdateFrom(matrix);
-		TPZMatrixSolver<TVar>::UpdateFrom(matrix);
+		TPZAlgebraicSystemSolver<TVar>::UpdateFrom(matrix);
 	}
 	
     
@@ -113,7 +112,7 @@ public:
 	
 	
 private:
-	typename TPZMatrixSolver<TVar>::MSolver fSolver;
+	typename TPZAlgebraicSystemSolver<TVar>::MSolver fSolver;
 	DecomposeType fDecompose;
     
     /// Maximum number of iterations

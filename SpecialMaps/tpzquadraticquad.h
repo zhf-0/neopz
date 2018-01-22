@@ -70,6 +70,15 @@ namespace pzgeom {
         static void Shape(TPZVec<REAL> &loc,TPZFMatrix<REAL> &phi,TPZFMatrix<REAL> &dphi){
             TShape(loc, phi, dphi);
         }
+        
+        //Needs Implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            pzgeom::TPZGeoQuad::X(coord,ksi,result);
+        }
 		
 		/* brief compute the coordinate of a point given in parameter space */
         template<class T>

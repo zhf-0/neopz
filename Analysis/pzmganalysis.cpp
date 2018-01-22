@@ -69,7 +69,7 @@ void TPZMGAnalysis::AppendMesh(TPZCompMesh * mesh){
 	s1.SetDirect(ELU);
 	int nvar = mesh->MaterialVec().begin()->second->NStateVariables();
 	
-	TPZMatrixSolver<STATE> *prec;
+	TPZAlgebraicSystemSolver<STATE> *prec;
 	prec = fPrecondition[nmeshes-1];
 	if(!prec) prec = fSolvers[nmeshes-1];
 	TPZAutoPointer<TPZGuiInterface> guiInterface = new TPZGuiInterface;
@@ -83,10 +83,10 @@ void TPZMGAnalysis::AppendMesh(TPZCompMesh * mesh){
 	
 	TPZStepSolver<STATE> s4;
 	s4.ShareMatrix(s3);
-	fPrecondition.Push((TPZMatrixSolver<STATE> *)s3.Clone());
+	fPrecondition.Push((TPZAlgebraicSystemSolver<STATE> *)s3.Clone());
 	s4.SetCG(200,s3,1.e-6,1);
 	SetSolver(s4);
-	fSolvers.Push((TPZMatrixSolver<STATE> *) s4.Clone());
+	fSolvers.Push((TPZAlgebraicSystemSolver<STATE> *) s4.Clone());
 }
 
 TPZCompMesh *TPZMGAnalysis::PopMesh() {
@@ -357,7 +357,7 @@ void TPZMGAnalysis::Solve() {
 	if(fMeshes.NElements() == 1) {
 		TPZAnalysis::Solve();
 		if(fSolvers.NElements() == 0) {
-			fSolvers.Push((TPZMatrixSolver<STATE> *) fSolver->Clone());
+			fSolvers.Push((TPZAlgebraicSystemSolver<STATE> *) fSolver->Clone());
 		}
 		if(fPrecondition.NElements() == 0) {
 			fPrecondition.Push(0);
@@ -376,7 +376,7 @@ void TPZMGAnalysis::Solve() {
 	
 	TPZFMatrix<STATE> residual(fRhs);
 	TPZFMatrix<STATE> delu(numeq,1,0.);
-	TPZMatrixSolver<STATE> *solve = dynamic_cast<TPZMatrixSolver<STATE> *> (fSolvers[nsolvers-1]);
+	TPZAlgebraicSystemSolver<STATE> *solve = dynamic_cast<TPZAlgebraicSystemSolver<STATE> *> (fSolvers[nsolvers-1]);
 	if(fSolution.Rows() != numeq) {
 		fSolution.Redim(numeq,1);
 	} else {

@@ -5,9 +5,9 @@
 
 #include "pzsmanal.h"
 #include "pzsubcmesh.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
 #include "pzstrmatrix.h"
-#include "pzsolve.h"
 
 #include "pzlog.h"
 
@@ -87,7 +87,7 @@ void TPZSubMeshAnalysis::Assemble(){
     matred->SetMaxNumberRigidBodyModes(fMesh->NumberRigidBodyModes());
 	//	fReducableStiff.SetK00(fSolver->Matrix());
 	// this will initialize fK00 too
-	matred->SetSolver(dynamic_cast<TPZMatrixSolver<STATE> *>(fSolver->Clone()));
+	matred->SetSolver(dynamic_cast<TPZAlgebraicSystemSolver<STATE> *>(fSolver->Clone()));
 	//	TPZStructMatrix::Assemble(fReducableStiff,fRhs, *fMesh);
 //	time_t before = time (NULL);
 	fStructMatrix->Assemble(fReducableStiff,fRhs,fGuiInterface);

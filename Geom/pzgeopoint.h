@@ -81,6 +81,15 @@ namespace pzgeom {
 		/** @brief Returns the type name of the element */
 		static std::string TypeName() { return "Point";}
         
+        //Needs implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            X(coord,ksi,result);
+        }
+        
         template<class T>
         void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &result) const
         {

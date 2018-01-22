@@ -233,7 +233,7 @@ int main22() {
   an.SetSolver(step);
 
 //  an.Assemble();
-  //TPZMatrixSolver *precond = an.BuildPreconditioner(TPZAnalysis::EBlockJacobi,false);
+  //TPZAlgebraicSystemSolver *precond = an.BuildPreconditioner(TPZAnalysis::EBlockJacobi,false);
   TPZStepSolver<STATE> jac;
   jac.SetJacobi(1,0.,0);
   jac.ShareMatrix(step);

@@ -12,7 +12,6 @@
 #include "pzgeoel.h"
 #include "pznoderep.h"
 #include "pzgeoelside.h"
-
 #include <iostream>
 
 namespace pzgeom 

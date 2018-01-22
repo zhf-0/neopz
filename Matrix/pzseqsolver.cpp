@@ -7,11 +7,11 @@
 using namespace std;
 
 template<class TVar>
-TPZSequenceSolver<TVar>::TPZSequenceSolver(TPZMatrix<TVar> *refmat) : TPZMatrixSolver<TVar>(refmat), fSolvers() {
+TPZSequenceSolver<TVar>::TPZSequenceSolver(TPZMatrix<TVar> *refmat) : TPZAlgebraicSystemSolver<TVar>(refmat), fSolvers() {
 }
 
 template<class TVar>
-TPZSequenceSolver<TVar>::TPZSequenceSolver(const TPZSequenceSolver<TVar> & copy): TPZMatrixSolver<TVar>(copy) {
+TPZSequenceSolver<TVar>::TPZSequenceSolver(const TPZSequenceSolver<TVar> & copy): TPZAlgebraicSystemSolver<TVar>(copy) {
     int nums = copy.fSolvers.NElements();
     int s;
     for(s=0; s<nums; s++) AppendSolver(*copy.fSolvers[s]);
@@ -23,8 +23,8 @@ TPZSolver<TVar> * TPZSequenceSolver<TVar>::Clone() const {
 }
 
 template<class TVar>
-void TPZSequenceSolver<TVar>::AppendSolver(TPZMatrixSolver<TVar> & solve){
-    fSolvers.Push((TPZMatrixSolver<TVar> *) solve.Clone());
+void TPZSequenceSolver<TVar>::AppendSolver(TPZAlgebraicSystemSolver<TVar> & solve){
+    fSolvers.Push((TPZAlgebraicSystemSolver<TVar> *) solve.Clone());
 }
 
 template <class TVar>
@@ -74,7 +74,7 @@ void TPZSequenceSolver<TVar>::ResetMatrix()
     for(s=0; s<nums; s++) {
         fSolvers[s]->ResetMatrix();
     }
-    TPZMatrixSolver<TVar>::ResetMatrix();
+    TPZAlgebraicSystemSolver<TVar>::ResetMatrix();
 }
 
 /**
@@ -88,13 +88,13 @@ void TPZSequenceSolver<TVar>::UpdateFrom(TPZAutoPointer<TPZMatrix<TVar> > matrix
     for(s=0; s<nums; s++) {
         fSolvers[s]->UpdateFrom(matrix);
     }
-    TPZMatrixSolver<TVar>::UpdateFrom(matrix);
+    TPZAlgebraicSystemSolver<TVar>::UpdateFrom(matrix);
 }
 
 template<class TVar>
 void TPZSequenceSolver<TVar>::Write(TPZStream &buf, int withclassid)
 {
-	TPZMatrixSolver<TVar>::Write(buf, withclassid);
+	TPZAlgebraicSystemSolver<TVar>::Write(buf, withclassid);
 	int StackSz = fSolvers.NElements();
 	buf.Write(&StackSz, 1);
 	int i = 0;
@@ -107,14 +107,14 @@ void TPZSequenceSolver<TVar>::Write(TPZStream &buf, int withclassid)
 template <class TVar>
 void TPZSequenceSolver<TVar>::Read(TPZStream &buf, void *context)
 {
-	TPZMatrixSolver<TVar>::Read(buf, context);
+	TPZAlgebraicSystemSolver<TVar>::Read(buf, context);
 	int StackSz = 0;
 	buf.Read(&StackSz, 1);
 	fSolvers.Resize(StackSz);
 	int i = 0;
 	for(i = 0; i< StackSz; i++)
 	{
-		fSolvers[i] = dynamic_cast<TPZMatrixSolver<TVar> *>(TPZSaveable::Restore(buf, context));
+		fSolvers[i] = dynamic_cast<TPZAlgebraicSystemSolver<TVar> *>(TPZSaveable::Restore(buf, context));
 	}
 }
 

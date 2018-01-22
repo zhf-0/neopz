@@ -5,10 +5,10 @@
 
 #include "pzsmfrontalanal.h"
 #include "pzsubcmesh.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
 #include "TPZFrontStructMatrix.h"
 #include "pzstrmatrix.h"
-#include "pzsolve.h"
 
 using namespace std;
 

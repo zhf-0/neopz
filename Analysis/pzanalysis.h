@@ -21,7 +21,7 @@ class TPZCompMesh;
 class TPZConnect;
 class TPZGeoMesh;
 class TPZGraphMesh;
-template <class TVar> class TPZMatrixSolver;
+template <class TVar> class TPZAlgebraicSystemSolver;
 
 /**
  * @ingroup analysis
@@ -49,7 +49,7 @@ protected:
 	/** @brief Solution vector */
 	TPZFMatrix<STATE> fSolution;
 	/** @brief Type of solver to be applied */
-	TPZMatrixSolver<STATE> *fSolver;
+	TPZAlgebraicSystemSolver<STATE> *fSolver;
 	/** @brief Scalar variables names - to post process */
 	TPZVec<std::string> fScalarNames[3];
 	/** @brief Vector variables names - to post process */
@@ -175,7 +175,7 @@ protected:
 	
 	/** @brief Define the type of preconditioner used */
 	/** This method will create the stiffness matrix but without assembling */
-	TPZMatrixSolver<STATE> *BuildPreconditioner(EPrecond preconditioner, bool overlap);
+	TPZAlgebraicSystemSolver<STATE> *BuildPreconditioner(EPrecond preconditioner, bool overlap);
 	
     /** @brief ste the step for post processing */
     void SetStep(int step)
@@ -201,7 +201,7 @@ protected:
 private:
 	
 	/** @brief Build a sequence solver based on the block graph and its colors */
-	TPZMatrixSolver<STATE> *BuildSequenceSolver(TPZVec<long> &graph, TPZVec<long> &graphindex, long neq, int numcolors, TPZVec<int> &colors);
+	TPZAlgebraicSystemSolver<STATE> *BuildSequenceSolver(TPZVec<long> &graph, TPZVec<long> &graphindex, long neq, int numcolors, TPZVec<int> &colors);
 
 public:
 	/** @brief Graphic of the solution as V3DGrap visualization */
@@ -282,12 +282,12 @@ public:
     void PrintVectorByElement(std::ostream &out, TPZFMatrix<STATE> &vec, REAL tol = 1.e-10);
     
 	/** @brief Get the solver matrix */
-	TPZMatrixSolver<STATE> & Solver();
+	TPZAlgebraicSystemSolver<STATE> & Solver();
 	/** @brief Run and print the solution step by step */
 	void AnimateRun(long num_iter, int steps,
 					TPZVec<std::string> &scalnames, TPZVec<std::string> &vecnames, const std::string &plotfile);
 	/** @brief Set solver matrix */
-	void SetSolver(TPZMatrixSolver<STATE> &solver);
+	void SetSolver(TPZAlgebraicSystemSolver<STATE> &solver);
 	/** @brief Set structural matrix as auto pointer for analysis */
 	void SetStructuralMatrix(TPZAutoPointer<TPZStructMatrix> strmatrix);
 	/** @brief Set structural matrix for analysis */	
@@ -333,7 +333,7 @@ TPZAnalysis::SetExact(void (*f)(const TPZVec<REAL> &loc, TPZVec<STATE> &result, 
 	fExact=f;
 }
 
-inline TPZMatrixSolver<STATE> &
+inline TPZAlgebraicSystemSolver<STATE> &
 
 TPZAnalysis::Solver(){
 	return (*fSolver);

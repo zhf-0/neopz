@@ -6,7 +6,7 @@
 
 #ifndef TPZCOPYSOLVE_H
 #define TPZCOPYSOLVE_H
-#include "pzsolve.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzfmatrix.h"
 
 
@@ -15,16 +15,16 @@
  * @brief To solve clones of the given matrix. \ref solver "Solver"
  */
 template<class TVar>
-class TPZCopySolve: public TPZMatrixSolver<TVar>
+class TPZCopySolve: public TPZAlgebraicSystemSolver<TVar>
 {
 public:
 	
 	TPZCopySolve(TPZMatrix<TVar> *mat) :
-    TPZMatrixSolver<TVar>(mat)
+    TPZAlgebraicSystemSolver<TVar>(mat)
 	{
 	}
 	TPZCopySolve(const TPZCopySolve &other) :
-    TPZMatrixSolver<TVar>(other)
+    TPZAlgebraicSystemSolver<TVar>(other)
 	{
 	}
 	/**

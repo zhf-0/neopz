@@ -15,7 +15,7 @@
 #include "pzmaterial.h"
 #include "pzconslaw.h"
 #include "pzstrmatrix.h"
-#include "pzsolve.h"
+#include "TPZAlgebraicSystemSolver.h"
 #include "pzdxmesh.h"
 #include "pzstepsolver.h"
 #include "pzblockdiag.h"

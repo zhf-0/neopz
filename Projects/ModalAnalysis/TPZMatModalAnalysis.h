@@ -19,12 +19,10 @@ class  TPZMatModalAnalysis : public TPZVecL2
 {
     
 protected:
-    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
     //COM CERTEZA
     STATE (*fUr)( const TPZVec<REAL>&);
     STATE (*fEr)( const TPZVec<REAL>&);
     REAL fW;
-    whichMatrix assembling;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
     bool isTesting;
@@ -57,20 +55,6 @@ public:
     int H1Index() const { return h1meshindex;}
     
 public:
-    /**
-     * @brief Sets Matrix A for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixA(){ assembling = A;};
-    /**
-     * @brief Sets Matrix B for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixB(){ assembling = B;};
 #ifdef PZDEBUG
     virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
 #endif

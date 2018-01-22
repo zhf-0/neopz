@@ -63,6 +63,15 @@ public:
         TShape(loc, phi, dphi);
     }
     
+    //Needs Implementation
+    template<class T>
+    void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+    {
+        TPZFNMatrix<3*NNodes> coord(3,NNodes);
+        CornerCoordinates(gel, coord);
+        pzgeom::TPZGeoPrism::X(coord,ksi,result);
+    }
+    
     /** @brief compute the coordinate of a point given in parameter space */
     template<class T>
     void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &result) const
