@@ -107,6 +107,7 @@ ENABLE_TESTING()
 
 			#Example to work with scalar as complex
 			add_subdirectory(ModalAnalysis)
+			add_subdirectory(NewModalAnalysis)
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2D)
