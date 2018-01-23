@@ -410,8 +410,8 @@ int main(int argc, char *argv[])
 	TPZVTKGeoMesh::PrintGMeshVTK(gmesh, DummyfileDiffusion,true);
 	
 	// Visualization of computational meshes
-	TPZAnalysis ElasticAnalysis(ComputationalMeshElasticity);
-	TPZAnalysis DiffusionAnalysis(ComputationalMeshDiffusion);
+	TPZAnalysis ElasticAnalysis(ComputationalMeshElasticity,false);
+	TPZAnalysis DiffusionAnalysis(ComputationalMeshDiffusion,false);
 	
 	std::string ElasticityOutput;
 	ElasticityOutput = "DumpFolder/ComputationalMeshElasticity";
@@ -1186,34 +1186,42 @@ TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGID
 	Multiphysics->SetAllCreateFunctionsMultiphysicElem();
 	TPZAutoPointer<TPZFunction<STATE> > TimeDepForcingF;
 	TPZAutoPointer<TPZFunction<STATE> > TimeDepFExact;
-	
 	Container = ControlDoc.FirstChild( "ProblemData" ).FirstChild( "AnalyticFunction" ).FirstChild( "Function" ).ToElement();		
 	CharContainer = Container->Attribute("FunctionName");
 	
+    int int_order = 10;
+    TPZDummyFunction<STATE> * TimeDepFExact_fake;
 	// Analitical functions for validation
 	switch (atoi(CharContainer)) {
 		case 1:
 		{
-				TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionfiniteColumn1D);
+            TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolutionfiniteColumn1D);
+            TimeDepFExact_fake->SetPolynomialOrder(int_order);
+            
 		}
 			break;
 		case 2:
 		{
-			TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionSemiInfiniteColumn1D);
+			TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolutionSemiInfiniteColumn1D);
+            TimeDepFExact_fake->SetPolynomialOrder(int_order);
 		}
 			break;
 		case 3:
 		{
-			TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolution2DLineSource);
+			TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolution2DLineSource);
+            TimeDepFExact_fake->SetPolynomialOrder(int_order);
 		}
 			break;			
 		default:
 		{
-			TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionfiniteColumn1D);
+			TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolutionfiniteColumn1D);
+            TimeDepFExact_fake->SetPolynomialOrder(int_order);
 		}			
 			break;
 	}
 	
+    
+    
 	if (atoi(CharContainer) == 1) 
 	{
 
@@ -1221,13 +1229,17 @@ TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGID
 	
 	if (atoi(CharContainer) == 2) 
 	{
-		TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionSemiInfiniteColumn1D);
+		TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolutionSemiInfiniteColumn1D);
+        TimeDepFExact_fake->SetPolynomialOrder(int_order);
 	}
 	
 	if (atoi(CharContainer) == 3) 
 	{
-		TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolution2DLineSource);
+		TimeDepFExact_fake = new TPZDummyFunction<STATE>(ExactSolution2DLineSource);
+        TimeDepFExact_fake->SetPolynomialOrder(int_order);
 	}
+    
+    TimeDepFExact = TimeDepFExact_fake;
 	
 	Container = ControlDoc.FirstChild( "ProblemData" ).FirstChild( "Gravity" ).FirstChild( "GravitationalConstant" ).ToElement();		
 	CharContainer = Container->Attribute("Gravity");
@@ -1356,7 +1368,7 @@ TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGID
 		MaterialPoroElastic->SetfPlaneProblem(planestress);
 		MaterialPoroElastic->SetBiotParameters(alpha,Se);
 		MaterialPoroElastic->SetTimeStep(Delta,Theta);
-		MaterialPoroElastic->SetTimeDependentFunctionExact(TimeDepFExact);			
+		MaterialPoroElastic->SetTimeDependentFunctionExact(TimeDepFExact);
 		TPZMaterial * Material(MaterialPoroElastic);
 		Multiphysics->InsertMaterialObject(Material);
 		
@@ -1843,7 +1855,7 @@ void SolveSistTransient(bool IsInitial, TPZVec < TPZFMatrix<REAL> > Events,TiXml
 	int NEvents = Events.size();	
 	
 	Container = ControlDoc.FirstChild( "ProblemData" ).FirstChild( "FaultInterface" ).FirstChild( "Contact" ).ToElement();			
-	CharContainer = Container->Attribute("UseNormal");		
+	CharContainer = Container->Attribute("Use");
 	int NormalCalculations = atoi(CharContainer);	
 	
 	int nrows;
