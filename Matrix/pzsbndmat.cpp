@@ -1305,14 +1305,14 @@ TPZSBMatrix<TVar>::Copy(const TPZSBMatrix<TVar> &A )
 /** @{ */
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig)
+TPZSBMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenSolver<TVar> *eig)
 {
     return eig->SolveEigenProblem(*this,  eigenvalues, eigenVectors);
 }
 
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenHandler<TVar> *eig)
+TPZSBMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenSolver<TVar> *eig)
 {
     return eig->SolveEigenProblem(*this,eigenvalues);
 }
@@ -1320,7 +1320,7 @@ TPZSBMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::t
 /*** @name Solve eigenvalues ***/
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig)
+TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenSolver<TVar> *eig)
 {
 //    #ifdef PZDEBUG
 //    try{
@@ -1334,7 +1334,7 @@ TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < ty
 }
 template< class TVar>
 int
-TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig)
+TPZSBMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig)
 {
 //    #ifdef PZDEBUG
 //    try{

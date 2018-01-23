@@ -1476,11 +1476,6 @@ template class TPZLapackWrapper< std::complex<float> >;
 template class TPZLapackWrapper< std::complex<double> >;
 template class TPZLapackWrapper< std::complex<long double> >;
 
-template class TPZLapackWrapper<long >;
-
 template class TPZLapackWrapper<float >;
 template class TPZLapackWrapper<double >;
 template class TPZLapackWrapper<long double>;
-
-template class TPZLapackWrapper<int >;
-template class TPZLapackWrapper<TPZFlopCounter>;

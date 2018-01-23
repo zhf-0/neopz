@@ -9,8 +9,7 @@
 
 template<typename TVar>
 TPZEigenSolver<TVar>::TPZEigenSolver() : fIsGeneralised(false), fMustCalculateEigenVectors(true),
-                                         fHowManyEigenValues(1),fDesiredPartOfSpectrum(MNE),fSpecifiedValue(0.),
-                                         fEig(NULL){
+                                         fHowManyEigenValues(1),fDesiredPartOfSpectrum(MNE),fSpecifiedValue(0.){
 }
 
 template<typename TVar>
@@ -24,7 +23,6 @@ TPZEigenSolver<TVar>::TPZEigenSolver(const TPZEigenSolver &copy) {
   fEigenvectors = copy.fEigenvectors;
   fMatrixA = copy.fMatrixA;
   fMatrixB = copy.fMatrixB;
-  fEig = copy.fEig;
 }
 
 template <class TVar>
@@ -43,9 +41,9 @@ void TPZEigenSolver<TVar>::Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &
   }
   if(this->IsGeneralised()){
     TPZAutoPointer<TPZMatrix<TVar> > matB = this->MatrixB();
-    if(!matA->SolveGeneralisedEigenProblem(matB,eigenValues,eigenVectors,fEig.operator->())) DebugStop();
+    if(!matA->SolveGeneralisedEigenProblem(matB,eigenValues,eigenVectors,this)) DebugStop();
   }else{
-    if(!matA->SolveEigenProblem(eigenValues,eigenVectors,fEig.operator->())) DebugStop();
+    if(!matA->SolveEigenProblem(eigenValues,eigenVectors,this)) DebugStop();
   }
 }
 /////////////////////FALTA REVISAO//////////////////////

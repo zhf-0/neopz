@@ -649,14 +649,14 @@ int TPZFYsmpMatrix<TVar>::Zero()
 }
 
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenHandler<TVar> *eig){
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenSolver<TVar> *eig){
   return eig->SolveEigenProblem(*this,w,eigenVectors);
 }
 /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
  * @param w Stores the eigenvalues
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig){
   return eig->SolveEigenProblem(*this,w);
 }
 
@@ -665,7 +665,7 @@ int TPZFYsmpMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<T
  * @param Stores the correspondent eigenvectors
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig){
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenSolver<TVar> *eig){
 //  #ifdef PZDEBUG
 //  try{
 //    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);
@@ -681,7 +681,7 @@ int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TP
  * @param w Stores the eigenvalues
  */
 template<class TVar>
-int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+int TPZFYsmpMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig){
 //  #ifdef PZDEBUG
 //  try{
 //    TPZFYsmpMatrix<TVar> &Btest = dynamic_cast<TPZFYsmpMatrix<TVar>& >(B);

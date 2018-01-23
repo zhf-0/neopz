@@ -25,7 +25,7 @@ template<class TVar>
 class TPZSolver;
 
 template<class TVar>
-class TPZEigenHandler;
+class TPZEigenSolver;
 
 #ifndef USING_MKL
 extern "C"{
@@ -723,7 +723,7 @@ public:
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenHandler<TVar> *eig){
+	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors, TPZEigenSolver<TVar> *eig){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -732,7 +732,7 @@ public:
 	/** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+	virtual int SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -743,7 +743,7 @@ public:
 	 * @param w Stores the eigenvalues
 	 * @param Stores the correspondent eigenvectors
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenSolver<TVar> *eig){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
@@ -752,7 +752,7 @@ public:
 	/** @brief Solves the generalised Ax=w*B*x eigenvalue problem and does NOT calculates the eigenvectors
 	 * @param w Stores the eigenvalues
 	 */
-	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig){
+	virtual int SolveGeneralisedEigenProblem(TPZMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig){
 		//@TODO: Write better error message.
 		TPZMatrix<TVar>::Error(__PRETTY_FUNCTION__, "SolveGeneralisedEigenProblem currently not available for this data type. See documentation." );
 		DebugStop();//this should never be called. Must implement it in child class.
