@@ -10,20 +10,6 @@
 #include "pzaxestools.h"
 #include "pzvec_extras.h"
 
-
-const REAL M_C  (299792458); //velocidade da luz no vacuo
-const REAL M_UZERO  (1.256637061435917e-6);//permeabilidade do meio livre
-const REAL M_EZERO  (8.85418781762039e-12);//permissividade do meio livre
-#ifdef STATE_COMPLEX
-const STATE imaginary(0.,1.);//unidade imaginaria
-#endif
-inline STATE urDefault( const TPZVec<REAL> & x){
-    return 1.;
-}
-inline STATE erDefault( const TPZVec<REAL> & x){
-    return 1.;
-}
-
 /**
  * @ingroup material
  * @brief This class implements an L2 projection for HCurl basis functions  

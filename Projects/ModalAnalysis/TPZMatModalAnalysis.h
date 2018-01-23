@@ -6,7 +6,14 @@
 #ifndef TPZMATMODALANALYSIS_H
 #define TPZMATMODALANALYSIS_H
 
-#include "TPZMatHCurlProjection.h"
+#include <TPZVecL2.h>
+
+const REAL M_C  (299792458); //velocidade da luz no vacuo
+const REAL M_UZERO  (1.256637061435917e-6);//permeabilidade do meio livre
+const REAL M_EZERO  (8.85418781762039e-12);//permissividade do meio livre
+#ifdef STATE_COMPLEX
+const STATE imaginary(0.,1.);//unidade imaginaria
+#endif
 
 /**
  * @ingroup material
@@ -20,8 +27,8 @@ class  TPZMatModalAnalysis : public TPZVecL2
     
 protected:
     //COM CERTEZA
-    STATE (*fUr)( const TPZVec<REAL>&);
-    STATE (*fEr)( const TPZVec<REAL>&);
+    const STATE fUr;
+    const STATE fEr;
     REAL fW;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
@@ -29,7 +36,7 @@ protected:
     
 public:
     
-    TPZMatModalAnalysis(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatModalAnalysis(int id, REAL freq, STATE &ur,STATE &er);
     
     TPZMatModalAnalysis(int id);
     

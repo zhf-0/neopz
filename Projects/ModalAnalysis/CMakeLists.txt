@@ -1,10 +1,7 @@
 ########## next target ##############
-include_directories(
-	"${PROJECT_SOURCE_DIR}/Projects/HCurlProjection"
-)
 
-file(GLOB headers *.h ../HCurlProjection/TPZMatHCurlProjection.h)
-file(GLOB sources *.cpp ../HCurlProjection/TPZMatHCurlProjection.cpp)
+file(GLOB headers *.h)
+file(GLOB sources *.cpp)
 
 
 set(main_SRCS ${sources} ${headers})

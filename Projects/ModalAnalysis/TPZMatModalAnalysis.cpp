@@ -1,16 +1,15 @@
 #include "TPZMatModalAnalysis.h"
-
 #include "pzbndcond.h"
-#include "pzlog.h"
 
 #ifdef LOG4CXX
+#include "pzlog.h"
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
 
 
 
-TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, STATE &ur,STATE &er ) :
 TPZVecL2(id), fUr(ur), fEr(er)
 {
     isTesting = false;
@@ -18,8 +17,8 @@ TPZVecL2(id), fUr(ur), fEr(er)
     fW = 2.*M_PI*freq;
 }
 
-TPZMatModalAnalysis::TPZMatModalAnalysis(int id) : TPZVecL2(id), fUr(urDefault),
-fEr(erDefault)
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id) : TPZVecL2(id), fUr(1.0),
+fEr(1.0)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -27,8 +26,8 @@ fEr(erDefault)
 }
 
 /** @brief Default constructor */
-TPZMatModalAnalysis::TPZMatModalAnalysis() : TPZVecL2(), fUr(urDefault),
-fEr(erDefault)
+TPZMatModalAnalysis::TPZMatModalAnalysis() : TPZVecL2(), fUr(1.0),
+fEr(1.0)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -201,8 +200,6 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
     
     
     TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
-    const STATE muR =  fUr(x);
-    const STATE epsilonR = fEr(x);
     const REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
     /*****************ACTUAL COMPUTATION OF CONTRIBUTION****************/
     
@@ -224,9 +221,9 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             phiIdotPhiJ += phiHCurl(iVec , 1) * phiHCurl(jVec , 1);
             phiIdotPhiJ += phiHCurl(iVec , 2) * phiHCurl(jVec , 2);
             
-            stiffAtt = 1./muR * curlIdotCurlJ;
-            stiffAtt -= k0 * k0 * epsilonR * phiIdotPhiJ;
-            stiffBtt = 1./muR * phiIdotPhiJ;
+            stiffAtt = 1./fUr * curlIdotCurlJ;
+            stiffAtt -= k0 * k0 * fEr * phiIdotPhiJ;
+            stiffBtt = 1./fUr * phiIdotPhiJ;
             if (this->fAssembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -246,7 +243,7 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             phiVecDotGradPhiSca += phiHCurl(iVec , 1) * gradPhiH1(jSca , 1);
             phiVecDotGradPhiSca += phiHCurl(iVec , 2) * gradPhiH1(jSca , 2);
             
-            stiffBzt = 1./muR * phiVecDotGradPhiSca;
+            stiffBzt = 1./fUr * phiVecDotGradPhiSca;
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += 0. ;
             }
@@ -265,7 +262,7 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             phiVecDotGradPhiSca += phiHCurl(jVec , 0) * gradPhiH1(iSca , 0);
             phiVecDotGradPhiSca += phiHCurl(jVec , 1) * gradPhiH1(iSca , 1);
             phiVecDotGradPhiSca += phiHCurl(jVec , 2) * gradPhiH1(iSca , 2);
-            stiffBtz = 1./muR * phiVecDotGradPhiSca;
+            stiffBtz = 1./fUr * phiVecDotGradPhiSca;
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
             }
@@ -283,8 +280,8 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 1) * gradPhiH1(jSca , 1);
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 2) * gradPhiH1(jSca , 2);
             
-            stiffBzz =  1./muR * gradPhiScaDotGradPhiSca;
-            stiffBzz -=  k0 * k0 * epsilonR * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
+            stiffBzz =  1./fUr * gradPhiScaDotGradPhiSca;
+            stiffBzz -=  k0 * k0 * fEr * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
 			
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += 0. ;

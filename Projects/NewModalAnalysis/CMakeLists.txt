@@ -1,7 +1,6 @@
 ########## next target ##############
 include_directories(
 	"${PROJECT_SOURCE_DIR}/Projects/ModalAnalysis"
-	"${PROJECT_SOURCE_DIR}/Projects/HCurlProjection"
 )
 
 file(GLOB headers *.h ../ModalAnalysis/TPZMatModalAnalysis.h)

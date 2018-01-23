@@ -1,14 +1,16 @@
 #include "TPZMatWaveguideCutOffAnalysis.h"
 
+#include <pzaxestools.h>
+#include <pzvec_extras.h>
 #include "pzbndcond.h"
-#include "pzlog.h"
 
 #ifdef LOG4CXX
+#include "pzlog.h"
 static LoggerPtr logger(Logger::getLogger("pz.material.fran2"));
 #endif
 
 
-TPZMatWaveguideCutOffAnalysis::TPZMatWaveguideCutOffAnalysis(int id, REAL f0, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &))
+TPZMatWaveguideCutOffAnalysis::TPZMatWaveguideCutOffAnalysis(int id, REAL f0, STATE &ur,STATE &er)
 : TPZMatModalAnalysis::TPZMatModalAnalysis(id,f0,ur,er)
 {
     
@@ -55,8 +57,6 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
     TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
     
     TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
-    const STATE muR =  fUr(x);
-    const STATE epsilonR = fEr(x);
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
     const int nHCurlFunctions  = phiHCurl.Rows();
@@ -77,8 +77,8 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             phiIdotPhiJ += phiHCurl(iVec , 1) * phiHCurl(jVec , 1);
             phiIdotPhiJ += phiHCurl(iVec , 2) * phiHCurl(jVec , 2);
             
-            stiffAtt = 1./muR * curlIdotCurlJ;
-            stiffBtt = epsilonR * phiIdotPhiJ;
+            stiffAtt = 1./fUr * curlIdotCurlJ;
+            stiffBtt = fEr * phiIdotPhiJ;
             if (this->fAssembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -100,8 +100,8 @@ void TPZMatWaveguideCutOffAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec,
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 1) * gradPhiH1(jSca , 1);
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 2) * gradPhiH1(jSca , 2);
             
-            stiffAzz =  1./muR * gradPhiScaDotGradPhiSca;
-            stiffBzz = epsilonR * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
+            stiffAzz =  1./fUr * gradPhiScaDotGradPhiSca;
+            stiffBzz = fEr * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffAzz * weight ;
             }
