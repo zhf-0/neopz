@@ -350,5 +350,3 @@ template class TPZSlepcHandler< std::complex<long double> >;
 template class TPZSlepcHandler<float >;
 template class TPZSlepcHandler<double >;
 template class TPZSlepcHandler<long double>;
-
-template class TPZSlepcHandler<TPZFlopCounter>;
