@@ -69,6 +69,14 @@
 #cmakedefine USING_MKL
 #endif
 
+#ifndef USING_PETSC
+#cmakedefine USING_PETSC
+#endif
+
+#ifndef USING_SLEPC
+#cmakedefine USING_SLEPC
+#endif
+
 //WIN32 defs
 #ifndef VC
 #cmakedefine VC

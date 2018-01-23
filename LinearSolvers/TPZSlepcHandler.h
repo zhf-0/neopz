@@ -16,6 +16,12 @@ template<class TVar>
 class TPZSlepcHandler : public TPZEigenSolver<TVar> {
   friend class TPZFYsmpMatrix<TVar>;
 public:
+
+  TPZSolver<TVar> *Clone() const override{
+    //@TODO: Implement me!
+    return (TPZSolver<TVar> *)this;
+  }
+
   int SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors) override;
 
   /** @brief Solves the Ax=w*x eigenvalue problem and does NOT calculates the eigenvectors
