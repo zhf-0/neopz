@@ -16,6 +16,11 @@ template<class TVar>
 class TPZLapackWrapper : public TPZEigenSolver<TVar> {
     friend class TPZFMatrix<TVar>;
     friend class TPZSBMatrix<TVar>;
+
+  TPZSolver<TVar> *Clone() const override{
+    //@TODO: Implement me!
+    return (TPZSolver<TVar> *)this;
+  }
   /**
    * @brief Solves the Ax=w*x eigenvalue problem and calculates the eigenvectors
    * @param A The matrix (input)

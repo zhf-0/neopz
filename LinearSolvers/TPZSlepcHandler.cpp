@@ -60,28 +60,28 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZM
 #include <petsctime.h>
 
 template<class TVar>
-void TPZSlepcHandler::SetAsGeneralised(bool isGeneralised){
-  TPZEigenSolver::SetAsGeneralised(isGeneralised);
+void TPZSlepcHandler<TVar>::SetAsGeneralised(bool isGeneralised){
+  TPZEigenSolver<TVar>::SetAsGeneralised(isGeneralised);
 }
 
 template<class TVar>
-void TPZSlepcHandler::SetHowManyEigenValues(int howManyEigenValues){
-  TPZEigenSolver::SetHowManyEigenValues(howManyEigenValues);
+void TPZSlepcHandler<TVar>::SetHowManyEigenValues(int howManyEigenValues){
+  TPZEigenSolver<TVar>::SetHowManyEigenValues(howManyEigenValues);
 }
 
 template<class TVar>
-void TPZSlepcHandler::SetAbsoluteValue(bool isAbsoluteValue){
-  TPZEigenSolver::SetAbsoluteValue(isAbsoluteValue);
+void TPZSlepcHandler<TVar>::SetAbsoluteValue(bool isAbsoluteValue){
+  TPZEigenSolver<TVar>::SetAbsoluteValue(isAbsoluteValue);
 }
 
 template<class TVar>
-void TPZSlepcHandler::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum){
-  TPZEigenSolver::SetDesiredPartOfSpectrum(desiredPartOfSpectrum);
+void TPZSlepcHandler<TVar>::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum){
+  TPZEigenSolver<TVar>::SetDesiredPartOfSpectrum(desiredPartOfSpectrum);
 }
 
 template<class TVar>
-void TPZSlepcHandler::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue){
-  TPZEigenSolver::SetSpecifiedValue(specifiedValue);
+void TPZSlepcHandler<TVar>::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue){
+  TPZEigenSolver<TVar>::SetSpecifiedValue(specifiedValue);
 }
 
 
@@ -150,7 +150,7 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
    *  INITIALIZE STRUCTURES
    *****************************/
   SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
-
+  EPS eps;
   EPSCreate( PETSC_COMM_WORLD, &eps);
   /*****************************
    *  CREATE MATRICES
@@ -347,11 +347,8 @@ template class TPZSlepcHandler< std::complex<float> >;
 template class TPZSlepcHandler< std::complex<double> >;
 template class TPZSlepcHandler< std::complex<long double> >;
 
-template class TPZSlepcHandler<long >;
-
 template class TPZSlepcHandler<float >;
 template class TPZSlepcHandler<double >;
 template class TPZSlepcHandler<long double>;
 
-template class TPZSlepcHandler<int >;
 template class TPZSlepcHandler<TPZFlopCounter>;

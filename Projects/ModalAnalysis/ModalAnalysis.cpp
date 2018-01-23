@@ -19,7 +19,11 @@
 #include <stddef.h>               // for NULL
 #include <fstream>
 #include <TPZEigenAnalysis.h>
-#include <TPZEigenSolver.h>
+#ifdef USING_SLEPC
+#include <TPZSlepcHandler.h>
+#elif defined USING_LAPACK
+#include <TPZLapackWrapper.h>
+#endif
 #include <TPZSpStructMatrix.h>
 #include <tpzgeoelmapped.h>
 #include <tpzarc3d.h>
@@ -180,7 +184,11 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     an.SetStructuralMatrix(strmtrx);
 
     const int nSolutions = neq >= 10 ? 10 : neq;
-    TPZEigenSolver<STATE> solver;
+    #ifdef USING_SLEPC
+    TPZSlepcHandler<STATE> solver;
+    #elif defined USING_LAPACK
+    TPZLapackWrapper<STATE> solver;
+    #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
     solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues

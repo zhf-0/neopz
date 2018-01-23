@@ -2323,14 +2323,14 @@ int TPZFMatrix<TVar>::SetSize(const long newRows,const long newCols) {
 }
 //@TODO:Implement selection of library to be used
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenHandler<TVar> *eig)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZEigenSolver<TVar> *eig)
 {
     eig->SolveEigenProblem(*this, eigenvalues);
     return 1;
 }
 
 template <class TVar>
-int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenvectors, TPZEigenHandler<TVar> *eig)
+int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>::type > &eigenvalues, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type > &eigenvectors, TPZEigenSolver<TVar> *eig)
 {
     eig->SolveEigenProblem(*this, eigenvalues, eigenvectors);
     return 1;
@@ -2338,7 +2338,7 @@ int TPZFMatrix<TVar>::SolveEigenProblem(TPZVec < typename SPZAlwaysComplex<TVar>
 
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix <typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenHandler<TVar> *eig)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix <typename SPZAlwaysComplex<TVar>::type > &eigenVectors, TPZEigenSolver<TVar> *eig)
 {
 //    #ifdef PZDEBUG
 //    try{
@@ -2353,7 +2353,7 @@ TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <type
 }
 template< class TVar>
 int
-TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenHandler<TVar> *eig)
+TPZFMatrix<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &B , TPZVec <typename SPZAlwaysComplex<TVar>::type > &w, TPZEigenSolver<TVar> *eig)
 {
 //    #ifdef PZDEBUG
 //    try{

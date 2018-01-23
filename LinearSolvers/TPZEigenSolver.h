@@ -92,11 +92,11 @@ public:
 
   void SetMatrixB(TPZAutoPointer<TPZMatrix<TVar>> mat);
 
-  bool IsGeneralised();
+  bool IsGeneralised() const;
 
   virtual void SetAsGeneralised(bool isGeneralised);
 
-  int GetHowManyEigenvalues();
+  int GetHowManyEigenvalues() const;
 
   virtual void SetHowManyEigenValues(int howManyEigenValues);
 
@@ -104,11 +104,11 @@ public:
 
   virtual void SetAbsoluteValue(bool isAbsoluteValue);
 
-  EDesiredEigen GetDesiredPartOfSpectrum();
+  EDesiredEigen GetDesiredPartOfSpectrum() const;
 
   virtual void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);
 
-  typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue();
+  typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;
 
   virtual void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);
 protected:

@@ -70,7 +70,7 @@ template<>
 struct SPZAlwaysComplex<std::complex<long double>>{
 	typedef std::complex<long double> type;
 };
-
+//@TODO: The need for the following instantiations annoys me but I dont know what else to do
 template<>
 struct SPZAlwaysComplex<long>{
 	typedef std::complex<long> type;
@@ -80,7 +80,16 @@ template<>
 struct SPZAlwaysComplex<int>{
 	typedef std::complex<int> type;
 };
-//@TODO: This makes no sense. But since TPZMatrix<TPZFlopCounter> is declared, this must exist.
+
+template<>
+struct SPZAlwaysComplex<std::complex<long>>{
+	typedef std::complex<long> type;
+};
+
+template<>
+struct SPZAlwaysComplex<std::complex<int>>{
+	typedef std::complex<int> type;
+};
 
 template<>
 struct SPZAlwaysComplex<TPZFlopCounter>{
