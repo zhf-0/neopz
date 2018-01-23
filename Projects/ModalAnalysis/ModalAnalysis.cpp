@@ -19,11 +19,6 @@
 #include <stddef.h>               // for NULL
 #include <fstream>
 #include <TPZEigenAnalysis.h>
-#ifdef USING_SLEPC
-#include <TPZSlepcHandler.h>
-#elif defined USING_LAPACK
-#include <TPZLapackWrapper.h>
-#endif
 #include <TPZSpStructMatrix.h>
 #include <tpzgeoelmapped.h>
 #include <tpzarc3d.h>
@@ -40,6 +35,11 @@
 #ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
+#ifdef USING_SLEPC
+#include <TPZSlepcHandler.h>
+#elif defined USING_LAPACK
+#include <TPZLapackWrapper.h>
+#endif
 #include "TPZRefPatternDataBase.h"
 #include "tpzgeoelrefpattern.h"
 #include "tpzquadraticline.h"
@@ -51,9 +51,6 @@
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
 
-STATE ur(const TPZVec<REAL> &x) { return 1.; }
-STATE er(const TPZVec<REAL> &x) { return 1.; }
-
 void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType, int pOrder,
                    int nDiv, const TPZVec<REAL> geoParams, REAL f0, bool genVTK,
                    bool l2error, bool exportEigen, const int nThreads,
@@ -64,8 +61,8 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              int &neqOriginal);
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
-                 int pOrder, STATE (&ur)(const TPZVec<REAL> &),
-                 STATE (&er)(const TPZVec<REAL> &), REAL f0, bool isCutOff);
+                 int pOrder, const STATE &ur,
+                 const STATE &er, REAL f0, bool isCutOff);
 
 void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
                                      const meshTypeE meshType,
@@ -152,6 +149,8 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     boost::posix_time::ptime t1_c =
             boost::posix_time::microsec_clock::local_time();
     #endif
+    const STATE ur = 1.0;
+    const STATE er = 1.0;
     CreateCMesh(meshVec, gmesh, pOrder, ur, er, f0,
                 isCutOff); // funcao para criar a malha computacional
     #ifdef USING_BOOST
@@ -674,8 +673,8 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 }
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
-                 int pOrder, STATE (&ur)(const TPZVec<REAL> &),
-                 STATE (&er)(const TPZVec<REAL> &), REAL f0, bool isCutOff) {
+                 int pOrder, const STATE &ur,
+                 const STATE &er, REAL f0, bool isCutOff) {
 
     const int dim = 2;   // dimensao do problema
     const int matId = 1; // define id para um material(formulacao fraca)
@@ -719,7 +718,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
-    TPZMatHCurlProjection *matHCurl = new TPZMatHCurlProjection(matId);
+    TPZVecL2 *matHCurl = new TPZVecL2(matId);
     cmeshHCurl->InsertMaterialObject(matHCurl);
 
     val1(0, 0) = 0.;

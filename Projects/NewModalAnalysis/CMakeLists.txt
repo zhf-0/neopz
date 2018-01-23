@@ -1,10 +1,7 @@
 ########## next target ##############
-include_directories(
-	"${PROJECT_SOURCE_DIR}/Projects/ModalAnalysis"
-)
 
-file(GLOB headers *.h ../ModalAnalysis/TPZMatModalAnalysis.h)
-file(GLOB sources *.cpp ../ModalAnalysis/TPZMatModalAnalysis.cpp)
+file(GLOB headers *.h)
+file(GLOB sources *.cpp)
 
 
 set(main_SRCS ${sources} ${headers})

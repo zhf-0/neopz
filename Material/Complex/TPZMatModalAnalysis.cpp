@@ -1,4 +1,6 @@
 #include "TPZMatModalAnalysis.h"
+#include <pzaxestools.h>
+#include <pzvec_extras.h>
 #include "pzbndcond.h"
 
 #ifdef LOG4CXX
@@ -9,7 +11,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 
-TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, STATE &ur,STATE &er ) :
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er ) :
 TPZVecL2(id), fUr(ur), fEr(er)
 {
     isTesting = false;

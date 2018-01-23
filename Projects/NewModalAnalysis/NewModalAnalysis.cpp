@@ -19,7 +19,6 @@
 #include <stddef.h>               // for NULL
 #include <fstream>
 #include <TPZEigenAnalysis.h>
-#include <TPZEigenSolver.h>
 #include <TPZSpStructMatrix.h>
 #include <tpzgeoelmapped.h>
 #include <tpzarc3d.h>
@@ -36,14 +35,19 @@
 #ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
+#ifdef USING_SLEPC
+#include <TPZSlepcHandler.h>
+#elif defined USING_LAPACK
+#include <TPZLapackWrapper.h>
+#endif
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
 #include "TPZGmshReader.h"
 
-void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder,
-                   const REAL &f0, const bool &genVTK,
-                   const bool &l2error, const bool &exportEigen, const int &nThreads,
-                   const bool &optimizeBandwidth, const bool &filterEquations);
+void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder, const REAL &f0,
+                   const bool &genVTK, const bool &l2error, const bool &exportEigen, const int &nThreads,
+                   const bool &optimizeBandwidth, const bool &filterEquations, TPZVec<STATE> &urVec,
+                   TPZVec<STATE> &erVec);
 
 void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec);
 
@@ -98,6 +102,7 @@ int main(int argc, char *argv[]) {
     std::string mshFileName = "coarseMesh.msh";
     REAL fOp = 5e+9;
     bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
+    TPZVec<STATE> urVec, erVec;
     #endif
 
     int pOrder = 1;           // polynomial order of basis functions
@@ -113,17 +118,17 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
 
-        RunSimulation(isCutOff, mshFileName, pOrder, fOp, genVTK, l2error, exportEigen, nThreads, optimizeBandwidth,
-                      filterEquations);
+        RunSimulation(isCutOff, mshFileName, pOrder, fOp, genVTK, l2error,
+                      exportEigen, nThreads, optimizeBandwidth, filterEquations, urVec, erVec);
     }
 
     return 0;
 }
 
-void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder,
-                   const REAL &f0, const bool &genVTK,
-                   const bool &l2error, const bool &exportEigen, const int &nThreads,
-                   const bool &optimizeBandwidth, const bool &filterEquations) {
+void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder, const REAL &f0,
+                   const bool &genVTK, const bool &l2error, const bool &exportEigen, const int &nThreads,
+                   const bool &optimizeBandwidth, const bool &filterEquations, TPZVec<STATE> &urVec,
+                   TPZVec<STATE> &erVec) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
     std::cout<<"Creating GMesh...";
     #ifdef USING_BOOST
@@ -143,8 +148,10 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     boost::posix_time::ptime t1_c =
             boost::posix_time::microsec_clock::local_time();
     #endif
-    CreateCMesh(meshVec, gmesh, pOrder, matIdVec, f0,
+    
+    CreateCMesh(meshVec, gmesh, pOrder, matIdVec, urVec, erVec,f0,
                 isCutOff); // funcao para criar a malha computacional
+    
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_c =
             boost::posix_time::microsec_clock::local_time();
@@ -175,7 +182,11 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     an.SetStructuralMatrix(strmtrx);
 
     const int nSolutions = neq >= 10 ? 10 : neq;
-    TPZEigenSolver<STATE> solver;
+    #ifdef USING_SLEPC
+    TPZSlepcHandler<STATE> solver;
+    #elif defined USING_LAPACK
+    TPZLapackWrapper<STATE> solver;
+    #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
     solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues
@@ -215,123 +226,8 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
 #endif
-    return;
-    TPZManVector<SPZAlwaysComplex<STATE>::type> eValues = an.GetEigenvalues();
-    TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVectors = an.GetEigenvectors();
-    std::set<std::pair<REAL, TPZFMatrix<STATE>>> eigenValuesRe;
-    TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVector;
-    std::pair<REAL, TPZFMatrix<STATE>> duplet;
-
-    for (int i = 0; i < eValues.size(); i++) {
-        eVectors.GetSub(0, i, eVectors.Rows(), 1, eVector);
-        duplet.first = eValues[i].real();
-        duplet.second = eVector;
-        eigenValuesRe.insert(duplet);
-    }
-    if (exportEigen) {
-		int i = 0;
-		std::string fileName;
-		fileName = "ev";
-		fileName.append(std::to_string(nDiv));
-		fileName.append("_p");
-		fileName.append(std::to_string(pOrder));
-		fileName.append(".csv");
-			std::ofstream fileEigenValues(fileName.c_str());
-			for (std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
-					 eigenValuesRe.begin();
-				 iT != eigenValuesRe.end(); iT++) {
-				if (isCutOff) {
-					if (std::abs(iT->first) < 1e-2)
-						continue;
-				}
-				fileEigenValues << iT->first << std::endl;
-				i++;
-			}
-    }
-	int i = 0;
-
-    for (std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
-             eigenValuesRe.begin();
-         iT != eigenValuesRe.end(); iT++) {
-        if (isCutOff) {
-			if (std::abs(iT->first) < 1e-2) {
-				continue;
-			}
-		}
-		if (i >= nSolutions) {
-			break;
-		}
-		std::cout << iT->first << std::endl;
-		i++;
-    }
-//
-//    if (isCutOff) {
-//        std::cout << "FINISHED!" << std::endl;
-//        return;
-//    }
-//    if (exportEigen) {
-//        std::string fileName("evectors");
-//        fileName.append(std::to_string(nDiv));
-//        fileName.append("_p");
-//        fileName.append(std::to_string(pOrder));
-//        fileName.append(".csv");
-//        std::ofstream fileA(fileName.c_str());
-//        char number[256];
-//        for (int i = 0; i < eigenValuesRe.begin()->second.Rows(); i++) {
-//            for (int j = 0; j < eigenValuesRe.begin()->second.Cols(); j++) {
-//                sprintf(number, "%32.32Lf",
-//                        (long double)TPZExtractVal::val(std::real(
-//                            eigenValuesRe.begin()->second.GetVal(i, j))));
-//                fileA << number;
-//
-//                fileA << " + I * ";
-//
-//                sprintf(number, "%32.32Lf",
-//                        (long double)TPZExtractVal::val(std::imag(
-//                            eigenValuesRe.begin()->second.GetVal(i, j))));
-//                fileA << number;
-//                if (j != eigenValuesRe.begin()->second.Cols() - 1) {
-//                    fileA << " , ";
-//                }
-//            }
-//            fileA << std::endl;
-//        }
-//        fileA.close();
-//    }
-//    if (genVTK) {
-//        std::cout << "Post Processing..." << std::endl;
-//        TPZFMatrix<STATE> solMat(neqOriginal, 1, 0.);
-//
-//        TPZStack<std::string> scalnames, vecnames;
-//        scalnames.Push("Ez"); // setando para imprimir u
-//        vecnames.Push("Et");
-//        std::string plotfile = "waveguideModes.vtk"; // arquivo de saida que
-//                                                        // estara na pasta debug
-//        int dim = 2;
-//        an.DefineGraphMesh(dim, scalnames, vecnames,
-//                           plotfile);  // define malha grafica
-//        int postProcessResolution = 2; // define resolucao do pos processamento
-//
-//        std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
-//            eigenValuesRe.begin();
-//        for (int iSol = 0; iSol < nSolutions; iSol++) {
-//            if (iT == eigenValuesRe.end()) {
-//                DebugStop();
-//            }
-//            for (int i = 0; i < neq; i++) {
-//                solMat(activeEquations[i], 0) = (iT->second).GetVal(i, 0);
-//            }
-//            an.LoadSolution(solMat);
-//            TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
-//                                                               cmesh);
-//            an.PostProcess(postProcessResolution);
-//            iT++;
-//        }
-//    }
-//    if (l2error) {
-//        DebugStop(); // yet to be implemented
-//    }
     std::cout << "FINISHED!" << std::endl;
+    return;
 }
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
@@ -473,7 +369,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
             boundMatId[boundMatId.size()-1] = matIdVec[i];
         }
     }
-
+    if(boundMatId.size()!=1) DebugStop(); //only PEC-surrounded waveguides for now.
     urVec.Resize(volMatId.size());
     erVec.Resize(volMatId.size());
 
@@ -538,13 +434,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
-    TPZMatHCurlProjection *matHCurl = new TPZMatHCurlProjection(volMatId[0]);
+    TPZVecL2 *matHCurl = new TPZVecL2(volMatId[0]);
     cmeshHCurl->InsertMaterialObject(matHCurl);
 
     val1(0, 0) = 0.;
     val2(0, 0) = 0.;
     TPZMaterial *BCondHCurlDir =
-        matHCurl->CreateBC(matHCurl, bc0, dirichlet, val1,
+        matHCurl->CreateBC(matHCurl, boundMatId[0], dirichlet, val1,
                            val2); // cria material que implementa a condicao de
                                   // contorno de dirichlet
 
@@ -555,40 +451,44 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
-    TPZMatModalAnalysis *matMultiPhysics = NULL;
-    TPZVec<TPZCompMesh *> meshVec(2);
-    if (isCutOff) {
-        TPZMatWaveguideCutOffAnalysis *dummy =
-            new TPZMatWaveguideCutOffAnalysis(matId, f0, ur, er);
-        matMultiPhysics = dummy;
-    } else {
-        TPZMatModalAnalysis *dummy = NULL;
-        dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
-        matMultiPhysics = dummy;
-    }
-    meshVec[matMultiPhysics->H1Index()] = cmeshH1;
-    meshVec[matMultiPhysics->HCurlIndex()] = cmeshHCurl;
-
     TPZCompMesh *cmeshMF = new TPZCompMesh(gmesh);
+    TPZVec<TPZMatModalAnalysis *>matMultiPhysics(volMatId.size());
+    if (isCutOff) {
+        for (int i = 0; i < volMatId.size(); ++i) {
+            matMultiPhysics[i] =
+                new TPZMatWaveguideCutOffAnalysis(volMatId[i], f0, urVec[i], erVec[i]);
+            cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
+        }
+    } else {
+        for (int i = 0; i < volMatId.size(); ++i) {
+            matMultiPhysics[i] =
+                new TPZMatModalAnalysis(volMatId[i], f0, urVec[i], erVec[i]);
+            cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
+        }
+    }
 
     val1(0, 0) = 0.;
     val2(0, 0) = 0.;
     TPZMaterial *BCondMFDir =
-        matMultiPhysics->CreateBC(matMultiPhysics, bc0, dirichlet, val1,
-                                  val2); // cria material que implementa a
-                                         // condicao de contorno de dirichlet
+        matMultiPhysics[0]->CreateBC(matMultiPhysics[0], boundMatId[0], dirichlet, val1,
+                                  val2); // any material is fine
 
-    cmeshMF->InsertMaterialObject(matMultiPhysics);
     cmeshMF->InsertMaterialObject(BCondMFDir); // insere material na malha
     std::set<int> set;
-    set.insert(matId);
-    set.insert(bc0);
+    for (int i = 0; i < volMatId.size(); ++i) {
+      set.insert(volMatId[i]);
+    }
+    set.insert(boundMatId[0]);
 
     cmeshMF->SetDimModel(dim);
     cmeshMF->SetAllCreateFunctionsMultiphysicElem();
 
     cmeshMF->AutoBuild(set);
     cmeshMF->CleanUpUnconnectedNodes();
+
+    TPZVec<TPZCompMesh *> meshVec(2);
+    meshVec[matMultiPhysics[0]->H1Index()] = cmeshH1;
+    meshVec[matMultiPhysics[0]->HCurlIndex()] = cmeshHCurl;
 
     TPZBuildMultiphysicsMesh::AddElements(meshVec, cmeshMF);
     TPZBuildMultiphysicsMesh::AddConnects(meshVec, cmeshMF);
@@ -609,7 +509,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     meshVecOut.resize(3);
 
     meshVecOut[0] = cmeshMF;
-    meshVecOut[1 + matMultiPhysics->H1Index()] = cmeshH1;
-    meshVecOut[1 + matMultiPhysics->HCurlIndex()] = cmeshHCurl;
+    meshVecOut[1 + matMultiPhysics[0]->H1Index()] = cmeshH1;
+    meshVecOut[1 + matMultiPhysics[0]->HCurlIndex()] = cmeshHCurl;
     return;
 }

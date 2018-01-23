@@ -1,47 +1,30 @@
 #include "TPZMatMFHCurlH1Lag.h"
 
+#include "pzaxestools.h"
+#include "pzvec_extras.h"
 #include "pzbndcond.h"
-#include "pzlog.h"
-
 #ifdef LOG4CXX
+#include "pzlog.h"
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
 
 
 
-TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &) ) :
-TPZVecL2(id), fUr(ur), fEr(er)
-{
-    isTesting = false;
-    assembling = NDefined;
-    fW = 2.*M_PI*freq;
+TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(int id, REAL freq, const STATE &ur, const STATE &er ) :
+TPZMatModalAnalysis(id,freq,ur,er) {
 }
 
-TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(int id) : TPZVecL2(id), fUr(urDefault),
-fEr(erDefault)
-{
-    isTesting = false;
-    assembling = NDefined;
-    fW = 2.*M_PI*1e+9;
+TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(int id) : TPZMatModalAnalysis(id){
 }
 
 /** @brief Default constructor */
-TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag() : TPZVecL2(), fUr(urDefault),
-fEr(erDefault)
-{
-    isTesting = false;
-    assembling = NDefined;
-    fW=2.*M_PI*1e+9;
+TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag() : TPZMatModalAnalysis(){
 }
 
 
-TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(const TPZMatMFHCurlH1Lag &mat) : TPZVecL2(mat), fUr(mat.fUr),
-fEr(mat.fEr)
+TPZMatMFHCurlH1Lag::TPZMatMFHCurlH1Lag(const TPZMatMFHCurlH1Lag &mat) : TPZMatModalAnalysis(mat)
 {
-    isTesting = false;
-    assembling = NDefined;
-    fW = mat.fW;
 }
 
 TPZMatMFHCurlH1Lag::~TPZMatMFHCurlH1Lag()
@@ -344,9 +327,7 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
     const int firstH1 = h1meshindex * nHCurlFunctions;
     const int firstHCurl = hcurlmeshindex * nH1Functions;
     const int firstLag = nH1Functions + nHCurlFunctions;
-    
-    const STATE muR =  fUr(x);
-    const STATE epsilonR = fEr(x);
+
     REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
@@ -364,13 +345,13 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 1) ) * phiVecHCurl(jVec , 1);
             phiIdotPhiJ += std::conj( phiVecHCurl(iVec , 2) ) * phiVecHCurl(jVec , 2);
             
-            stiffAtt = 1./muR * curlIdotCurlJ;
-            stiffAtt -= k0 * k0 * epsilonR * phiIdotPhiJ;
-            stiffBtt = 1./muR * phiIdotPhiJ;
-            if (this->assembling == A) {
+            stiffAtt = 1./fUr * curlIdotCurlJ;
+            stiffAtt -= k0 * k0 * fEr * phiIdotPhiJ;
+            stiffBtt = 1./fUr * phiIdotPhiJ;
+            if (this->fAssembling == A) {
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
               ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffBtt * weight ;
             }
             else{
@@ -386,11 +367,11 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 1) ) * gradPhiH1(jSca , 1);
             phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiH1(jSca , 2);
             
-            stiffBzt = 1./muR * phiVecDotGradPhiSca;
-            if (this->assembling == A) {
+            stiffBzt = 1./fUr * phiVecDotGradPhiSca;
+            if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstHCurl + iVec , firstH1 + jSca ) += stiffBzt * weight ;
             }
             else{
@@ -407,10 +388,10 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             phiVecDotGradPhiSca += std::conj( phiVecHCurl(iVec , 2) ) * gradPhiLag(jLag , 2);
             
             stiffAtl = phiVecDotGradPhiSca;
-            if ( this->assembling == A) {
+            if ( this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstLag + jLag ) += stiffAtl * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstHCurl + iVec , firstLag + jLag ) += stiffBtl * weight ;
             }
         }
@@ -422,11 +403,11 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             phiVecDotGradPhiSca += phiVecHCurl(jVec , 0) * std::conj( gradPhiH1(iSca , 0) );
             phiVecDotGradPhiSca += phiVecHCurl(jVec , 1) * std::conj( gradPhiH1(iSca , 1) );
             phiVecDotGradPhiSca += phiVecHCurl(jVec , 2) * std::conj( gradPhiH1(iSca , 2) );
-            stiffBtz = 1./muR * phiVecDotGradPhiSca;
-            if (this->assembling == A) {
+            stiffBtz = 1./fUr * phiVecDotGradPhiSca;
+            if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstHCurl +  jVec ) += stiffBtz * weight ;
             }
             else{
@@ -440,13 +421,13 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             gradPhiScaDotGradPhiSca += std::conj( gradPhiH1(iSca , 1) ) * gradPhiH1(jSca , 1);
             gradPhiScaDotGradPhiSca += std::conj( gradPhiH1(iSca , 2) ) * gradPhiH1(jSca , 2);
             
-            stiffBzz =  1./muR * gradPhiScaDotGradPhiSca;
-            stiffBzz -=  k0 * k0 * epsilonR * std::conj( phiH1( iSca , 0 ) ) * phiH1( jSca , 0 );
+            stiffBzz =  1./fUr * gradPhiScaDotGradPhiSca;
+            stiffBzz -=  k0 * k0 * fEr * std::conj( phiH1( iSca , 0 ) ) * phiH1( jSca , 0 );
 
-            if (this->assembling == A) {
+            if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += 0. ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstH1 + jSca) += stiffBzz * weight ;
             }
             else{
@@ -459,10 +440,10 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE stiffBzl = 0.;
             
             stiffBzl = -1. * std::conj( phiH1( iSca , 0 ) ) * phiLag( jLag , 0 );
-            if ( this->assembling == A) {
+            if ( this->fAssembling == A) {
                 ek( firstH1 + iSca , firstLag + jLag ) += stiffAzl * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstH1 + iSca , firstLag + jLag ) += stiffBzl * weight ;
             }
         }
@@ -480,10 +461,10 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             
             stiffAlt = phiVecDotGradPhiSca;
             
-            if ( this->assembling == A) {
+            if ( this->fAssembling == A) {
                 ek( firstLag + iLag , firstHCurl + jVec ) += stiffAlt * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstLag + iLag , firstHCurl + jVec ) += stiffBlt * weight ;
             }
         }//ok
@@ -493,20 +474,20 @@ void TPZMatMFHCurlH1Lag::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             
             stiffBlz = -1. * std::conj( phiLag( iLag , 0 ) ) * phiH1( jSca , 0 );
             
-            if ( this->assembling == A) {
+            if ( this->fAssembling == A) {
                 ek( firstLag + iLag , firstH1 + jSca ) += stiffAlz * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstLag + iLag , firstH1 + jSca ) += stiffBlz * weight ;
             }
         }
         for (int jLag = 0; jLag < nLagFunctions; jLag++) {
             STATE stiffAll = 0.;//std::conj( phiLag( iLag , 0 ) ) * phiLag( jLag , 0 )*1e4;
             STATE stiffBll = 0.;//std::conj( phiLag( iLag , 0 ) ) * phiLag( jLag , 0 )*1e10;
-            if ( this->assembling == A) {
+            if ( this->fAssembling == A) {
                 ek( firstLag + iLag , firstLag + jLag ) += stiffAll * weight ;
             }
-            else if (this->assembling == B){
+            else if (this->fAssembling == B){
                 ek( firstLag + iLag , firstLag + jLag ) += stiffBll * weight ;
             }
         }
@@ -530,7 +511,7 @@ void TPZMatMFHCurlH1Lag::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMa
 void TPZMatMFHCurlH1Lag::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
     if( isTesting ) return;
-    //if( this->assembling == B ) return;
+    //if( this->fAssembling == B ) return;
     
     
     TPZFMatrix<REAL> &phiHCurl = datavec[hcurlmeshindex].phi;
@@ -556,7 +537,7 @@ void TPZMatMFHCurlH1Lag::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL wei
         switch ( bc.Type() )
         {
             case 0:
-                if(this->assembling == B || this->assembling == A){
+                if(this->fAssembling == B || this->fAssembling == A){
                     for(int i = 0 ; i<nshape ; i++)
                     {
                         const STATE rhs = phiH1(i,0) * BIG  * v2;
@@ -619,7 +600,7 @@ void TPZMatMFHCurlH1Lag::ContributeBC(TPZVec<TPZMaterialData> &datavec, REAL wei
         switch ( bc.Type() )
         {
             case 0:
-                if(this->assembling == B || this->assembling == A){
+                if(this->fAssembling == B || this->fAssembling == A){
                     for(int i = 0 ; i<nshape ; i++)
                     {
                         const STATE rhs = phiLag(i,0) * BIG  * v2;

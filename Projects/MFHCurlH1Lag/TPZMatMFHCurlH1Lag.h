@@ -6,10 +6,7 @@
 #ifndef TPZMATMFHCURLH1LAG_H
 #define TPZMATMFHCURLH1LAG_H
 
-#include "TPZVecL2.h"
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
-#include "TPZMatHCurlProjection.h"
+#include "TPZMatModalAnalysis.h"
 
 /**
  * @ingroup material
@@ -18,24 +15,15 @@
  * It used a 2D Hcurl space for the transversal components of the electric field and an 1D
  * H1 space for the longitudinal component.
  */
-class  TPZMatMFHCurlH1Lag : public TPZVecL2
+class  TPZMatMFHCurlH1Lag : public TPZMatModalAnalysis
 {
     
 protected:
-    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
-    //COM CERTEZA
-    STATE (*fUr)( const TPZVec<REAL>&);
-    STATE (*fEr)( const TPZVec<REAL>&);
-    REAL fW;
-    whichMatrix assembling;
-    const int h1meshindex = 1;
-    const int hcurlmeshindex = 0;
     const int lagrangemeshindex = 2;//DO NOT CHANGE
-    bool isTesting;
     
 public:
     
-    TPZMatMFHCurlH1Lag(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatMFHCurlH1Lag(int id, REAL freq, const STATE &ur,const STATE &er);
     
     TPZMatMFHCurlH1Lag(int id);
     
@@ -62,20 +50,6 @@ public:
     int LagrangeIndex() const { return lagrangemeshindex;}
     
 public:
-    /**
-     * @brief Sets Matrix A for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixA(){ assembling = A;};
-    /**
-     * @brief Sets Matrix B for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixB(){ assembling = B;};
     
     virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
     /**

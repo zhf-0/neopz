@@ -17,18 +17,21 @@
 static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 #endif
 
+STATE TPZMatHelmholtz2D::CDefault(const TPZVec<REAL> &x) {
+    return 1.;
+}
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id,
                                      STATE (&cFunc)(const TPZVec<REAL> &))
     : TPZVecL2(id), fC(cFunc) {
     fDim = 2;
 }
 
-TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(urDefault) {
+TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(CDefault) {
     fDim = 2;
 }
 
 /** @brief Default constructor */
-TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(urDefault) { fDim = 2; }
+TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(CDefault) { fDim = 2; }
 
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(const TPZMatHelmholtz2D &mat)
     : TPZVecL2(mat), fC(mat.fC) {

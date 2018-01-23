@@ -13,7 +13,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
 #include "TPZMatMFHCurlH1Lag.h"
 #include "pzextractval.h"
 #include "TPZMatHCurlProjection.h"
@@ -29,13 +28,8 @@
 #include "TPZTimer.h"
 #include "pzanalysis.h"
 #include "pzskylstrmatrix.h"
-#include "pzstrmatrix.h"
 #include "pzstepsolver.h"
-#include "pzsbstrmatrix.h"
 #include "pzl2projection.h"
-#include "pzmatred.h"
-#include "pzsubcmesh.h"
-#include "tpzmatredstructmatrix.h"
 #include "pzsbndmat.h"
 #include "pzfstrmatrix.h"
 #include "pzbuildmultiphysicsmesh.h"
@@ -44,22 +38,27 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef USING_BOOST
+#include "boost/date_time/posix_time/posix_time.hpp"
+#endif
+
+#ifdef USING_SLEPC
+#include <TPZSlepcHandler.h>
+#include <TPZSpStructMatrix.h>
+#include <TPZEigenAnalysis.h>
+
+#elif defined USING_LAPACK
+#include <TPZLapackWrapper.h>
+#endif
 
 
 enum meshTypeE{ createRectangular=1, createTriangular, createZigZag};
 
-STATE ur( const TPZVec<REAL> & x){
-    //return ( 2.-imaginary*0.1 );
-    return 1.;
-}
-STATE er( const TPZVec<REAL> & x){
-    return 1;
-}
 void RunSimulation( bool isCutOff, bool filterEquations, const int meshType ,bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0, int nSolutions, bool generatingResults);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF , TPZVec<long> &activeEquations , int &neq, int &neqOriginal);
 
-TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0 , bool isCutOff);
+TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, const STATE & ur,const STATE & er, REAL f0 , bool isCutOff);
 
 void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, const REAL wDomain,  const int xDiv, const int zDiv);
 
@@ -86,20 +85,20 @@ int main(int argc, char *argv[])
     const int meshType = createTriangular;
     bool generatingResults = false;
 	
-	if(generatingResults){
-		struct stat sb;
-		if (stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)){
-			std::string fileName("../resultsQuali/ev");
-			for (int i = 0; i < 100; i++) {
-				std::string testName = fileName;
-				testName.append( std::to_string(i) );
-				testName.append( ".csv" );
-				if (std::ifstream( testName.c_str() ) ) {
-					std::remove( testName.c_str() );
-				}
-			}
-		}
-	}
+    if(generatingResults){
+        struct stat sb;
+        if (stat("../resultsQuali", &sb) == 0 && S_ISDIR(sb.st_mode)){
+          std::string fileName("../resultsQuali/ev");
+          for (int i = 0; i < 100; i++) {
+            std::string testName = fileName;
+            testName.append( std::to_string(i) );
+            testName.append( ".csv" );
+            if (std::ifstream( testName.c_str() ) ) {
+              std::remove( testName.c_str() );
+            }
+          }
+        }
+    }
     int nDiv = 2;
     int nSim = 1;
     int nSolutions = 10;
@@ -109,278 +108,231 @@ int main(int argc, char *argv[])
         RunSimulation( isCutOff, filterEquations, meshType, usingFullMtrx, optimizeBandwidth, pOrder, nDiv, hDomain, wDomain, f0 , nSolutions, generatingResults);
         nDiv += 5;
     }
-    
-    
-    
     return 0;
 }
 
 void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, bool usingFullMtrx, bool optimizeBandwidth, int pOrder, int nDiv, REAL hDomain, REAL wDomain, REAL f0 , int nSolutions, bool generatingResults){
-    TPZTimer timer;
-    
-    timer.start();
-    
-    int xDiv = nDiv;
-    int zDiv = nDiv;
     TPZGeoMesh *gmesh = new TPZGeoMesh();
-    
-    CreateGMesh(gmesh, meshType, hDomain, wDomain,  xDiv, zDiv);
-    
-    TPZVec<TPZCompMesh *>meshVec = CMesh(gmesh, pOrder, ur , er , f0 , isCutOff); //funcao para criar a malha computacional
-    TPZCompMesh *cmeshMF = meshVec[0];
-    TPZMatMFHCurlH1Lag *matPointer = dynamic_cast<TPZMatMFHCurlH1Lag * >( cmeshMF->MaterialVec()[1]);
-    TPZVec<TPZCompMesh *>temporalMeshVec(3);
-    temporalMeshVec[ matPointer->H1Index() ] = meshVec[1 + matPointer->H1Index()];
-    temporalMeshVec[ matPointer->HCurlIndex() ] = meshVec[1 + matPointer->HCurlIndex()];
-    temporalMeshVec[ matPointer->LagrangeIndex() ] = meshVec[1 + matPointer->LagrangeIndex()];
-    
-    TPZAnalysis an(cmeshMF,optimizeBandwidth);
-    //configuracoes do objeto de analise
-    TPZManVector<long,1000>activeEquations;
+    std::cout<<"Creating GMesh...";
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t1_g =
+        boost::posix_time::microsec_clock::local_time();
+    #endif
+    CreateGMesh(gmesh, meshType,hDomain, wDomain, nDiv, nDiv);
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t2_g =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
+    #endif
+    std::cout<<"Creating CMesh...";
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t1_c =
+        boost::posix_time::microsec_clock::local_time();
+    #endif
+    const STATE ur = 1.0;
+    const STATE er = 1.0;
+    TPZVec<TPZCompMesh *> meshVec(CMesh(gmesh, pOrder, ur, er, f0, isCutOff)); // funcao para criar a malha computacional
+    #ifdef USING_BOOST
+    boost::posix_time::ptime t2_c =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
+    #endif
+    TPZCompMesh *cmesh = meshVec[0];
+    TPZMatModalAnalysis *matPointer =
+        dynamic_cast<TPZMatModalAnalysis *>(cmesh->MaterialVec()[1]);
+    TPZVec<TPZCompMesh *> temporalMeshVec(2);
+    temporalMeshVec[matPointer->H1Index()] = meshVec[1 + matPointer->H1Index()];
+    temporalMeshVec[matPointer->HCurlIndex()] =
+        meshVec[1 + matPointer->HCurlIndex()];
+
+    TPZEigenAnalysis an(cmesh, optimizeBandwidth);
+
+    TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-    if (filterEquations) {
-        FilterBoundaryEquations(meshVec, activeEquations , neq , neqOriginal);
-    }
-    else{
-        TPZCompMesh *cmeshH1 = meshVec[1 + matPointer->H1Index()];
-        TPZCompMesh *cmeshHCurl = meshVec[1 + matPointer->HCurlIndex()];
-        TPZCompMesh *cmeshLag = meshVec[1 + matPointer->LagrangeIndex()];
-        std::cout<<"------\t------\t-------"<<std::endl;
-        std::cout<<"cmeshH1->NEquations()"<<"\t"<<cmeshH1->NEquations()<<std::endl;
-        std::cout<<"cmeshHCurl->NEquations()"<<"\t"<<cmeshHCurl->NEquations()<<std::endl;
-        std::cout<<"cmeshLag->NEquations()"<<"\t"<<cmeshLag->NEquations()<<std::endl;
-        std::cout<<"cmeshMF->NEquations()"<<"\t"<<cmeshMF->NEquations()<<std::endl;
-    }
-    
-    nSolutions = nSolutions > neq ? neq : nSolutions;
-    TPZAutoPointer<TPZSBandStructMatrix> sbstr;
-    
-    TPZAutoPointer<TPZFStructMatrix> fmtrx;
-    
-    if(usingFullMtrx){
-        fmtrx = new TPZFStructMatrix(cmeshMF);
-        fmtrx->SetNumThreads(0);
-        if (filterEquations) {
-            fmtrx->EquationFilter().SetActiveEquations(activeEquations);
-        }
-        an.SetStructuralMatrix(fmtrx);
-    }
-    else{
-        sbstr = new TPZSBandStructMatrix(cmeshMF);
-        sbstr->SetNumThreads(0);
-        if (filterEquations) {
-            sbstr->EquationFilter().SetActiveEquations(activeEquations);
-        }
-        an.SetStructuralMatrix(sbstr);
-    }
-    
-    TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky); //caso simetrico
-    an.SetSolver(step);
-    int matId = 1;
-    TPZMatMFHCurlH1Lag *matAlias = dynamic_cast<TPZMatMFHCurlH1Lag *> (cmeshMF->FindMaterial( matId ) );
-    
-    std::cout<<"entrando no assemble matrix A"<<std::endl;
-    matAlias->SetMatrixA();
-    
-    an.Assemble();
-    TPZMatrix<STATE> *  stiffAPtr = NULL , *stiffBPtr = NULL;
-    if (usingFullMtrx) {
-        stiffAPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
-        matAlias->SetMatrixB();
-        std::cout<<"entrando no assemble matrix B"<<std::endl;
-        an.Assemble();
-        stiffBPtr = new TPZFMatrix<STATE> ( *dynamic_cast< TPZFMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
-        std::cout<<"saindo do assemble"<<std::endl;
-        
-        
-    }
-    else{
-        stiffAPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
-        matAlias->SetMatrixB();
-        std::cout<<"entrando no assemble matrix B"<<std::endl;
-        an.Assemble();
-        stiffBPtr = new TPZSBMatrix<STATE> ( *dynamic_cast< TPZSBMatrix<STATE> *>( an.Solver().Matrix().operator->() ) );
-        std::cout<<"saindo do assemble"<<std::endl;
-    }
-    
-#ifdef PZDEBUG
-    std::ofstream fileA("../stiffA.csv");
-    std::ofstream fileB("../stiffB.csv");
-    char number[256];
-    for (int i = 0; i<stiffAPtr->Rows(); i++) {
-        for(int j = 0 ; j<stiffAPtr->Rows();j++){
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffAPtr->GetVal(i,j))) );
-            fileA<<number;
-            
-            fileA<<" + I * ";
-            
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffAPtr->GetVal(i,j))) );
-            fileA<<number;
-            if( j != stiffAPtr->Rows() - 1){
-                fileA<<" , ";
-            }
-            
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::real(stiffBPtr->GetVal(i,j))) );
-            fileB<<number;
-            
-            fileB<<" + I * ";
-            
-            sprintf(number, "%16.16Lf",(long double) TPZExtractVal::val(std::imag(stiffBPtr->GetVal(i,j))) );
-            fileB<<number;
-            if( j != stiffAPtr->Rows() - 1){
-                fileB<<" , ";
-            }
-        }
-        fileA<<std::endl;
-        fileB<<std::endl;
-    }
-    fileA.close();
-    fileB.close();
-#endif
-    TPZVec<STATE> eValues;
-    TPZFMatrix< STATE > eVectors;
-    std::cout<<"entrando no calculo dos autovalores"<<std::endl;
-    if (usingFullMtrx) {
-        TPZFMatrix<STATE> *stiffA = dynamic_cast<TPZFMatrix<STATE> *>(stiffAPtr);
-        TPZFMatrix<STATE> *stiffB = dynamic_cast<TPZFMatrix<STATE> *>(stiffBPtr);
-        stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
-    }
-    else{
-        TPZSBMatrix<STATE> *stiffA = dynamic_cast<TPZSBMatrix<STATE> *>(stiffAPtr);
-        TPZSBMatrix<STATE> *stiffB = dynamic_cast<TPZSBMatrix<STATE> *>(stiffBPtr);
-        stiffA->SolveGeneralisedEigenProblem( *stiffB, eValues , eVectors);
-    }
-    
-    std::cout<<"saindo do calculo dos autovalores"<<std::endl;
-    timer.stop();
-    
-    std::set<std::pair<REAL,TPZFMatrix<STATE> > > eigenValuesRe;
-    TPZFMatrix<STATE> eVector( eVectors.Rows() , 1);
-    std::pair<REAL,TPZFMatrix<STATE> > duplet;
-    
-    for(int i = 0 ; i< eValues.size();i++){
-        eVectors.GetSub(0, i, eVectors.Rows(), 1 , eVector);
-        duplet.first = eValues[i].real();
-        duplet.second = eVector;
-        eigenValuesRe.insert(duplet);
-    }
-    int i = 0;
-	std::string pathName;
-	if(generatingResults){
-		struct stat sb;
-		std::string command;
-		pathName = "../resultsQuali";
-		if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
-		{
-			command = "mkdir";
-			command.append(" ../resultsQuali");
-			std::system(command.c_str());
-		}
-	}
-	else{
-		pathName = "..";
-	}
-	
-	std::string fileName = pathName;
-	fileName.append("/ev");
-	fileName.append(std::to_string(nDiv));
-	fileName.append(".csv");
 
-    std::ofstream fileEigenValues(fileName.c_str());
-	
-    for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
-        if(isCutOff){
-            if(std::abs(iT->first) < 1e-2 ) continue;
-            std::cout<< iT->first <<std::endl;
-            
-            
-            
-            i++;
-            fileEigenValues<<iT->first<<std::endl;
-            if( i >= nSolutions)
-                break;
-        }
-        else
-        {
-            
-            fileEigenValues<<iT->first<<std::endl;
-            i++;
-            if( i >= nSolutions)
-                continue;
-            if( i > 50)
-                break;
-            std::cout<< iT->first <<std::endl;
-        }
+    TPZAutoPointer<TPZStructMatrix> strmtrx;
+    strmtrx = new TPZSpStructMatrix(cmesh);
+//    strmtrx = new TPZFStructMatrix(cmesh);
+    strmtrx->SetNumThreads(0);
+    if (filterEquations) {
+        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+        strmtrx->EquationFilter().SetActiveEquations(activeEquations);
     }
-    if (isCutOff||generatingResults) {
-        return;
-    }
-    std::string fileNameEVec("../evec");
-    fileNameEVec.append(std::to_string(nDiv));
-    fileNameEVec.append(".txt");
-    std::ofstream fileEigenVectors(fileNameEVec.c_str());
-    for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
-        fileEigenVectors<<iT->second<<std::endl;
-        //std::cout<< "eigvec "<<iT->second <<std::endl;
-        i++;
-        if( i >= nSolutions)
-            continue;
-        if( i > 50)
-            break;
-    }
+    an.SetStructuralMatrix(strmtrx);
+
+    nSolutions = neq >= nSolutions ? nSolutions : neq;
+    #ifdef USING_SLEPC
+    TPZSlepcHandler<STATE> solver;
+    #elif defined USING_LAPACK
+    TPZLapackWrapper<STATE> solver;
+    #endif
+    solver.SetAsGeneralised(true);
+    solver.SetAbsoluteValue(false);
+    solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues
+    solver.SetHowManyEigenValues(nSolutions);
+    an.SetSolver(solver);
+
+    std::cout << "Assembling..." << std::endl;
+#ifdef USING_BOOST
+    boost::posix_time::ptime t1 =
+        boost::posix_time::microsec_clock::local_time();
+#endif
+    an.Assemble();
+#ifdef USING_BOOST
+    boost::posix_time::ptime t2 =
+        boost::posix_time::microsec_clock::local_time();
+#endif
+    std::cout << "Finished assembly." << std::endl;
+
+//    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
+//    stiffAPtr = new TPZFMatrix<STATE>(
+//            *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixA().operator->()));
+//    stiffBPtr = new TPZFMatrix<STATE>(
+//        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixB().operator->()));
+
+    std::cout << "Solving..." << std::endl;
+#ifdef USING_BOOST
+    boost::posix_time::ptime t3 =
+        boost::posix_time::microsec_clock::local_time();
+#endif
+//    TPZManVector<STATE,10> eValues = solver.GetEigenvalues();
+//    TPZFMatrix<STATE> eVectors = solver.GetEigenvectors();
+//    stiffAPtr->SolveGeneralisedEigenProblem( *stiffBPtr, eValues , eVectors);
+    an.Solve();
+#ifdef USING_BOOST
+    boost::posix_time::ptime t4 =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
+              << t4 - t3 << std::endl;
+#endif
+    return;
     
-    std::cout << "Post Processing..." << std::endl;
-    
-    
-    {
-        std::ofstream fileA("../EV.csv");
-        char number[256];
-        std::cout<<eigenValuesRe.begin()->first<<std::endl;
-        for (int i = 0; i<eigenValuesRe.begin()->second.Rows(); i++) {
-            for(int j = 0 ; j<eigenValuesRe.begin()->second.Cols();j++){
-                sprintf(number, "%32.32Lf",(long double) TPZExtractVal::val(std::real(eigenValuesRe.begin()->second.GetVal(i,j))) );
-                fileA<<number;
-                
-                fileA<<" + I * ";
-                
-                sprintf(number, "%32.32Lf",(long double) TPZExtractVal::val(std::imag(eigenValuesRe.begin()->second.GetVal(i,j))) );
-                fileA<<number;
-                if( j != eigenValuesRe.begin()->second.Cols() - 1){
-                    fileA<<" , ";
-                }
-            }
-            fileA<<std::endl;
-        }
-        fileA.close();
-    }
-    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
-    
-    TPZStack<std::string> scalnames, vecnames;
-    scalnames.Push("Ez");//setando para imprimir u
-    scalnames.Push("p");
-    vecnames.Push("Et");
-    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
-    int dim = 2;
-    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
-    int postProcessResolution = 0;//define resolucao do pos processamento
-    
-    
-    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
-    for (int iSol = 0; iSol < nSolutions; iSol ++) {
-        if( iT == eigenValuesRe.end() ){
-            DebugStop();
-        }
-        for (int i = 0 ; i < neq; i++) {
-            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
-        }
-        an.LoadSolution( solMat );
-        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
-        an.PostProcess(postProcessResolution);
-        iT++;
-    }
-    std::cout << "FINISHED!" << std::endl;
+//    std::set<std::pair<REAL,TPZFMatrix<STATE> > > eigenValuesRe;
+//    TPZFMatrix<STATE> eVector( eVectors.Rows() , 1);
+//    std::pair<REAL,TPZFMatrix<STATE> > duplet;
+//
+//    for(int i = 0 ; i< eValues.size();i++){
+//        eVectors.GetSub(0, i, eVectors.Rows(), 1 , eVector);
+//        duplet.first = eValues[i].real();
+//        duplet.second = eVector;
+//        eigenValuesRe.insert(duplet);
+//    }
+//    int i = 0;
+//	std::string pathName;
+//	if(generatingResults){
+//		struct stat sb;
+//		std::string command;
+//		pathName = "../resultsQuali";
+//		if (!(stat(pathName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
+//		{
+//			command = "mkdir";
+//			command.append(" ../resultsQuali");
+//			std::system(command.c_str());
+//		}
+//	}
+//	else{
+//		pathName = "..";
+//	}
+//
+//	std::string fileName = pathName;
+//	fileName.append("/ev");
+//	fileName.append(std::to_string(nDiv));
+//	fileName.append(".csv");
+//
+//    std::ofstream fileEigenValues(fileName.c_str());
+//
+//    for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
+//        if(isCutOff){
+//            if(std::abs(iT->first) < 1e-2 ) continue;
+//            std::cout<< iT->first <<std::endl;
+//
+//
+//
+//            i++;
+//            fileEigenValues<<iT->first<<std::endl;
+//            if( i >= nSolutions)
+//                break;
+//        }
+//        else
+//        {
+//
+//            fileEigenValues<<iT->first<<std::endl;
+//            i++;
+//            if( i >= nSolutions)
+//                continue;
+//            if( i > 50)
+//                break;
+//            std::cout<< iT->first <<std::endl;
+//        }
+//    }
+//    if (isCutOff||generatingResults) {
+//        return;
+//    }
+//    std::string fileNameEVec("../evec");
+//    fileNameEVec.append(std::to_string(nDiv));
+//    fileNameEVec.append(".txt");
+//    std::ofstream fileEigenVectors(fileNameEVec.c_str());
+//    for (std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin(); iT != eigenValuesRe.end(); iT++) {
+//        fileEigenVectors<<iT->second<<std::endl;
+//        //std::cout<< "eigvec "<<iT->second <<std::endl;
+//        i++;
+//        if( i >= nSolutions)
+//            continue;
+//        if( i > 50)
+//            break;
+//    }
+//
+//    std::cout << "Post Processing..." << std::endl;
+//
+//
+//    {
+//        std::ofstream fileA("../EV.csv");
+//        char number[256];
+//        std::cout<<eigenValuesRe.begin()->first<<std::endl;
+//        for (int i = 0; i<eigenValuesRe.begin()->second.Rows(); i++) {
+//            for(int j = 0 ; j<eigenValuesRe.begin()->second.Cols();j++){
+//                sprintf(number, "%32.32Lf",(long double) TPZExtractVal::val(std::real(eigenValuesRe.begin()->second.GetVal(i,j))) );
+//                fileA<<number;
+//
+//                fileA<<" + I * ";
+//
+//                sprintf(number, "%32.32Lf",(long double) TPZExtractVal::val(std::imag(eigenValuesRe.begin()->second.GetVal(i,j))) );
+//                fileA<<number;
+//                if( j != eigenValuesRe.begin()->second.Cols() - 1){
+//                    fileA<<" , ";
+//                }
+//            }
+//            fileA<<std::endl;
+//        }
+//        fileA.close();
+//    }
+//    TPZFMatrix<STATE> solMat(neqOriginal,1,0.);
+//
+//    TPZStack<std::string> scalnames, vecnames;
+//    scalnames.Push("Ez");//setando para imprimir u
+//    scalnames.Push("p");
+//    vecnames.Push("Et");
+//    std::string plotfile= "../waveguideModes.vtk";//arquivo de saida que estara na pasta debug
+//    int dim = 2;
+//    an.DefineGraphMesh(dim, scalnames, vecnames, plotfile);//define malha grafica
+//    int postProcessResolution = 0;//define resolucao do pos processamento
+//
+//
+//    std::set<std::pair<REAL,TPZFMatrix<STATE> > > ::iterator iT = eigenValuesRe.begin();
+//    for (int iSol = 0; iSol < nSolutions; iSol ++) {
+//        if( iT == eigenValuesRe.end() ){
+//            DebugStop();
+//        }
+//        for (int i = 0 ; i < neq; i++) {
+//            solMat( activeEquations[i] ,0) = (iT->second).GetVal(i, 0);
+//        }
+//        an.LoadSolution( solMat );
+//        TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec, cmeshMF);
+//        an.PostProcess(postProcessResolution);
+//        iT++;
+//    }
+//    std::cout << "FINISHED!" << std::endl;
 }
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec , TPZVec<long> &activeEquations , int &neq , int &neqOriginal)
@@ -588,7 +540,7 @@ void CreateGMesh(TPZGeoMesh * &gmesh, const int meshType, const REAL hDomain, co
     delete gengrid;
 }
 
-TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, STATE (& ur)( const TPZVec<REAL> &),STATE (& er)( const TPZVec<REAL> &), REAL f0 , bool isCutOff)
+TPZVec<TPZCompMesh *>CMesh(TPZGeoMesh *gmesh, int pOrder, const STATE & ur,const STATE & er, REAL f0 , bool isCutOff)
 {
     
     const int dim = 2; //dimensao do problema

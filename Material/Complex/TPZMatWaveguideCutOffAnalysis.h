@@ -13,7 +13,7 @@ class  TPZMatWaveguideCutOffAnalysis : public TPZMatModalAnalysis
     
 public:
     
-    TPZMatWaveguideCutOffAnalysis(int id, REAL f0, STATE &ur,STATE &er);
+    TPZMatWaveguideCutOffAnalysis(int id, REAL f0, const STATE &ur,const STATE &er);
     
     ~TPZMatWaveguideCutOffAnalysis();
     

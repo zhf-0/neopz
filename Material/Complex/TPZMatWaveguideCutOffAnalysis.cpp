@@ -10,7 +10,7 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran2"));
 #endif
 
 
-TPZMatWaveguideCutOffAnalysis::TPZMatWaveguideCutOffAnalysis(int id, REAL f0, STATE &ur,STATE &er)
+TPZMatWaveguideCutOffAnalysis::TPZMatWaveguideCutOffAnalysis(int id, REAL f0, const STATE &ur, const STATE &er)
 : TPZMatModalAnalysis::TPZMatModalAnalysis(id,f0,ur,er)
 {
     

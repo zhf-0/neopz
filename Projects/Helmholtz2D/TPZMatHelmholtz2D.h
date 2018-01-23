@@ -14,7 +14,7 @@
 class TPZMatHelmholtz2D : public TPZVecL2 {
   protected:
     STATE (*fC)(const TPZVec<REAL> &);
-
+    static STATE CDefault (const TPZVec<REAL> &);
   public:
     TPZMatHelmholtz2D(int id, STATE (&cFunc)(const TPZVec<REAL> &));
 

@@ -7,7 +7,6 @@
 #define TPZMATMFHDIVROTH1_H
 
 #include "TPZMatModalAnalysis.h"
-#include "TPZMatHCurlProjection.h"
 
 /**
  * @ingroup material
@@ -21,7 +20,7 @@ class  TPZMatMFHDivRotH1 : public TPZMatModalAnalysis
     
 public:
     
-    TPZMatMFHDivRotH1(int id, REAL freq, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatMFHDivRotH1(int id, REAL freq, const STATE &ur, const STATE &er);
     
     TPZMatMFHDivRotH1(int id);
     
@@ -36,15 +35,6 @@ public:
     
     /** @brief Returns the name of the material */
     virtual std::string Name() { return "TPZMatMFHDivRotH1"; }
-    
-    /** @brief Returns the integrable dimension of the material */
-    virtual int Dimension() const {return 2;}
-    
-    /** @brief Returns the number of state variables associated with the material */
-    virtual int NStateVariables() { return 1;}
-    
-    int HCurlIndex() const { return hcurlmeshindex;}
-    int H1Index() const { return h1meshindex;}
     
 public:
     virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);

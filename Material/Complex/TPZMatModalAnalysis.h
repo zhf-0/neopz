@@ -1,57 +1,56 @@
 /**
- * @file TPZMatHelmholtz2DLagrange.h
- * @brief Header file for class TPZMatHelmholtz2DLagrange.\n
+ * @file TPZMatModalAnalysis.h
+ * @brief Header file for class TPZMatModalAnalysis.\n
  */
 
-#ifndef TPZMATHELMHOLTZ2DLAGRANGE_H
-#define TPZMATHELMHOLTZ2DLAGRANGE_H
+#ifndef TPZMATMODALANALYSIS_H
+#define TPZMATMODALANALYSIS_H
 
-#include "TPZVecL2.h"
-#include "pzaxestools.h"
-#include "pzvec_extras.h"
-#include "TPZMatHCurlProjection.h"
+#include <TPZVecL2.h>
+
+const REAL M_C  (299792458); //velocidade da luz no vacuo
+const REAL M_UZERO  (1.256637061435917e-6);//permeabilidade do meio livre
+const REAL M_EZERO  (8.85418781762039e-12);//permissividade do meio livre
+#ifdef STATE_COMPLEX
+const STATE imaginary(0.,1.);//unidade imaginaria
+#endif
 
 /**
  * @ingroup material
- * @brief This class implements the weak formulation 
- * using lagrange multipliers for the helmholtz 
- * wave equation in 2d
+ * @brief This class implements the weak statement of a waveguide problem as stated in Jin's 
+ * The Finite Element Method in Electromagnetics (chapter 8 of 3rd edition).
+ * It used a 2D Hcurl space for the transversal components of the electric field and an 1D
+ * H1 space for the longitudinal component.
  */
-class  TPZMatHelmholtz2DLagrange : public TPZVecL2
+class  TPZMatModalAnalysis : public TPZVecL2
 {
     
 protected:
-    enum whichMatrix { NDefined = 0 , A = 1 , B = 2};
     //COM CERTEZA
-    STATE (*fUr)( const TPZVec<REAL>&);
-    STATE (*fEr)( const TPZVec<REAL>&);
-    REAL fLambda;
-    REAL fE0;
+    const STATE fUr;
+    const STATE fEr;
     REAL fW;
-    REAL fTheta;
-    REAL fScale;
-    whichMatrix assembling;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
     bool isTesting;
     
 public:
     
-    TPZMatHelmholtz2DLagrange(int id, REAL lambda, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &), REAL e0, REAL t, REAL scale);
+    TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er);
     
-    TPZMatHelmholtz2DLagrange(int id);
+    TPZMatModalAnalysis(int id);
     
     /** @brief Default constructor */
-    TPZMatHelmholtz2DLagrange();
+    TPZMatModalAnalysis();
     
     /** @brief Creates a material object based on the referred object and inserts it in the vector of material pointers of the mesh. */
     /** Upon return vectorindex contains the index of the material object within the vector */
-    TPZMatHelmholtz2DLagrange(const TPZMatHelmholtz2DLagrange &mat);
+    TPZMatModalAnalysis(const TPZMatModalAnalysis &mat);
     /** @brief Default destructor */
-    virtual ~TPZMatHelmholtz2DLagrange();
+    virtual ~TPZMatModalAnalysis();
     
     /** @brief Returns the name of the material */
-    virtual std::string Name() { return "TPZMatHelmholtz2DLagrange"; }
+    virtual std::string Name() { return "TPZMatModalAnalysis"; }
     
     /** @brief Returns the integrable dimension of the material */
     virtual int Dimension() const {return 2;}
@@ -63,22 +62,9 @@ public:
     int H1Index() const { return h1meshindex;}
     
 public:
-    /**
-     * @brief Sets Matrix A for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixA(){ assembling = A;};
-    /**
-     * @brief Sets Matrix B for assembling
-     * @details This material is designed for solving the
-     * generalised eigenvalue problem stated as Ax = lBx
-     * Matrices A and B are assembled separatedly.
-     */
-    virtual void SetMatrixB(){ assembling = B;};
-    
+#ifdef PZDEBUG
     virtual void ContributeValidateFunctions(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+#endif
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point.
      * @param data [in] stores all input data
@@ -88,8 +74,6 @@ public:
      * @since April 16, 2007
      */
     virtual void Contribute(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
-    void ComputeCurl(TPZFMatrix<REAL> gradScalarPhi , TPZFMatrix<REAL> ivecHCurl , TPZFMatrix<REAL> &curlPhi );
-    void RotateForHCurl(TPZVec<REAL> normal , TPZFMatrix<REAL> vHdiv , TPZFMatrix<REAL> &vHcurl );
     /**
      * @brief It computes a contribution to the stiffness matrix and load vector at one integration point to multiphysics simulation.
      * @param datavec [in] stores all input data
@@ -168,7 +152,6 @@ public:
     virtual void FillDataRequirements(TPZMaterialData &data)
     {
         data.SetAllRequirements(false);
-        data.fNeedsNormal = true;
     }
     
     
@@ -189,7 +172,6 @@ public:
         int nref = datavec.size();
         for(int iref = 0; iref<nref; iref++){
             datavec[iref].SetAllRequirements(false);
-            datavec[iref].fNeedsNormal = true;
         }
     }
     

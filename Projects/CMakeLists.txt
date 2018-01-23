@@ -111,7 +111,6 @@ ENABLE_TESTING()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2D)
-			add_subdirectory(Helmholtz2DLagrange)
 		else(BUILD_COMPLEX_PROJECTS)
 			#
 			# REGULAR PROJECTS

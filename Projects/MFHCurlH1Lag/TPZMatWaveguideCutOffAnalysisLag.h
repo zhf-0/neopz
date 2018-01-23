@@ -19,7 +19,7 @@ class  TPZMatWaveguideCutOffAnalysisLag : public TPZMatMFHCurlH1Lag
     
 public:
     
-    TPZMatWaveguideCutOffAnalysisLag(int id, REAL f0, STATE ( &ur)( const TPZVec<REAL> &),STATE ( &er)( const TPZVec<REAL> &));
+    TPZMatWaveguideCutOffAnalysisLag(int id, REAL f0, const STATE &ur,const STATE &er);
     
     ~TPZMatWaveguideCutOffAnalysisLag();
     
