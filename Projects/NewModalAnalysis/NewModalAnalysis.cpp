@@ -22,7 +22,6 @@
 #include <TPZSpStructMatrix.h>
 #include <tpzgeoelmapped.h>
 #include <tpzarc3d.h>
-#include "pzextractval.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
 #include "TPZVTKGeoMesh.h"
@@ -73,9 +72,54 @@ int main(int argc, char *argv[]) {
     #ifndef HARDCODED_WG
     std::cout<<"Input .msh file name: ";
     std::string mshFileName;
-    std::cin >> mshFileName;
-    if(!mshFileName.empty()) DebugStop();
+    {
+        std::string input;
+        std::getline( std::cin, input );
+        if ( !input.empty() ) {
+            std::istringstream stream( input );
+            stream >> mshFileName;
+        }
+        else{
+            DebugStop();
+        }
+    }
 
+    int nMaterials = 1;
+    std::cout<<"Number of materials in the mesh? (default: 1) : ";
+    {
+        std::string input;
+        std::getline( std::cin, input );
+        if ( !input.empty() ) {
+            std::istringstream stream( input );
+            stream >> nMaterials;
+            if(nMaterials < 1) DebugStop();
+        }
+    }
+
+    TPZVec<STATE> urVec, erVec;
+    urVec.Resize(nMaterials);
+    erVec.Resize(nMaterials);
+
+    for(int i = 0 ; i < nMaterials ; i++){
+        {
+            std::cout<<"Magnetic permeability for material "<<i+1<<" (default: 1H/m) : ";
+            std::string input;
+            std::getline( std::cin, input );
+            if ( !input.empty() ) {
+                std::istringstream stream( input );
+                stream >> urVec[i];
+            }
+        }
+        {
+            std::cout<<"Electric permittivity for material "<<i+1<<" (default: 1F/m) : ";
+            std::string input;
+            std::getline( std::cin, input );
+            if ( !input.empty() ) {
+                std::istringstream stream( input );
+                stream >> erVec[i];
+            }
+        }
+    }
     bool isCutOff = false;
     REAL fOp = 9e+9;
     std::cout<<"Cut-off analyser? Y/N (default: N) : ";
@@ -99,10 +143,17 @@ int main(int argc, char *argv[]) {
 
     #else
     //hard-coded mode
-    std::string mshFileName = "coarseMesh.msh";
-    REAL fOp = 5e+9;
-    bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
+    std::string mshFileName = "veryCoarseMesh.msh";
+    const bool isCutOff = true;//analysis of cutoff frequencies for eigenmodes
+    const REAL fOp = 5e+9;
+    const int nMaterials = 2;
     TPZVec<STATE> urVec, erVec;
+    urVec.Resize(nMaterials);
+    erVec.Resize(nMaterials);
+    erVec[0] = 1.;
+    urVec[0] = 1.;
+    erVec[1] = 7.;
+    urVec[1] = 1.;
     #endif
 
     int pOrder = 1;           // polynomial order of basis functions
@@ -133,51 +184,44 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     std::cout<<"Creating GMesh...";
     #ifdef USING_BOOST
     boost::posix_time::ptime t1_g =
-            boost::posix_time::microsec_clock::local_time();
+        boost::posix_time::microsec_clock::local_time();
     #endif
     TPZVec<int> matIdVec;
     ReadGMesh(gmesh, mshFileName, matIdVec);
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_g =
-            boost::posix_time::microsec_clock::local_time();
+        boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
     #endif
     TPZVec<TPZCompMesh *> meshVec(1);
     std::cout<<"Creating CMesh...";
     #ifdef USING_BOOST
     boost::posix_time::ptime t1_c =
-            boost::posix_time::microsec_clock::local_time();
+        boost::posix_time::microsec_clock::local_time();
     #endif
-    
+
     CreateCMesh(meshVec, gmesh, pOrder, matIdVec, urVec, erVec,f0,
                 isCutOff); // funcao para criar a malha computacional
-    
+
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_c =
-            boost::posix_time::microsec_clock::local_time();
+        boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
     #endif
     TPZCompMesh *cmesh = meshVec[0];
-    TPZMatModalAnalysis *matPointer =
-        dynamic_cast<TPZMatModalAnalysis *>(cmesh->MaterialVec()[1]);
-    TPZVec<TPZCompMesh *> temporalMeshVec(2);
-    temporalMeshVec[matPointer->H1Index()] = meshVec[1 + matPointer->H1Index()];
-    temporalMeshVec[matPointer->HCurlIndex()] =
-        meshVec[1 + matPointer->HCurlIndex()];
 
     TPZEigenAnalysis an(cmesh, optimizeBandwidth);
-    
+
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
 
-  TPZAutoPointer<TPZStructMatrix> strmtrx;
-  strmtrx = new TPZSpStructMatrix(cmesh);
-//    strmtrx = new TPZFStructMatrix(cmesh);
-  strmtrx->SetNumThreads(nThreads);
+    TPZAutoPointer<TPZStructMatrix> strmtrx;
+    strmtrx = new TPZSpStructMatrix(cmesh);
+    strmtrx->SetNumThreads(nThreads);
     if (filterEquations) {
-      FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
-      strmtrx->EquationFilter().SetActiveEquations(activeEquations);
+        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+        strmtrx->EquationFilter().SetActiveEquations(activeEquations);
     }
     an.SetStructuralMatrix(strmtrx);
 
@@ -205,20 +249,12 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
 #endif
     std::cout << "Finished assembly." << std::endl;
 
-//    TPZMatrix<STATE> *stiffAPtr = NULL, *stiffBPtr = NULL;
-//    stiffAPtr = new TPZFMatrix<STATE>(
-//            *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixA().operator->()));
-//    stiffBPtr = new TPZFMatrix<STATE>(
-//        *dynamic_cast<TPZFMatrix<STATE> *>(an.Solver().MatrixB().operator->()));
-
     std::cout << "Solving..." << std::endl;
 #ifdef USING_BOOST
     boost::posix_time::ptime t3 =
         boost::posix_time::microsec_clock::local_time();
 #endif
-//    TPZManVector<STATE,10> eValues = solver.GetEigenvalues();
-//    TPZFMatrix<STATE> eVectors = solver.GetEigenvectors();
-//    stiffAPtr->SolveGeneralisedEigenProblem( *stiffBPtr, eValues , eVectors);
+
     an.Solve();
 #ifdef USING_BOOST
     boost::posix_time::ptime t4 =
@@ -265,7 +301,7 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
     for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
         if (boundConnects.find(iCon) == boundConnects.end()) {
             TPZConnect &con = cmesh->ConnectVec()[iCon];
-            if(con.HasDependency())continue; 
+            if(con.HasDependency())continue;
             int seqnum = con.SequenceNumber();
             int pos = cmesh->Block().Position(seqnum);
             int blocksize = cmesh->Block().Size(seqnum);
@@ -328,13 +364,11 @@ void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &m
 //		DebugStop();
 //	}
 #endif
-
-    TPZStack<int> matIds = meshReader.fMaterialDataVec.fMatID;
-    matIdVec.Resize(0);
-    while (matIds.size() != 0){
-        matIdVec.Resize(matIdVec.size()+1);
-        matIdVec[matIdVec.size()-1] = matIds.Pop();
-        std::cout<<"Read material "<<matIdVec[matIdVec.size()-1]<<std::endl;
+    auto matIds = meshReader.fMaterialDataVec.fMatID;
+    matIdVec.Resize(matIds.size());
+    int i = 0;
+    for(auto id = matIds.begin(); id != matIds.end(); id++,i++ )    {
+      matIdVec[i] = *id;
     }
 
     std::string meshFileName(mshFileName);
@@ -343,7 +377,7 @@ void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &m
     std::ofstream outVTK(meshFileName.c_str());
     meshFileName.replace(strlen, 4, ".txt");
     std::ofstream outTXT(meshFileName.c_str());
-    
+
     TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVTK, true);
     gmesh->Print(outTXT);
     outTXT.close();
@@ -355,53 +389,17 @@ void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &m
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
                  TPZVec<STATE> &erVec, REAL f0, bool isCutOff) {
-
+    enum {
+      dirichlet = 0
+    }; // tipo da condicao de contorno do problema
     const int dim = 2;   // dimensao do problema
 
-    TPZVec<int> boundMatId, volMatId;
-    for(int i = 0; i< matIdVec.size(); i++){
-        if(matIdVec[i]>0){
-            volMatId.Resize(volMatId.size()+1);
-            volMatId[volMatId.size()-1] = matIdVec[i];
-        }
-        else{
-            boundMatId.Resize(boundMatId.size()+1);
-            boundMatId[boundMatId.size()-1] = matIdVec[i];
-        }
+    TPZVec<int> volMatId(matIdVec.size()-1);
+    for(int i = 0; i< volMatId.size(); i++){
+      volMatId[i] = matIdVec[i];
     }
-    if(boundMatId.size()!=1) DebugStop(); //only PEC-surrounded waveguides for now.
-    urVec.Resize(volMatId.size());
-    erVec.Resize(volMatId.size());
-
-    for (int i = 0; i < volMatId.size(); ++i) {
-        erVec[i] = 1.;
-        std::cout<<"Input er for material "<<volMatId[i]<<" (default: 1): ";
-        {
-            std::string input;
-            std::getline( std::cin, input );
-            if ( !input.empty() ) {
-                std::istringstream stream( input );
-                stream >> erVec[i];
-            }
-        }
-
-        urVec[i] = 1.;
-        std::cout<<"Input ur for material "<<volMatId[i]<<" (default: 1): ";
-        {
-            std::string input;
-            std::getline( std::cin, input );
-            if ( !input.empty() ) {
-                std::istringstream stream( input );
-                stream >> urVec[i];
-            }
-        }
-    }
-    enum {
-        dirichlet = 0,
-        neumann,
-        mixed
-    }; // tipo da condicao de contorno do problema
-    // Criando material
+    const int boundMatId = matIdVec[matIdVec.size()-1];
+    if(volMatId.size()!=urVec.size()) DebugStop();
 
     /// criar malha computacional H1
 
@@ -411,16 +409,20 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     // Inserindo material na malha
     const int nState = 1;
     TPZVec<STATE> sol; // only for creating material. this material will not be
-                       // used in reality
-    TPZL2Projection *matH1 = new TPZL2Projection(volMatId[0], dim, nState, sol);
-    cmeshH1->InsertMaterialObject(matH1);
+    // used in reality
+
+    TPZL2Projection *matH1;
+    for (int i = 0; i < volMatId.size(); ++i) {
+        matH1 = new TPZL2Projection(volMatId[i], dim, nState, sol);
+        cmeshH1->InsertMaterialObject(matH1);
+    }
 
     /// electrical conductor boundary conditions
     TPZFNMatrix<1, STATE> val1(1, 1, 0.), val2(1, 1, 0.);
 
     TPZMaterial *BCondH1Dir = matH1->CreateBC(
-        matH1, boundMatId[0], dirichlet, val1, val2); // cria material que implementa a
-                                            // condicao de contorno de dirichlet
+        matH1, boundMatId, dirichlet, val1, val2); // cria material que implementa a
+    // condicao de contorno de dirichlet
 
     cmeshH1->InsertMaterialObject(BCondH1Dir); // insere material na malha
     // Cria elementos computacionais que gerenciarao o espaco de aproximacao da
@@ -434,20 +436,24 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
-    TPZVecL2 *matHCurl = new TPZVecL2(volMatId[0]);
-    cmeshHCurl->InsertMaterialObject(matHCurl);
+
+    TPZVecL2 *matHCurl;
+    for (int i = 0; i < volMatId.size(); ++i) {
+        matHCurl = new TPZVecL2(volMatId[i]);
+        cmeshHCurl->InsertMaterialObject(matHCurl);
+    }
 
     val1(0, 0) = 0.;
     val2(0, 0) = 0.;
     TPZMaterial *BCondHCurlDir =
-        matHCurl->CreateBC(matHCurl, boundMatId[0], dirichlet, val1,
+        matHCurl->CreateBC(matHCurl, boundMatId, dirichlet, val1,
                            val2); // cria material que implementa a condicao de
-                                  // contorno de dirichlet
+    // contorno de dirichlet
 
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir); // insere material na malha
-    
+
     cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
-    
+
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
@@ -470,15 +476,15 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     val1(0, 0) = 0.;
     val2(0, 0) = 0.;
     TPZMaterial *BCondMFDir =
-        matMultiPhysics[0]->CreateBC(matMultiPhysics[0], boundMatId[0], dirichlet, val1,
-                                  val2); // any material is fine
+        matMultiPhysics[0]->CreateBC(matMultiPhysics[0], boundMatId, dirichlet, val1,
+                                     val2); // any material is fine
 
     cmeshMF->InsertMaterialObject(BCondMFDir); // insere material na malha
     std::set<int> set;
     for (int i = 0; i < volMatId.size(); ++i) {
-      set.insert(volMatId[i]);
+        set.insert(volMatId[i]);
     }
-    set.insert(boundMatId[0]);
+    set.insert(boundMatId);
 
     cmeshMF->SetDimModel(dim);
     cmeshMF->SetAllCreateFunctionsMultiphysicElem();

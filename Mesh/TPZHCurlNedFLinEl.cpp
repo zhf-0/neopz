@@ -267,13 +267,9 @@ void TPZHCurlNedFLinEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,
     int nshape = phiHat.Rows();
     TPZGeoEl *gel = this->Reference();
 #ifdef PZDEBUG
-    if (!(gel && gel->Dimension() == 1 && gel->MaterialId() < 0)) {
-        DebugStop();
-		return;
-    }
     if (gel->Neighbour(2).Side() > 6 || gel->Neighbour(2).Side() < 3) {
         DebugStop();
-		return;
+		    return;
     }
 #endif
 	phi.Redim(phiHat.Rows(), phiHat.Cols());

@@ -22,7 +22,7 @@ class TPZGeoMesh;
 
 struct MaterialDataS {
     
-    TPZStack<int> fMatID;
+    std::set<int> fMatID;
     TPZStack<std::pair<int ,std::string> >  fMaterial;
     
     MaterialDataS() : fMatID(), fMaterial(){

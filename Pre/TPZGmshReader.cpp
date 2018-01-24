@@ -86,7 +86,8 @@ TPZGeoMesh * TPZGmshReader::GeometricGmshMesh(std::string file_name)
                     read >> dimension;
                     read >> id;
                     read >> name;
-                    fMaterialDataVec.fMatID.Push(id);
+                    //fMaterialDataVec.fMatID.Push(id);
+                    fMaterialDataVec.fMatID.insert(id);
                     chunk.first = id;
                     chunk.second = name;
                     fMaterialDataVec.fMaterial.Push(chunk);
@@ -212,7 +213,7 @@ bool TPZGmshReader::InsertElement(TPZGeoMesh * gmesh, std::ifstream & line){
     
     
     long element_id, type_id, div_id, physical_id, elementary_id;
-    
+
     char buf[1024];
     line.getline(buf, 1024);
     line >> element_id;
@@ -220,7 +221,11 @@ bool TPZGmshReader::InsertElement(TPZGeoMesh * gmesh, std::ifstream & line){
     line >> div_id;
     line >> physical_id;
     line >> elementary_id;
-    
+
+    if(fMaterialDataVec.fMatID.find(physical_id) == fMaterialDataVec.fMatID.end()){
+      fMaterialDataVec.fMatID.insert((int)physical_id);
+    }
+
     switch (type_id) {
         case 1:
         {
