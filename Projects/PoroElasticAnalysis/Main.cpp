@@ -1167,7 +1167,7 @@ TPZCompMesh * ComputationalDiffusionMesh(TiXmlHandle ControlDoc,TPZReadGIDGrid G
 	
 }
 
-TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGIDGrid &GeometryInfo, 
+TPZCompMesh * ComputationalPoroelasticityMesh(TiXmlHandle ControlDoc, TPZReadGIDGrid &GeometryInfo,
 											  TPZGeoMesh * gmesh, TPZVec<TPZCompMesh *> meshvec ,TPZVec <TPZPoroElastic2d  * > &mymaterial,TPZVec < TPZFMatrix<REAL> > Events,  int TStep)
 {	
 	// TiXmlElement dummy object
