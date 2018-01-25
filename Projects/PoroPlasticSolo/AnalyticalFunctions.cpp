@@ -99,9 +99,9 @@ using namespace std;
 		sol[1]=0.0;
 		sol[2]=0.0;
 
-		REAL H=1.0;		
+		REAL H=1.0;
 		REAL tD = segtime;
-		REAL xD = abs(y)/H;
+		REAL xD = 1.0-abs(y)/H;
 		REAL M = 0.0;
 		for (in =0; in<1000; in++) {
 			

@@ -35,7 +35,7 @@
  *
  */
 
-class TPZPoroElastic2d : public TPZDiscontinuousGalerkin {
+class TPZPoroElasticSolo : public TPZDiscontinuousGalerkin {
 	
 protected:
 	
@@ -91,15 +91,15 @@ protected:
 	static EState gState;
 	
 public:
-	TPZPoroElastic2d();
+	TPZPoroElasticSolo();
 	
-	TPZPoroElastic2d(int matid, int dim);
+	TPZPoroElasticSolo(int matid, int dim);
 	
-	virtual ~TPZPoroElastic2d();
+	virtual ~TPZPoroElasticSolo();
 	
 	virtual void Print(std::ostream & out);
 	
-	virtual std::string Name() { return "TPZPoroElastic2d"; }
+	virtual std::string Name() { return "TPZPoroElasticSolo"; }
 	
 	int Dimension() const {return fDim;}
 	

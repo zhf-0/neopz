@@ -5,15 +5,17 @@ IsquadQ = 1;
 Mesh.ElementOrder = 1;
 Mesh.SecondOrderLinear = 0;
 
-lc = 0.9;
+lc = 1.25;
 n_bc = 4;
 nLayers    = 8;
+hx= 0.25;
+hy= 1.0;
 
 
   Point(1) = {0, 0, 0, 1e+22};
-  Point(2) = {1, 0, 0, 1e+22};
-  Point(3) = {1, 10, 0, 1e+22};
-  Point(4) = {0, 10, 0, 1e+22};
+  Point(2) = {hx, 0, 0, 1e+22};
+  Point(3) = {hx, hy, 0, 1e+22};
+  Point(4) = {0, hy, 0, 1e+22};
 
 // Fronteiras
 
@@ -22,9 +24,8 @@ nLayers    = 8;
   Line(3) = {3, 4};
   Line(4) = {4, 1};  
 
-  Transfinite Line{1,3} = 1 ;
-  Transfinite Line{2,-4} = nLayers Using Progression lc;
-
+  Transfinite Line{1,3} = 1 Using Progression 1.0 ;
+  Transfinite Line{-2,4} = nLayers Using Progression lc;
 
 
 // Definição da superfície 
@@ -32,6 +33,8 @@ nLayers    = 8;
   Line Loop(93) = {1, 2, 3, 4};
  
   Plane Surface(110) = {93};
+
+  Transfinite Surface"*";
 
   If(IsquadQ)
 

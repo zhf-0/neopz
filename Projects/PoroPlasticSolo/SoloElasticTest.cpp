@@ -224,13 +224,15 @@ void SoloElasticTest::Run(int Space, int pOrder, int nx, int ny, double hx, doub
     scalnames.Push("SigmaY");
     scalnames.Push("DisplacementX");
     scalnames.Push("DisplacementY");
+    scalnames.Push("EDisplacementY");
     scalnames.Push("FluidPressure");
+    
     
     vecnames.Push("Displacement");
     vecnames.Push("FluxVector");
     
     
-    int postProcessResolution = 3; //  keep low as possible
+    int postProcessResolution = 0; //  keep low as possible
     
     int dim = gmesh->Dimension();
     PoroelasticAnalysis.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
@@ -803,8 +805,8 @@ TPZCompMesh *SoloElasticTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, 
     
     // Time Data
     
-    REAL Delta = 0.0001;
-    REAL Theta = 0.5;
+    REAL Delta = 100000000000.;
+    REAL Theta = 1.;
     
     // Data for poroelastic problem
     REAL LambdaU		=	0.0;
@@ -837,7 +839,7 @@ TPZCompMesh *SoloElasticTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, 
     
     // Criando material:
     
-    TPZPoroElastic2d * MaterialPoroElastic;
+    TPZPoroElasticSolo * MaterialPoroElastic;
     RockDensity		= 2300.0;
     FluidDensity	= 1000.0;
     RockPorosity	= 0.3;
@@ -901,18 +903,19 @@ TPZCompMesh *SoloElasticTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, 
         FluidViscosity	= 1.0;
     }
     
-   // TPZDummyFunction<STATE> * TimeDepFExact;
-   // TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionSemiInfiniteColumn1D);
-   // TimeDepFExact->SetPolynomialOrder(bc_inte_order);
+    TPZDummyFunction<STATE> * TimeDepFExact;
+    TimeDepFExact = new TPZDummyFunction<STATE>(ExactSolutionfiniteColumn1D);
+    TimeDepFExact->SetPolynomialOrder(bc_inte_order);
     
     
-    MaterialPoroElastic = new TPZPoroElastic2d (fmatID, fdim);
+    MaterialPoroElastic = new TPZPoroElasticSolo (fmatID, fdim);
     MaterialPoroElastic->SetParameters(Lambda,G,LambdaU,BodyForceX,BodyForceY);
     MaterialPoroElastic->SetParameters(Permeability,FluidViscosity);
     MaterialPoroElastic->SetfPlaneProblem(planestress);
     MaterialPoroElastic->SetBiotParameters(alpha,Se);
-  //  MaterialPoroElastic->SetTimeStep(Delta,Theta);
-  //  MaterialPoroElastic->SetTimeDependentFunctionExact(TimeDepFExact);
+    MaterialPoroElastic->SetTimeStep(Delta,Theta);
+    MaterialPoroElastic->SetTimeValue(Delta);
+    MaterialPoroElastic->SetTimeDependentFunctionExact(TimeDepFExact);
     TPZMaterial * Material(MaterialPoroElastic);
     cmesh->InsertMaterialObject(Material);
 

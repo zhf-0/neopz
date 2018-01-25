@@ -27,9 +27,9 @@ const int StateVarPressure = 2;
 static LoggerPtr logdata(Logger::getLogger("pz.material.poroelastic.data"));
 #endif
 
-TPZPoroElastic2d::EState TPZPoroElastic2d::gState = ECurrentState;
+TPZPoroElasticSolo::EState TPZPoroElasticSolo::gState = ECurrentState;
 
-TPZPoroElastic2d::TPZPoroElastic2d():TPZDiscontinuousGalerkin(), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.), fPlaneStress(0) {
+TPZPoroElasticSolo::TPZPoroElasticSolo():TPZDiscontinuousGalerkin(), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.), fPlaneStress(0) {
 	fE = 0.;
 	fDim = 2;
 	fmatId = 0;
@@ -41,7 +41,7 @@ TPZPoroElastic2d::TPZPoroElastic2d():TPZDiscontinuousGalerkin(), ff(0), fnu(0.),
 	
 }
 
-TPZPoroElastic2d::TPZPoroElastic2d(int matid, int dim):TPZDiscontinuousGalerkin(matid), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.),fPlaneStress(0) {
+TPZPoroElasticSolo::TPZPoroElasticSolo(int matid, int dim):TPZDiscontinuousGalerkin(matid), ff(0), fnu(0.), falpha(0.), fk(0.), fvisc(0.),fPlaneStress(0) {
 	fE = 0.;
 	fDim = dim;
 	ff.resize(2);
@@ -52,16 +52,16 @@ TPZPoroElastic2d::TPZPoroElastic2d(int matid, int dim):TPZDiscontinuousGalerkin(
 	ftheta = 1.0;	
 }
 
-TPZPoroElastic2d::~TPZPoroElastic2d(){
+TPZPoroElasticSolo::~TPZPoroElasticSolo(){
 }
 
 
-int TPZPoroElastic2d::NStateVariables() {
+int TPZPoroElasticSolo::NStateVariables() {
 	return 3;
 }
 
 
-void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE>  &ek, TPZFMatrix<STATE> &ef) {
+void TPZPoroElasticSolo::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE>  &ek, TPZFMatrix<STATE> &ef) {
 	
 	// The finite element formulation at element level is implemented in this method
 	// Numerical Approximation of Reservoir Fault Stability with Linear Poroelasticty
@@ -277,7 +277,7 @@ void TPZPoroElastic2d::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight,
 }
 
 //	Here is implemented the contribution for boundary conditions
-void TPZPoroElastic2d::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) 
+void TPZPoroElasticSolo::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) 
 {
 	
 	//	This state calculate the contribution for the Mass Matrix
@@ -838,7 +838,7 @@ void TPZPoroElastic2d::ContributeBC(TPZVec<TPZMaterialData> &datavec,REAL weight
 	
 }
 
-void TPZPoroElastic2d::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
+void TPZPoroElasticSolo::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 
 {
 	int nref = datavec.size();
@@ -853,7 +853,7 @@ void TPZPoroElastic2d::FillDataRequirements(TPZVec<TPZMaterialData > &datavec)
 }
 
 
-void TPZPoroElastic2d::Print(std::ostream &out) 
+void TPZPoroElasticSolo::Print(std::ostream &out) 
 	{
 	out << "Material Name : " << Name() << "\n";
 	out << "Plane Problem (fPlaneStress = 0, for Plane Strain conditions) " << fPlaneStress << std::endl;		
@@ -878,7 +878,7 @@ void TPZPoroElastic2d::Print(std::ostream &out)
 }
 
 /** Returns the variable index associated with the name */
-int TPZPoroElastic2d::VariableIndex(const std::string &name)
+int TPZPoroElasticSolo::VariableIndex(const std::string &name)
 {
 	//	Elasticity Variables
 	if(!strcmp("Displacement",name.c_str()))				return	1;
@@ -933,7 +933,7 @@ int TPZPoroElastic2d::VariableIndex(const std::string &name)
 	return TPZMaterial::VariableIndex(name);
 }
 
-int TPZPoroElastic2d::NSolutionVariables(int var){
+int TPZPoroElasticSolo::NSolutionVariables(int var){
 	if(var == 1)	return 3;
 	if(var == 2)	return 1;
 	if(var == 3)	return 1;
@@ -973,7 +973,7 @@ int TPZPoroElastic2d::NSolutionVariables(int var){
 }
 
 //	Calculate Secondary variables based on ux, uy, Pore pressure and their derivatives
-void TPZPoroElastic2d::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
+void TPZPoroElasticSolo::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout){
 	
 	Solout.Resize( this->NSolutionVariables(var));
 	
@@ -1332,12 +1332,12 @@ void TPZPoroElastic2d::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVe
 	
 }
 
-void TPZPoroElastic2d::ContributeInterface(TPZVec<TPZMaterialData> &datavec, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec,REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
+void TPZPoroElasticSolo::ContributeInterface(TPZVec<TPZMaterialData> &datavec, TPZVec<TPZMaterialData> &dataleftvec, TPZVec<TPZMaterialData> &datarightvec,REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef)
 {
 	DebugStop();
 }
 
-void TPZPoroElastic2d::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
+void TPZPoroElasticSolo::ContributeBCInterface(TPZMaterialData &data, TPZMaterialData &dataleft,REAL weight, TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef,TPZBndCond &bc) {
 	DebugStop();
 }
 
