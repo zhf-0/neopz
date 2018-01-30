@@ -80,8 +80,8 @@ int main(int argc, char *argv[]) {
     InitializePZLOG();
 #endif
 	
-	bool isRectangularWG = false;//true = rectangular , false = circular
-    bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
+	  const bool isRectangularWG = true;//true = rectangular , false = circular
+    const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
     const meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
     bool genVTK = false;      // generate vtk for fields visualisation

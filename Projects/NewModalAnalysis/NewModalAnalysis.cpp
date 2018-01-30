@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
         }
     }
     bool isCutOff = false;
-    REAL fOp = 9e+9;
+    REAL fOp = 14e+9;
     std::cout<<"Cut-off analyser? Y/N (default: N) : ";
     {
         std::string input;
@@ -143,16 +143,16 @@ int main(int argc, char *argv[]) {
 
     #else
     //hard-coded mode
-    std::string mshFileName = "veryCoarseMesh.msh";
-    const bool isCutOff = true;//analysis of cutoff frequencies for eigenmodes
-    const REAL fOp = 5e+9;
+    std::string mshFileName = "refinedInterfaceMesh.msh";
+    const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
+    const REAL fOp = 16e+9;
     const int nMaterials = 2;
     TPZVec<STATE> urVec, erVec;
     urVec.Resize(nMaterials);
     erVec.Resize(nMaterials);
     erVec[0] = 1.;
     urVec[0] = 1.;
-    erVec[1] = 7.;
+    erVec[1] = 9.;
     urVec[1] = 1.;
     #endif
 
@@ -262,8 +262,15 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
 #endif
-    std::cout << "FINISHED!" << std::endl;
-    return;
+  TPZManVector<SPZAlwaysComplex<STATE>::type> eValues = an.GetEigenvalues();
+
+  for (int i = 0; i < nSolutions; i++) {
+    std::cout<< "-kz^2: "<<eValues[i] <<std::endl;
+    std::cout<< "kz/k0: "<<sqrt(std::real(std::abs(eValues[i]))/86094.300576) <<std::endl;
+  }
+
+  std::cout << "FINISHED!" << std::endl;
+  return;
 }
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
