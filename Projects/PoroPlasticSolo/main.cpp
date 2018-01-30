@@ -13,6 +13,7 @@
 #include "pzbndcond.h"
 #include "SoloElasticTest.h"
 #include "pzporoelasticSolo.h"
+#include "pzporoelasticUnsat.h"
 
 #include <pzgeoel.h>
 #include "pzgeoelbc.h"

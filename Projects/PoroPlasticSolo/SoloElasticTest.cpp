@@ -19,6 +19,7 @@
 #include "pzelasmat.h"
 #include "pzbuildmultiphysicsmesh.h"
 #include "TPZGmshReader.h"
+#include "pzporoelasticUnsat.h"
 
 #define gmshmesh
 
@@ -839,7 +840,7 @@ TPZCompMesh *SoloElasticTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, 
     
     // Criando material:
     
-    TPZPoroElasticSolo * MaterialPoroElastic;
+    TPZPoroElasticUnsat * MaterialPoroElastic;
     RockDensity		= 2300.0;
     FluidDensity	= 1000.0;
     RockPorosity	= 0.3;
@@ -908,7 +909,7 @@ TPZCompMesh *SoloElasticTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, 
     TimeDepFExact->SetPolynomialOrder(bc_inte_order);
     
     
-    MaterialPoroElastic = new TPZPoroElasticSolo (fmatID, fdim);
+    MaterialPoroElastic = new TPZPoroElasticUnsat(fmatID, fdim);
     MaterialPoroElastic->SetParameters(Lambda,G,LambdaU,BodyForceX,BodyForceY);
     MaterialPoroElastic->SetParameters(Permeability,FluidViscosity);
     MaterialPoroElastic->SetfPlaneProblem(planestress);

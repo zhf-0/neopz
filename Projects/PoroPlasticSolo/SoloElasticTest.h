@@ -21,7 +21,8 @@
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
 #include "pzbndcond.h"
-#include "pzporoelasticSolo.h"
+//#include "pzporoelasticSolo.h"
+#include "pzporoelasticUnsat.h"
 
 #include <pzgeoel.h>
 #include "pzgeoelbc.h"

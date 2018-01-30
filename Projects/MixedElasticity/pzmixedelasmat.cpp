@@ -490,9 +490,7 @@ void TPZElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec, REAL we
             
             ek(2*i+1,j+nshapeS*2+nshapeU*2) += weight * valxy ;
 
-            
         }
-        
         
         
     }
