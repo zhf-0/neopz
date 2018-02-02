@@ -58,6 +58,7 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZM
 #else
 #include <slepceps.h>
 #include <petsctime.h>
+#include <petscksp.h>
 
 template<class TVar>
 void TPZSlepcHandler<TVar>::SetAsGeneralised(bool isGeneralised){
@@ -150,8 +151,6 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
    *  INITIALIZE STRUCTURES
    *****************************/
   SlepcInitialize((int *)0, (char ***)0, (const char*)0,(const char*)0 );
-  EPS eps;
-  EPSCreate( PETSC_COMM_WORLD, &eps);
   /*****************************
    *  CREATE MATRICES
    *****************************/
@@ -184,20 +183,8 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   for (int j = 0; j < A.fJA.size(); ++j) {
     jaP[j]=A.fJA[j];
   }
-  bool fIsParallelStorage;
-  if (fIsParallelStorage)
-  {
-    ierr = MatCreate(PETSC_COMM_WORLD,&fAmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(fAmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
-    ierr = MatSetType(fAmat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(fAmat,fIaP,jaP,(PetscScalar *)A.fA.begin());CHKERRQ(ierr);
-    ierr = PetscFree(fIaP);CHKERRQ(ierr);
-    ierr = PetscFree(jaP);CHKERRQ(ierr);
-  }
-  else
-  {
-    error=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,fIaP,jaP,(PetscScalar *)A.fA.begin(),&fAmat);
-  }
+  ierr = MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,fIaP,jaP,(PetscScalar *)A.fA.begin(),&fAmat);CHKERRQ(ierr);
+
   std::cout<<"Created!"<<std::endl;
   std::cout<<"Creating PETSc fBmat...";
   PetscInt *ibP, *jbP;
@@ -209,26 +196,19 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   for (int j = 0; j < B.fJA.size(); ++j) {
     jbP[j]=B.fJA[j];
   }
-  if(fIsParallelStorage)
-  {
-    ierr = MatCreate(PETSC_COMM_WORLD,&fBmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(fBmat,PETSC_DECIDE,PETSC_DECIDE,nRows,nCols);CHKERRQ(ierr);
-    ierr = MatSetType(fBmat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(fBmat,ibP,jbP,(PetscScalar *)B.fA.begin());CHKERRQ(ierr);
-    ierr = PetscFree(ibP);CHKERRQ(ierr);
-    ierr = PetscFree(jbP);CHKERRQ(ierr);
-  }
-  else
-  {
-    ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)B.fA.begin(),&fBmat);CHKERRQ(ierr);
-  }
+
+  ierr=MatCreateSeqBAIJWithArrays(MPI_COMM_WORLD,blockSize,nRows,nCols,ibP,jbP,(PetscScalar *)B.fA.begin(),&fBmat);CHKERRQ(ierr);
+
   std::cout<<"Created!"<<std::endl;
 
   /*****************************
    *  DEFINE PROBLEM TYPE
    *****************************/
-  EPSSetOperators(eps, fAmat, fBmat);
-  EPSSetProblemType(eps, EPS_GNHEP);
+  PC pc;
+  KSP ksp;
+  ST st;
+  EPS eps;
+
   //EPSSetType(eps,EPSPOWER);
   //EPSSetType(eps,EPSLANCZOS);
   //EPSSetType(eps,EPSARPACK);
@@ -236,59 +216,52 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   //EPSSetType(eps,EPSJD);
   //EPSSetType(eps,EPSCISS);
 
-  /*****************************
-   *  SET SOLVER OPTIONS
-   *****************************/
+  //PETSc: Preconditioner class:
+  PCCreate( PETSC_COMM_WORLD, &pc );
+  PCSetType(pc, PCLU);
+  PCSetFromOptions(pc);
+
+
+//PETSc: Solver class (uses Preconditioner class):
+  KSPCreate( PETSC_COMM_WORLD, &ksp);
+  KSPSetType(ksp, KSPPREONLY);
+  KSPSetPC(ksp, pc); // set PC created above
+  //KSPSetConvergenceTest();
+  KSPSetFromOptions(ksp);
+
+
+//SLEPc: SpectralTransformation class (uses Solver class)
+  STCreate( PETSC_COMM_WORLD, &st );
+  STSetType(st,STSINVERT);
+  const PetscScalar shift = -600000.;
+  STSetShift(st, shift); // some specific settings to transformation
+  STSetKSP(st, ksp); // set KSP created above
+
+
+//SLEPc: Eigensolver class (uses SpectralTransformation class)
+
+  PetscReal eps_tol;
+  PetscInt eps_max_its;
+  EPSCreate( PETSC_COMM_WORLD, &eps );
+  EPSGetTolerances(eps, &eps_tol, &eps_max_its);
+  eps_tol = 1e-10;
+  eps_max_its = 100;
+  EPSSetTolerances(eps,eps_tol,eps_max_its);
+  EPSSetConvergenceTest(eps,EPS_CONV_REL);
+  EPSSetWhichEigenpairs(eps, EPS_TARGET_REAL);
+  EPSSetTarget(eps,shift);
+  EPSSetST(eps,st); // set spectral transformation created above
+  //EPSSetTrueResidual(eps,PETSC_TRUE);
+  EPSSetOperators(eps, fAmat, fBmat);
+  EPSSetProblemType(eps, EPS_GNHEP);
   EPSSetType(eps,EPSKRYLOVSCHUR);
-  RG rg;
-  EPSGetRG(eps,&rg);
-  {
-    PetscScalar center = -150000;
-    PetscReal radius=125000, vscale=1;
-    RGSetType(rg,RGELLIPSE);
-    RGEllipseSetParameters(rg,center,radius,vscale);
-  }
-//	{
-//		RGSetType(rg,RGINTERVAL);
-//		PetscReal ra=-300000,rb=-5000,ia=-1,ib=1;
-//		RGIntervalSetEndpoints(rg,ra,rb,ia,ib);
-//	}
-  const PetscScalar target = -600000;
-  EPSSetWhichEigenpairs(eps, 	EPS_TARGET_REAL);
-  EPSSetTarget(eps, target);
-  PetscInt nev = 8;
-  PetscInt ncv = nRows;
-  PetscInt mpd = nRows - nev;
-  EPSSetDimensions(eps,nev,PETSC_DECIDE,PETSC_DECIDE);
-//	ierr = EPSSetTolerances(eps, 1e+2, 6); CHKERRQ(ierr);
-
-
-  ST st;
-  EPSGetST(eps,&st);
-  ierr = STSetType(st, STSINVERT); CHKERRQ(ierr);
-
-  KSP ksp;
-  STGetKSP(st,&ksp);
-  ierr = KSPSetType(ksp, KSPPREONLY); CHKERRQ(ierr); // because we're using a direct solver (PCLU)
-  KSPSetErrorIfNotConverged(ksp,PETSC_FALSE);
-  PetscReal rtol, abstol, dtol;
-  PetscInt maxits;
-  ierr = KSPGetTolerances(ksp, &rtol, &abstol, &dtol, &maxits);CHKERRQ(ierr);
-  rtol=1e-2;//it was 1e-8
-  //abstol=1e-6;//it was 1e-50
-  ierr = KSPSetTolerances(ksp, rtol, abstol, dtol, maxits);CHKERRQ(ierr);
-
-  PC pc;
-  ierr = KSPGetPC(ksp, &pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCLU); CHKERRQ(ierr);
-  //#ifdef USING_MKL
-  //ierr = PCFactorSetMatSolverPackage(pc, MATSOLVERMKL_PARDISO); CHKERRQ(ierr);
-  //#else
-  ierr = PCFactorSetMatSolverPackage(pc, MATSOLVERMUMPS); CHKERRQ(ierr);
-  //#endif
-
-  EPSView(eps,PETSC_VIEWER_STDOUT_WORLD);
-
+  EPSKrylovSchurSetLocking(eps,PETSC_FALSE);
+  EPSKrylovSchurSetRestart(eps,0.5);
+  const PetscInt nev = 5;
+  const PetscInt ncv = 30;
+  //const PetscInt mpd = ncv - nev;
+  EPSSetDimensions(eps, nev, ncv, PETSC_DECIDE);
+  EPSSetFromOptions(eps);
   /*****************************
    *  SOLVE
    *****************************/
@@ -297,28 +270,43 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   ierr = EPSSolve(eps);CHKERRQ(ierr);
   ierr = PetscTime(&t2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," Elapsed Time in EPSSolve: %f\n",t2-t1);CHKERRQ(ierr);
-  PetscInt nconv;
-  EPSGetConverged(eps, &nconv);
-  PetscScalar kr, ki;
-  Vec xr, xi;
-  MatCreateVecs(fAmat,NULL,&xr);
-  MatCreateVecs(fAmat,NULL,&xi);
-  for (int i = 0; i < nconv; ++i) {
-    EPSGetEigenpair(eps, i, &kr, &ki, xr, xi);
-    EPSComputeError(eps, i, EPS_ERROR_RELATIVE, &error);
-    std::cout<<kr<<std::endl;
-    std::cout<<error<<std::endl;
-  }
+  /*
+     Optional: Get some information from the solver and display it
+  */
+  PetscInt its,lits,maxit;
+  PetscReal tol;
+  EPSType type;
 
-  EPSDestroy(&eps);
-  ierr=MatDestroy(&fAmat);CHKERRQ(ierr);
-  ierr=MatDestroy(&fBmat);CHKERRQ(ierr);
-  if(fIsParallelStorage){
-    ierr = PetscFree(ibP);CHKERRQ(ierr);
-    ierr = PetscFree(jbP);CHKERRQ(ierr);
+  ierr = EPSGetIterationNumber(eps, &its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
+  ierr = EPSGetST(eps,&st);CHKERRQ(ierr);
+  ierr = STGetKSP(st,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetTotalIterations(ksp, &lits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of linear iterations of the method: %D\n",lits);CHKERRQ(ierr);
+  ierr = EPSGetType(eps, &type);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
+  //ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
+  ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                    Display solution and clean up
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /*
+     Show detailed info unless -terse option is given by user
+   */
+  const bool verbose = true;
+  if (verbose) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = EPSReasonView(eps,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = EPSErrorView(eps,EPS_ERROR_RELATIVE,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  } else {
+    ierr = EPSErrorView(eps,EPS_ERROR_RELATIVE,NULL);CHKERRQ(ierr);
   }
-  VecDestroy(&xr);
-  VecDestroy(&xi);
+  
 
   return 1;
 }
