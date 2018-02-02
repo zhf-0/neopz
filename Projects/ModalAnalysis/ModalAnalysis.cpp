@@ -36,7 +36,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
 #ifdef USING_SLEPC
-#include <TPZSlepcHandler.h>
+#include <TPZSlepcEPSHandler.h>
 #elif defined USING_LAPACK
 #include <TPZLapackWrapper.h>
 #endif
@@ -184,7 +184,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 
     const int nSolutions = neq >= 10 ? 10 : neq;
     #ifdef USING_SLEPC
-    TPZSlepcHandler<STATE> solver;
+    TPZSlepcEPSHandler<STATE> solver;
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
     #endif

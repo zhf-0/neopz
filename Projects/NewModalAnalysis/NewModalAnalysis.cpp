@@ -35,7 +35,9 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
 #ifdef USING_SLEPC
-#include <TPZSlepcHandler.h>
+#include <TPZSlepcEPSHandler.h>
+#include <TPZSlepcSTHandler.h>
+
 #elif defined USING_LAPACK
 #include <TPZLapackWrapper.h>
 #endif
@@ -227,14 +229,48 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
 
     const int nSolutions = neq >= 10 ? 10 : neq;
     #ifdef USING_SLEPC
-    TPZSlepcHandler<STATE> solver;
+    TPZSlepcEPSHandler<STATE> solver;
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
     #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
-    solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues
-    solver.SetHowManyEigenValues(nSolutions);
+
+  {
+    //to go to main function
+    TPZSlepcSTHandler stHandler;
+
+    stHandler.SetPrecond(PCLU);
+    stHandler.SetSolver(KSPPREONLY);
+    PetscReal ksp_rtol = 0, ksp_abstol = 1e-2, ksp_dtol = 1000;
+    PetscInt ksp_maxits = 100;
+    ksp_rtol = 1e-20;
+    stHandler.SetSolverTol(ksp_rtol,ksp_abstol,ksp_dtol,ksp_maxits);
+    stHandler.SetType(STSINVERT,-100000.);
+
+
+
+//SLEPc: Eigensolver class (uses SpectralTransformation class)
+
+    PetscReal eps_tol;
+    PetscInt eps_max_its;
+    eps_tol = 1e-10;
+    eps_max_its = 100;
+    solver.SetTolerances(eps_tol,eps_max_its);
+    solver.SetConvergenceTest(EPS_CONV_REL);
+    solver.SetWhichEigenpairs(EPS_TARGET_REAL);
+    solver.SetTargetEigenvalue(-100000.);
+    solver.SetST(stHandler);
+    solver.SetTrueResidual(PETSC_TRUE);
+    solver.SetProblemType(EPS_GNHEP);
+    solver.SetType(EPSKRYLOVSCHUR);
+    solver.SetKrylovOptions(false,0.75);
+    const PetscInt nev = 5;
+    const PetscInt ncv = 50;
+    //const PetscInt mpd = ncv - nev;
+    solver.SetEPSDimensions(nev, ncv, PETSC_DECIDE);
+    solver.SetVerbose(true);
+  }
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;

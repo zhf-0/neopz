@@ -6,21 +6,6 @@
 #define PZ_TPZEIGENSOLVER_H
 
 #include "TPZSolver.h"
-/**
-         * @brief Enum for defining ranges in the spectrum
-         */
-enum EDesiredEigen {
-  /** Most Negative EigenValues */
-      MNE,
-  /** Least Negative Eigenvalues */
-      LNE,
-  /** Least Positive Eigenvalues */
-      LPE,
-  /** Most Positive Eigenvalues */
-      MPE,
-  /** Specified Value on the Complex Plane */
-      SVCP
-};
 
 /**
 * @ingroup solver
@@ -96,21 +81,10 @@ public:
 
   virtual void SetAsGeneralised(bool isGeneralised);
 
-  int GetHowManyEigenvalues() const;
-
-  virtual void SetHowManyEigenValues(int howManyEigenValues);
-
   bool IsAbsoluteValue() const;
 
   virtual void SetAbsoluteValue(bool isAbsoluteValue);
 
-  EDesiredEigen GetDesiredPartOfSpectrum() const;
-
-  virtual void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum);
-
-  typename SPZAlwaysComplex<TVar>::type GetSpecifiedValue() const;
-
-  virtual void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue);
 protected:
   /**
    * @brief Whether to display the absolute value(true) or the real part
@@ -120,23 +94,6 @@ protected:
   /** @brief Whether to solve the eigenvalue problem
    *   is generalised (Ax=uBx) or not (Ax=ux)*/
   bool fIsGeneralised;
-  /**
-   * @brief Whether to calculate the eigenvectors (and not the eigenvalues only)
-   */
-  bool fMustCalculateEigenVectors;
-  /** @brief Desired number of eigenvalues to be computed*/
-  int fHowManyEigenValues;
-  /**
-   * @brief Where in the spectrum to search for eigenvalues
-   */
-  EDesiredEigen fDesiredPartOfSpectrum = MNE;
-  /**
-   * @brief If fDesiredPartOfSpectrum is SVCP, eigenvalues will be
-   * searched for around this value. It is always complex, regardless of
-   * what type STATE refers to.
-   */
-  typename SPZAlwaysComplex<TVar>::type fSpecifiedValue;
-
   /**
    * @brief Stores the computed eigenvalues
    */

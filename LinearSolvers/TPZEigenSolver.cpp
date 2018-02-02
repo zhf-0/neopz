@@ -2,23 +2,19 @@
 //
 // Created by Francisco Teixeira Orlandini on 11/23/17.
 #include "TPZEigenSolver.h"
-#include "TPZSlepcHandler.h"
+#include "TPZSlepcEPSHandler.h"
 #include "TPZLapackWrapper.h"
 #include "pzsbndmat.h"
 #include "pzysmp.h"
 
 template<typename TVar>
-TPZEigenSolver<TVar>::TPZEigenSolver() : fIsGeneralised(false), fMustCalculateEigenVectors(true),
-                                         fHowManyEigenValues(1),fDesiredPartOfSpectrum(MNE),fSpecifiedValue(0.){
+TPZEigenSolver<TVar>::TPZEigenSolver() : fIsGeneralised(false), fShowAbsoluteValue(false){
 }
 
 template<typename TVar>
 TPZEigenSolver<TVar>::TPZEigenSolver(const TPZEigenSolver &copy) {
   fIsGeneralised = copy.fIsGeneralised;
-  fMustCalculateEigenVectors = copy.fMustCalculateEigenVectors;
-  fHowManyEigenValues = copy.fHowManyEigenValues;
-  fDesiredPartOfSpectrum = copy.fDesiredPartOfSpectrum;
-  fSpecifiedValue = copy.fSpecifiedValue;
+  fShowAbsoluteValue = copy.fShowAbsoluteValue;
   fEigenvalues = copy.fEigenvalues;
   fEigenvectors = copy.fEigenvectors;
   fMatrixA = copy.fMatrixA;
@@ -41,9 +37,9 @@ void TPZEigenSolver<TVar>::Solve(TPZVec<typename SPZAlwaysComplex<TVar>::type> &
   }
   if(this->IsGeneralised()){
     TPZAutoPointer<TPZMatrix<TVar> > matB = this->MatrixB();
-    if(!matA->SolveGeneralisedEigenProblem(matB,eigenValues,eigenVectors,this)) DebugStop();
+    if(!this->SolveGeneralisedEigenProblem(matA,matB,eigenValues,eigenVectors)) DebugStop();
   }else{
-    if(!matA->SolveEigenProblem(eigenValues,eigenVectors,this)) DebugStop();
+    if(!this->SolveEigenProblem(matA,eigenValues,eigenVectors)) DebugStop();
   }
 }
 /////////////////////FALTA REVISAO//////////////////////
@@ -94,36 +90,6 @@ void TPZEigenSolver<TVar>::SetAbsoluteValue(bool isAbsoluteValue){
 template<typename TVar>
 bool TPZEigenSolver<TVar>::IsAbsoluteValue() const{
   return fShowAbsoluteValue;
-}
-
-template<typename TVar>
-void TPZEigenSolver<TVar>::SetHowManyEigenValues(int howManyEigenValues) {
-  fHowManyEigenValues = howManyEigenValues;
-}
-
-template<typename TVar>
-int TPZEigenSolver<TVar>::GetHowManyEigenvalues() const {
-  return fHowManyEigenValues;
-}
-
-template<typename TVar>
-void TPZEigenSolver<TVar>::SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum) {
-  fDesiredPartOfSpectrum = desiredPartOfSpectrum;
-}
-
-template<typename TVar>
-EDesiredEigen TPZEigenSolver<TVar>::GetDesiredPartOfSpectrum() const {
-  return fDesiredPartOfSpectrum;
-}
-
-template<typename TVar>
-void TPZEigenSolver<TVar>::SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue) {
-  fSpecifiedValue = specifiedValue;
-}
-
-template<typename TVar>
-typename SPZAlwaysComplex<TVar>::type TPZEigenSolver<TVar>::GetSpecifiedValue() const {
-  return fSpecifiedValue;
 }
 
 template class TPZEigenSolver< std::complex<float> >;

@@ -43,7 +43,7 @@
 #endif
 
 #ifdef USING_SLEPC
-#include <TPZSlepcHandler.h>
+#include <TPZSlepcEPSHandler.h>
 #include <TPZSpStructMatrix.h>
 #include <TPZEigenAnalysis.h>
 
@@ -163,7 +163,7 @@ void RunSimulation( bool isCutOff, bool filterEquations, const int meshType, boo
 
     nSolutions = neq >= nSolutions ? nSolutions : neq;
     #ifdef USING_SLEPC
-    TPZSlepcHandler<STATE> solver;
+    TPZSlepcEPSHandler<STATE> solver;
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
     #endif

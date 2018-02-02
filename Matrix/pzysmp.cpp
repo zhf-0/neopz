@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 #include <pthread.h>
-#include <TPZSlepcHandler.h>
+#include <TPZSlepcEPSHandler.h>
 #include "tpzverysparsematrix.h"
 #include "pz_pthread.h"
 

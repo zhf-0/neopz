@@ -16,7 +16,7 @@ int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typen
   else if (Absym){
     return SolveEigenProblem((TPZSBMatrix<TVar>&)A,w,eigenVectors);
   }else{
-    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    std::cout<<"TPZSlepcEPSHandler does not support this matrix format"<<std::endl;
     DebugStop();
   }
   return 0;
@@ -31,7 +31,7 @@ int TPZLapackWrapper<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typen
   else if (Absym){
     return SolveEigenProblem((TPZSBMatrix<TVar>&)A,w);
   }else{
-    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    std::cout<<"TPZSlepcEPSHandler does not support this matrix format"<<std::endl;
     DebugStop();
   }
   return 0;
@@ -48,7 +48,7 @@ int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZ
   else if (Absym && Bbsym){
     return SolveGeneralisedEigenProblem((TPZSBMatrix<TVar>&)A,(TPZSBMatrix<TVar>&)B,w,eigenVectors);
   }else{
-    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    std::cout<<"TPZSlepcEPSHandler does not support this matrix format"<<std::endl;
     DebugStop();
   }
   return 0;
@@ -65,7 +65,7 @@ int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZMatrix<TVar> &A, TPZ
   else if (Absym && Bbsym){
     return SolveGeneralisedEigenProblem((TPZSBMatrix<TVar>&)A,(TPZSBMatrix<TVar>&)B,w);
   }else{
-    std::cout<<"TPZSlepcHandler does not support this matrix format"<<std::endl;
+    std::cout<<"TPZSlepcEPSHandler does not support this matrix format"<<std::endl;
     DebugStop();
   }
   return 0;

@@ -5,18 +5,23 @@
 #ifndef PZ_TPZSLEPCHANDLER_H
 #define PZ_TPZSLEPCHANDLER_H
 
+#ifdef USING_SLEPC
+#include "TPZPetscWrapper.h"
 #include <pzysmp.h>
 #include <TPZEigenSolver.h>
+#include <slepceps.h>
 
 template<class TVar>
 class SPZAlwaysComplex;
 
+class TPZSlepcSTHandler;
 
 template<class TVar>
-class TPZSlepcHandler : public TPZEigenSolver<TVar> {
+class TPZSlepcEPSHandler : public TPZEigenSolver<TVar> , TPZPetscWrapper {
   friend class TPZFYsmpMatrix<TVar>;
 public:
-
+  TPZSlepcEPSHandler();
+  ~TPZSlepcEPSHandler();
   TPZSolver<TVar> *Clone() const override{
     //@TODO: Implement me!
     return (TPZSolver<TVar> *)this;
@@ -59,19 +64,34 @@ public:
    */
   int SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZFYsmpMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 
-  void SetAsGeneralised(bool isGeneralised) override;
+  void SetST(const TPZSlepcSTHandler &st);
 
-  void SetHowManyEigenValues(int howManyEigenValues) override;
+  void SetProblemType(const EPSProblemType epsProblem);
 
-  void SetAbsoluteValue(bool isAbsoluteValue) override;
+  void SetTolerances(const PetscReal &tol, const PetscInt &max_its);
 
-  void SetDesiredPartOfSpectrum(EDesiredEigen desiredPartOfSpectrum) override;
+  void SetEPSDimensions(const PetscInt &nev, const PetscInt &ncv, const PetscInt &mpd);
 
-  void SetSpecifiedValue(typename SPZAlwaysComplex<TVar>::type specifiedValue) override;
+  void SetConvergenceTest(const EPSConv&test);
+
+  void SetTrueResidual(const bool &opt);
+
+  void SetType(const EPSType &type);
+
+  void SetVerbose(bool fVerbose);
+
+  void SetTargetEigenvalue(const PetscScalar &target);
+
+  void SetWhichEigenpairs(const EPSWhich eps_which);
+
+  void SetKrylovOptions(const bool &pLocking, const PetscReal &restart);
 
 private:
-  bool fAmIInitialised = false;
+
+  bool fVerbose = true;
+
+  EPS fEps;
 };
 
-
+#endif //USING_SLEPC
 #endif //PZ_TPZSLEPCHANDLER_H
