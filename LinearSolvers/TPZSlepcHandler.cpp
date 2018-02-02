@@ -262,6 +262,14 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   //const PetscInt mpd = ncv - nev;
   EPSSetDimensions(eps, nev, ncv, PETSC_DECIDE);
   EPSSetFromOptions(eps);
+  const bool verbose = true;
+  if(verbose){
+    PetscViewerAndFormat *vf;
+    PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf);
+    EPSMonitorSet(eps,(PetscErrorCode (*)(EPS,PetscInt,PetscInt,PetscScalar*,PetscScalar*,
+                                           PetscReal*,PetscInt,void*))EPSMonitorAll,vf,
+                  (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);
+  }
   /*****************************
    *  SOLVE
    *****************************/
@@ -297,7 +305,6 @@ int TPZSlepcHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> &A,
   /*
      Show detailed info unless -terse option is given by user
    */
-  const bool verbose = true;
   if (verbose) {
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = EPSReasonView(eps,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
