@@ -235,6 +235,8 @@ ENABLE_TESTING()
 			#Projeto Pablo
 			add_subdirectory(CreepStokes)
 			add_subdirectory(PoroPlasticSolo)
+
+			add_subdirectory(MixedPoroElasticity)
 			
 			
 			add_subdirectory(Bima1)
