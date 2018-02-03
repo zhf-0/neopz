@@ -24,6 +24,9 @@ void TPZSlepcSTHandler::SetType(const STType &st, const STATE &shift) {
     PZError<<"Invalid spectral transformation\n";
     DebugStop();
   }
+  if(strcmp(st,STSINVERT) == 0){
+    STSetShift(fSt,shift);
+  }
 }
 
 void TPZSlepcSTHandler::SetSolver(const KSPType &solver) {

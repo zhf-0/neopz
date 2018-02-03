@@ -244,8 +244,8 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     stHandler.SetSolver(KSPPREONLY);
     PetscReal ksp_rtol = 0, ksp_abstol = 1e-2, ksp_dtol = 1000;
     PetscInt ksp_maxits = 100;
-    ksp_rtol = 1e-20;
-    stHandler.SetSolverTol(ksp_rtol,ksp_abstol,ksp_dtol,ksp_maxits);
+    ksp_rtol = 1e-10;
+    stHandler.SetSolverTol(ksp_rtol,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);
     stHandler.SetType(STSINVERT,-100000.);
 
 
@@ -261,7 +261,7 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     solver.SetWhichEigenpairs(EPS_TARGET_REAL);
     solver.SetTargetEigenvalue(-100000.);
     solver.SetST(stHandler);
-    solver.SetTrueResidual(PETSC_TRUE);
+    solver.SetTrueResidual(PETSC_FALSE);
     solver.SetProblemType(EPS_GNHEP);
     solver.SetType(EPSKRYLOVSCHUR);
     solver.SetKrylovOptions(false,0.75);

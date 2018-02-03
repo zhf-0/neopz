@@ -128,6 +128,7 @@ int TPZSlepcEPSHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> 
   EPSSetOperators(fEps, fAmat, fBmat);
 
   if(fVerbose){
+    EPSView(fEps,PETSC_VIEWER_STDOUT_WORLD);
     PetscViewerAndFormat *vf;
     PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf);
     EPSMonitorSet(fEps,(PetscErrorCode (*)(EPS,PetscInt,PetscInt,PetscScalar*,PetscScalar*,
@@ -239,7 +240,7 @@ template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetKrylovOptions (const bool &pLocking, const PetscReal &restart){
   EPSType currentType;
   EPSGetType(fEps, &currentType);
-  if(currentType != EPSKRYLOVSCHUR){
+  if(strcmp(currentType,EPSKRYLOVSCHUR)){
     PZError<<"EPSType is not EPSKRYLOVSCHUR\n";
     DebugStop();
   }
@@ -278,7 +279,8 @@ void TPZSlepcEPSHandler<TVar>::SetTrueResidual(const bool &pOpt) {
   EPSGetST(fEps, &st);
   STType type;
   STGetType(st, &type);
-  if(type != STSINVERT){
+
+  if(strcmp(type,STSINVERT)){
     PZError<<__PRETTY_FUNCTION__<<"is only available if STTYpe is STSINVERT\n";
     DebugStop();
   }
