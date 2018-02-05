@@ -45,6 +45,18 @@ struct TAnalyticSolution
 
 struct TElasticityExample1 : public TAnalyticSolution
 {
+    enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy, EShear,Etest1, EThiago, EPoly };
+    
+    static EDefState fProblemType;
+    
+    enum EStressState {ENone2, EPlaneStress, EPlaneStrain, EAxiSymmetric };
+    
+    static REAL fElast;
+    
+    static REAL fNu;
+    
+    static EStressState fStressState;
+    
     static void Force(const TPZVec<REAL> &x, TPZVec<STATE> &force)
     {
         TPZManVector<REAL,3> locforce(2);
@@ -56,6 +68,8 @@ struct TElasticityExample1 : public TAnalyticSolution
     virtual TPZAutoPointer<TPZFunction<STATE> > ForcingFunction();
     
     virtual TPZAutoPointer<TPZFunction<STATE> > ValueFunction();
+    
+    virtual TPZAutoPointer<TPZFunction<STATE> > ExactFunction();
     
     virtual TPZAutoPointer<TPZFunction<STATE> > ConstitutiveLawFunction();
     
@@ -89,20 +103,16 @@ struct TElasticityExample1 : public TAnalyticSolution
     
     template<class TVar>
     static void graduxy(const TPZVec<TVar> &x, TPZFMatrix<TVar> &grad);
-
+    
     template<class TVar>
     static void Elastic(const TPZVec<TVar> &x, TVar &Elast, TVar &nu);
-
+    
     static void ElasticDummy(const TPZVec<REAL> &x, TPZVec<STATE> &result, TPZFMatrix<STATE> &deriv);
-
+    
 };
 
 struct TElasticityExample2 : public TElasticityExample1
 {
-    enum EDefState  {ENone, EDispx, EDispy, ERot, EStretchx, EStretchy};
-    
-    static EDefState fProblemType;
-    
     template<class TVar>
     static void uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp);
     
@@ -128,7 +138,7 @@ struct TLaplaceExample1 : public TAnalyticSolution
     {
         return GradU;
     }
-
+    
     template<class TVar>
     static void uxy(const TPZVec<TVar> &x, TPZVec<TVar> &disp);
     
@@ -137,7 +147,7 @@ struct TLaplaceExample1 : public TAnalyticSolution
     
     template<class TVar>
     static void Permeability(const TPZVec<TVar> &x, TVar &Elast);
-
+    
     static void PermeabilityDummy(const TPZVec<REAL> &x, TPZVec<STATE> &result, TPZFMatrix<STATE> &deriv);
     
     template<class TVar>
@@ -159,7 +169,7 @@ struct TLaplaceExample1 : public TAnalyticSolution
         DivSigma(x, locforce);
         force[0] = locforce;
     }
-
+    
 };
 
 struct TLaplaceExampleSmooth : public TAnalyticSolution
