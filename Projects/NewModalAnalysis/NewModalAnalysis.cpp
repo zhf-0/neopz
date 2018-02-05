@@ -232,32 +232,47 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     TPZSlepcEPSHandler<STATE> solver;
     TPZSlepcSTHandler stHandler;
     {
+      const EPSConv eps_conv_test = EPS_CONV_NORM;
+      const EPSWhich eps_which_eig = EPS_TARGET_REAL;
       const PetscScalar target =-600000.;
-      PetscReal eps_tol;
-      PetscInt eps_max_its;
-      eps_tol = 1e-10;
-      eps_max_its = 100;
+      const PetscReal eps_tol = 1e-50;
+      const PetscInt eps_max_its = 100;
+      const PetscInt eps_nev = 5;
+      const PetscInt eps_ncv = 50;
+      const PetscInt eps_mpd = PETSC_DECIDE;
+      const PetscInt eps_verbose = true;
+
+      const PCType st_precond = PCLU;
+      const KSPType st_solver = KSPPREONLY;
+      const PetscReal ksp_rtol = 1e-10;
+      const PetscReal ksp_atol = PETSC_DEFAULT;
+      const PetscReal ksp_dtol = PETSC_DEFAULT;
+      const PetscReal ksp_max_its = PETSC_DEFAULT;
+      const STType st_type = STSINVERT;
+
+      const EPSProblemType eps_prob_type = EPS_GNHEP;
+      const EPSType eps_type = EPSKRYLOVSCHUR;
+      const bool eps_krylov_locking = false;
+      const PetscReal eps_krylov_restart = 0.5;
+      const bool eps_true_res = false;
+
       solver.SetTolerances(eps_tol,eps_max_its);
-      solver.SetConvergenceTest(EPS_CONV_REL);
-      solver.SetWhichEigenpairs(EPS_TARGET_REAL);
+      solver.SetConvergenceTest(eps_conv_test);
+      solver.SetWhichEigenpairs(eps_which_eig);
       solver.SetTargetEigenvalue(target);
 
-      stHandler.SetPrecond(PCLU);
-      stHandler.SetSolver(KSPPREONLY);
-      PetscReal ksp_rtol = 1e-10;
-      stHandler.SetSolverTol(ksp_rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
-      stHandler.SetType(STSINVERT,target);
+      stHandler.SetPrecond(st_precond);
+      stHandler.SetSolver(st_solver);
+      stHandler.SetSolverTol(ksp_rtol,ksp_atol,ksp_dtol,ksp_max_its);
+      stHandler.SetType(st_type,target);
       solver.SetST(stHandler);
 
-      solver.SetTrueResidual(PETSC_FALSE);
-      solver.SetProblemType(EPS_GNHEP);
-      solver.SetType(EPSKRYLOVSCHUR);
-      solver.SetKrylovOptions(false,0.5);
-      const PetscInt nev = 5;
-      const PetscInt ncv = 50;
-      //const PetscInt mpd = ncv - nev;
-      solver.SetEPSDimensions(nev, ncv, PETSC_DECIDE);
-      solver.SetVerbose(true);
+      solver.SetTrueResidual(eps_true_res);
+      solver.SetProblemType(eps_prob_type);
+      solver.SetType(eps_type);
+      solver.SetKrylovOptions(eps_krylov_locking,eps_krylov_restart);
+      solver.SetEPSDimensions(eps_nev, eps_ncv, eps_mpd);
+      solver.SetVerbose(eps_verbose);
     }
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
