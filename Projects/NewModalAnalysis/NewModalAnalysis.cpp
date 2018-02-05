@@ -230,47 +230,40 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     const int nSolutions = neq >= 10 ? 10 : neq;
     #ifdef USING_SLEPC
     TPZSlepcEPSHandler<STATE> solver;
+    TPZSlepcSTHandler stHandler;
+    {
+      const PetscScalar target =-600000.;
+      PetscReal eps_tol;
+      PetscInt eps_max_its;
+      eps_tol = 1e-10;
+      eps_max_its = 100;
+      solver.SetTolerances(eps_tol,eps_max_its);
+      solver.SetConvergenceTest(EPS_CONV_REL);
+      solver.SetWhichEigenpairs(EPS_TARGET_REAL);
+      solver.SetTargetEigenvalue(target);
+
+      stHandler.SetPrecond(PCLU);
+      stHandler.SetSolver(KSPPREONLY);
+      PetscReal ksp_rtol = 1e-10;
+      stHandler.SetSolverTol(ksp_rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
+      stHandler.SetType(STSINVERT,target);
+      solver.SetST(stHandler);
+
+      solver.SetTrueResidual(PETSC_FALSE);
+      solver.SetProblemType(EPS_GNHEP);
+      solver.SetType(EPSKRYLOVSCHUR);
+      solver.SetKrylovOptions(false,0.5);
+      const PetscInt nev = 5;
+      const PetscInt ncv = 50;
+      //const PetscInt mpd = ncv - nev;
+      solver.SetEPSDimensions(nev, ncv, PETSC_DECIDE);
+      solver.SetVerbose(true);
+    }
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
-    #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
-
-  {
-    //to go to main function
-    TPZSlepcSTHandler stHandler;
-
-    stHandler.SetPrecond(PCLU);
-    stHandler.SetSolver(KSPPREONLY);
-    PetscReal ksp_rtol = 0, ksp_abstol = 1e-2, ksp_dtol = 1000;
-    PetscInt ksp_maxits = 100;
-    ksp_rtol = 1e-10;
-    stHandler.SetSolverTol(ksp_rtol,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);
-    stHandler.SetType(STSINVERT,-100000.);
-
-
-
-//SLEPc: Eigensolver class (uses SpectralTransformation class)
-
-    PetscReal eps_tol;
-    PetscInt eps_max_its;
-    eps_tol = 1e-10;
-    eps_max_its = 100;
-    solver.SetTolerances(eps_tol,eps_max_its);
-    solver.SetConvergenceTest(EPS_CONV_REL);
-    solver.SetWhichEigenpairs(EPS_TARGET_REAL);
-    solver.SetTargetEigenvalue(-100000.);
-    solver.SetST(stHandler);
-    solver.SetTrueResidual(PETSC_FALSE);
-    solver.SetProblemType(EPS_GNHEP);
-    solver.SetType(EPSKRYLOVSCHUR);
-    solver.SetKrylovOptions(false,0.75);
-    const PetscInt nev = 5;
-    const PetscInt ncv = 50;
-    //const PetscInt mpd = ncv - nev;
-    solver.SetEPSDimensions(nev, ncv, PETSC_DECIDE);
-    solver.SetVerbose(true);
-  }
+    #endif
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;

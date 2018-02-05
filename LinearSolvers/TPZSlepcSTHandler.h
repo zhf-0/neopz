@@ -24,6 +24,7 @@ public:
   void SetType(const STType &st, const STATE &shift = 0.);
   void SetSolver(const KSPType &solver);
   void SetSolverTol(const PetscReal &rtol, const PetscReal &atol, const PetscReal &dtol, const PetscInt &max_its);
+  void GetSolverTol(PetscReal *rtol, PetscReal *atol, PetscReal *dtol, PetscInt *max_its);
   void SetPrecond(const PCType &precond);
 private:
   ST fSt;

@@ -66,25 +66,43 @@ public:
 
   void SetST(const TPZSlepcSTHandler &st);
 
+  void GetST(TPZSlepcSTHandler *st);
+
   void SetProblemType(const EPSProblemType epsProblem);
+
+  EPSProblemType GetProblemType() const;
 
   void SetTolerances(const PetscReal &tol, const PetscInt &max_its);
 
+  void GetTolerances(PetscReal *tol, PetscInt *max_its) const;
+
   void SetEPSDimensions(const PetscInt &nev, const PetscInt &ncv, const PetscInt &mpd);
 
+  void GetEPSDimensions(PetscInt *nev, PetscInt *ncv, PetscInt *mpd) const;
+
   void SetConvergenceTest(const EPSConv&test);
+
+  EPSConv GetConvergenceTest() const;
 
   void SetTrueResidual(const bool &opt);
 
   void SetType(const EPSType &type);
 
+  EPSType GetType() const;
+
   void SetVerbose(bool fVerbose);
 
   void SetTargetEigenvalue(const PetscScalar &target);
 
+  PetscScalar GetTargetEigenvalue() const;
+
   void SetWhichEigenpairs(const EPSWhich eps_which);
 
+  EPSWhich GetWhichEigenpairs() const;
+
   void SetKrylovOptions(const bool &pLocking, const PetscReal &restart);
+
+  void GetKrylovOptions(bool *pLocking , PetscReal *restart) const;
 
 private:
 

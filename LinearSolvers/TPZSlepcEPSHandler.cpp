@@ -12,6 +12,15 @@
 *    GENERAL       *
 *******************/
 template<class TVar>
+TPZSlepcEPSHandler<TVar>::TPZSlepcEPSHandler() : fVerbose(true){
+  EPSCreate( PETSC_COMM_WORLD, &fEps );
+}
+template<class TVar>
+TPZSlepcEPSHandler<TVar>::~TPZSlepcEPSHandler() {
+  EPSDestroy(&fEps);
+}
+
+template<class TVar>
 int TPZSlepcEPSHandler<TVar>::SolveEigenProblem(TPZMatrix<TVar> &A, TPZVec < typename SPZAlwaysComplex<TVar>::type > &w, TPZFMatrix < typename SPZAlwaysComplex<TVar>::type  > &eigenVectors){
 
   TPZFYsmpMatrix<TVar> *Afsparse = dynamic_cast<TPZFYsmpMatrix<TVar>* >(&A);
@@ -204,7 +213,14 @@ int TPZSlepcEPSHandler<TVar>::SolveEigenProblem(TPZFYsmpMatrix<TVar> &A, TPZVec 
 
 template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetST(const TPZSlepcSTHandler &st){
-  EPSSetST(fEps,st.fSt);
+  PetscErrorCode ierr = EPSSetST(fEps,st.fSt);
+  if(ierr) DebugStop();
+}
+
+template<class TVar>
+void TPZSlepcEPSHandler<TVar>::GetST(TPZSlepcSTHandler *st){
+  PetscErrorCode ierr = EPSGetST(fEps,&(st->fSt));
+  if(ierr) DebugStop();
 }
 
 template<class TVar>
@@ -221,6 +237,15 @@ void TPZSlepcEPSHandler<TVar>::SetProblemType(const EPSProblemType eps_problem)
 }
 
 template<class TVar>
+EPSProblemType TPZSlepcEPSHandler<TVar>::GetProblemType() const
+{
+  EPSProblemType eps_problem;
+  const PetscErrorCode ierr = EPSGetProblemType (fEps, &eps_problem);
+  if(ierr!=0) DebugStop();
+  return eps_problem;
+}
+
+template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetTargetEigenvalue (const PetscScalar &target){
   // set target eigenvalues to solve for
   // in all transformation except STSHIFT there is a direct connection between
@@ -230,10 +255,30 @@ void TPZSlepcEPSHandler<TVar>::SetTargetEigenvalue (const PetscScalar &target){
 }
 
 template<class TVar>
+PetscScalar TPZSlepcEPSHandler<TVar>::GetTargetEigenvalue () const {
+  // set target eigenvalues to solve for
+  // in all transformation except STSHIFT there is a direct connection between
+  // the target and the shift, read more on p41 of SLEPc manual.
+  PetscScalar target;
+  const PetscErrorCode ierr = EPSGetTarget (fEps, &target );
+  if(ierr!=0) DebugStop();
+  return target;
+}
+
+template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetWhichEigenpairs (const EPSWhich which){
   // set which portion of the eigenspectrum to solve for
   const PetscErrorCode ierr = EPSSetWhichEigenpairs (fEps, which);
   if(ierr!=0) DebugStop();
+}
+
+template<class TVar>
+EPSWhich TPZSlepcEPSHandler<TVar>::GetWhichEigenpairs () const {
+  // set which portion of the eigenspectrum to solve for
+  EPSWhich which;
+  const PetscErrorCode ierr = EPSGetWhichEigenpairs (fEps, &which);
+  if(ierr!=0) DebugStop();
+  return which;
 }
 
 template<class TVar>
@@ -252,13 +297,24 @@ void TPZSlepcEPSHandler<TVar>::SetKrylovOptions (const bool &pLocking, const Pet
   ierr = EPSKrylovSchurSetRestart(fEps, restart);
   if(ierr!=0) DebugStop();
 }
+
 template<class TVar>
-TPZSlepcEPSHandler<TVar>::TPZSlepcEPSHandler() : fVerbose(true){
-  EPSCreate( PETSC_COMM_WORLD, &fEps );
-}
-template<class TVar>
-TPZSlepcEPSHandler<TVar>::~TPZSlepcEPSHandler() {
-  EPSDestroy(&fEps);
+void TPZSlepcEPSHandler<TVar>::GetKrylovOptions (bool *pLocking, PetscReal *restart) const{
+  EPSType currentType;
+  EPSGetType(fEps, &currentType);
+  if(strcmp(currentType,EPSKRYLOVSCHUR)){
+    PZError<<"EPSType is not EPSKRYLOVSCHUR\n";
+    DebugStop();
+  }
+
+  PetscBool locking;
+
+
+  PetscErrorCode ierr = EPSKrylovSchurGetLocking(fEps, &locking);
+  if(ierr!=0) DebugStop();
+  *pLocking = locking;
+  ierr = EPSKrylovSchurGetRestart(fEps, restart);
+  if(ierr!=0) DebugStop();
 }
 
 template<class TVar>
@@ -268,9 +324,23 @@ void TPZSlepcEPSHandler<TVar>::SetTolerances(const PetscReal &tol, const PetscIn
 }
 
 template<class TVar>
+void TPZSlepcEPSHandler<TVar>::GetTolerances(PetscReal *tol, PetscInt *max_its) const {
+  const PetscErrorCode ierr = EPSGetTolerances(fEps,tol,max_its);
+  if(ierr != 0) DebugStop();
+}
+
+template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetConvergenceTest(const EPSConv &test) {
   const PetscErrorCode ierr = EPSSetConvergenceTest(fEps,test);
   if(ierr != 0) DebugStop();
+}
+
+template<class TVar>
+EPSConv TPZSlepcEPSHandler<TVar>::GetConvergenceTest() const {
+  EPSConv test;
+  const PetscErrorCode ierr = EPSGetConvergenceTest(fEps,&test);
+  if(ierr != 0) DebugStop();
+  return test;
 }
 
 template<class TVar>
@@ -296,8 +366,22 @@ void TPZSlepcEPSHandler<TVar>::SetType(const EPSType &type) {
 }
 
 template<class TVar>
+EPSType TPZSlepcEPSHandler<TVar>::GetType() const {
+  EPSType type;
+  const PetscErrorCode ierr = EPSGetType(fEps,&type);
+  if(ierr != 0) DebugStop();
+  return type;
+}
+
+template<class TVar>
 void TPZSlepcEPSHandler<TVar>::SetEPSDimensions(const PetscInt &nev, const PetscInt &ncv, const PetscInt &mpd) {
   const PetscErrorCode ierr = EPSSetDimensions(fEps,nev,ncv,mpd);
+  if(ierr != 0) DebugStop();
+}
+
+template<class TVar>
+void TPZSlepcEPSHandler<TVar>::GetEPSDimensions(PetscInt *nev, PetscInt *ncv, PetscInt *mpd) const {
+  const PetscErrorCode ierr = EPSGetDimensions(fEps,nev,ncv,mpd);
   if(ierr != 0) DebugStop();
 }
 

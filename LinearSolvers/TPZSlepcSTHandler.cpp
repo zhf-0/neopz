@@ -53,6 +53,14 @@ void TPZSlepcSTHandler::SetSolverTol(const PetscReal &rtol, const PetscReal &ato
   STSetKSP(fSt,fKsp);
 }
 
+void TPZSlepcSTHandler::GetSolverTol(PetscReal *rtol, PetscReal *atol, PetscReal *dtol, PetscInt *max_its) {
+  KSP ksp;
+  PetscErrorCode ierr = STGetKSP(fSt, &ksp);
+  if(ierr) DebugStop();
+  ierr = KSPGetTolerances(ksp, rtol , atol , dtol , max_its);
+  if(ierr) DebugStop();
+}
+
 void TPZSlepcSTHandler::SetPrecond(const PCType &precond) {
   PetscErrorCode ierr = 1;
   if(!fHasPrecond){
