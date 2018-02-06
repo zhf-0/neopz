@@ -291,6 +291,8 @@ public:
     
     virtual void Write(TPZStream &buf, int withclassid);
     
+    void SetLastState(){ gState = ELastState; }
+    void SetCurrentState(){ gState = ECurrentState; }
     
     
 protected:
@@ -321,6 +323,21 @@ protected:
     
     /// flag indicates axix-AxisSymmetric
     bool fAxisSymmetric = false;
+    
+    /// timestep [s]
+    REAL fTimeStep;
+    
+    REAL fTimeValue;
+    
+    REAL fCoupledfactor;
+    
+    REAL fmatId;
+    
+    REAL ftheta;
+    
+    /** @brief State: Stiffness or Mass Matrix Calculations */
+    enum EState { ELastState = 0, ECurrentState = 1 };
+    static EState gState;
     
 };
 

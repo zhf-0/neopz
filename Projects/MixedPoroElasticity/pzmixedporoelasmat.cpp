@@ -21,6 +21,8 @@ static LoggerPtr logdata(Logger::getLogger("pz.mixedporoelasticity"));
 #include <fstream>
 using namespace std;
 
+TPZMixedPoroElasticityMaterial::EState TPZMixedPoroElasticityMaterial::gState = ECurrentState;
+
 TPZMixedPoroElasticityMaterial::TPZMixedPoroElasticityMaterial() : TPZDiscontinuousGalerkin(0) {
     fE    = -1.;  // Young modulus
     fnu    = -1.;   // poisson coefficient
@@ -344,186 +346,194 @@ void TPZMixedPoroElasticityMaterial::Contribute(TPZVec<TPZMaterialData> &datavec
         }
 #endif
     }
-    for(int i = 0; i < nshapeS; i++ )
+    
+    //    Matriz de Contribuições no passo n+1
+    if(gState == ECurrentState)
     {
-        int iphi = datavec[0].fVecShapeIndex[i].second;
-        int ivec = datavec[0].fVecShapeIndex[i].first;
-        TPZFNMatrix<4> GradSi(fDimension,fDimension);
-        
-        REAL divSi = 0.;
-        
-        for (int e=0; e<3; e++) {
-            
-            ivecS(e,0) = datavec[0].fNormalVec(e,ivec);
-            phiSi(e,0) = phiS(iphi,0)*ivecS(e,0);
-            
-        }
-        TPZFNMatrix<3,REAL> axesvec(fDimension,1,0.);
-        datavec[0].axes.Multiply(ivecS,axesvec);
-        
-        //calculando div(Si)
-        for(int f=0; f<fDimension; f++)
+        for(int i = 0; i < nshapeS; i++ )
         {
-            divSi += axesvec(f,0)*dphiS(f,iphi);
-        }
-        
-        TPZFNMatrix<4,STATE> phiTensx(2,2,0.), phiTensy(2,2,0.);
-        
-        phiTensx(0,0) = phiSi(0,0);
-        phiTensx(0,1) = phiSi(1,0);
-        
-        phiTensy(1,0) = phiSi(0,0);
-        phiTensy(1,1) = phiSi(1,0);
-        ToVoight(phiTensx, phiSi1x);
-        ToVoight(phiTensy, phiSi1y);
-        
-        
-        divSi1x[0] = divSi;
-        
-        divSi1y[1] = divSi;
-        
-        
-        
-        
-        // matrix K11 - (Matrix A * stress tensor) x test-funtion stress tensor
-        for(int j = 0; j < nshapeS; j++){
-            int jphi = datavec[0].fVecShapeIndex[j].second;
-            int jvec = datavec[0].fVecShapeIndex[j].first;
+            int iphi = datavec[0].fVecShapeIndex[i].second;
+            int ivec = datavec[0].fVecShapeIndex[i].first;
+            TPZFNMatrix<4> GradSi(fDimension,fDimension);
             
-            for (int e=0; e<fDimension; e++) {
-                phiSj(e,0) = phiS(jphi,0)*datavec[0].fNormalVec(e,jvec);
+            REAL divSi = 0.;
+            
+            for (int e=0; e<3; e++) {
+                
+                ivecS(e,0) = datavec[0].fNormalVec(e,ivec);
+                phiSi(e,0) = phiS(iphi,0)*ivecS(e,0);
+                
+            }
+            TPZFNMatrix<3,REAL> axesvec(fDimension,1,0.);
+            datavec[0].axes.Multiply(ivecS,axesvec);
+            
+            //calculando div(Si)
+            for(int f=0; f<fDimension; f++)
+            {
+                divSi += axesvec(f,0)*dphiS(f,iphi);
             }
             
-            TPZFNMatrix<4,STATE> phjTensx(2,2,0.), phjTensy(2,2,0.);
+            TPZFNMatrix<4,STATE> phiTensx(2,2,0.), phiTensy(2,2,0.);
             
-            phjTensx(0,0) = phiSj(0,0);
-            phjTensx(0,1) = phiSj(1,0);
+            phiTensx(0,0) = phiSi(0,0);
+            phiTensx(0,1) = phiSi(1,0);
             
-            phjTensy(1,0) = phiSj(0,0);
-            phjTensy(1,1) = phiSj(1,0);
-            ToVoight(phjTensx, phiSj1x);
-            ToVoight(phjTensy, phiSj1y);
-            
-            
+            phiTensy(1,0) = phiSi(0,0);
+            phiTensy(1,1) = phiSi(1,0);
+            ToVoight(phiTensx, phiSi1x);
+            ToVoight(phiTensy, phiSi1y);
             
             
+            divSi1x[0] = divSi;
             
-            //Multiply by Lamé parameters
-            TPZManVector<STATE,4> AphiSi1x(4,0.0),AphiSi1y(4,0.0);
+            divSi1y[1] = divSi;
             
-            ComputeDeformationVector(phiSi1x,AphiSi1x);
-            ComputeDeformationVector(phiSi1y,AphiSi1y);
             
-            STATE valxx = InnerVec(AphiSi1x, phiSj1x);
-            STATE valxy = InnerVec(AphiSi1x, phiSj1y);
-            STATE valyx = InnerVec(AphiSi1y, phiSj1x);
-            STATE valyy = InnerVec(AphiSi1y, phiSj1y);
+            // Matrix Kel : (Matrix A * stress tensor) x test-funtion stress tensor
+            for(int j = 0; j < nshapeS; j++){
+                int jphi = datavec[0].fVecShapeIndex[j].second;
+                int jvec = datavec[0].fVecShapeIndex[j].first;
+                
+                for (int e=0; e<fDimension; e++) {
+                    phiSj(e,0) = phiS(jphi,0)*datavec[0].fNormalVec(e,jvec);
+                }
+                
+                TPZFNMatrix<4,STATE> phjTensx(2,2,0.), phjTensy(2,2,0.);
+                
+                phjTensx(0,0) = phiSj(0,0);
+                phjTensx(0,1) = phiSj(1,0);
+                
+                phjTensy(1,0) = phiSj(0,0);
+                phjTensy(1,1) = phiSj(1,0);
+                ToVoight(phjTensx, phiSj1x);
+                ToVoight(phjTensy, phiSj1y);
+                
+                
+                //Multiply by Lamé parameters
+                TPZManVector<STATE,4> AphiSi1x(4,0.0),AphiSi1y(4,0.0);
+                
+                ComputeDeformationVector(phiSi1x,AphiSi1x);
+                ComputeDeformationVector(phiSi1y,AphiSi1y);
+                
+                STATE valxx = InnerVec(AphiSi1x, phiSj1x);
+                STATE valxy = InnerVec(AphiSi1x, phiSj1y);
+                STATE valyx = InnerVec(AphiSi1y, phiSj1x);
+                STATE valyy = InnerVec(AphiSi1y, phiSj1y);
+                
+                //Matrix K11
+                if(fAxisSymmetric)
+                {
+                    valxx /= R;
+                    valxy /= R;
+                    valyx /= R;
+                    valyy /= R;
+                }
+                ek(2*i,2*j) += weight * valxx ;
+                
+                ek(2*i,2*j+1) += weight * valxy ;
+                
+                ek(2*i+1,2*j) += weight * valyx ;
+                
+                ek(2*i+1,2*j+1) += weight * valyy ;
+                
+            }
             
-            //Matrix K11
+            
+            
+            // matrix K21 and K12 - divergent of test-function stress tensor * displacement vector
+            for (int j = 0; j < nshapeU; j++) {
+                
+                
+                phiUj1x[0] =phiU(j,0);
+                
+                phiUj1y[1] =phiU(j,0);
+                
+                
+                STATE valx = weight * InnerVec(divSi1x, phiUj1x);
+                STATE valy = weight * InnerVec(divSi1y, phiUj1y);
+                
+                //Posição K21
+                ek(2*j+nshapeS*2, 2*i) += valx;
+                ek(2*j+1+nshapeS*2, 2*i+1) += valy;
+                
+                //Posição K12
+                ek(2*i,2*j+nshapeS*2) += valx;
+                ek(2*i+1,2*j+1+nshapeS*2) += valy;
+                
+                
+                
+            }
+            
+            
+            // matrix K31 and K13 - test-function stress tensor x rotation tensor p
+            for (int j = 0; j < nshapeP; j++) {
+                
+                TPZFNMatrix<4,STATE> phiPTensor(2,2,0.);
+                phiPTensor(0,1) = phiP(j,0);
+                phiPTensor(1,0) = -phiP(j,0);
+                ToVoight(phiPTensor, phiPj1x);
+                
+                STATE valxx = InnerVec(phiSi1x, phiPj1x);
+                STATE valxy = InnerVec(phiSi1y, phiPj1x);
+                
+                
+                //Matrix K31
+                
+                ek(j+nshapeS*2+nshapeU*2,2*i) += weight * valxx ;
+                
+                ek(j+nshapeS*2+nshapeU*2,2*i+1) += weight * valxy ;
+                
+                
+                //Matrix K13
+                
+                ek(2*i,j+nshapeS*2+nshapeU*2) += weight * valxx ;
+                
+                ek(2*i+1,j+nshapeS*2+nshapeU*2) += weight * valxy ;
+                
+                
+            }
+            
+            
+            
+        }
+        
+        for (int i = 0; i < nshapeU; i++) {
+            
+            
+            phiUj1x[0] =phiU(i,0);
+            
+            phiUj1y[1] =phiU(i,0);
+            
+            
+            //Vetor de carga f:
+            STATE factfx = -weight *phiUj1x[0]*f[0];
+            STATE factfy = -weight *phiUj1y[1]*f[1];
             if(fAxisSymmetric)
             {
-                valxx /= R;
-                valxy /= R;
-                valyx /= R;
-                valyy /= R;
+                factfx *= R;
+                factfy *= R;
             }
-            ek(2*i,2*j) += weight * valxx ;
+            //if(factfx != 0) DebugStop();
+            ef(nshapeS*2+2*i,0) += factfx;
+            ef(nshapeS*2+2*i+1,0) += factfy;
             
-            ek(2*i,2*j+1) += weight * valxy ;
+            //if(ef(nshapeS*2+2*j) != 0.) DebugStop();
             
-            ek(2*i+1,2*j) += weight * valyx ;
-            
-            ek(2*i+1,2*j+1) += weight * valyy ;
-            
-        }
-        
-        
-        
-        // matrix K21 and K12 - divergent of test-function stress tensor * displacement vector
-        for (int j = 0; j < nshapeU; j++) {
-            
-            
-            phiUj1x[0] =phiU(j,0);
-            
-            phiUj1y[1] =phiU(j,0);
-            
-            
-            STATE valx = weight * InnerVec(divSi1x, phiUj1x);
-            STATE valy = weight * InnerVec(divSi1y, phiUj1y);
-            
-            //Posição K21
-            ek(2*j+nshapeS*2, 2*i) += valx;
-            ek(2*j+1+nshapeS*2, 2*i+1) += valy;
-            
-            //Posição K12
-            ek(2*i,2*j+nshapeS*2) += valx;
-            ek(2*i+1,2*j+1+nshapeS*2) += valy;
-            
-            
+            for (int j=0; j< nshapeU; j++) {
+                ek(nshapeS*2+2*i,nshapeS*2+2*j) -= weight*phiU(i,0)*phiU(j,0)/(fE*R);
+            }
             
         }
-        
-        
-        // matrix K31 and K13 - test-function stress tensor x rotation tensor p
-        for (int j = 0; j < nshapeP; j++) {
-            
-            TPZFNMatrix<4,STATE> phiPTensor(2,2,0.);
-            phiPTensor(0,1) = phiP(j,0);
-            phiPTensor(1,0) = -phiP(j,0);
-            ToVoight(phiPTensor, phiPj1x);
-            
-            STATE valxx = InnerVec(phiSi1x, phiPj1x);
-            STATE valxy = InnerVec(phiSi1y, phiPj1x);
-            
-            
-            //Matrix K31
-            
-            ek(j+nshapeS*2+nshapeU*2,2*i) += weight * valxx ;
-            
-            ek(j+nshapeS*2+nshapeU*2,2*i+1) += weight * valxy ;
-            
-            
-            //Matrix K13
-            
-            ek(2*i,j+nshapeS*2+nshapeU*2) += weight * valxx ;
-            
-            ek(2*i+1,j+nshapeS*2+nshapeU*2) += weight * valxy ;
-            
-            
-        }
-        
+
+    }
+    
+    //    Matriz de Contribuições no passo n
+    if(gState == ELastState)
+    {
         
         
     }
-    
-    for (int i = 0; i < nshapeU; i++) {
-        
-        
-        phiUj1x[0] =phiU(i,0);
-        
-        phiUj1y[1] =phiU(i,0);
-        
-        
-        //Vetor de carga f:
-        STATE factfx = -weight *phiUj1x[0]*f[0];
-        STATE factfy = -weight *phiUj1y[1]*f[1];
-        if(fAxisSymmetric)
-        {
-            factfx *= R;
-            factfy *= R;
-        }
-        //if(factfx != 0) DebugStop();
-        ef(nshapeS*2+2*i,0) += factfx;
-        ef(nshapeS*2+2*i+1,0) += factfy;
-        
-        //if(ef(nshapeS*2+2*j) != 0.) DebugStop();
-        
-        for (int j=0; j< nshapeU; j++) {
-            ek(nshapeS*2+2*i,nshapeS*2+2*j) -= weight*phiU(i,0)*phiU(j,0)/(fE*R);
-        }
-        
-    }
-    
+
     ///    std::ofstream filestiff("ek.txt");
     //    ek.Print("K1 = ",filestiff,EMathematicaInput);
     
