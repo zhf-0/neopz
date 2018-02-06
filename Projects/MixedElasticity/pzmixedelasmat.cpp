@@ -1038,6 +1038,8 @@ int TPZMixedElasticityMaterial::VariableIndex(const std::string &name){
     if(!strcmp("ShearStrain",name.c_str()))        return 26;
     if(!strcmp("Rotation",name.c_str()))           return 27; //function P ***
     if(!strcmp("ExactDisplacement",name.c_str()))           return 30; //function P ***
+    if(!strcmp("ExactSigmaX",name.c_str()))           return 31;
+    if(!strcmp("ExactSigmaY",name.c_str()))           return 32;
     
     
     return TPZMaterial::VariableIndex(name);
@@ -1083,7 +1085,9 @@ int TPZMixedElasticityMaterial::NSolutionVariables(int var){
         case 27:
         case 30:
             return 3;
-            
+        case 31:
+        case 32:
+            return 1;
         default:
             return TPZMaterial::NSolutionVariables(var);
     }
@@ -1312,13 +1316,24 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
         DebugStop();
     }
 #endif
+    TPZVec<STATE> ESol(3,0.0);
+    TPZFNMatrix<9,STATE> Egradu(2,2,0.0);
+    if(this->HasForcingFunctionExact()){
+        this->fForcingFunctionExact->Execute(data[1].x, ESol, Egradu);
+    }
+    
+    REAL lambda = GetLambda();
+    REAL mu = this->GetMU();
+    REAL E = this->fE;
+    REAL Pressure;
+    
     TPZManVector<REAL,3> x = data[0].x;
     REAL R = x[0];
     if(R < 1.e-6)
     {
         R = 1.e-6;
     }
-    TPZFNMatrix<9,STATE> sigma(3,3,0.), sigmah(3,3,0.), eps(3,3,0.);
+    TPZFNMatrix<9,STATE> sigma(3,3,0.), sigmah(3,3,0.), eps(3,3,0.), Esigma(3,3,0.);
     int dim = Dimension();
     for (int i=0; i<dim; i++) {
         for (int j=0; j<3; j++) {
@@ -1332,6 +1347,18 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
             }
         }
     }
+    
+    //Stress. Exact Solution:
+    TPZFNMatrix<6,REAL> Egradut(dim,dim,0.0);
+    Egradu.Transpose(&Egradut);
+
+    for (int i=0; i<dim; i++) {
+        Esigma(i,i) +=lambda*Tr(Egradu);
+        for (int j=0; j<dim; j++) {
+            Esigma(i,j) += mu*(Egradu(i,j)+Egradut(i,j));
+        }
+    }
+    
     TPZManVector<STATE,2> disp(2);
     for (int i=0; i<dim; i++) {
         disp[i] = data[1].sol[0][i];
@@ -1340,10 +1367,7 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
     antisym(0,1) = data[2].sol[0][0];
     antisym(1,0) = -antisym(0,1);
     
-    REAL lambda = GetLambda();
-    REAL mu = this->GetMU();
-    REAL E = this->fE;
-    REAL Pressure;
+
     
     TPZManVector<REAL,4> SIGMA(4,0.) , EPSZ(4,0.);
     
@@ -1450,16 +1474,23 @@ void TPZMixedElasticityMaterial::Solution(TPZVec<TPZMaterialData> &data, int var
     }
     
     if(var == 30) {
-    TPZVec<STATE> Sol(3,0.0);
-    TPZFNMatrix<9,STATE> gradu(2,1);
-    if(this->HasForcingFunctionExact()){
-        this->fForcingFunctionExact->Execute(data[1].x, Sol, gradu);
-    }
-    Solout[0] = Sol[0];
-    Solout[1] = Sol[1];
+        
+    Solout[0] = ESol[0];
+    Solout[1] = ESol[1];
     Solout[2] = 0.;
     return;
     }
+    
+    if(var == 31) {
+        Solout[0] = Esigma(0,0);
+        return;
+    }
+    
+    if(var == 32) {
+        Solout[0] = Esigma(1,1);
+        return;
+    }
+    
 }
 
 

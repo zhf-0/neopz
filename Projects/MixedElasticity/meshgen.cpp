@@ -478,7 +478,7 @@ TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ValueFunction()
 TPZAutoPointer<TPZFunction<STATE> > TElasticityExample1::ExactFunction()
 {
     TPZDummyFunction<STATE> *dummy = new TPZDummyFunction<STATE>(GradU);
-    dummy->SetPolynomialOrder(5);
+    dummy->SetPolynomialOrder(30);
     TPZAutoPointer<TPZFunction<STATE> > result(dummy);
     return result;
 }

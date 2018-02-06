@@ -180,15 +180,15 @@ int main(int argc, char *argv[])
     InitializePZLOG();
 #endif
     EConfig conf = EThiago;
-    int maxrefp = 1;
+    int maxrefp = 3;
     int maxrefh = 1;
     bool plotting = true;
     
     
     std::string rootname;
     double hx=1,hy=1; //Dimensões em x e y do domínio
-    double x0 = -1;
-    double y0 = -1;
+    double x0 = 0.;
+    double y0 = 0.;
     
     
     //Dados do problema:
@@ -200,8 +200,8 @@ int main(int argc, char *argv[])
             TElasticityExample1::fNu = 0.3;
             hx = 1;
             hy = 1;
-            x0 = -1;
-            y0 = -1;
+            x0 = 0;
+            y0 = 0;
             
             rootname = "../" + ConfigRootname[0] + "_Poly";
             break;
@@ -240,9 +240,9 @@ int main(int argc, char *argv[])
     TElasticityExample1::Force(x,force);
     
     for (int iref = 0; iref < maxrefh; iref++) {
-        for (int pref = 0; pref < maxrefp; pref++)
+        for (int pref = 2; pref < maxrefp; pref++)
         {
-            int h_level = 1 << iref;
+            int h_level = 2 << iref;
             int nelx=h_level, nely=h_level; //Número de elementos em x e y
             int nx=nelx+1 ,ny=nely+1; //Número de nos em x  y
             int RibpOrder = pref+1; //Ordem polinomial de aproximação
@@ -366,14 +366,19 @@ int main(int argc, char *argv[])
                 scalnames.Push("SigmaX");
                 scalnames.Push("SigmaY");
                 scalnames.Push("TauXY");
+                scalnames.Push("ExactSigmaX");
+                scalnames.Push("ExactSigmaY");
                 vecnames.Push("Flux");
                 vecnames.Push("displacement");
                 vecnames.Push("ExactDisplacement");
                 vecnames.Push("Stress");
                 int count = iref*maxrefp+pref;
                 an.SetStep(count);
-                an.DefineGraphMesh(2, scalnames, vecnames, plotfile);
-                an.PostProcess(2);
+
+                int dim = gmesh->Dimension();
+                int postProcessResolution = 3; //  keep low as possible
+                an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
+                an.PostProcess(postProcessResolution,dim);
             }
 #ifdef PZDEBUG
             //Imprimindo vetor solução:
