@@ -70,6 +70,42 @@ template<>
 struct SPZAlwaysComplex<std::complex<long double>>{
 	typedef std::complex<long double> type;
 };
+
+#ifdef _AUTODIFF
+template<class T>
+class Fad;
+
+template<>
+struct SPZAlwaysComplex<Fad<float>>{
+  typedef Fad<std::complex<float>> type;
+};
+
+template<>
+struct SPZAlwaysComplex<Fad<double>>{
+  typedef Fad<std::complex<double>> type;
+};
+
+template<>
+struct SPZAlwaysComplex<Fad<long double>>{
+  typedef Fad<std::complex<long double>> type;
+};
+
+template<>
+struct SPZAlwaysComplex<Fad<std::complex<float>>>{
+  typedef Fad<std::complex<float>> type;
+};
+
+template<>
+struct SPZAlwaysComplex<Fad<std::complex<double>>>{
+  typedef Fad<std::complex<double>> type;
+};
+
+template<>
+struct SPZAlwaysComplex<Fad<std::complex<long double>>>{
+  typedef Fad<std::complex<long double>> type;
+};
+#endif//_AUTODIFF
+
 //@TODO: The need for the following instantiations annoys me but I dont know what else to do
 template<>
 struct SPZAlwaysComplex<long>{

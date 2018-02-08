@@ -154,6 +154,7 @@ if(USING_BOOST)
 	find_package( Boost COMPONENTS unit_test_framework REQUIRED )
 	include_directories(${Boost_INCLUDE_DIRS})
 	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${Boost_LIBRARIES})
+	include_directories(Pre/ParameterHandler)
 endif(USING_BOOST)
 
 

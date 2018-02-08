@@ -37,10 +37,8 @@
 #ifdef USING_SLEPC
 #include <TPZSlepcEPSHandler.h>
 #include <TPZSlepcSTHandler.h>
-
-#elif defined USING_LAPACK
-#include <TPZLapackWrapper.h>
 #endif
+#include "parameter_handler.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
 #include "TPZGmshReader.h"
@@ -144,6 +142,8 @@ int main(int argc, char *argv[]) {
     }
 
     #else
+
+    ParameterHandler prm;
     //hard-coded mode
     std::string mshFileName = "refinedInterface.msh";
     const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
