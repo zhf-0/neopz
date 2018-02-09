@@ -123,7 +123,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
     prm.declare_entry("Target eigenvalue", "-1.", Patterns::Double(),
                       "Target eigenvalue to be sought if Which eigenvalues is equal "
                           "to EPS_TARGET_(MAGNITUDE|IMAGINARY|REAL).");
-    prm.declare_entry("Eigensolver tolerance", "0", Patterns::Double(0.),
+    prm.declare_entry("Eigensolver tolerance", "0", Patterns::Double(-1.e-5),
                       "Eigensolver convergence tolerance(0 for PETSC_DEFAULT).");
     prm.declare_entry("Eigensolver maximum iterations", "0", Patterns::Integer(0),
                       "Maximum number of iterations of the eigensolver(0 for PETSC_DEFAULT).");
@@ -151,13 +151,13 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                                                                            "KSPBCGSL|KSPPIPEBCGS|KSPCGS|KSPTFQMR|"
                                                                            "KSPCR|KSPPIPECR|KSPLSQR|KSPPREONLY"),
                       "Sets the preconditioner to be used.");
-    prm.declare_entry("Linear solver relative tolerance", "0", Patterns::Double(0.),
+    prm.declare_entry("Linear solver relative tolerance", "0", Patterns::Double(-1.e-5),
                       "Sets the relative convergence tolerance, relative decrease in"
                           " the residual norm(0 for PETSC_DEFAULT)");
-    prm.declare_entry("Linear solver absolute tolerance", "0", Patterns::Double(0.),
+    prm.declare_entry("Linear solver absolute tolerance", "0", Patterns::Double(-1.e-5),
                       "Sets the absolute convergence tolerance absolute size of the "
                           "residual norm(0 for PETSC_DEFAULT)");
-    prm.declare_entry("Linear solver divergence tolerance", "0", Patterns::Double(0.),
+    prm.declare_entry("Linear solver divergence tolerance", "0", Patterns::Double(-1.e-5),
                       "Sets the divergence tolerance, amount residual norm can increase before "
                           "the convergence test concludes that the method is diverging(0 for PETSC_DEFAULT)");
     prm.declare_entry("Linear solver maximum iterations", "0", Patterns::Integer(0),
@@ -187,7 +187,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
                       data.physicalOpts.erVec);
     ReadComplexVector(data.physicalOpts.nMaterials,"Magnetic permeability vector",
                       "Dielectric losses vector(mu)","Is lossless(mu)",
-                      data.physicalOpts.erVec);
+                      data.physicalOpts.urVec);
   }
   prm.leave_subsection();
   prm.enter_subsection("NeoPZ options");
@@ -226,6 +226,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
         case Utilities::str_to_constexpr("EPS_GHIEP") :
           data.solverOpts.eps_prob_type = EPS_GHIEP;
           break;
+        default:
+          std::cout<<"Error while reading"<<"Problem type"<<" with value "
+                   <<str<<std::endl;
+          DebugStop();
       }
 
       str = prm.get("Eigensolver");
@@ -281,6 +285,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
         case Utilities::str_to_constexpr("EPSFEAST"):
           data.solverOpts.eps_type = EPSFEAST;
           break;
+        default:
+          std::cout<<"Error while reading"<<"Eigensolver"<<" with value "
+                   <<str<<std::endl;
+          DebugStop();
       }
     data.solverOpts.eps_krylov_locking = prm.get_bool("Krylov locking");//bool
     data.solverOpts.eps_krylov_restart = prm.get_double("Krylov restart");//double
@@ -295,6 +303,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       case Utilities::str_to_constexpr("EPS_CONV_NORM") :
         data.solverOpts.eps_conv_test = EPS_CONV_NORM;
         break;
+        default:
+          std::cout<<"Error while reading"<<"Convergence test"<<" with value "
+                   <<str<<std::endl;
+          DebugStop();
     }
     data.solverOpts.eps_true_res = prm.get_bool("True residual");//bool
 
@@ -330,7 +342,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       case Utilities::str_to_constexpr("EPS_ALL") :
         data.solverOpts.eps_which_eig = EPS_ALL;
         break;
-
+      default:
+        std::cout<<"Error while reading"<<"Which eigenvalues"<<" with value "
+                 <<str<<std::endl;
+        DebugStop();
     }
 
     data.solverOpts.target = prm.get_double("Target eigenvalue");//double
@@ -347,51 +362,55 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
 
     str =prm.get("Preconditioner");
     switch(Utilities::str_to_constexpr(str.c_str())){
-      case Utilities::str_to_constexpr(PCNONE) :
+      case Utilities::str_to_constexpr("PCNONE") :
         data.solverOpts.st_precond = PCNONE;
         break;
-      case Utilities::str_to_constexpr(PCJACOBI) :
+      case Utilities::str_to_constexpr("PCJACOBI") :
         data.solverOpts.st_precond = PCJACOBI;
         break;
-      case Utilities::str_to_constexpr(PCSOR) :
+      case Utilities::str_to_constexpr("PCSOR") :
         data.solverOpts.st_precond = PCSOR;
         break;
-      case Utilities::str_to_constexpr(PCLU) :
+      case Utilities::str_to_constexpr("PCLU") :
         data.solverOpts.st_precond = PCLU;
         break;
-      case Utilities::str_to_constexpr(PCSHELL) :
+      case Utilities::str_to_constexpr("PCSHELL") :
         data.solverOpts.st_precond = PCSHELL;
         break;
-      case Utilities::str_to_constexpr(PCBJACOBI) :
+      case Utilities::str_to_constexpr("PCBJACOBI") :
         data.solverOpts.st_precond = PCBJACOBI;
         break;
-      case Utilities::str_to_constexpr(PCMG) :
+      case Utilities::str_to_constexpr("PCMG") :
         data.solverOpts.st_precond = PCMG;
         break;
-      case Utilities::str_to_constexpr(PCEISENSTAT) :
+      case Utilities::str_to_constexpr("PCEISENSTAT") :
         data.solverOpts.st_precond = PCEISENSTAT;
         break;
-      case Utilities::str_to_constexpr(PCILU) :
+      case Utilities::str_to_constexpr("PCILU") :
         data.solverOpts.st_precond = PCILU;
         break;
-      case Utilities::str_to_constexpr(PCICC) :
+      case Utilities::str_to_constexpr("PCICC") :
         data.solverOpts.st_precond = PCICC;
         break;
-      case Utilities::str_to_constexpr(PCASM) :
+      case Utilities::str_to_constexpr("PCASM") :
         data.solverOpts.st_precond = PCASM;
         break;
-      case Utilities::str_to_constexpr(PCGASM) :
+      case Utilities::str_to_constexpr("PCGASM") :
         data.solverOpts.st_precond = PCGASM;
         break;
-      case Utilities::str_to_constexpr(PCKSP) :
+      case Utilities::str_to_constexpr("PCKSP") :
         data.solverOpts.st_precond = PCKSP;
         break;
-      case Utilities::str_to_constexpr(PCCOMPOSITE) :
+      case Utilities::str_to_constexpr("PCCOMPOSITE") :
         data.solverOpts.st_precond = PCCOMPOSITE;
         break;
-      case Utilities::str_to_constexpr(PCREDUNDANT) :
+      case Utilities::str_to_constexpr("PCREDUNDANT") :
         data.solverOpts.st_precond = PCREDUNDANT;
         break;
+      default:
+        std::cout<<"Error while reading"<<"Preconditioner"<<" with value "
+                 <<str<<std::endl;
+        DebugStop();
     }
 
     str =prm.get("Linear solver");
@@ -477,6 +496,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       case Utilities::str_to_constexpr("KSPPREONLY") :
         data.solverOpts.st_solver = KSPPREONLY;
         break;
+      default:
+        std::cout<<"Error while reading"<<"Linear solver"<<" with value "
+                 <<str<<std::endl;
+        DebugStop();
     }
 
     data.solverOpts.ksp_rtol = prm.get_double("Linear solver relative tolerance");//double
@@ -505,6 +528,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       case Utilities::str_to_constexpr("STPRECOND") :
         data.solverOpts.st_type = STPRECOND;
         break;
+      default:
+        std::cout<<"Error while reading"<<"Spectral transformation"<<" with value "
+                 <<str<<std::endl;
+        DebugStop();
     }
   }
   prm.leave_subsection();

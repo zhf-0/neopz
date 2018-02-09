@@ -45,10 +45,7 @@
 #include "SPZModalAnalysisDataReader.h"
 #include "SPZModalAnalysisData.h"
 
-void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder, const REAL &f0,
-                   const bool &genVTK, const bool &l2error, const bool &exportEigen, const int &nThreads,
-                   const bool &optimizeBandwidth, const bool &filterEquations, TPZVec<STATE> &urVec,
-                   TPZVec<STATE> &erVec);
+void RunSimulation(SPZModalAnalysisData &simData);
 
 void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec);
 
@@ -61,8 +58,6 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              int &neqOriginal);
 
 
-#define HARDCODED_WG
-
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
@@ -70,123 +65,17 @@ int main(int argc, char *argv[]) {
 
 
 
-    //Command-Line interactive mode
-    #ifndef HARDCODED_WG
-    std::cout<<"Input .msh file name: ";
-    std::string mshFileName;
-    {
-        std::string input;
-        std::getline( std::cin, input );
-        if ( !input.empty() ) {
-            std::istringstream stream( input );
-            stream >> mshFileName;
-        }
-        else{
-            DebugStop();
-        }
-    }
-
-    int nMaterials = 1;
-    std::cout<<"Number of materials in the mesh? (default: 1) : ";
-    {
-        std::string input;
-        std::getline( std::cin, input );
-        if ( !input.empty() ) {
-            std::istringstream stream( input );
-            stream >> nMaterials;
-            if(nMaterials < 1) DebugStop();
-        }
-    }
-
-    TPZVec<STATE> urVec, erVec;
-    urVec.Resize(nMaterials);
-    erVec.Resize(nMaterials);
-
-    for(int i = 0 ; i < nMaterials ; i++){
-        {
-            std::cout<<"Magnetic permeability for material "<<i+1<<" (default: 1H/m) : ";
-            std::string input;
-            std::getline( std::cin, input );
-            if ( !input.empty() ) {
-                std::istringstream stream( input );
-                stream >> urVec[i];
-            }
-        }
-        {
-            std::cout<<"Electric permittivity for material "<<i+1<<" (default: 1F/m) : ";
-            std::string input;
-            std::getline( std::cin, input );
-            if ( !input.empty() ) {
-                std::istringstream stream( input );
-                stream >> erVec[i];
-            }
-        }
-    }
-    bool isCutOff = false;
-    REAL fOp = 14e+9;
-    std::cout<<"Cut-off analyser? Y/N (default: N) : ";
-    {
-        std::string input;
-        std::getline( std::cin, input );
-        if ( !input.empty() ) {
-            if(input[0] == 'Y') isCutOff = true;
-        }
-    }
-
-    if(!isCutOff){
-        std::cout<<"Input operational frequency in Hz (default: 9GHz) : ";
-        std::string input;
-        std::getline( std::cin, input );
-        if ( !input.empty() ) {
-            std::istringstream stream( input );
-            stream >> fOp;
-        }
-    }
-
-    #else
-
     ParameterHandler prm;
     SPZModalAnalysisDataReader reader(prm,argc,argv);
     SPZModalAnalysisData simData;
     reader.ReadParameters(simData);
-    //hard-coded mode
-    std::string mshFileName = "refinedInterface.msh";
-    const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
-    const REAL fOp = 16e+9;
-    const int nMaterials = 2;
-    TPZVec<STATE> urVec, erVec;
-    urVec.Resize(nMaterials);
-    erVec.Resize(nMaterials);
-    erVec[0] = 1.;
-    urVec[0] = 1.;
-    erVec[1] = 9.;
-    urVec[1] = 1.;
-    #endif
 
-    int pOrder = 1;           // polynomial order of basis functions
-    bool genVTK = false;      // generate vtk for fields visualisation
-    bool l2error = false;     // TODO: implement error analysis
-    bool exportEigen = false; // export eigen values
-    const int nThreads = 8;
-    bool optimizeBandwidth = true; //whether to renumber equations (OFF for debugging purposes)
-    bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
-
-
-    const int nSim = 1;
-    for (int i = 0; i < nSim; i++) {
-        std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
-
-        RunSimulation(isCutOff, mshFileName, pOrder, fOp, genVTK, l2error,
-                      exportEigen, nThreads, optimizeBandwidth, filterEquations, urVec, erVec);
-    }
+    RunSimulation(simData);
 
     return 0;
 }
 
-void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder, const REAL &f0,
-                   const bool &genVTK, const bool &l2error, const bool &exportEigen, const int &nThreads,
-                   const bool &optimizeBandwidth, const bool &filterEquations, TPZVec<STATE> &urVec,
-                   TPZVec<STATE> &erVec) {
+void RunSimulation(SPZModalAnalysisData &simData) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
     std::cout<<"Creating GMesh...";
     #ifdef USING_BOOST
@@ -194,7 +83,7 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
         boost::posix_time::microsec_clock::local_time();
     #endif
     TPZVec<int> matIdVec;
-    ReadGMesh(gmesh, mshFileName, matIdVec);
+    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec);
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
@@ -207,8 +96,9 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
         boost::posix_time::microsec_clock::local_time();
     #endif
 
-    CreateCMesh(meshVec, gmesh, pOrder, matIdVec, urVec, erVec,f0,
-                isCutOff); // funcao para criar a malha computacional
+    CreateCMesh(meshVec, gmesh, simData.pzOpts.pOrder, matIdVec,
+                simData.physicalOpts.urVec, simData.physicalOpts.erVec,
+                simData.physicalOpts.fOp,simData.physicalOpts.isCutOff); // funcao para criar a malha computacional
 
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_c =
@@ -217,7 +107,7 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
     #endif
     TPZCompMesh *cmesh = meshVec[0];
 
-    TPZEigenAnalysis an(cmesh, optimizeBandwidth);
+    TPZEigenAnalysis an(cmesh, true);
 
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
@@ -225,65 +115,32 @@ void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const i
 
     TPZAutoPointer<TPZStructMatrix> strmtrx;
     strmtrx = new TPZSpStructMatrix(cmesh);
-    strmtrx->SetNumThreads(nThreads);
-    if (filterEquations) {
-        FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
-        strmtrx->EquationFilter().SetActiveEquations(activeEquations);
-    }
+    strmtrx->SetNumThreads(simData.pzOpts.nThreads);
+    FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
+    strmtrx->EquationFilter().SetActiveEquations(activeEquations);
     an.SetStructuralMatrix(strmtrx);
 
-    const int nSolutions = neq >= 10 ? 10 : neq;
-    #ifdef USING_SLEPC
+    //const int nSolutions = neq >= simData.solverOpts.eps_nev ? simData.solverOpts.eps_nev : neq;
     TPZSlepcEPSHandler<STATE> solver;
     TPZSlepcSTHandler stHandler;
-    {
-      const EPSConv eps_conv_test = EPS_CONV_NORM;
-      const EPSWhich eps_which_eig = EPS_TARGET_REAL;
-      const PetscScalar target =-600000.;
-      const PetscReal eps_tol = 1e-50;
-      const PetscInt eps_max_its = 100;
-      const PetscInt eps_nev = 5;
-      const PetscInt eps_ncv = 50;
-      const PetscInt eps_mpd = PETSC_DECIDE;
-      const PetscInt eps_verbose = true;
+    solver.SetTolerances(simData.solverOpts.eps_tol,simData.solverOpts.eps_max_its);
+    solver.SetConvergenceTest(simData.solverOpts.eps_conv_test);
+    solver.SetWhichEigenpairs(simData.solverOpts.eps_which_eig);
+    solver.SetTargetEigenvalue(simData.solverOpts.target);
 
-      const PCType st_precond = PCLU;
-      const KSPType st_solver = KSPPREONLY;
-      const PetscReal ksp_rtol = 1e-10;
-      const PetscReal ksp_atol = PETSC_DEFAULT;
-      const PetscReal ksp_dtol = PETSC_DEFAULT;
-      const PetscReal ksp_max_its = PETSC_DEFAULT;
-      const STType st_type = STSINVERT;
+    stHandler.SetPrecond(simData.solverOpts.st_precond);
+    stHandler.SetSolver(simData.solverOpts.st_solver);
+    stHandler.SetSolverTol(simData.solverOpts.ksp_rtol,simData.solverOpts.ksp_atol,
+                           simData.solverOpts.ksp_dtol,simData.solverOpts.ksp_max_its);
+    stHandler.SetType(simData.solverOpts.st_type,simData.solverOpts.target);
+    solver.SetST(stHandler);
 
-      const EPSProblemType eps_prob_type = EPS_GNHEP;
-      const EPSType eps_type = EPSKRYLOVSCHUR;
-      const bool eps_krylov_locking = false;
-      const PetscReal eps_krylov_restart = 0.5;
-      const bool eps_true_res = false;
-
-      solver.SetTolerances(eps_tol,eps_max_its);
-      solver.SetConvergenceTest(eps_conv_test);
-      solver.SetWhichEigenpairs(eps_which_eig);
-      solver.SetTargetEigenvalue(target);
-
-      stHandler.SetPrecond(st_precond);
-      stHandler.SetSolver(st_solver);
-      stHandler.SetSolverTol(ksp_rtol,ksp_atol,ksp_dtol,ksp_max_its);
-      stHandler.SetType(st_type,target);
-      solver.SetST(stHandler);
-
-      solver.SetTrueResidual(eps_true_res);
-      solver.SetProblemType(eps_prob_type);
-      solver.SetType(eps_type);
-      solver.SetKrylovOptions(eps_krylov_locking,eps_krylov_restart);
-      solver.SetEPSDimensions(eps_nev, eps_ncv, eps_mpd);
-      solver.SetVerbose(eps_verbose);
-    }
-    #elif defined USING_LAPACK
-    TPZLapackWrapper<STATE> solver;
-    solver.SetAsGeneralised(true);
-    solver.SetAbsoluteValue(false);
-    #endif
+    solver.SetTrueResidual(simData.solverOpts.eps_true_res);
+    solver.SetProblemType(simData.solverOpts.eps_prob_type);
+    solver.SetType(simData.solverOpts.eps_type);
+    solver.SetKrylovOptions(simData.solverOpts.eps_krylov_locking,simData.solverOpts.eps_krylov_restart);
+    solver.SetEPSDimensions(simData.solverOpts.eps_nev, simData.solverOpts.eps_ncv, simData.solverOpts.eps_mpd);
+    solver.SetVerbose(simData.solverOpts.eps_verbose);
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;

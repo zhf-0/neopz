@@ -36,7 +36,6 @@ void TPZSlepcSTHandler::SetSolver(const KSPType &solver) {
     fHasSolver = true;
   }
   ierr = KSPSetType(fKsp, solver);
-  if(ierr != 0) DebugStop();
   if(ierr != 0){
     PZError<<"Invalid ST solver\n";
     DebugStop();
