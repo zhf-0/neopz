@@ -40,7 +40,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
     prm.declare_entry("Is lossless(epsilon)","true", Patterns:: Bool(),
                       "Whether the dielectric material has complex "
                           "permittivity or not.");
-    prm.declare_entry("Dielectric losses vector(epsilon)", "",
+    prm.declare_entry("Dielectric losses vector(epsilon)", "0.",
                       Patterns::List(Patterns::Double(0.),1),
                       "The IMAGINARY part of the electric permittivity"
                           " of the dielectric materials, separated by "
@@ -52,7 +52,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                           "dielectric materials, separated by commas");
     prm.declare_entry("Is lossless(mu)","true", Patterns:: Bool(),
                       "Whether the dielectric material has complex permeability or not.");
-    prm.declare_entry("Dielectric losses vector(mu)", "",
+    prm.declare_entry("Dielectric losses vector(mu)", "0.",
                       Patterns::List(Patterns::Double(0.),1),
                       "The IMAGINARY part of the magnetic permeability"
                           " of the dielectric materials, "
@@ -83,7 +83,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
     prm.declare_entry("Number of threads","4",Patterns::Integer(0),
                       "Number of threads to use in NeoPZ assembly.");
     prm.declare_entry("Suffix","",Patterns::Anything(),
-                      "Suffix to be added to exported files");
+                      "Suffix to be added to exported files(default is Mesh File)");
   }
   prm.leave_subsection ();
   //IN THE FOLLOWING OPTIONS, -1 =  PETSC_DECIDE and -2 = PETSC_DEFAULT
@@ -121,20 +121,20 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                                               "EPS_TARGET_IMAGINARY|EPS_ALL"),
                       "Specifies which portion of the spectrum is to be sought.");
     prm.declare_entry("Target eigenvalue", "-1.", Patterns::Double(),
-                      "Target eigenvalue to be sought if Which eigenvalues is equal"
+                      "Target eigenvalue to be sought if Which eigenvalues is equal "
                           "to EPS_TARGET_(MAGNITUDE|IMAGINARY|REAL).");
-    prm.declare_entry("Eigensolver tolerance", "-2.", Patterns::Double(),
-                      "Eigensolver convergence tolerance(Default value is PETSC_DEFAULT)");
-    prm.declare_entry("Eigensolver maximum iterations", "-2.", Patterns::Integer(),
-                      "Maximum number of iterations of the eigensolver.");
-    prm.declare_entry("How many eigenvalues(nev)", "5", Patterns::Integer(),
+    prm.declare_entry("Eigensolver tolerance", "0", Patterns::Double(0.),
+                      "Eigensolver convergence tolerance(0 for PETSC_DEFAULT).");
+    prm.declare_entry("Eigensolver maximum iterations", "0", Patterns::Integer(0),
+                      "Maximum number of iterations of the eigensolver(0 for PETSC_DEFAULT).");
+    prm.declare_entry("How many eigenvalues(nev)", "5", Patterns::Integer(1),
                       "Number of eigenvalues that must satisfy the convergence test");
-    prm.declare_entry("Solver subspace dimension(ncv)", "-1", Patterns::Integer(0),
+    prm.declare_entry("Solver subspace dimension(ncv)", "0", Patterns::Integer(0),
                       "The maximum dimension of the subspace to be "
-                          "used by the eigensolver(Default value is PETSC_DECIDE)");
-    prm.declare_entry("Maximum projected dimension(mpd)", "-1", Patterns::Integer(0),
+                          "used by the eigensolver(0 for PETSC_DECIDE)");
+    prm.declare_entry("Maximum projected dimension(mpd)", "0", Patterns::Integer(0),
                       "The maximum projected dimension of the "
-                          "eigensolver(Default value is PETSC_DECIDE)");
+                          "eigensolver(0 for PETSC_DECIDE)");
     prm.declare_entry("Solver verbosity", "false", Patterns::Bool(),
                       "Whether the solver should print data during the simulation.");
     prm.declare_entry("Preconditioner","PCNONE",Patterns::Selection("PCNONE|PCJACOBI|PCSOR|PCLU|"
@@ -151,17 +151,17 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                                                                            "KSPBCGSL|KSPPIPEBCGS|KSPCGS|KSPTFQMR|"
                                                                            "KSPCR|KSPPIPECR|KSPLSQR|KSPPREONLY"),
                       "Sets the preconditioner to be used.");
-    prm.declare_entry("Linear solver relative tolerance", "-2", Patterns::Double(0.),
+    prm.declare_entry("Linear solver relative tolerance", "0", Patterns::Double(0.),
                       "Sets the relative convergence tolerance, relative decrease in"
-                          " the residual norm");
-    prm.declare_entry("Linear solver absolute tolerance", "-2", Patterns::Double(0.),
+                          " the residual norm(0 for PETSC_DEFAULT)");
+    prm.declare_entry("Linear solver absolute tolerance", "0", Patterns::Double(0.),
                       "Sets the absolute convergence tolerance absolute size of the "
-                          "residual norm");
-    prm.declare_entry("Linear solver divergence tolerance", "-2", Patterns::Double(0.),
+                          "residual norm(0 for PETSC_DEFAULT)");
+    prm.declare_entry("Linear solver divergence tolerance", "0", Patterns::Double(0.),
                       "Sets the divergence tolerance, amount residual norm can increase before "
-                          "the convergence test concludes that the method is diverging");
-    prm.declare_entry("Linear solver maximum iterations", "-2", Patterns::Integer(0),
-                      "Maximum number of iterations to use");
+                          "the convergence test concludes that the method is diverging(0 for PETSC_DEFAULT)");
+    prm.declare_entry("Linear solver maximum iterations", "0", Patterns::Integer(0),
+                      "Maximum number of iterations to use(0 for PETSC_DEFAULT)");
     prm.declare_entry("Spectral transformation","STSINVERT",Patterns::Selection("STSHELL|STSHIFT|STSINVERT|"
                                                                                     "STCAYLEY|STPRECOND|STFILTER"),
                       "Sets the spectral transformation to be used.");
@@ -175,6 +175,10 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
   prm.enter_subsection ("Physical options");
   {
     data.physicalOpts.meshFile = prm.get("Mesh file");//anything
+    if(data.physicalOpts.meshFile.size() == 0){
+      std::cout<<"Must input a valid mesh file!"<<std::endl;
+      DebugStop();
+    }
     data.physicalOpts.isCutOff=prm.get_bool("Cut-off analysis");//bool
     data.physicalOpts.fOp=(REAL)prm.get_double("Operational frequency");//double
     data.physicalOpts.nMaterials=(int)prm.get_integer("Number of materials");//integer
@@ -195,6 +199,9 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     data.pzOpts.exportEigen = prm.get_bool("Export eigenvalues");//bool
     data.pzOpts.nThreads = (int) prm.get_integer("Number of threads");//integer
     data.pzOpts.suffix = prm.get("Suffix");//anything
+    if(data.pzOpts.suffix.size() == 0){
+      data.pzOpts.suffix = data.physicalOpts.meshFile;
+    }
   }
   prm.leave_subsection();
   prm.enter_subsection("SLEPc solver options");
@@ -328,13 +335,16 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
 
     data.solverOpts.target = prm.get_double("Target eigenvalue");//double
     data.solverOpts.eps_tol = prm.get_double("Eigensolver tolerance");//double
+    if(!data.solverOpts.eps_tol) data.solverOpts.eps_tol = -2;//PETSC_DEFAULT
     data.solverOpts.eps_max_its = (int) prm.get_integer("Eigensolver maximum iterations");//integer
+    if(!data.solverOpts.eps_max_its) data.solverOpts.eps_max_its = -2;//PETSC_DEFAULT
     data.solverOpts.eps_nev = (int) prm.get_integer("How many eigenvalues(nev)");//integer
     data.solverOpts.eps_ncv = (int) prm.get_integer("Solver subspace dimension(ncv)");//integer
+    if(!data.solverOpts.eps_ncv) data.solverOpts.eps_ncv = -1;//PETSC_DECIDE
     data.solverOpts.eps_mpd = (int) prm.get_integer("Maximum projected dimension(mpd)");//integer
+    if(!data.solverOpts.eps_mpd) data.solverOpts.eps_mpd = -1;//PETSC_DECIDE
     data.solverOpts.eps_verbose = prm.get_bool("Solver verbosity");//bool
 
-    data.solverOpts.st_precond;
     str =prm.get("Preconditioner");
     switch(Utilities::str_to_constexpr(str.c_str())){
       case Utilities::str_to_constexpr(PCNONE) :
@@ -384,7 +394,6 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
         break;
     }
 
-    data.solverOpts.st_solver;
     str =prm.get("Linear solver");
     switch(Utilities::str_to_constexpr(str.c_str())){
       case Utilities::str_to_constexpr("KSPRICHARDSON") :
@@ -471,11 +480,14 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     }
 
     data.solverOpts.ksp_rtol = prm.get_double("Linear solver relative tolerance");//double
+    if(!data.solverOpts.ksp_rtol) data.solverOpts.ksp_rtol = -2;//PETSC_DEFAULT
     data.solverOpts.ksp_atol = prm.get_double("Linear solver absolute tolerance");//double
+    if(!data.solverOpts.ksp_atol) data.solverOpts.ksp_atol = -2;//PETSC_DEFAULT
     data.solverOpts.ksp_dtol = prm.get_double("Linear solver divergence tolerance");//double
+    if(!data.solverOpts.ksp_dtol) data.solverOpts.ksp_dtol = -2;//PETSC_DEFAULT
     data.solverOpts.ksp_max_its = (int) prm.get_integer("Linear solver maximum iterations");//integer
+    if(!data.solverOpts.ksp_max_its) data.solverOpts.ksp_max_its = -2;//PETSC_DEFAULT
 
-    data.solverOpts.st_type;
     str =prm.get("Spectral transformation");
     switch(Utilities::str_to_constexpr(str.c_str())){
       case Utilities::str_to_constexpr("STSHELL") :
@@ -568,7 +580,7 @@ void SPZModalAnalysisDataReader::ParseCommandLine(const int argc, char *const *a
     std::ofstream outFile(argv[2]);
     prm.print_parameters (outFile, ParameterHandler::Text);
     outFile.close();
-    return;
+    exit(0);
   }
 
   //testing for -h or --help
@@ -579,7 +591,7 @@ void SPZModalAnalysisDataReader::ParseCommandLine(const int argc, char *const *a
     if(argc != 2){
       exit(1);
     }
-    return;
+    exit(0);
   }
 
   const std::string parameter_file = argv[1];

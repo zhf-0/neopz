@@ -1074,7 +1074,26 @@ ParameterHandler::recursively_print_parameters (const std::vector<std::string> &
                       << doc_lines[i]
                       << '\n';
               }
-
+            // print possible values:
+            const unsigned int pattern_index = p->second.get<unsigned int> ("pattern");
+            const std::string full_desc_str = patterns[pattern_index]->description (Patterns::PatternBase::Text);
+            const std::vector<std::string> description_str
+                = Utilities::break_text_into_lines (full_desc_str,
+                                                    78 - overall_indent_level*2 - 2, '|');
+            if (description_str.size() > 1)
+            {
+              out << '\n';
+              for (unsigned int i=0; i<description_str.size(); ++i) {
+                out << std::setw(overall_indent_level * 2 + 6) << "";
+                out << "  #" << description_str[i] << '\n';
+              }
+            }
+            else if (description_str.empty() == false){
+              out << std::setw(overall_indent_level*2+6) << "";
+              out << "  #" << description_str[0] << '\n';
+            }
+            else
+              out << '\n';
 
 
             // print name and value of this entry
