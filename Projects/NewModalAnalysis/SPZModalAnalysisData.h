@@ -11,13 +11,6 @@
 #include "parameter_handler.h"
 
 struct SPZModalAnalysisData{
-private:
-  ParameterHandler &prm;
-  SPZModalAnalysisData();
-  void DeclareParameters();
-public:
-  SPZModalAnalysisData(ParameterHandler &prm);
-  void ReadParameters();
   struct SPZPhysicalOpts{
     std::string meshFile;
     bool isCutOff;
@@ -26,7 +19,8 @@ public:
     TPZVec<STATE> urVec;
     TPZVec<STATE> erVec;
   };
-  struct SPZPZOpts{
+  SPZPhysicalOpts physicalOpts;
+  struct SPZPzOpts{
 // polynomial order of basis functions
     int pOrder;
 // generate vtk for fields visualisation
@@ -42,7 +36,8 @@ public:
 //suffix to be added to all exported files
     std::string suffix;
   };
-
+  SPZPzOpts pzOpts;
+  
   struct SPZSolverOpts{
     EPSProblemType eps_prob_type;
     EPSType eps_type;
@@ -68,6 +63,7 @@ public:
     STType st_type;
 
   };
+  SPZSolverOpts solverOpts;
 };
 
 #endif //PZ_SPZMODALANALYSISDATA_H

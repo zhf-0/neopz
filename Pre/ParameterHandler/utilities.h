@@ -803,7 +803,9 @@ namespace Utilities
         archive >> unpacked_object;
       }
   }
-
+  constexpr unsigned int str_to_constexpr(const char *str, int h = 0) {
+    return !str[h] ? 5381 : (str_to_constexpr(str, h+1) * 33) ^ str[h];
+  }
 }
 
 

@@ -42,6 +42,8 @@
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
 #include "TPZGmshReader.h"
+#include "SPZModalAnalysisDataReader.h"
+#include "SPZModalAnalysisData.h"
 
 void RunSimulation(const bool &isCutOff, const std::string &mshFileName, const int &pOrder, const REAL &f0,
                    const bool &genVTK, const bool &l2error, const bool &exportEigen, const int &nThreads,
@@ -144,6 +146,9 @@ int main(int argc, char *argv[]) {
     #else
 
     ParameterHandler prm;
+    SPZModalAnalysisDataReader reader(prm,argc,argv);
+    SPZModalAnalysisData simData;
+    reader.ReadParameters(simData);
     //hard-coded mode
     std::string mshFileName = "refinedInterface.msh";
     const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
