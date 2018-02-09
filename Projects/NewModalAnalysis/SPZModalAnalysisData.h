@@ -27,25 +27,29 @@ public:
     TPZVec<STATE> erVec;
   };
   struct SPZPZOpts{
-    // polynomial order of basis functions
+// polynomial order of basis functions
     int pOrder;
 // generate vtk for fields visualisation
     bool genVTK;
-//vtk file name
-    std::string vtkName;
 //whether to calculate error analysis
     bool l2error;
-//l2 file name
-    std::string l2Name;
-// export eigen values
+// export l2 error
+    bool exportl2error;
+// export eigen values  
     bool exportEigen;
 //number of NeoPZ threads
     int nThreads;
-    int nSim;
+//suffix to be added to all exported files
+    std::string suffix;
   };
 
   struct SPZSolverOpts{
+    EPSProblemType eps_prob_type;
+    EPSType eps_type;
+    bool eps_krylov_locking;
+    PetscReal eps_krylov_restart;
     EPSConv eps_conv_test;
+    bool eps_true_res;
     EPSWhich eps_which_eig;
     PetscScalar target;
     PetscReal eps_tol;
@@ -63,11 +67,6 @@ public:
     PetscReal ksp_max_its;
     STType st_type;
 
-    EPSProblemType eps_prob_type;
-    EPSType eps_type;
-    bool eps_krylov_locking;
-    PetscReal eps_krylov_restart;
-    bool eps_true_res;
   };
 };
 
