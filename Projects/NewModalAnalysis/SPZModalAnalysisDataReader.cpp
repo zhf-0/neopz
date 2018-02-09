@@ -4,9 +4,6 @@
 #include "SPZModalAnalysisDataReader.h"
 #include "SPZModalAnalysisData.h"
 
-
-#define PZDEBUGPARAM
-
 SPZModalAnalysisDataReader::SPZModalAnalysisDataReader(ParameterHandler &param,const int argc, char *const *argv)
 : prm(param)
 {
@@ -137,7 +134,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                           "eigensolver(0 for PETSC_DECIDE)");
     prm.declare_entry("Solver verbosity", "false", Patterns::Bool(),
                       "Whether the solver should print data during the simulation.");
-    prm.declare_entry("Preconditioner","PCNONE",Patterns::Selection("PCNONE|PCJACOBI|PCSOR|PCLU|"
+    prm.declare_entry("Preconditioner","PCREDUNDANT",Patterns::Selection("PCNONE|PCCHOLESKY|PCJACOBI|PCSOR|PCLU|"
                                                                       "PCSHELL|PCBJACOBI|PCMG|PCEISENSTAT|PCILU|"
                                                                       "PCICC|PCASM|PCGASM|PCKSP|"
                                                                       "PCCOMPOSITE|PCREDUNDANT"),
@@ -364,6 +361,9 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     switch(Utilities::str_to_constexpr(str.c_str())){
       case Utilities::str_to_constexpr("PCNONE") :
         data.solverOpts.st_precond = PCNONE;
+        break;
+      case Utilities::str_to_constexpr("PCCHOLESKY") :
+        data.solverOpts.st_precond = PCCHOLESKY;
         break;
       case Utilities::str_to_constexpr("PCJACOBI") :
         data.solverOpts.st_precond = PCJACOBI;

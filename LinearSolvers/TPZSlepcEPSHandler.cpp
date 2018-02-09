@@ -180,27 +180,27 @@ int TPZSlepcEPSHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> 
   /*
      Show detailed info unless -terse option is given by user
    */
+  EPSConv eps_conv_test;
+  EPSErrorType eps_error_type = EPS_ERROR_RELATIVE;
+  EPSGetConvergenceTest(fEps, &eps_conv_test);
+  switch(eps_conv_test){
+    case EPS_CONV_ABS:
+      eps_error_type = EPS_ERROR_ABSOLUTE;
+      break;
+    case EPS_CONV_REL:
+      eps_error_type = EPS_ERROR_RELATIVE;
+      break;
+    case EPS_CONV_NORM:
+      eps_error_type = EPS_ERROR_BACKWARD;
+      break;
+  }
   if (fVerbose) {
-    EPSConv eps_conv_test;
-    EPSErrorType eps_error_type = EPS_ERROR_RELATIVE;
-    EPSGetConvergenceTest(fEps, &eps_conv_test);
-    switch(eps_conv_test){
-      case EPS_CONV_ABS:
-        eps_error_type = EPS_ERROR_ABSOLUTE;
-        break;
-      case EPS_CONV_REL:
-        eps_error_type = EPS_ERROR_RELATIVE;
-        break;
-      case EPS_CONV_NORM:
-        eps_error_type = EPS_ERROR_BACKWARD;
-        break;
-    }
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = EPSReasonView(fEps,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = EPSErrorView(fEps,eps_error_type,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } else {
-    ierr = EPSErrorView(fEps,EPS_ERROR_RELATIVE,NULL);CHKERRQ(ierr);
+    ierr = EPSErrorView(fEps,eps_error_type,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
 
@@ -364,7 +364,7 @@ void TPZSlepcEPSHandler<TVar>::SetTrueResidual(const bool &pOpt) {
   STType type;
   STGetType(st, &type);
 
-  if(strcmp(type,STSINVERT)){
+  if(strcmp(type,STSINVERT) && pOpt){
     PZError<<__PRETTY_FUNCTION__<<"is only available if STTYpe is STSINVERT\n";
     DebugStop();
   }

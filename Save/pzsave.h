@@ -130,7 +130,7 @@ public:
 	/** @brief Constructor */
 	TPZRestoreClass()
 	{
-#ifdef PZDEBUG 
+#ifdef PZDEBUGRESTORE
 		std::string func_name = __PRETTY_FUNCTION__;
 #ifndef WIN32
 		std::cout << func_name << std::endl;

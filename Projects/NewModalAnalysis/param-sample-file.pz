@@ -1,0 +1,187 @@
+# Listing of Parameters
+# ---------------------
+subsection NeoPZ options
+  # File name in which the L2 error will be saved if L2 error is true. If not
+  # set, it will be shown in std::cout only
+          #A boolean value (true or false)
+  set Export L2 error    = false
+
+  # If set to true, eigenvalues willbe exported to a text file.
+          #A boolean value (true or false)
+  set Export eigenvalues = false
+
+  # If set to true, a .vtk plot of the electric field will be generatedfor the
+  # calculated modes
+          #A boolean value (true or false)
+  set Generate VTK       = false
+
+  # If set to true, the error (L2 norm) will be calculated for the electric
+  # field
+          #A boolean value (true or false)
+  set L2 error           = false
+
+  # Number of threads to use in NeoPZ assembly.
+          #An integer n such that 0 <= n <= 2147483647
+  set Number of threads  = 4
+
+  # Default polynomial order of the Pk space used to buildthe Nédélec
+  # elements(The H1 elements will be built accordingly
+          #An integer n such that 1 <= n <= 2147483647
+  set Polynomial order   = 1
+
+  # Suffix to be added to exported files(default is Mesh File)
+          #Any string
+  set Suffix             = 
+end
+
+
+subsection Physical options
+  # Whether to perform cut-off analysis on the waveguide orto calculate its
+  # modes for a given operational frequency
+          #A boolean value (true or false)
+  set Cut-off analysis                  = false
+
+  # The IMAGINARY part of the electric permittivity of the dielectric
+  # materials, separated by commas (it will be ignored if Is lossless(epsilon)
+  # is false
+          #A list of 1 to 4294967295 elements where each element is [A floating point number v such that 0 <= v <= MAX_DOUBLE]
+  set Dielectric losses vector(epsilon) = 0. , 0.
+
+  # The IMAGINARY part of the magnetic permeability of the dielectric
+  # materials, separated by commas (it will be ignored if Is lossless(mu) is
+  # false
+          #A list of 1 to 4294967295 elements where each element is [A floating point number v such that 0 <= v <= MAX_DOUBLE]
+  set Dielectric losses vector(mu)      = 0. , 0.
+
+  # The REAL part of the electric permittivity of the dielectric materials,
+  # separated by commas
+          #A list of 1 to 4294967295 elements where each element is [A floating point number v such that 0 <= v <= MAX_DOUBLE]
+  set Electric permittivity vector      = 1. , 9.
+
+  # Whether the dielectric material has complex permittivity or not.
+          #A boolean value (true or false)
+  set Is lossless(epsilon)              = true
+
+  # Whether the dielectric material has complex permeability or not.
+          #A boolean value (true or false)
+  set Is lossless(mu)                   = true
+
+  # The REAL part of the magnetic permeability of the dielectric materials,
+  # separated by commas
+          #A list of 1 to 4294967295 elements where each element is [A floating point number v such that 0 <= v <= MAX_DOUBLE]
+  set Magnetic permeability vector      = 1. , 1.
+
+  # Path to .msh gmsh generated mesh
+          #Any string
+  set Mesh file                         = refinedInterface.msh
+
+  # How many dielectric materials are present in the waveguide
+          #An integer n such that 1 <= n <= 2147483647
+  set Number of materials               = 2
+
+  # Operational frequency of the waveguide (it will be ignored if Cut-off
+  # analysis is true
+          #A floating point number v such that 0 <= v <= MAX_DOUBLE
+  set Operational frequency             = 16e+9
+end
+
+
+subsection SLEPc solver options
+  # Specifies how to compute the error estimate used in the convergence test.
+          #Any one of EPS_CONV_ABS, EPS_CONV_REL, EPS_CONV_NORM
+  set Convergence test                   = EPS_CONV_NORM
+
+  # Sets the particular eigensolver to be used
+          #Any one of EPSPOWER, EPSSUBSPACE, EPSARNOLDI, EPSLANCZOS, EPSKRYLOVSCHUR, EPSGD, EPSJD, EPSRQCG, EPSLOBPCG, EPSCISS, EPSLAPACK, EPSARPACK, EPSBLZPACK, EPSTRLAN, EPSBLOPEX, EPSPRIMME, EPSFEAST
+  set Eigensolver                        = EPSKRYLOVSCHUR
+
+  # Maximum number of iterations of the eigensolver(0 for PETSC_DEFAULT).
+          #An integer n such that 0 <= n <= 2147483647
+  set Eigensolver maximum iterations     = 100
+
+  # Eigensolver convergence tolerance(0 for PETSC_DEFAULT).
+          #A floating point number v such that 0 <= v <= MAX_DOUBLE
+  set Eigensolver tolerance              = 1e-50
+
+  # Number of eigenvalues that must satisfy the convergence test
+          #An integer n such that 1 <= n <= 2147483647
+  set How many eigenvalues(nev)          = 5
+
+  # If Eigensolver is Krylov-Schur, whether to use the locking variant or
+  # not.
+          #A boolean value (true or false)
+  set Krylov locking                     = false
+
+  # Sets the restart parameter for the Krylov-Schur method, in particular the
+  # proportion of basis vectors that must be kept after restart.
+          #A floating point number v such that 0 <= v <= 1
+  set Krylov restart                     = 0.5
+
+  # Sets the preconditioner to be used.
+          #Any one of KSPRICHARDSON, KSPCHEBYSHEV, KSPCG, KSPGROPPCG, KSPPIPECG, KSPPIPECGRR, KSPCGNE, KSPCGNASH, KSPCGSTCG, KSPCGGLTR, KSPFCG, KSPPIPEFCG, KSPGMRES, KSPPIPEFGMRES, KSPFGMRES, KSPLGMRES, KSPDGMRES, KSPPGMRES, KSPTCQMR, KSPBCGS, KSPIBCGS, KSPFBCGS, KSPFBCGSR, KSPBCGSL, KSPPIPEBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPPIPECR, KSPLSQR, KSPPREONLY
+  set Linear solver                      = KSPPREONLY
+
+  # Sets the absolute convergence tolerance absolute size of the residual
+  # norm(0 for PETSC_DEFAULT)
+          #A floating point number v such that 0 <= v <= MAX_DOUBLE
+  set Linear solver absolute tolerance   = 0
+
+  # Sets the divergence tolerance, amount residual norm can increase before
+  # the convergence test concludes that the method is diverging(0 for
+  # PETSC_DEFAULT)
+          #A floating point number v such that 0 <= v <= MAX_DOUBLE
+  set Linear solver divergence tolerance = 0
+
+  # Maximum number of iterations to use(0 for PETSC_DEFAULT)
+          #An integer n such that 0 <= n <= 2147483647
+  set Linear solver maximum iterations   = 0
+
+  # Sets the relative convergence tolerance, relative decrease in the residual
+  # norm(0 for PETSC_DEFAULT)
+          #A floating point number v such that 0 <= v <= MAX_DOUBLE
+  set Linear solver relative tolerance   = 1.e-10
+
+  # The maximum projected dimension of the eigensolver(0 for PETSC_DECIDE)
+          #An integer n such that 0 <= n <= 2147483647
+  set Maximum projected dimension(mpd)   = 0
+
+  # Sets the preconditioner to be used.
+          #Any one of PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG, PCEISENSTAT, PCILU, PCICC, PCASM, PCGASM, PCKSP, PCCOMPOSITE, PCREDUNDANT
+  set Preconditioner                     = PCLU
+
+  # Sets the type of the eigenvalue problem type.
+  # G stands for Generalized, H for Hermitian,
+  # P for positive semi-definite B matrix,
+  # and I for generalized Hermitian-indefinite.
+          #Any one of EPS_HEP, EPS_GHEP, EPS_NHEP, EPS_GNHEP, EPS_PGNHEP, EPS_GHIEP
+  set Problem type                       = EPS_GNHEP
+
+  # The maximum dimension of the subspace to be used by the eigensolver(0 for
+  # PETSC_DECIDE)
+          #An integer n such that 0 <= n <= 2147483647
+  set Solver subspace dimension(ncv)     = 50
+
+  # Whether the solver should print data during the simulation.
+          #A boolean value (true or false)
+  set Solver verbosity                   = true
+
+  # Sets the spectral transformation to be used.
+          #Any one of STSHELL, STSHIFT, STSINVERT, STCAYLEY, STPRECOND, STFILTER
+  set Spectral transformation            = STSINVERT
+
+  # Target eigenvalue to be sought if Which eigenvalues is equal to
+  # EPS_TARGET_(MAGNITUDE|IMAGINARY|REAL).
+          #A floating point number v such that -MAX_DOUBLE <= v <= MAX_DOUBLE
+  set Target eigenvalue                  = -600000.
+
+  # Whether to calculate the true residual if using shift-and-invert as a
+  # spectral transformation.
+          #A boolean value (true or false)
+  set True residual                      = false
+
+  # Specifies which portion of the spectrum is to be sought.
+          #Any one of EPS_LARGEST_MAGNITUDE, EPS_SMALLEST_MAGNITUDE, EPS_LARGEST_REAL, EPS_SMALLEST_REAL, EPS_LARGEST_IMAGINARY, EPS_SMALLEST_IMAGINARY, EPS_TARGET_MAGNITUDE, EPS_TARGET_REAL, EPS_TARGET_IMAGINARY, EPS_ALL
+  set Which eigenvalues                  = EPS_TARGET_REAL
+end
+
+
