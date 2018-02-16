@@ -1,9 +1,7 @@
 # @file neopz/Projects/CMakeList.txt  -- First CMake file for Projects directory
 
-ENABLE_TESTING()
-
+enable_testing()
 	if(BUILD_TUTORIAL)
-
 		if(BUILD_COMPLEX_PROJECTS)
 			#add_subdirectory(PDElinear1D)
 			#add_subdirectory(PDElinear2D)
@@ -15,18 +13,17 @@ ENABLE_TESTING()
 			#source_group(Matrix FILES ${pztutormat})
 			#source_group(VisualMatrixDX FILES ${visualmatrix})
 
-			#Curso em Arequipa 2017
+			# Curso em Arequipa 2017
 			#source_group(Aqp_2017 FILES ${aqp2017})
 			#add_subdirectory(2017Arequipa)
 
-			#Jorge 2017 - Implementing error analysis to MHM Method
+			# Jorge 2017 - Implementing error analysis to MHM Method
 			add_subdirectory(2017LabJucaCosta)
 
-
-			#Curso PZ:
+			# Curso PZ:
 			add_subdirectory(CursoPZ)
 
-			# the auto adaptive process is working again!!!
+			# The auto adaptive process is working again!!!
 			#add_subdirectory(adaptivity)
 
 			#set(pztutorial ${pztutorial} ${pzcurso} ${pztutorshape} ${pztutorgeom} ${pztutormat} ${visualmatrix})
@@ -34,51 +31,44 @@ ENABLE_TESTING()
 			#add_custom_target(PZTutorial SOURCES ${pztutorial})
 			#add_subdirectory(Finite3DElasticity)
 
-			#exemplo simples de construcao de espaco HDiv
+			# Exemplo simples de construcao de espaco HDiv
 			add_subdirectory(HDiv_demo)
 
-			#Example to reading and using geometric mesh
+			# Example to reading and using geometric mesh
 			#add_subdirectory(testgeom)
 
-			#Testing and using shape functions
+			# Testing and using shape functions
 			#add_subdirectory(testshape)
 
-			#Generic Example 2D with elasticity and 2D linear problem showing an example call to Contribute
+			# Generic Example 2D with elasticity and 2D linear problem showing an example call to Contribute
 			#add_subdirectory(testmat)
 
-			#Using visual matrix of the DX
+			# Using visual matrix of the DX
 			add_subdirectory(visualmatrix)
 
-
-			# project to save and load a computational mesh
+			# Project to save and load a computational mesh
 			add_subdirectory(SaveAndLoad)
 
-			#Example of the  multi-physics simulation with discontinuous Galerkin
+			# Example of the  multi-physics simulation with discontinuous Galerkin
  			add_subdirectory(PauloBosing)
 
-			#Example of the tracer flow problem in multiphysics simulation.
-  			add_subdirectory(TracadorPassivo)
+			# Example of the tracer flow problem in multiphysics simulation.
+  		add_subdirectory(TracadorPassivo)
 
-			#Project to test the method hdiv stabilized.
+			# Project to test the method hdiv stabilized.
 			add_subdirectory(HDivEstabilizado)
 			add_subdirectory(HDivEstabHHetero)
 
-
-			#Example of the hybrid mesh
+			# Example of the hybrid mesh
 			add_subdirectory(HybridMesh)
 
-			#Example of the  convection problem
+			# Example of the  convection problem
 			add_subdirectory(Problema_Transporte)
-
 
 			# Simple project to test rational function defined by Cedric on pyramids
 			add_subdirectory(RationalFunctionPyramid)
-
 			add_subdirectory(proDG)
-
 		endif(BUILD_COMPLEX_PROJECTS)
-
-
 	endif(BUILD_TUTORIAL)
 
 	if(BUILD_BROKEN)
@@ -86,32 +76,28 @@ ENABLE_TESTING()
 			#add_subdirectory(PDElinear1D)
 			#add_subdirectory(PDElinear2D)
 		else(BUILD_COMPLEX_PROJECTS)
-                	#Testing gradient reconstruction
+      # Testing gradient reconstruction
 			add_subdirectory(Gradient_Reconstruction)
-			#exercise on gradient reconstruction, but the results are wrong!
+			# Exercise on gradient reconstruction, but the results are wrong!
 			add_subdirectory(Poisson2D_ArcTan_Disc)
-
-
 		endif(BUILD_COMPLEX_PROJECTS)
 	endif(BUILD_BROKEN)
 
 	if(BUILD_PROJECTS)
-
 		#
 		# COMPLEX NUMBER PROJECTS
 		#
 		# If your project works with Complex numbers (STATE type = complex any type), please add it on the list below
 		if(BUILD_COMPLEX_PROJECTS)
-
-			#Example to work with scalar as complex
-		else(BUILD_COMPLEX_PROJECTS)
+			# Example to work with scalar as complex
+		else()
 			#
 			# REGULAR PROJECTS
 			#
 			# If your project DOES NOT use Complex numbers, please add it on the list below
 			#
 			########################## Nao aplicavel para Windows
-			if (NOT WIN32)
+			if(NOT WIN32)
 				#Projeto Teo Refinamento Paralelo
 				add_subdirectory(RefThread)
 				# Projeto Caju: precisamos consertar para rodar no windows! problema com SWX components
@@ -119,82 +105,77 @@ ENABLE_TESTING()
 			endif()
 			##########################
 
-                        if (USING_MKL)
-                            # implementacao de SBFEM
-                            add_subdirectory(SBFem2D)
-                            add_subdirectory(SBFem3D)
-                        endif()
+      if(USING_MKL)
+        # Implementacao de SBFEM
+        add_subdirectory(SBFem2D)
+        add_subdirectory(SBFem3D)
+      endif()
 
-			#Testes Douglas
+			# Testes Douglas
 			add_subdirectory(dactests)
 
-			#Using discontinuous approximation functions - masters thesis of Erick Slis
+			# Using discontinuous approximation functions - masters thesis of Erick Slis
 			add_subdirectory(descontinuo)
 
-
-			#Adaptivity based on mesh cloning (Edimar Cesar thesis)
+			# Adaptivity based on mesh cloning (Edimar Cesar thesis)
 			#add_subdirectory(Poisson_ArcTan)
 
-			#projeto Diogo
+			# Projeto Diogo
 			#add_subdirectory(Plasticity)
 
 			#add_subdirectory(projteste)
-
 			add_subdirectory(MultipleLoad)
-
-			# add_subdirectory(adaptivity_refactor)
-
+			#add_subdirectory(adaptivity_refactor)
 			add_subdirectory(Cubo_do_Nathan)
-
 			#add_subdirectory(PyramidHdivTests)
-
 			add_subdirectory(HyperElasticityFAD)
 
-			#Increment singular shape function: SingularShapeFunction
+			# Increment singular shape function: SingularShapeFunction
 			add_subdirectory(SingularShapeFunction)
 			add_subdirectory(angletest)
 			add_subdirectory(checkconv)
 
-			#Orthogonalization process of Gram-Schmidt
+			# Orthogonalization process of Gram-Schmidt
 			add_subdirectory(matrix)
 
-			#Inserting material and boundary conditions by function
+			# Inserting material and boundary conditions by function
 			add_subdirectory(termica)
 			add_subdirectory(Steam)
 			add_subdirectory(QuadraticElements)
 			add_subdirectory(ThermalStress)
-			#Add_subdirectory(Conductivity)
+			#add_subdirectory(Conductivity)
 			add_subdirectory(ConsLaw)
 			#add_subdirectory(Descontinuo2)
-
 			add_subdirectory(SteamInjection)
-
-			#projeto agnaldo 09-09-2011
+			# Projeto agnaldo 09-09-2011
 			#add_subdirectory(DoubleProjection)
-                        add_subdirectory(artigoPira)
+      add_subdirectory(artigoPira)
 			add_subdirectory(TrabalhosLNCC15)
-			#projeto omar duran 16-12-2012
+			# Projeto omar duran 16-12-2012
 			add_subdirectory(PoroElasticAnalysis)
 			add_subdirectory(Poisson2DGID)
 			add_subdirectory(OilWaterSystem)
 			#add_subdirectory(DarcyflowAxisymmetricHdiv)
 			#add_subdirectory(DarcyflowHdiv3D)
 			add_subdirectory(MonophasicWell)
+
 			if(USING_FAD)
-                            if (USING_LAPACK)
-				add_subdirectory(GradOfX)
-                            endif()
-                            add_subdirectory(MixedElasticity)
+        if (USING_LAPACK)
+					add_subdirectory(GradOfX)
+        endif()
+        add_subdirectory(MixedElasticity)
 			endif()
-			#collaborative project (NH GH PD, SG, OD) 18-04-2015
+
+			#Collaborative project (NH GH PD, SG, OD) 18-04-2015
 			#add_subdirectory(iRMS)
 
 			add_subdirectory(Elasticity2D)
 			add_subdirectory(MHM)
 
-                        if (USING_LAPACK)
-			    add_subdirectory(Hdiv3DCurved)
-                        endif()
+      if(USING_LAPACK)
+			  add_subdirectory(Hdiv3DCurved)
+      endif()
+
 			add_subdirectory(Hdiv3D)
 			add_subdirectory(Gridgeneration)
 			#add_subdirectory(Poisson2DLabyrinth)
@@ -204,24 +185,25 @@ ENABLE_TESTING()
 			add_subdirectory(SubStruct)
 			add_subdirectory(MultiphysicsSimulation)
 			add_subdirectory(ProblemGirkmann)
-
 			add_subdirectory(multplaca)
 
 			#Projeto Lua 2012
 			add_subdirectory(Lua01)
 
-			#teste nathan
+			# Teste nathan
 			add_subdirectory(PlasticityPV)
 
-			#Projeto Denise
+			# Projeto Denise
 			#add_subdirectory(HdivPressureTeste)
+
 			add_subdirectory(HpAdaptivity)
 			add_subdirectory(AcoplamentoH1Hdiv)
 			add_subdirectory(Validacao)
-
 			#add_subdirectory(prodindex)
+
 			#Projeto Agnaldo
 			add_subdirectory(Testes_Agnaldo)
+
 			add_subdirectory(ReducedSpace)
 			add_subdirectory(ReducedSpacePlasticity)
 			add_subdirectory(HydraulicFracturePropagation)
@@ -229,29 +211,25 @@ ENABLE_TESTING()
 			add_subdirectory(GlobalPostPro)
 			add_subdirectory(HDiv)
 
-			#Projetos de Thiago Dias dos Santos
+			# Projetos de Thiago Dias dos Santos
 			#add_subdirectory(SantosProjects)
 
-			#GPU project
+			# GPU project
 			add_subdirectory(GPU)
 
-			#Projeto Pablo
+			# Projeto Pablo
 			add_subdirectory(CreepStokes)
-
-
 			add_subdirectory(Bima1)
-#			add_subdirectory(EstabSUPG)
-#			add_subdirectory(MetodosEstab)
-			#
-			# Colaboration with Laurent Stainier
+			#add_subdirectory(EstabSUPG)
+			#add_subdirectory(MetodosEstab)
 
+			# Colaboration with Laurent Stainier
 			add_subdirectory(MatLib)
 			add_subdirectory(BoostPython)
-			
+
 			if(USING_MKL)
 				add_subdirectory(PardisoSample)
 			endif(USING_MKL)
 
 		endif(BUILD_COMPLEX_PROJECTS)
-
 	endif(BUILD_PROJECTS)

@@ -8,6 +8,6 @@ if (BUILD_BOOST_PYTHON)
 
  	# Python module where the parsing is defined
 	PYTHON_ADD_MODULE(pyz pyz.cpp)
-	target_link_libraries(pyz ${PYTHON_LIBRARIES} PZPythonFunc  ${Boost_LIBRARIES})
+  target_link_libraries(pyz PZPythonFunc ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} )
 
 endif()
