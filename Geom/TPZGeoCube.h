@@ -32,28 +32,31 @@ namespace pzgeom {
         enum {NNodes = 8};
         
         /** @brief Constructor with list of nodes */
-        TPZGeoCube(TPZVec<long> &nodeindexes) : TPZNodeRep<NNodes, pztopology::TPZCube>(nodeindexes)
+        TPZGeoCube(TPZVec<long> &nodeindexes) : TPZRegisterClassId(&TPZGeoCube::ClassId), TPZNodeRep<NNodes, pztopology::TPZCube>(nodeindexes)
         {
         }
         
         /** @brief Empty constructor */
-        TPZGeoCube() : TPZNodeRep<NNodes, pztopology::TPZCube>()
+        TPZGeoCube() : TPZRegisterClassId(&TPZGeoCube::ClassId),TPZNodeRep<NNodes, pztopology::TPZCube>()
         {
         }
         
         /** @brief Constructor with node map */
         TPZGeoCube(const TPZGeoCube &cp,
-                   std::map<long,long> & gl2lcNdMap) : TPZNodeRep<NNodes, pztopology::TPZCube>(cp,gl2lcNdMap)
+                   std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZGeoCube::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZCube>(cp,gl2lcNdMap)
         {
         }
         
         /** @brief Copy constructor */
-        TPZGeoCube(const TPZGeoCube &cp) : TPZNodeRep<NNodes, pztopology::TPZCube>(cp)
+        TPZGeoCube(const TPZGeoCube &cp) : TPZRegisterClassId(&TPZGeoCube::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZCube>(cp)
         {
         }
         
         /** @brief Copy constructor */
-        TPZGeoCube(const TPZGeoCube &cp, TPZGeoMesh &) : TPZNodeRep<NNodes, pztopology::TPZCube>(cp)
+        TPZGeoCube(const TPZGeoCube &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZGeoCube::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZCube>(cp)
         {
         }
         
@@ -85,18 +88,18 @@ namespace pzgeom {
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
-            int nrow = coord.Rows();
-            int ncol = coord.Cols();
-            TPZFNMatrix<3*NNodes,T> nodes(nrow,ncol);
-            for(int i = 0; i < nrow; i++)
-            {
-                for(int j = 0; j < ncol; j++)
-                {
-                    nodes(i,j) = coord(i,j);
-                }
-            }
+//            int nrow = coord.Rows();
+//            int ncol = coord.Cols();
+//            TPZFNMatrix<3*NNodes,T> nodes(nrow,ncol);
+//            for(int i = 0; i < nrow; i++)
+//            {
+//                for(int j = 0; j < ncol; j++)
+//                {
+//                    nodes(i,j) = coord(i,j);
+//                }
+//            }
             
-            GradX(nodes,loc,gradx);
+            GradX(coord,loc,gradx);
         }
         
         /** @brief Compute x mapping from element nodes and local parametric coordinates */
@@ -105,7 +108,7 @@ namespace pzgeom {
         
         /** @brief Compute gradient of x mapping from element nodes and local parametric coordinates */
         template<class T>
-        static void GradX(const TPZFMatrix<T> &nodecoordinates,TPZVec<T> &loc, TPZFMatrix<T> &gradx);
+        static void GradX(const TPZFMatrix<REAL> &nodecoordinates,TPZVec<T> &loc, TPZFMatrix<T> &gradx);
         
         /** @brief Compute the shape being used to construct the x mapping from local parametric coordinates  */
         template<class T>
@@ -122,6 +125,11 @@ namespace pzgeom {
          */
         static void InsertExampleElement(TPZGeoMesh &gmesh, int matid, TPZVec<REAL> &lowercorner, TPZVec<REAL> &size);
         
+        public:
+virtual int ClassId() const;
+        void Read(TPZStream& buf, void* context);
+        void Write(TPZStream& buf, int withclassid) const;
+
     public:
         /** @brief Creates a geometric element according to the type of the father element */
         static TPZGeoEl *CreateGeoElement(TPZGeoMesh &mesh, MElementType type,
@@ -202,7 +210,7 @@ namespace pzgeom {
     
     
     template<class T>
-    inline void TPZGeoCube::GradX(const TPZFMatrix<T> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx){
+    inline void TPZGeoCube::GradX(const TPZFMatrix<REAL> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx){
         
         gradx.Resize(3,3);
         gradx.Zero();

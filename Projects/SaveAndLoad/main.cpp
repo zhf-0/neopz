@@ -10,7 +10,6 @@
 #include "pzcheckgeom.h"
 
 #include "pzmatrix.h"
-#include "pzsave.h"
 
 #include "pzgeoel.h"
 #include "pzgnode.h"
@@ -45,6 +44,7 @@
 #include "pzcheckmesh.h"
 
 #include "pzlog.h"
+#include "TPZPersistenceManager.h"
 
 int ExtractingCommandRegistered(std::ifstream &file,std::string &cmeshname,TPZStack<std::string> &commands);
 void ApplyCommand(TPZCompMesh *cmesh,TPZVec<std::string> &command);
@@ -253,40 +253,11 @@ TPZCompMesh *CreateMesh(TPZGeoMesh *gmesh) {
 	return cmesh;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bool TestingLoadingSavedMeshes() {
 	// Initializing uniform refinements for reference elements
 	gRefDBase.InitializeAllUniformRefPatterns();
     // gRefDBase.InitializeRefPatterns();
     
-    TPZFileStream fstr;
     std::string filename, cmeshname;
     std::cout << std::endl << "INPUT - Name of file to load mesh ";
     std::cin >> filename;
@@ -299,7 +270,7 @@ bool TestingLoadingSavedMeshes() {
 		return false;
 	in.close();
     
-    fstr.OpenRead(filename);
+    TPZPersistenceManager::OpenRead(filename);
 	for(int i=0;i<filename.size();i++) {
 		char p = filename[i];
 		if(p=='_') break;
@@ -311,10 +282,10 @@ bool TestingLoadingSavedMeshes() {
     
     // Creating geometric mesh
 	TPZGeoMesh* gmesh;
-    gmesh = dynamic_cast<TPZGeoMesh* >(TPZSaveable::Restore(fstr,0));
+    gmesh = dynamic_cast<TPZGeoMesh* >(TPZPersistenceManager::ReadFromFile());
     //    gmesh.Read(fstr,0);
     TPZCompMesh* cmesh;
-    cmesh = dynamic_cast<TPZCompMesh *>(TPZSaveable::Restore(fstr,gmesh));
+    cmesh = dynamic_cast<TPZCompMesh *>(TPZPersistenceManager::ReadFromFile());
 	MakeCompatibles(gmesh,cmesh);
     //    cmesh.Read(fstr,gmesh);
     //    cmesh->AutoBuild();
@@ -379,7 +350,6 @@ void SaveCompMesh(TPZCompMesh *cmesh, int timessave,TPZCompMesh *cmeshmodified,b
     }
 #ifdef LOG4CXX
     {
-        TPZFileStream fstrthis;
         std::stringstream soutthis;
         if(cmeshmodified) soutthis << (void*)cmeshmodified;
         else soutthis << (void*)cmesh;
@@ -389,7 +359,7 @@ void SaveCompMesh(TPZCompMesh *cmesh, int timessave,TPZCompMesh *cmeshmodified,b
         std::string filenamethis("LOG/");
         filenamethis.append(soutthis.str());
         filenamethis.append(".txt");
-        fstrthis.OpenWrite(filenamethis);
+        TPZPersistenceManager::OpenWrite(filenamethis);
         
         // Renaming the geometric mesh
         std::stringstream gout;
@@ -397,13 +367,10 @@ void SaveCompMesh(TPZCompMesh *cmesh, int timessave,TPZCompMesh *cmeshmodified,b
         cmesh->Reference()->SetName(gout.str());
         
         // Save geometric mesh data
-        int classid = cmesh->Reference()->ClassId();
-        fstrthis.Write(&classid,1);   // this first data is necessary to use TPZSaveable::Restore
-        cmesh->Reference()->Write(fstrthis,0);
+        TPZPersistenceManager::WriteToFile(cmesh->Reference());
         // Save computational mesh data
-        classid = cmesh->ClassId();
-        fstrthis.Write(&classid,1);   // this first data is necessary to use TPZSaveable::Restore
-        cmesh->Write(fstrthis,0);
+        TPZPersistenceManager::WriteToFile(cmesh);
+        TPZPersistenceManager::CloseWrite();
         // To check printing computational mesh data in file
         if(check) {
             std::string filename("Mesh_");

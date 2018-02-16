@@ -27,29 +27,39 @@ namespace pzgeom {
 		/** @brief Number of corner nodes */
 		enum {NNodes = 5};
 		
+            virtual int ClassId() const;
+            void Read(TPZStream& buf, void* context);
+            void Write(TPZStream& buf, int withclassid) const;
+
+                
 		/** @brief Constructor with list of nodes */
-		TPZGeoPyramid(TPZVec<long> &nodeindexes) : TPZNodeRep<NNodes, pztopology::TPZPyramid>(nodeindexes)
+		TPZGeoPyramid(TPZVec<long> &nodeindexes) : TPZRegisterClassId(&TPZGeoPyramid::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZPyramid>(nodeindexes)
 		{
 		}
 		
 		/** @brief Empty constructor */
-		TPZGeoPyramid() : TPZNodeRep<NNodes, pztopology::TPZPyramid>()
+		TPZGeoPyramid() : TPZRegisterClassId(&TPZGeoPyramid::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZPyramid>()
 		{
 		}
 		
 		/** @brief Constructor with node map */
 		TPZGeoPyramid(const TPZGeoPyramid &cp,
-					  std::map<long,long> & gl2lcNdMap) : TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp,gl2lcNdMap)
+					  std::map<long,long> & gl2lcNdMap) : TPZRegisterClassId(&TPZGeoPyramid::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp,gl2lcNdMap)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZGeoPyramid(const TPZGeoPyramid &cp) : TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp)
+		TPZGeoPyramid(const TPZGeoPyramid &cp) : TPZRegisterClassId(&TPZGeoPyramid::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp)
 		{
 		}
 		
 		/** @brief Copy constructor */
-		TPZGeoPyramid(const TPZGeoPyramid &cp, TPZGeoMesh &) : TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp)
+		TPZGeoPyramid(const TPZGeoPyramid &cp, TPZGeoMesh &) : TPZRegisterClassId(&TPZGeoPyramid::ClassId),
+        TPZNodeRep<NNodes, pztopology::TPZPyramid>(cp)
 		{
 		}
         
@@ -81,18 +91,18 @@ namespace pzgeom {
         {
             TPZFNMatrix<3*NNodes> coord(3,NNodes);
             CornerCoordinates(gel, coord);
-            int nrow = coord.Rows();
-            int ncol = coord.Cols();
-            TPZFMatrix<T> nodes(nrow,ncol);
-            for(int i = 0; i < nrow; i++)
-            {
-                for(int j = 0; j < ncol; j++)
-                {
-                    nodes(i,j) = coord(i,j);
-                }
-            }
+//            int nrow = coord.Rows();
+//            int ncol = coord.Cols();
+//            TPZFMatrix<T> nodes(nrow,ncol);
+//            for(int i = 0; i < nrow; i++)
+//            {
+//                for(int j = 0; j < ncol; j++)
+//                {
+//                    nodes(i,j) = coord(i,j);
+//                }
+//            }
             
-            GradX(nodes,loc,gradx);
+            GradX(coord,loc,gradx);
         }
 
         /* @brief compute the jacobian of the map between the master element and deformed element */
@@ -111,7 +121,7 @@ namespace pzgeom {
         
         /** @brief Compute gradient of x mapping from element nodes and local parametric coordinates */
         template<class T>
-        static void GradX(const TPZFMatrix<T> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx);
+        static void GradX(const TPZFMatrix<REAL> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx);
         
         /** @brief Compute the shape being used to construct the x mapping from local parametric coordinates  */
         template<class T>
@@ -231,7 +241,7 @@ namespace pzgeom {
     
     
     template<class T>
-    inline void TPZGeoPyramid::GradX(const TPZFMatrix<T> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx){
+    inline void TPZGeoPyramid::GradX(const TPZFMatrix<REAL> &nodes,TPZVec<T> &loc, TPZFMatrix<T> &gradx){
         
         gradx.Resize(3,3);
         gradx.Zero();

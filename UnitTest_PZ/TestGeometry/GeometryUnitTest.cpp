@@ -39,6 +39,10 @@
 static LoggerPtr logger(Logger::getLogger("pz.mesh.testgeom"));
 #endif
 
+#ifdef _AUTODIFF
+#include "fad.h"
+#endif
+
 // Using Unit Test of the Boost Library
 #ifdef USING_BOOST
 
@@ -53,7 +57,7 @@ static LoggerPtr logger(Logger::getLogger("pz.mesh.testgeom"));
 
 #endif
 
-#define NOISY //outputs x and grad comparisons
+//#define NOISY //outputs x and grad comparisons
 //#define NOISYVTK //prints all elements in .vtk format
 
 std::string dirname = PZSOURCEDIR;
@@ -77,7 +81,7 @@ void FillGeometricMesh(TPZGeoMesh &mesh)
 {
     TPZManVector<REAL,3> lowercorner(3,0.),size(3,1.); // Setting the first corner as the origin and the max element size is 1.0;
 
-    AddElement<TPZGeoPoint>(mesh,lowercorner,size);
+//    AddElement<TPZGeoPoint>(mesh,lowercorner,size); @omar:: It makes no sense to test gradx of a 0D element
     AddElement<TPZGeoLinear>(mesh,lowercorner,size);
     AddElement<TPZGeoTriangle>(mesh,lowercorner,size);
     AddElement<TPZGeoQuad>(mesh,lowercorner,size);
@@ -141,7 +145,7 @@ void PlotRefinedMesh(TPZGeoMesh &gmesh,const std::string &filename)
 
 BOOST_AUTO_TEST_SUITE(geometry_tests)
 
-
+#ifdef _AUTODIFF
 BOOST_AUTO_TEST_CASE(gradx_tests) {
     
     TPZGeoMesh gmesh;
@@ -195,8 +199,13 @@ BOOST_AUTO_TEST_CASE(gradx_tests) {
                     std::cout << " gradx = " << gradx_r(i,j) << std::endl;
                     std::cout << " gradx fad = " << x[i].dx(j) << std::endl;
 #endif
+#ifdef REALfloat
+                    bool gradx_from_x_fad_check = std::abs(gradx_r(i,j)-x[i].dx(j)) < tol;
+                    bool gradx_vs_gradx_fad_check = std::abs(gradx_r(i,j)-gradx(i,j).val()) < tol;
+#else
                     bool gradx_from_x_fad_check = fabs(gradx_r(i,j)-x[i].dx(j)) < tol;
                     bool gradx_vs_gradx_fad_check = fabs(gradx_r(i,j)-gradx(i,j).val()) < tol;
+#endif
                     BOOST_CHECK(gradx_from_x_fad_check);
                     BOOST_CHECK(gradx_vs_gradx_fad_check);
                     
@@ -214,6 +223,7 @@ BOOST_AUTO_TEST_CASE(gradx_tests) {
 
 }
 
+#endif
 
 
 

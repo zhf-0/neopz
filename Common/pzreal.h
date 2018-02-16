@@ -20,9 +20,51 @@
 #include <math.h>
 #include <iostream>
 #include <complex>
-#include <config.h>
+#include <pz_config.h>
 #include "fpo_exceptions.h"
 
+template <typename Enumeration>
+typename std::underlying_type<Enumeration>::type as_integer(const Enumeration value) {
+    return static_cast<typename std::underlying_type<Enumeration>::type>(value);
+}
+
+
+/*structs used for help identifying fundamental types in template parameters.
+ For instance,
+ 
+ template <class T,
+ typename std::enable_if<(is_arithmetic_pz::value), int>::type* = nullptr>
+ void Write(const TPZVec<T> &vec){
+ //stuff here
+ }
+ 
+ This template would only match with T as char, int, long, float, double, 
+ * std::complex<float> etc... (Not composite types).*/
+
+/**
+ * Matches floating points (float, const double...)
+ */
+template<class T>
+struct is_complex_or_floating_point : std::is_floating_point<T> { };
+
+
+/**
+ * Extends the behavior of the struct above to match complex numbers 
+ * (std::complex<int>, std::complex<float>...)
+ */
+template<class T>
+struct is_complex_or_floating_point<std::complex<T>> : std::integral_constant<bool,
+        std::is_integral<T>::value ||
+        std::is_floating_point<T>::value> { };
+
+/**
+ * Matches integrals, floating points and complex numbers 
+ * (char, int, float, double, std::complex<int>, std::complex<float>...)
+ */
+template<class T>
+struct is_arithmetic_pz : std::integral_constant<bool,
+        std::is_integral<T>::value ||
+        is_complex_or_floating_point<T>::value> { };
 
 /** @brief Gets maxime value between a and b */
 #ifndef MAX
@@ -223,7 +265,7 @@ public:
 	}
 	inline TPZFlopCounter(const double &val)
 	{
-		fVal = val;
+		fVal = (REAL)val;
 	}
     
     inline REAL val() const
@@ -285,7 +327,7 @@ public:
 	inline TPZFlopCounter operator/(const double &oth) const
 	{
 		TPZFlopCounter result;
-		result.fVal = fVal/oth;
+		result.fVal = fVal/((REAL)oth);
 		gCount.fCount[EDiv]++;
 		return result;
 	}
@@ -423,13 +465,13 @@ inline TPZFlopCounter sqrt(const TPZFlopCounter &orig)
 inline TPZFlopCounter fabsFlop(const TPZFlopCounter &orig)
 {
 	TPZFlopCounter result;
-	result.fVal = fabs(orig.fVal);
+	result.fVal = std::abs(orig.fVal);
 	return result;
 }
 /** @brief Returns the absolute value as REAL and doesn't increments the counters. */
 inline REAL fabs(const TPZFlopCounter &orig)
 {
-	return fabs(orig.fVal);
+    return std::abs(orig.fVal);
 }
 
 /** @brief Returns the power and increments the counter of the power. */
@@ -580,26 +622,26 @@ inline std::istream &operator>>(std::istream &out, /*const*/ TPZFlopCounter &val
 
 /** @brief Returns the tolerance to Zero value. Actually: \f$ 1e-10 \f$ */
 inline REAL ZeroTolerance() {
-	return 1.e-10;
+	return ((REAL)1.e-10);
 }
 inline void ZeroTolerance(double &Tol) {
-	Tol = 1.e-9;
+	Tol = (double)1.e-9;
 }
 inline void ZeroTolerance(long double &Tol) {
-	Tol = 1.e-12;
+	Tol = (long double)1.e-12;
 }
 inline void ZeroTolerance(float &Tol) {
-	Tol = 1.e-7;
+	Tol = (float)1.e-7;
 }
 inline void ZeroTolerance(TPZFlopCounter &Tol) {
-	Tol.fVal = 1.e-9;
+	Tol.fVal = (REAL)1.e-9;
 }
 
 #ifdef _AUTODIFF
 /** @brief Returns if the value a is close Zero as the allowable tolerance */
 template<class T>
 inline bool IsZero( T a ) {
-	return ( fabs( a.val() ) < ZeroTolerance() );
+	return ( std::abs( a.val() ) < ZeroTolerance() );
 }
 #endif
 /** @brief Returns if the value a is close Zero as the allowable tolerance */

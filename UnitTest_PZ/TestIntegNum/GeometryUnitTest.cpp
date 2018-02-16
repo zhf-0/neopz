@@ -233,13 +233,21 @@ void TestingNumericIntegrationRule(int p,int type,std::ifstream &input) {
 	long double MathematicaIntegral;
 	long double tol = 1.L;
 	input >> MathematicaIntegral;
+#ifdef REALfloat
+    NDigitsPrec = 6;
+#endif
 	// Making tol compatible with the wished significant digits
     for(unsigned int it=0; it < NDigitsPrec; it++){ tol *= 0.1L; }
 	
     if(MathematicaIntegral > 10.0) { tol *= 10.L; }
     if(MathematicaIntegral > 100.0) { tol *= 10.L; }
     if(MathematicaIntegral > 1000.0) { tol *= 10.L; }
-    REAL result = fabs(NeopzIntegral-MathematicaIntegral);
+    REAL result;
+#ifndef REALfloat
+    result = fabs(NeopzIntegral-MathematicaIntegral);
+#else
+    result = std::abs(NeopzIntegral-MathematicaIntegral);
+#endif
 	// If the boolean expresion returns false, then the message will be displayed.
 	BOOST_CHECK_MESSAGE(result < tol , "\nIntegration: Dim = " << dimension << "\t Order = " << p << "\t NPoints = " << npoints << "\t Value = " << NeopzIntegral << " difference = " << result << "\n" );
 }
@@ -331,14 +339,6 @@ void ComputeError(REAL alpha, TPZManVector<REAL,3> &coordinate,TPZGeoEl * Geomet
   Error = XAlpha - (X + GradofXAlpha);
   error = Norm(Error);
 
-//   std::cout << "GradofX " << GradofX << std::endl;  
-//   std::cout << "Alpha " << Alpha << std::endl;
-//   std::cout << "GradofXAlpha " << GradofXAlpha << std::endl;   
-//   std::cout << "X " << X << std::endl;
-//   std::cout << "XAlpha " << XAlpha << std::endl;
-//   std::cout << "Error " << Error << std::endl;   
- 
-  
 }
 
 void TaylorCheck(TPZManVector<REAL,3> &coordinate,TPZGeoEl * GeometricEl)
@@ -399,7 +399,6 @@ void IntegrateCurve(TPZCurve &curve)
     // Creating the integration rule
     TPZInt1d IntegrationRule(IntegrationOrder);
     IntegrationRule.SetType(type,IntegrationOrder);
-    int dimension = IntegrationRule.Dimension();
     int npoints = IntegrationRule.NPoints();
     REAL weight = 0.0;
 
@@ -430,6 +429,7 @@ BOOST_AUTO_TEST_CASE(geom_integration_tests) {
 
     Curve->MakeRhombus();
     Curve->RefineMe(href);
+    Curve->PrintMe();
     IntegrateCurve(*Curve);
 
     Curve->MakeCircleWave();
@@ -440,7 +440,6 @@ BOOST_AUTO_TEST_CASE(geom_integration_tests) {
     Curve->MakeCircleFromArc();
     Curve->RefineMe(href);
     IntegrateCurve(*Curve);
-
 
 }
 

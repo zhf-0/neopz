@@ -31,7 +31,7 @@
 static LoggerPtr logdata(Logger::getLogger("pz.WellFlow"));
 #endif
 
-void ParametricfunctionS(const TPZVec<STATE> &par, TPZVec<STATE> &X);
+void ParametricfunctionS(const TPZVec<REAL> &par, TPZVec<REAL> &X);
 void Ffunction(const TPZVec<REAL> &pt, TPZVec<STATE> &ff);
 
 TPZGeoMesh * WellMesh(REAL s, REAL ds, int nelements);
@@ -174,7 +174,7 @@ void TransientProblem(TPZGeoMesh * gmesh, TPZVec<TPZCompMesh * > meshvec)
 
 void PrintLS(TPZAnalysis *an)
 {
-    TPZAutoPointer< TPZMatrix<REAL> > KGlobal;
+    TPZAutoPointer< TPZMatrix<STATE> > KGlobal;
     TPZFMatrix<STATE> FGlobal;
     KGlobal =   an->Solver().Matrix();
     FGlobal =   an->Rhs();
@@ -400,7 +400,7 @@ TPZCompMesh * CmeshPressure(int porder, TPZGeoMesh * gmesh)
     
 }
 
-void ParametricfunctionS(const TPZVec<STATE> &par, TPZVec<STATE> &X)
+void ParametricfunctionS(const TPZVec<REAL> &par, TPZVec<REAL> &X)
 {
     X[0] = 0.0;
     X[1] = 0.0;
@@ -442,7 +442,7 @@ TPZGeoMesh * WellMesh(REAL s, REAL ds,int nelements)
     GeoMesh0D->SetDimension(0);
     
     TPZHierarquicalGrid CreateGridFrom(GeoMesh0D);
-    TPZAutoPointer<TPZFunction<STATE> > ParFuncX = new TPZDummyFunction<STATE>(ParametricfunctionS);
+    TPZAutoPointer<TPZFunction<REAL> > ParFuncX = new TPZDummyFunction<REAL>(ParametricfunctionS);
     CreateGridFrom.SetParametricFunction(ParFuncX);
     CreateGridFrom.SetFrontBackMatId(2,3);
     
@@ -597,9 +597,7 @@ void TimeForward(TPZAnalysis *an, TPZManVector<TPZCompMesh *> meshvector, TPZCom
 }
 
 void Ffunction(const TPZVec<REAL> &pt, TPZVec<STATE> &ff)
-{
-    REAL z = pt[2];
-    
+{    
 //    if (fabs(z-100.0) <= 1.0 ) {
 //        ff[0] = 10000.0;
 //    }
