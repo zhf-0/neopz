@@ -31,9 +31,7 @@
 #include "pzl2projection.h"
 #include "pzfstrmatrix.h"
 #include "pzbuildmultiphysicsmesh.h"
-#ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
-#endif
 #ifdef USING_SLEPC
 #include <TPZSlepcEPSHandler.h>
 #include <TPZSlepcSTHandler.h>
@@ -77,34 +75,26 @@ int main(int argc, char *argv[]) {
 
 void RunSimulation(SPZModalAnalysisData &simData) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
-    std::cout<<"Creating GMesh...";
-    #ifdef USING_BOOST
+    std::cout<<"Creating GMesh..."<<std::endl;
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
-    #endif
     TPZVec<int> matIdVec;
     ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec);
-    #ifdef USING_BOOST
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
-    #endif
     TPZVec<TPZCompMesh *> meshVec(1);
-    std::cout<<"Creating CMesh...";
-    #ifdef USING_BOOST
+    std::cout<<"Creating CMesh..."<<std::endl;
     boost::posix_time::ptime t1_c =
         boost::posix_time::microsec_clock::local_time();
-    #endif
 
     CreateCMesh(meshVec, gmesh, simData.pzOpts.pOrder, matIdVec,
                 simData.physicalOpts.urVec, simData.physicalOpts.erVec,
                 simData.physicalOpts.fOp,simData.physicalOpts.isCutOff); // funcao para criar a malha computacional
 
-    #ifdef USING_BOOST
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
-    #endif
     TPZCompMesh *cmesh = meshVec[0];
 
     TPZEigenAnalysis an(cmesh, true);
@@ -144,32 +134,56 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;
-#ifdef USING_BOOST
     boost::posix_time::ptime t1 =
         boost::posix_time::microsec_clock::local_time();
-#endif
     an.Assemble();
-#ifdef USING_BOOST
     boost::posix_time::ptime t2 =
         boost::posix_time::microsec_clock::local_time();
-#endif
     std::cout << "Finished assembly." << std::endl;
 
     std::cout << "Solving..." << std::endl;
-#ifdef USING_BOOST
     boost::posix_time::ptime t3 =
         boost::posix_time::microsec_clock::local_time();
-#endif
 
     an.Solve();
-#ifdef USING_BOOST
     boost::posix_time::ptime t4 =
         boost::posix_time::microsec_clock::local_time();
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
-#endif
-  std::cout << "FINISHED!" << std::endl;
-  return;
+    if (simData.pzOpts.genVTK) {
+        TPZMatModalAnalysis *matPointer =
+                dynamic_cast<TPZMatModalAnalysis *>(meshVec[0]->MaterialVec()[1]);
+        TPZVec<TPZCompMesh *> temporalMeshVec(2);
+        temporalMeshVec[matPointer->H1Index()] = meshVec[1 + matPointer->H1Index()];
+        temporalMeshVec[matPointer->HCurlIndex()] =
+                meshVec[1 + matPointer->HCurlIndex()];
+
+        const TPZFMatrix<SPZAlwaysComplex<STATE>::type> eigenVectors = an.GetEigenvectors();
+        const TPZManVector<SPZAlwaysComplex<STATE>::type> eigenValues = an.GetEigenvalues();
+        std::cout << "Post Processing..." << std::endl;
+
+        TPZStack<std::string> scalnames, vecnames;
+        scalnames.Push("Ez"); // setando para imprimir u
+        vecnames.Push("Et");
+        std::string plotfile = "fieldPlot" + simData.pzOpts.suffix + ".vtk";
+                                                        // estara na pasta debug
+        const int dim = 2;
+        an.DefineGraphMesh(dim, scalnames, vecnames,
+                           plotfile);  // define malha grafica
+        int postProcessResolution = 1; // define resolucao do pos processamento
+        
+        for (int iSol = 0; iSol < eigenValues.size(); iSol++) {
+            TPZFMatrix<SPZAlwaysComplex<STATE>::type> currentEigenvector;
+
+            eigenVectors.GetSub(0, iSol, eigenVectors.Rows(), 1, currentEigenvector);
+            an.LoadSolution(currentEigenvector);
+            TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
+                                                               cmesh);
+            an.PostProcess(postProcessResolution);
+        }
+    }
+    std::cout << "FINISHED!" << std::endl;
+    return;
 }
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
@@ -277,17 +291,17 @@ void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &m
       matIdVec[i] = *id;
     }
 
-    std::string meshFileName(mshFileName);
-    const size_t strlen = meshFileName.length();
-    meshFileName.append(".vtk");
-    std::ofstream outVTK(meshFileName.c_str());
-    meshFileName.replace(strlen, 4, ".txt");
-    std::ofstream outTXT(meshFileName.c_str());
-
-    TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVTK, true);
-    gmesh->Print(outTXT);
-    outTXT.close();
-    outVTK.close();
+//    std::string meshFileName(mshFileName);
+//    const size_t strlen = meshFileName.length();
+//    meshFileName.append(".vtk");
+//    std::ofstream outVTK(meshFileName.c_str());
+//    meshFileName.replace(strlen, 4, ".txt");
+//    std::ofstream outTXT(meshFileName.c_str());
+//
+//    TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVTK, true);
+//    gmesh->Print(outTXT);
+//    outTXT.close();
+//    outVTK.close();
 
     return;
 }
@@ -308,7 +322,9 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     if(volMatId.size()!=urVec.size()) DebugStop();
 
     /// criar malha computacional H1
-
+    std::cout<<"Creating H1 mesh... ";
+    boost::posix_time::ptime h1_b =
+            boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshH1 = new TPZCompMesh(gmesh);
     cmeshH1->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshH1->SetDimModel(dim);        // seta dimensao do modelo
@@ -335,9 +351,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     // malha
     cmeshH1->AutoBuild();
     cmeshH1->CleanUpUnconnectedNodes();
-
+    boost::posix_time::ptime h1_e =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created!  "<<h1_e-h1_b<<std::endl;
     /// criar malha computacional HCurl
-
+    std::cout<<"Creating HCurl mesh... ";
+    boost::posix_time::ptime hc_b =
+            boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshHCurl = new TPZCompMesh(gmesh);
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
@@ -363,6 +383,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
+    boost::posix_time::ptime hc_e =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created!  "<<hc_e-hc_b<<std::endl;
+
+    std::cout<<"Creating Multiphysics mesh... ";
+    boost::posix_time::ptime hmf_b =
+            boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshMF = new TPZCompMesh(gmesh);
     TPZVec<TPZMatModalAnalysis *>matMultiPhysics(volMatId.size());
     if (isCutOff) {
@@ -405,18 +432,21 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     TPZBuildMultiphysicsMesh::AddElements(meshVec, cmeshMF);
     TPZBuildMultiphysicsMesh::AddConnects(meshVec, cmeshMF);
     TPZBuildMultiphysicsMesh::TransferFromMeshes(meshVec, cmeshMF);
-    cmeshMF->CleanUpUnconnectedNodes();
 
     cmeshMF->ExpandSolution();
-    cmeshMF->CleanUpUnconnectedNodes();
     cmeshMF->ComputeNodElCon();
     cmeshMF->CleanUpUnconnectedNodes();
-    std::ofstream fileH1("cmeshH1.txt");
-    cmeshH1->Print(fileH1);
-    std::ofstream fileHCurl("cmeshHCurl.txt");
-    cmeshHCurl->Print(fileHCurl);
-    std::ofstream fileMF("cmeshMFHCurl.txt");
-    cmeshMF->Print(fileMF);
+
+    boost::posix_time::ptime hmf_e =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created!  "<<hmf_e-hmf_b<<std::endl;
+
+//    std::ofstream fileH1("cmeshH1.txt");
+//    cmeshH1->Print(fileH1);
+//    std::ofstream fileHCurl("cmeshHCurl.txt");
+//    cmeshHCurl->Print(fileHCurl);
+//    std::ofstream fileMF("cmeshMFHCurl.txt");
+//    cmeshMF->Print(fileMF);
 
     meshVecOut.resize(3);
 

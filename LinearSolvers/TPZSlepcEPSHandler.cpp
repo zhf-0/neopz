@@ -202,8 +202,40 @@ int TPZSlepcEPSHandler<TVar>::SolveGeneralisedEigenProblem(TPZFYsmpMatrix<TVar> 
   } else {
     ierr = EPSErrorView(fEps,eps_error_type,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
+  PetscInt nconv;
+  EPSGetConverged(fEps, &nconv);
+  const PetscInt nEigen = nev > nconv ? nconv : nev;
+  w.Resize(nEigen);
+  eigenVectors.Resize(A.Rows(),nEigen);
+  for (int i = 0; i < nEigen; ++i) {
 
+#ifdef STATE_COMPLEX
+    Vec eigVec;
+    PetscScalar eig, *eigVecArray;
+    MatCreateVecs(fAmat,&eigVec,NULL);
+    EPSGetEigenpair(fEps,i,&eig,NULL,eigVec,NULL);
+    w[i] = eig;
+    VecGetArray(eigVec,&eigVecArray);
+    for (int j = 0; j < A.Rows(); ++j) {
+      eigenVectors(j,i) = eigVecArray[j];
+    }
+    VecRestoreArray(eigVec,&eigVecArray);
+#else
+    Vec eigVecRe, eigVecIm;
+    PetscScalar eigRe, eigIm, *eigVecReArray, *eigVecImArray;
+    MatCreateVecs(fAmat,&eigVecRe,NULL);
+    MatCreateVecs(fAmat,&eigVecIm,NULL);
+    EPSGetEigenpair(fEps,i,&eigRe,&eigIm,eigVecRe,eigVecIm);
+    w[i] = eigRe+ I * eigIm;
+    VecGetArray(eigVecRe,&eigVecReArray);
+    VecGetArray(eigVecIm,&eigVecImArray);
+    for (int j = 0; j < A.Rows(); ++j) {
+      eigenVectors(j,i) = eigVecReArray[j] + I * eigVecImArray[j];
+    }
+    VecRestoreArray(eigVec,&eigVecReArray);
+    VecRestoreArray(eigVec,&eigVecImArray);
+#endif
+  }
   return 1;
 }
 

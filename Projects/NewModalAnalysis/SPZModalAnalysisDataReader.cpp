@@ -172,10 +172,16 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
   prm.enter_subsection ("Physical options");
   {
     data.physicalOpts.meshFile = prm.get("Mesh file");//anything
-    if(data.physicalOpts.meshFile.size() == 0){
-      std::cout<<"Must input a valid mesh file!"<<std::endl;
-      DebugStop();
+    std::string &str = data.physicalOpts.meshFile;
+    if(str.size() == 0 || str.substr(str.size()-4,4) != ".msh" || !FileExists(str)){
+      std::cout<<"Must input a valid mesh file: "<<std::endl;
+      std::cin >> data.physicalOpts.meshFile;
+      if(str.size() == 0 || str.substr(str.size()-4,4) != ".msh" || !FileExists(str)) {
+        std::cout<<"Not a valid name."<<std::endl;
+        DebugStop();
+      }
     }
+
     data.physicalOpts.isCutOff=prm.get_bool("Cut-off analysis");//bool
     data.physicalOpts.fOp=(REAL)prm.get_double("Operational frequency");//double
     data.physicalOpts.nMaterials=(int)prm.get_integer("Number of materials");//integer
@@ -197,7 +203,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     data.pzOpts.nThreads = (int) prm.get_integer("Number of threads");//integer
     data.pzOpts.suffix = prm.get("Suffix");//anything
     if(data.pzOpts.suffix.size() == 0){
-      data.pzOpts.suffix = data.physicalOpts.meshFile;
+      data.pzOpts.suffix = data.physicalOpts.meshFile.substr(0,data.physicalOpts.meshFile.size()-4);
     }
   }
   prm.leave_subsection();
@@ -592,7 +598,19 @@ void SPZModalAnalysisDataReader::PrintUsageMessage() {
 }
 
 void SPZModalAnalysisDataReader::ParseCommandLine(const int argc, char *const *argv) {
-  if (argc < 2 || argc > 3)
+  if(argc == 1){
+    std::cout<<"Input parameters file: "<<std::endl;
+    std::string parameter_file;
+    std::cin >> parameter_file;
+    if(!FileExists(parameter_file)){
+      PZError<<"Invalid parameter file."<<std::endl;
+      DebugStop();
+    }
+    prm.parse_input (parameter_file);
+    return;
+  }
+
+  if (argc > 3)
   {
     PrintUsageMessage();
     exit (1);
@@ -622,5 +640,18 @@ void SPZModalAnalysisDataReader::ParseCommandLine(const int argc, char *const *a
   }
 
   const std::string parameter_file = argv[1];
+  if(!FileExists(parameter_file)){
+    PZError<<"Invalid parameter file."<<std::endl;
+    DebugStop();
+  }
   prm.parse_input (parameter_file);
+}
+
+bool SPZModalAnalysisDataReader::FileExists(const std::string &name) const {
+  if (FILE *file = fopen(name.c_str(), "r")) {
+    fclose(file);
+    return true;
+  } else {
+    return false;
+  }
 }

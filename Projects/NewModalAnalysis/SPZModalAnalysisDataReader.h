@@ -16,6 +16,7 @@ struct SPZModalAnalysisDataReader{
 private:
   ParameterHandler &prm;
   SPZModalAnalysisDataReader();
+  inline bool FileExists(const std::string &) const;
   void DeclareParameters();
   void PrintUsageMessage();
   void ParseCommandLine(const int argc, char *const *argv);

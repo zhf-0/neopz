@@ -66,7 +66,7 @@ protected:
                     TPZVec<std::string> &vecnames, const std::string &plotfile) = delete;
     void CreateListOfCompElsToComputeError(TPZAdmChunkVector<TPZCompEl *> &elvecToComputeError) = delete;
 private:
-    using TPZAnalysis::PostProcess;
+    //using TPZAnalysis::PostProcess;
     using TPZAnalysis::PrePostProcessTable;
     using TPZAnalysis::PostProcessTable;
     using TPZAnalysis::PostProcessError;

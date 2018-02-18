@@ -79,7 +79,7 @@ void TPZEigenAnalysis::Assemble()
 template <class TVar>
 void TPZEigenAnalysis::TransferEigenVector(const TPZFMatrix<typename SPZAlwaysComplex<TVar>::type> &originalSol,
                                            TPZFMatrix<TVar> &newSol, const unsigned int &i, const bool isAbsVal) {
-    originalSol.GetSub(i,0,originalSol.Rows(),1,newSol);
+    originalSol.GetSub(0,i,originalSol.Rows(),1,newSol);
 }
 
 template<>
@@ -103,12 +103,13 @@ void TPZEigenAnalysis::Solve() {
     long nReducedEq = fStructMatrix->NReducedEquations();
     if (nReducedEq == numeq)
     {
-//        @TODO: Fix this call
         fEigenvalues.Resize(numeq);
         fEigenvectors.Redim(numeq,1);
         fSolver->Solve(fEigenvalues, fEigenvectors);
         fSolution.Resize(numeq, 1);
-        TransferEigenVector(fEigenvectors,fSolution,0, fSolver->IsAbsoluteValue());
+        for (int i = 0; i < fEigenvalues.size(); ++i) {
+            TransferEigenVector(fEigenvectors,fSolution,i, fSolver->IsAbsoluteValue());
+        }
     }
     else
     {
@@ -117,10 +118,10 @@ void TPZEigenAnalysis::Solve() {
         //@TODO:THINK ABOUT EQUATION FILTER
         //fStructMatrix->EquationFilter().Gather(delu,fSolution);
         fSolver->Solve(fEigenvalues, fEigenvectors);
-        //@TODO:Must now select the eigenpairs based on fSolver->fHowManyEigenvalues, fSolver->fDesiredPartOfTheSpectrum...
         TPZFMatrix<STATE> sol(nReducedEq,1);
-        TransferEigenVector(fEigenvectors,sol,0, fSolver->IsAbsoluteValue());
-        //For now, the first solution is loaded.
+        for (int i = 0; i < fEigenvalues.size(); ++i) {
+            TransferEigenVector(fEigenvectors,fSolution,i, fSolver->IsAbsoluteValue());
+        }
         fStructMatrix->EquationFilter().Scatter(sol,fSolution);
     }
     fCompMesh->LoadSolution(fSolution);
