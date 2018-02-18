@@ -203,7 +203,8 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 
             continue;
         }
-        if (cel->Reference()->MaterialId() == -1) {
+        TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[cel->Reference()->MaterialId()]);
+        if (mat && mat->Type() == 0) {
             std::set<long> boundConnectsEl;
             std::set<long> depBoundConnectsEl;
             std::set<long> indepBoundConnectsEl;

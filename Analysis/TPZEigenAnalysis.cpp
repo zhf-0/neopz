@@ -101,12 +101,12 @@ void TPZEigenAnalysis::TransferEigenVector<double>(const TPZFMatrix<typename SPZ
 void TPZEigenAnalysis::Solve() {
     long numeq = fCompMesh->NEquations();
     long nReducedEq = fStructMatrix->NReducedEquations();
+    fSolution.Resize(numeq, 1);
     if (nReducedEq == numeq)
     {
         fEigenvalues.Resize(numeq);
         fEigenvectors.Redim(numeq,1);
         fSolver->Solve(fEigenvalues, fEigenvectors);
-        fSolution.Resize(numeq, 1);
         for (int i = 0; i < fEigenvalues.size(); ++i) {
             TransferEigenVector(fEigenvectors,fSolution,i, fSolver->IsAbsoluteValue());
         }
@@ -118,9 +118,9 @@ void TPZEigenAnalysis::Solve() {
         //@TODO:THINK ABOUT EQUATION FILTER
         //fStructMatrix->EquationFilter().Gather(delu,fSolution);
         fSolver->Solve(fEigenvalues, fEigenvectors);
-        TPZFMatrix<STATE> sol(nReducedEq,1);
+        TPZFMatrix<STATE> sol;
         for (int i = 0; i < fEigenvalues.size(); ++i) {
-            TransferEigenVector(fEigenvectors,fSolution,i, fSolver->IsAbsoluteValue());
+            TransferEigenVector(fEigenvectors,sol,i, fSolver->IsAbsoluteValue());
         }
         fStructMatrix->EquationFilter().Scatter(sol,fSolution);
     }

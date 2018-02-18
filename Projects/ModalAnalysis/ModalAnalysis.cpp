@@ -37,6 +37,8 @@
 #endif
 #ifdef USING_SLEPC
 #include <TPZSlepcEPSHandler.h>
+#include <TPZLapackWrapper.h>
+
 #elif defined USING_LAPACK
 #include <TPZLapackWrapper.h>
 #endif
@@ -81,7 +83,7 @@ int main(int argc, char *argv[]) {
 #endif
 	
 	  const bool isRectangularWG = true;//true = rectangular , false = circular
-    const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
+    const bool isCutOff = true;//analysis of cutoff frequencies for eigenmodes
     const meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
     bool genVTK = false;      // generate vtk for fields visualisation
@@ -99,7 +101,7 @@ int main(int argc, char *argv[]) {
 		geoParams[0] = 9 * 2.54 * 1e-3;//width
 		geoParams[1] = 4 * 2.54 * 1e-3;//height
         fOp = 25e+9;
-      nDiv = 25;
+      nDiv = 10;
 	}
 	else{
 		geoParams.Resize(1, 0.);
@@ -173,8 +175,8 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     int neqOriginal = 0;
 
   TPZAutoPointer<TPZStructMatrix> strmtrx;
-  strmtrx = new TPZSpStructMatrix(cmesh);
-//    strmtrx = new TPZFStructMatrix(cmesh);
+ // strmtrx = new TPZSpStructMatrix(cmesh);
+    strmtrx = new TPZFStructMatrix(cmesh);
   strmtrx->SetNumThreads(nThreads);
     if (filterEquations) {
       FilterBoundaryEquations(meshVec, activeEquations, neq, neqOriginal);
@@ -184,14 +186,12 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 
     const int nSolutions = neq >= 10 ? 10 : neq;
     #ifdef USING_SLEPC
-    TPZSlepcEPSHandler<STATE> solver;
+    TPZLapackWrapper<STATE> solver;
     #elif defined USING_LAPACK
     TPZLapackWrapper<STATE> solver;
     #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
-    solver.SetDesiredPartOfSpectrum(EDesiredEigen::MNE);//Most Negative Eigenvalues
-    solver.SetHowManyEigenValues(nSolutions);
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;
@@ -363,7 +363,8 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 
             continue;
         }
-        if (cel->Reference()->MaterialId() == -1) {
+        TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[cel->Reference()->MaterialId()]);
+        if (mat && mat->Type() == 0) {
             std::set<long> boundConnectsEl;
             std::set<long> depBoundConnectsEl;
             std::set<long> indepBoundConnectsEl;
