@@ -96,9 +96,6 @@ ENABLE_TESTING()
 	endif(BUILD_BROKEN)
 
 	if(BUILD_PROJECTS)
-		if(USING_SLEPC)
-			add_subdirectory(slepc-integration)
-		endif(USING_SLEPC)
 		#
 		# COMPLEX NUMBER PROJECTS
 		#
@@ -107,7 +104,9 @@ ENABLE_TESTING()
 
 			#Example to work with scalar as complex
 			add_subdirectory(ModalAnalysis)
-			add_subdirectory(NewModalAnalysis)
+			if(USING_BOOST)#ParameterHandler class needs boost
+				add_subdirectory(NewModalAnalysis)
+			endif()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
 			add_subdirectory(Helmholtz2D)
