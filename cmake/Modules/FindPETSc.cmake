@@ -63,7 +63,7 @@ unset(HAVE_PETSC_INT_SIZE CACHE)
 find_package(PkgConfig REQUIRED)
 find_package(MPI REQUIRED)
 # Find PETSc pkg-config file.
-set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/lib/pkgconfig:$ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_search_module(PETSC PETSc)
 
 # Extract major, minor, etc from version string
