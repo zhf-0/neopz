@@ -332,8 +332,8 @@ void TPZSlepcEPSHandler<TVar>::SetKrylovOptions (const bool &pLocking, const Pet
   EPSType currentType;
   EPSGetType(fEps, &currentType);
   if(strcmp(currentType,EPSKRYLOVSCHUR)){
-    PZError<<"EPSType is not EPSKRYLOVSCHUR\n";
-    DebugStop();
+    PZError<<"EPSType is not EPSKRYLOVSCHUR: Krylov settings will be ignored\n";
+    return;
   }
 
   PetscBool locking = pLocking ? PETSC_TRUE : PETSC_FALSE;
