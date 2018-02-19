@@ -14,6 +14,7 @@ class SPZModalAnalysisData;
 
 struct SPZModalAnalysisDataReader{
 private:
+  std::string path;
   ParameterHandler &prm;
   SPZModalAnalysisDataReader();
   inline bool FileExists(const std::string &) const;

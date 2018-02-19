@@ -131,6 +131,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetKrylovOptions(simData.solverOpts.eps_krylov_locking,simData.solverOpts.eps_krylov_restart);
     solver.SetEPSDimensions(simData.solverOpts.eps_nev, simData.solverOpts.eps_ncv, simData.solverOpts.eps_mpd);
     solver.SetVerbose(simData.solverOpts.eps_verbose);
+    solver.SetAbsoluteValue(simData.pzOpts.absVal);
     an.SetSolver(solver);
 
     std::cout << "Assembling..." << std::endl;
@@ -165,18 +166,21 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         TPZStack<std::string> scalnames, vecnames;
         scalnames.Push("Ez"); // setando para imprimir u
         vecnames.Push("Et");
-        std::string plotfile = "fieldPlot" + simData.pzOpts.suffix + ".vtk";
+        std::string plotfile = simData.pzOpts.prefix + "fieldPlot" + ".vtk";
                                                         // estara na pasta debug
         const int dim = 2;
         an.DefineGraphMesh(dim, scalnames, vecnames,
                            plotfile);  // define malha grafica
         int postProcessResolution = 1; // define resolucao do pos processamento
-        
-        for (int iSol = 0; iSol < eigenValues.size(); iSol++) {
-            TPZFMatrix<SPZAlwaysComplex<STATE>::type> currentEigenvector;
-            TPZFMatrix<SPZAlwaysComplex<STATE>::type> scatteredEigen(neqOriginal,1);
 
-            eigenVectors.GetSub(0, iSol, eigenVectors.Rows(), 1, currentEigenvector);
+        TPZFMatrix<SPZAlwaysComplex<STATE>::type> currentEigenvector(neq,1);
+        TPZFMatrix<SPZAlwaysComplex<STATE>::type> scatteredEigen(neqOriginal,1);
+        for (int iSol = 0; iSol < eigenValues.size(); iSol++) {
+            for(int j = 0; j < eigenVectors.Rows(); j++){
+                currentEigenvector(j,0) = simData.pzOpts.absVal ?
+                                          std::abs(eigenVectors.GetVal(j,iSol)) :
+                                          std::real(eigenVectors.GetVal(j,iSol));
+            }
             strmtrx->EquationFilter().Scatter(currentEigenvector, scatteredEigen);
             an.LoadSolution(scatteredEigen);
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,

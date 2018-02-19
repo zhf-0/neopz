@@ -33,8 +33,10 @@ struct SPZModalAnalysisData{
     bool exportEigen;
 //number of NeoPZ threads
     int nThreads;
-//suffix to be added to all exported files
-    std::string suffix;
+//prefix to be added to all exported files
+    std::string prefix;
+    //whether to calculate abs or re of the eigenvectors
+    bool absVal;
   };
   SPZPzOpts pzOpts;
   
