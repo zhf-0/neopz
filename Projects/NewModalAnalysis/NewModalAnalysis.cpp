@@ -174,9 +174,11 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         
         for (int iSol = 0; iSol < eigenValues.size(); iSol++) {
             TPZFMatrix<SPZAlwaysComplex<STATE>::type> currentEigenvector;
+            TPZFMatrix<SPZAlwaysComplex<STATE>::type> scatteredEigen(neqOriginal,1);
 
             eigenVectors.GetSub(0, iSol, eigenVectors.Rows(), 1, currentEigenvector);
-            an.LoadSolution(currentEigenvector);
+            strmtrx->EquationFilter().Scatter(currentEigenvector, scatteredEigen);
+            an.LoadSolution(scatteredEigen);
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
                                                                cmesh);
             an.PostProcess(postProcessResolution);
