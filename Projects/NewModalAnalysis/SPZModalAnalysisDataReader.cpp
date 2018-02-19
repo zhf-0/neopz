@@ -205,10 +205,8 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     data.pzOpts.exportl2error = prm.get_bool("04 - Export L2 error");//bool
     data.pzOpts.exportEigen = prm.get_bool("05 - Export eigenvalues");//bool
     data.pzOpts.nThreads = (int) prm.get_integer("06 - Number of threads");//integer
-    data.pzOpts.prefix = prm.get("07 - Prefix");//anything
-    if(data.pzOpts.prefix.size() == 0){
-      data.pzOpts.prefix = data.physicalOpts.meshFile.substr(0,data.physicalOpts.meshFile.size()-4);
-    }
+    data.pzOpts.prefix = data.physicalOpts.meshFile.substr(0,data.physicalOpts.meshFile.size()-4);
+    data.pzOpts.prefix += prm.get("07 - Prefix");//anything
     data.pzOpts.absVal = prm.get("08 - Abs|Re") == "Abs" ? true : false;//selection
     data.pzOpts.vtkRes = prm.get_integer("09 - VTK resolution");//integer
   }
