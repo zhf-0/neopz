@@ -83,6 +83,8 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                       "Prefix to be added to exported files(default is 1Mesh File)");
     prm.declare_entry("08 - Abs|Re","Re",Patterns::Selection("Abs|Re"),
                       "Whether to export magnitude or real part of eigenvector");
+    prm.declare_entry("09 - VTK resolution","0",Patterns::Integer(0),
+                      "Resolution to be used during post-processing.");
   }
   prm.leave_subsection ();
   //IN THE FOLLOWING OPTIONS, -1 =  PETSC_DECIDE and -2 = PETSC_DEFAULT
@@ -207,7 +209,8 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     if(data.pzOpts.prefix.size() == 0){
       data.pzOpts.prefix = data.physicalOpts.meshFile.substr(0,data.physicalOpts.meshFile.size()-4);
     }
-    data.pzOpts.absVal = prm.get("08 - Abs|Re") == "Abs" ? true : false;
+    data.pzOpts.absVal = prm.get("08 - Abs|Re") == "Abs" ? true : false;//selection
+    data.pzOpts.vtkRes = prm.get_integer("09 - VTK resolution");//integer
   }
   prm.leave_subsection();
   prm.enter_subsection("SLEPc solver options");

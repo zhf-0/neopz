@@ -171,7 +171,6 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         const int dim = 2;
         an.DefineGraphMesh(dim, scalnames, vecnames,
                            plotfile);  // define malha grafica
-        int postProcessResolution = 1; // define resolucao do pos processamento
 
         TPZFMatrix<SPZAlwaysComplex<STATE>::type> currentEigenvector(neq,1);
         TPZFMatrix<SPZAlwaysComplex<STATE>::type> scatteredEigen(neqOriginal,1);
@@ -185,7 +184,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
             an.LoadSolution(scatteredEigen);
             TPZBuildMultiphysicsMesh::TransferFromMultiPhysics(temporalMeshVec,
                                                                cmesh);
-            an.PostProcess(postProcessResolution);
+            an.PostProcess(simData.pzOpts.vtkRes);
         }
     }
     std::cout << "FINISHED!" << std::endl;

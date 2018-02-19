@@ -37,6 +37,8 @@ struct SPZModalAnalysisData{
     std::string prefix;
     //whether to calculate abs or re of the eigenvectors
     bool absVal;
+    //vtk resolution
+    long vtkRes;
   };
   SPZPzOpts pzOpts;
   
