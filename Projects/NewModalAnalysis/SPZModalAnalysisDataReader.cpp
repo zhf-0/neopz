@@ -89,6 +89,8 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                       "Whether to export the geometrical mesh in both .txt and .vtk formats.");
     prm.declare_entry("11 - Export compmesh","false",Patterns::Bool(),
                       "Whether to export the computational mesh in both .txt and .vtk formats.");
+    prm.declare_entry("12 - Scale factor","1.",Patterns::Double(0),
+                      "Maximum dimension for geometric domain(frequency will be scaled)");
   }
   prm.leave_subsection ();
   //IN THE FOLLOWING OPTIONS, -1 =  PETSC_DECIDE and -2 = PETSC_DEFAULT
@@ -215,6 +217,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     data.pzOpts.vtkRes = prm.get_integer("09 - VTK resolution");//integer
     data.pzOpts.exportGMesh = prm.get_bool("10 - Export geomesh");//bool
     data.pzOpts.exportCMesh = prm.get_bool("11 - Export compmesh");//bool
+    data.pzOpts.scaleFactor = prm.get_double("12 - Scale factor");//double
   }
   prm.leave_subsection();
   prm.enter_subsection("SLEPc solver options");

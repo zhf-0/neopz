@@ -29,6 +29,7 @@ protected:
     //COM CERTEZA
     const STATE fUr;
     const STATE fEr;
+    const REAL fScaleFactor;
     REAL fW;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
@@ -36,7 +37,7 @@ protected:
     
 public:
     
-    TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er);
+    TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er, const REAL &scale = 1.);
     
     TPZMatModalAnalysis(int id);
     

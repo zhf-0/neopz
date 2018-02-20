@@ -41,6 +41,7 @@ struct SPZModalAnalysisData{
     long vtkRes;
     bool exportGMesh;
     bool exportCMesh;
+    REAL scaleFactor;
   };
   SPZPzOpts pzOpts;
   

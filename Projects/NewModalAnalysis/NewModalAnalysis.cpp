@@ -46,11 +46,11 @@
 void RunSimulation(SPZModalAnalysisData &simData);
 
 void
-ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print);
+ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print, const REAL &scale);
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &er, REAL f0, bool isCutOff,const std::string &prefix, const bool &print);
+                 TPZVec<STATE> &er, REAL f0, bool isCutOff,const std::string &prefix, const bool &print, const REAL &scale);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              TPZVec<long> &activeEquations, int &neq,
@@ -80,7 +80,8 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
     TPZVec<int> matIdVec;
-    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec, simData.pzOpts.prefix, simData.pzOpts.exportGMesh);
+    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec, simData.pzOpts.prefix,
+              simData.pzOpts.exportGMesh,simData.pzOpts.scaleFactor);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
@@ -92,7 +93,8 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     CreateCMesh(meshVec, gmesh, simData.pzOpts.pOrder, matIdVec,
                 simData.physicalOpts.urVec, simData.physicalOpts.erVec,
                 simData.physicalOpts.fOp,simData.physicalOpts.isCutOff,
-                simData.pzOpts.prefix,simData.pzOpts.exportCMesh); // funcao para criar a malha computacional
+                simData.pzOpts.prefix,simData.pzOpts.exportCMesh,
+                simData.pzOpts.scaleFactor); // funcao para criar a malha computacional
 
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
@@ -118,13 +120,15 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetTolerances(simData.solverOpts.eps_tol,simData.solverOpts.eps_max_its);
     solver.SetConvergenceTest(simData.solverOpts.eps_conv_test);
     solver.SetWhichEigenpairs(simData.solverOpts.eps_which_eig);
-    solver.SetTargetEigenvalue(simData.solverOpts.target);
+    //k'0 = scale * k0
+    const STATE normalisedTarget = simData.solverOpts.target * simData.pzOpts.scaleFactor * simData.pzOpts.scaleFactor;
+    solver.SetTargetEigenvalue(normalisedTarget);
 
     stHandler.SetPrecond(simData.solverOpts.st_precond);
     stHandler.SetSolver(simData.solverOpts.st_solver);
     stHandler.SetSolverTol(simData.solverOpts.ksp_rtol,simData.solverOpts.ksp_atol,
                            simData.solverOpts.ksp_dtol,simData.solverOpts.ksp_max_its);
-    stHandler.SetType(simData.solverOpts.st_type,simData.solverOpts.target);
+    stHandler.SetType(simData.solverOpts.st_type,normalisedTarget);
     solver.SetST(stHandler);
 
     solver.SetTrueResidual(simData.solverOpts.eps_true_res);
@@ -153,6 +157,14 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         boost::posix_time::microsec_clock::local_time();
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
+    const TPZManVector<SPZAlwaysComplex<STATE>::type> eigenValues = an.GetEigenvalues();
+    const TPZFMatrix<SPZAlwaysComplex<STATE>::type> eigenVectors = an.GetEigenvectors();
+
+    std::cout<<"de-normalized eigenvalues:"<<std::endl;
+    for(int i = 0; i < eigenValues.size() ; i++){
+        std::cout<<"\t"<<eigenValues[i]/simData.pzOpts.scaleFactor/simData.pzOpts.scaleFactor<<std::endl;
+    }
+
     if (simData.pzOpts.genVTK) {
         TPZMatModalAnalysis *matPointer =
                 dynamic_cast<TPZMatModalAnalysis *>(meshVec[0]->MaterialVec()[1]);
@@ -161,8 +173,6 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         temporalMeshVec[matPointer->HCurlIndex()] =
                 meshVec[1 + matPointer->HCurlIndex()];
 
-        const TPZFMatrix<SPZAlwaysComplex<STATE>::type> eigenVectors = an.GetEigenvectors();
-        const TPZManVector<SPZAlwaysComplex<STATE>::type> eigenValues = an.GetEigenvalues();
         std::cout << "Post Processing..." << std::endl;
 
         TPZStack<std::string> scalnames, vecnames;
@@ -283,8 +293,9 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 
 void
 ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix,
-          const bool &print) {
+          const bool &print, const REAL &scale) {
     TPZGmshReader meshReader;
+    meshReader.SetfDimensionlessL(scale);
     gmesh = meshReader.GeometricGmshMesh(mshFileName);
 #ifdef PZDEBUG
 //	TPZCheckGeom * Geometrytest = new TPZCheckGeom(gmesh);
@@ -319,7 +330,7 @@ ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdV
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix, const bool &print) {
+                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix, const bool &print, const REAL &scale) {
     enum {
       dirichlet = 0
     }; // tipo da condicao de contorno do problema
@@ -406,13 +417,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     if (isCutOff) {
         for (int i = 0; i < volMatId.size(); ++i) {
             matMultiPhysics[i] =
-                new TPZMatWaveguideCutOffAnalysis(volMatId[i], f0, urVec[i], erVec[i]);
+                new TPZMatWaveguideCutOffAnalysis(volMatId[i], f0, urVec[i], erVec[i], scale);
             cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
         }
     } else {
         for (int i = 0; i < volMatId.size(); ++i) {
             matMultiPhysics[i] =
-                new TPZMatModalAnalysis(volMatId[i], f0, urVec[i], erVec[i]);
+                new TPZMatModalAnalysis(volMatId[i], f0, urVec[i], erVec[i], scale);
             cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
         }
     }

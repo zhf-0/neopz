@@ -11,8 +11,9 @@ static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
 
 
 
-TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er ) :
-TPZVecL2(id), fUr(ur), fEr(er)
+TPZMatModalAnalysis::TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er ,
+                                        const REAL &scale) :
+TPZVecL2(id), fUr(ur), fEr(er), fScaleFactor(scale)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -20,7 +21,7 @@ TPZVecL2(id), fUr(ur), fEr(er)
 }
 
 TPZMatModalAnalysis::TPZMatModalAnalysis(int id) : TPZVecL2(id), fUr(1.0),
-fEr(1.0)
+fEr(1.0) , fScaleFactor(1.)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -29,7 +30,7 @@ fEr(1.0)
 
 /** @brief Default constructor */
 TPZMatModalAnalysis::TPZMatModalAnalysis() : TPZVecL2(), fUr(1.0),
-fEr(1.0)
+fEr(1.0) , fScaleFactor(1.)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -38,7 +39,7 @@ fEr(1.0)
 
 
 TPZMatModalAnalysis::TPZMatModalAnalysis(const TPZMatModalAnalysis &mat) : TPZVecL2(mat), fUr(mat.fUr),
-fEr(mat.fEr)
+fEr(mat.fEr), fScaleFactor(mat.fScaleFactor)
 {
     isTesting = false;
     fAssembling = NDefined;
@@ -202,7 +203,7 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
     
     
     TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
-    const REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
+    const REAL k0 = fScaleFactor * fW*sqrt(M_EZERO*M_UZERO);
     /*****************ACTUAL COMPUTATION OF CONTRIBUTION****************/
     
 	const int nHCurlFunctions  = phiHCurl.Rows();
