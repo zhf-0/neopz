@@ -521,11 +521,11 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
         DebugStop();
     }
 
-    data.solverOpts.ksp_rtol = prm.get_integer("17 - Linear solver relative tolerance");//double
+    data.solverOpts.ksp_rtol = prm.get_double("17 - Linear solver relative tolerance");//double
     if(!data.solverOpts.ksp_rtol) data.solverOpts.ksp_rtol = -2;//PETSC_DEFAULT
-    data.solverOpts.ksp_atol = prm.get_integer("18 - Linear solver absolute tolerance");//double
+    data.solverOpts.ksp_atol = prm.get_double("18 - Linear solver absolute tolerance");//double
     if(!data.solverOpts.ksp_atol) data.solverOpts.ksp_atol = -2;//PETSC_DEFAULT
-    data.solverOpts.ksp_dtol = prm.get_integer("19 - Linear solver divergence tolerance");//double
+    data.solverOpts.ksp_dtol = prm.get_double("19 - Linear solver divergence tolerance");//double
     if(!data.solverOpts.ksp_dtol) data.solverOpts.ksp_dtol = -2;//PETSC_DEFAULT
     data.solverOpts.ksp_max_its = (int) prm.get_integer("20 - Linear solver maximum iterations");//integer
     if(!data.solverOpts.ksp_max_its) data.solverOpts.ksp_max_its = -2;//PETSC_DEFAULT
