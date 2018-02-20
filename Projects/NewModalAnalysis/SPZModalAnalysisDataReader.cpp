@@ -85,6 +85,10 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                       "Whether to export magnitude or real part of eigenvector");
     prm.declare_entry("09 - VTK resolution","0",Patterns::Integer(0),
                       "Resolution to be used during post-processing.");
+    prm.declare_entry("10 - Export geomesh","false",Patterns::Bool(),
+                      "Whether to export the geometrical mesh in both .txt and .vtk formats.");
+    prm.declare_entry("11 - Export compmesh","false",Patterns::Bool(),
+                      "Whether to export the computational mesh in both .txt and .vtk formats.");
   }
   prm.leave_subsection ();
   //IN THE FOLLOWING OPTIONS, -1 =  PETSC_DECIDE and -2 = PETSC_DEFAULT
@@ -209,6 +213,8 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     data.pzOpts.prefix += prm.get("07 - Prefix");//anything
     data.pzOpts.absVal = prm.get("08 - Abs|Re") == "Abs" ? true : false;//selection
     data.pzOpts.vtkRes = prm.get_integer("09 - VTK resolution");//integer
+    data.pzOpts.exportGMesh = prm.get_bool("10 - Export geomesh");//bool
+    data.pzOpts.exportCMesh = prm.get_bool("11 - Export compmesh");//bool
   }
   prm.leave_subsection();
   prm.enter_subsection("SLEPc solver options");

@@ -45,11 +45,12 @@
 
 void RunSimulation(SPZModalAnalysisData &simData);
 
-void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec);
+void
+ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print);
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &er, REAL f0, bool isCutOff);
+                 TPZVec<STATE> &er, REAL f0, bool isCutOff,const std::string &prefix, const bool &print);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              TPZVec<long> &activeEquations, int &neq,
@@ -79,7 +80,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
     TPZVec<int> matIdVec;
-    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec);
+    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec, simData.pzOpts.prefix, simData.pzOpts.exportGMesh);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
@@ -90,7 +91,8 @@ void RunSimulation(SPZModalAnalysisData &simData) {
 
     CreateCMesh(meshVec, gmesh, simData.pzOpts.pOrder, matIdVec,
                 simData.physicalOpts.urVec, simData.physicalOpts.erVec,
-                simData.physicalOpts.fOp,simData.physicalOpts.isCutOff); // funcao para criar a malha computacional
+                simData.physicalOpts.fOp,simData.physicalOpts.isCutOff,
+                simData.pzOpts.prefix,simData.pzOpts.exportCMesh); // funcao para criar a malha computacional
 
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
@@ -279,7 +281,9 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 
 
 
-void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec) {
+void
+ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix,
+          const bool &print) {
     TPZGmshReader meshReader;
     gmesh = meshReader.GeometricGmshMesh(mshFileName);
 #ifdef PZDEBUG
@@ -296,25 +300,26 @@ void ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &m
     for(auto id = matIds.begin(); id != matIds.end(); id++,i++ )    {
       matIdVec[i] = *id;
     }
+    if(print){
+        std::string meshFileName = prefix + "gmesh";
+        const size_t strlen = meshFileName.length();
+        meshFileName.append(".vtk");
+        std::ofstream outVTK(meshFileName.c_str());
+        meshFileName.replace(strlen, 4, ".txt");
+        std::ofstream outTXT(meshFileName.c_str());
 
-//    std::string meshFileName(mshFileName);
-//    const size_t strlen = meshFileName.length();
-//    meshFileName.append(".vtk");
-//    std::ofstream outVTK(meshFileName.c_str());
-//    meshFileName.replace(strlen, 4, ".txt");
-//    std::ofstream outTXT(meshFileName.c_str());
-//
-//    TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVTK, true);
-//    gmesh->Print(outTXT);
-//    outTXT.close();
-//    outVTK.close();
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVTK, true);
+        gmesh->Print(outTXT);
+        outTXT.close();
+        outVTK.close();        
+    }
 
     return;
 }
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff) {
+                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix, const bool &print) {
     enum {
       dirichlet = 0
     }; // tipo da condicao de contorno do problema
@@ -446,13 +451,14 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     boost::posix_time::ptime hmf_e =
             boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<hmf_e-hmf_b<<std::endl;
-
-//    std::ofstream fileH1("cmeshH1.txt");
-//    cmeshH1->Print(fileH1);
-//    std::ofstream fileHCurl("cmeshHCurl.txt");
-//    cmeshHCurl->Print(fileHCurl);
-//    std::ofstream fileMF("cmeshMFHCurl.txt");
-//    cmeshMF->Print(fileMF);
+    if(print){
+        std::ofstream fileH1(prefix + "cmeshH1.txt");
+        cmeshH1->Print(fileH1);
+        std::ofstream fileHCurl(prefix + "cmeshHCurl.txt");
+        cmeshHCurl->Print(fileHCurl);
+        std::ofstream fileMF(prefix + "cmeshMFHCurl.txt");
+        cmeshMF->Print(fileMF);
+    }
 
     meshVecOut.resize(3);
 

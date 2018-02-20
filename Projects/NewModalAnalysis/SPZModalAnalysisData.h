@@ -39,6 +39,8 @@ struct SPZModalAnalysisData{
     bool absVal;
     //vtk resolution
     long vtkRes;
+    bool exportGMesh;
+    bool exportCMesh;
   };
   SPZPzOpts pzOpts;
   
