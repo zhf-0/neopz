@@ -192,9 +192,11 @@ target_compile_definitions(pz PUBLIC
 )
 
 if(APPLE)
-	target_compile_definitions(pz PRIVATE
+	target_compile_definitions(pz PUBLIC
 		MACOSX	
 	)
+	find_library(ACCELERATE_LIB Accelerate)
+	target_link_libraries(pz ${ACCELERATE_LIB})
 endif(APPLE)
 
 if (NOT WIN32)

@@ -76,7 +76,7 @@ TPZHCurlNedFLinEl::TPZHCurlNedFLinEl(TPZCompMesh &mesh,
 
 TPZHCurlNedFLinEl::TPZHCurlNedFLinEl() { DebugStop(); }
 /** @brief Destructor, does nothing */
-TPZHCurlNedFLinEl::~TPZHCurlNedFLinEl() { DebugStop(); }
+TPZHCurlNedFLinEl::~TPZHCurlNedFLinEl() {}
 
 TPZHCurlNedFLinEl *TPZHCurlNedFLinEl::Clone(TPZCompMesh &mesh) const {
     DebugStop();

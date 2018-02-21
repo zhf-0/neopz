@@ -11,8 +11,8 @@
 #include <TPZSpStructMatrix.h>
 #include <pzskylstrmatrix.h>
 #include <pzsbstrmatrix.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "TPZMatHelmholtz2D.h"
-#include "TPZTimer.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
 #include "pzbndcond.h"
@@ -50,35 +50,37 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
                              TPZVec<long> &activeEquations, int &neq,
                              int &neqOriginal);
 
-void CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder,
-                 void (&func)(const TPZVec<REAL> &, TPZVec<STATE> &),
-                 const STATE &param,const std::string &prefix, const bool &print);
+void
+CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder, void (&func)(const TPZVec<REAL> &, TPZVec<STATE> &),
+            const STATE &param, const std::string &prefix, const bool &print, const REAL &scale);
 
 void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain, const REAL wDomain, const int xDiv,
                  const std::string &prefix, const bool &print, const REAL &scale);
 
 void RunSimulation(const int &nDiv, const int &pOrder);
 
-bool usingHDivRot = false;
+
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
 
-    int pOrder = 2; //PARAMS
-    int nDiv = 4; //PARAMS
-    const int nThreads = 8; //PARAMS
-    const bool l2error = true; //PARAMS
+    int pOrder = 1; //PARAMS
+    const int nDivIni = 4; //PARAMS
+    const int nPcycles = 3;
+    const int nHcycles = 5;
 
-    TPZVec<REAL> errorVec(1, 0);
-    const int nSim = 5;
-    for (int iDiv = 0; iDiv < nSim; iDiv++) {
-        std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
-                  << std::endl;
-        RunSimulation(nDiv, pOrder);
-        nDiv *= 2;
+    for (int iP = 0; iP < nPcycles; ++iP, ++pOrder) {
+        int nDiv = nDivIni;
+        for (int iH = 0; iH < nHcycles; ++iH) {
+            std::cout << iH+1<<"/"<<nHcycles<<": Beginning simulation with nEl = "
+                      << nDiv * nDiv * 2
+                      <<" and p = "<<pOrder<< std::endl;
+            RunSimulation(nDiv, pOrder);
+            nDiv *= 2;
+            std::cout << "************************************" << std::endl;
+        }
     }
-
     return 0;
 }
 
@@ -96,16 +98,25 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
     const int postprocessRes = 0;//PARAMS
     const REAL scale = 1.;//PARAMS
 
-    TPZTimer timer;
-    timer.start();
-
+    std::cout<<"Creating gmesh... ";
+    boost::posix_time::ptime t1_g =
+        boost::posix_time::microsec_clock::local_time();
     TPZGeoMesh *gmesh = NULL;
     CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, prefix, print, scale);
-    //(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
-    //const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print);
+    boost::posix_time::ptime t2_g =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created! "<<t2_g-t1_g<<std::endl;
+
+    std::cout<<"Creating cmesh... ";
+    boost::posix_time::ptime t1_c =
+        boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshHCurl = NULL;
-    CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec,
-                param,prefix,print); // funcao para criar a malha computacional
+    CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec, param, prefix, print,
+                scale); // funcao para criar a malha computacional
+    boost::posix_time::ptime t2_c =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
+
     TPZAnalysis an(cmeshHCurl);
     // configuracoes do objeto de analise
     TPZManVector<long, 1000> activeEquations;
@@ -119,8 +130,8 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
 //  strmtrx->EquationFilter().SetActiveEquations(activeEquations);
 //  an.SetStructuralMatrix(strmtrx);
 
-    //TPZSymetricSpStructMatrix matrix(cmeshHCurl);
-    TPZSBandStructMatrix matrix(cmeshHCurl);
+    TPZSymetricSpStructMatrix matrix(cmeshHCurl);
+    //TPZSBandStructMatrix matrix(cmeshHCurl);
     matrix.SetNumThreads(nThreads);
     FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
     matrix.EquationFilter().SetActiveEquations(activeEquations);
@@ -129,23 +140,41 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
     an.SetSolver(step);
     an.SetStructuralMatrix(matrix);
 
-//  FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
-//    TPZAutoPointer<TPZSpStructMatrix> fmtrx;
-//    fmtrx = new TPZSpStructMatrix(cmeshHCurl);
-//    fmtrx->SetNumThreads(nThreads);
-//    fmtrx->EquationFilter().SetActiveEquations(activeEquations);
-//    an.SetStructuralMatrix(fmtrx);
-
-//    TPZStepSolver<STATE> step;
-//    step.SetDirect(ELDLt); // caso simetrico
-//    an.SetSolver(step);
-
+    boost::posix_time::ptime t1_a =
+        boost::posix_time::microsec_clock::local_time();
     an.Assemble();
+    boost::posix_time::ptime t2_a =
+        boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::ptime t1_s =
+        boost::posix_time::microsec_clock::local_time();
     an.Solve();
-	  timer.stop();
-    an.LoadSolution();
+    boost::posix_time::ptime t2_s =
+        boost::posix_time::microsec_clock::local_time();
 
+
+    std::cout<<"Assembly duration: "<<t2_a-t1_a
+             <<"  Solver duration: "<<t2_s-t1_s<<std::endl;
+    an.LoadSolution();
+    if (l2error) {
+        std::cout<<"Calculating errors..."<<std::endl;
+        TPZVec<REAL> errorVec(1,0);
+        an.SetExact(&exactSol);
+        errorVec.Resize(2, 0.);
+        an.SetThreadsForError(nThreads);
+        an.PostProcessError(errorVec);
+        std::string fileName = prefix + "errorHDiv";
+        fileName.append(std::to_string(nDiv * nDiv * 2));
+        fileName.append("_p");
+        fileName.append(std::to_string(pOrder));
+        fileName.append(".csv");
+        std::ofstream errorFile(fileName.c_str());
+        errorFile << errorVec[0] << "," << errorVec[1] << "," << errorVec[2]
+                  << std::endl;
+        errorFile.close();
+        std::cout<<" Done!"<<std::endl;
+    }
     if (genVTK) {
+        std::cout<<"Post processing... ";
         TPZStack<std::string> scalnames, vecnames;
         vecnames.Push("E");
         std::string plotfile = prefix+"sol";
@@ -156,23 +185,11 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
                            plotfile);  // define malha grafica
         int postProcessResolution = postprocessRes; // define resolucao do pos processamento
         an.PostProcess(postProcessResolution);
+        std::cout<<" Done!"<<std::endl;
     }
-    if (l2error) {
-        TPZVec<REAL> errorVec(1,0);
-        an.SetExact(&exactSol);
-        errorVec.Resize(2, 0.);
-        an.SetThreadsForError(nThreads);
-        an.PostProcessError(errorVec);
-        std::string fileName = prefix + "errorHDiv";
-        fileName.append(std::to_string(nDiv * nDiv * 2));
-		    fileName.append("_p");
-		    fileName.append(std::to_string(pOrder));
-        fileName.append(".csv");
-        std::ofstream errorFile(fileName.c_str());
-        errorFile << errorVec[0] << "," << errorVec[1] << "," << errorVec[2]
-                  << std::endl;
-        errorFile.close();
-    }
+    gmesh->SetReference(nullptr);
+    cmeshHCurl->SetReference(nullptr);
+    delete cmeshHCurl;
     delete gmesh;
 }
 
@@ -334,9 +351,8 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomainOrig,
     delete gengrid;
 }
 
-void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
-                 void (&loadVec)(const TPZVec<REAL> &, TPZVec<STATE> &),
-                 const STATE &param, const std::string &prefix, const bool &print) {
+void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder, void (&loadVec)(const TPZVec<REAL> &, TPZVec<STATE> &)
+            , const STATE &param, const std::string &prefix, const bool &print, const REAL &scale) {
     const int dim = 2;   // dimensao do problema
     const int matId = 1; // define id para um material(formulacao fraca)
     const int bc0 = -1;  // define id para um material(cond contorno dirichlet)
@@ -352,7 +368,7 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
     TPZMatHelmholtz2D *matHCurl = NULL;
-    matHCurl = new TPZMatHelmholtz2D(matId, param);
+    matHCurl = new TPZMatHelmholtz2D(matId, param, scale);
     matHCurl->SetForcingFunction(loadVec, 4);
     cmeshHCurl->InsertMaterialObject(matHCurl);
 
@@ -366,8 +382,7 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
 
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir); // insere material na malha
 
-    if(!usingHDivRot)cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
-    else cmeshHCurl->SetAllCreateFunctionsHDiv(); // define espaco de aproximacao
+    cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
     cmeshHCurl->AutoBuild();
     if(print){
         std::string fileName(prefix+ "cmesh");

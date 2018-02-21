@@ -105,11 +105,15 @@ ENABLE_TESTING()
 			#Example to work with scalar as complex
 			add_subdirectory(ModalAnalysis)
 			if(USING_BOOST)#ParameterHandler class needs boost
-				add_subdirectory(NewModalAnalysis)
+				if(USING_SLEPC)
+					add_subdirectory(NewModalAnalysis)
+				endif()
+				if(USING_LAPACK)
+					add_subdirectory(Helmholtz2D)
+				endif()
 			endif()
 			add_subdirectory(MFHCurlH1Lag)
 			add_subdirectory(HCurlProjection)
-			add_subdirectory(Helmholtz2D)
 		else(BUILD_COMPLEX_PROJECTS)
 			#
 			# REGULAR PROJECTS

@@ -5,6 +5,25 @@
 #ifndef PZ_TPZLAPACKWRAPPER_H
 #define PZ_TPZLAPACKWRAPPER_H
 
+
+#ifdef USING_LAPACK
+
+#ifdef USING_MKL //mkl version is faster
+#include <mkl.h>
+typedef MKL_Complex16 vardoublecomplex;
+typedef MKL_Complex8 varfloatcomplex;
+#elif MACOSX //accelerate
+#include <Accelerate/Accelerate.h>
+typedef __CLPK_doublecomplex vardoublecomplex;
+typedef __CLPK_complex varfloatcomplex;
+#else //openblas, standalone lapack, etc
+#define lapack_complex_double std::complex<double>
+#define lapack_complex_float std::complex<float>
+#include "lapacke.h"
+typedef lapack_complex_double vardoublecomplex;
+typedef lapack_complex_float varfloatcomplex;
+#endif//using_mkl
+
 #include <TPZEigenSolver.h>
 #include <pzfmatrix.h>
 #include <pzsbndmat.h>
@@ -103,4 +122,5 @@ class TPZLapackWrapper : public TPZEigenSolver<TVar> {
     int SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, TPZSBMatrix< TVar > &B , TPZVec < typename SPZAlwaysComplex<TVar>::type > &w);
 };
 
+#endif//using_lapack
 #endif //PZ_TPZLAPACKWRAPPER_H
