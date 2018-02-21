@@ -1,37 +1,21 @@
-              
-                           
-            
-           
-        
-      
-     
-    
- 
 #include "TPZMatHelmholtz2D.h"
 #include "TPZVecL2.h"
 
 #include "pzbndcond.h"
 #include "pzlog.h"
 
-#ifdef LOG4CXX
-static LoggerPtr logger(Logger::getLogger("pz.material.fran"));
-#endif
-
-STATE TPZMatHelmholtz2D::CDefault(const TPZVec<REAL> &x) {
-    return 1.;
-}
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id,
-                                     STATE (&cFunc)(const TPZVec<REAL> &))
-    : TPZVecL2(id), fC(cFunc) {
+                                     const STATE &c)
+    : TPZVecL2(id), fC(c) {
     fDim = 2;
 }
 
-TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(CDefault) {
+TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(1.) {
     fDim = 2;
 }
 
 /** @brief Default constructor */
-TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(CDefault) { fDim = 2; }
+TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(1.) { fDim = 2; }
 
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(const TPZMatHelmholtz2D &mat)
     : TPZVecL2(mat), fC(mat.fC) {
@@ -64,7 +48,6 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
     TPZAxesTools<REAL>::Axes2XYZ(curlPhiDAxes, curlPhi, normalVec);
 
     TPZManVector<REAL, 3> x = data.x;
-    const STATE cVal = fC(x);
 
     //*****************GET FORCING FUNCTION****************//
     TPZManVector<STATE, 3> force(3);
@@ -98,7 +81,7 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
             curlPhiIvecCurlPhiJ += curlPhi(1, iVec) * curlPhi(1, jVec);
             curlPhiIvecCurlPhiJ += curlPhi(2, iVec) * curlPhi(2, jVec);
 
-            stiff = curlPhiIvecCurlPhiJ + cVal * phiIdotPhiJ;
+            stiff = curlPhiIvecCurlPhiJ + fC * phiIdotPhiJ;
             ek(iVec, jVec) += stiff * weight;
         }
     }

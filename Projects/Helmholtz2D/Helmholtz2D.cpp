@@ -8,7 +8,6 @@
  */
 
 #include "TPZMatHelmholtz2D.h"
-#include "TPZMatHelmholtz2DHDivRot.h"
 #include "TPZTimer.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
@@ -26,23 +25,16 @@
 #include "pzshapetriang.h"
 #include "pzskylstrmatrix.h"
 #include "pzstepsolver.h"
-#include "pzstrmatrix.h"
-#include "pzextractval.h"
-#include <fstream>
-#include <iostream>
-#include <string>
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
-
-STATE constitutiveFunc(const TPZVec<REAL> &coord) { return 1.; }
 
 void loadVec(const TPZVec<REAL> &coord, TPZVec<STATE> &val) {
     val.Resize(3, 0.);
     //  val[0] = 3 - coord[1] * coord[1];
     //  val[1] = 3 - coord[0] * coord[0];
-    val[0] = (2 * M_PI * M_PI + constitutiveFunc(coord)) * M_PI *
+    val[0] = (2 * M_PI * M_PI + 1.) * M_PI *
              cos(M_PI * coord[0]) * sin(M_PI * coord[1]);
-    val[1] = (2 * M_PI * M_PI + constitutiveFunc(coord)) * M_PI * (-1.) *
+    val[1] = (2 * M_PI * M_PI + 1.) * M_PI * (-1.) *
              sin(M_PI * coord[0]) * cos(M_PI * coord[1]);
 }
 
@@ -62,17 +54,17 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
 
 void CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder,
                  void (&func)(const TPZVec<REAL> &, TPZVec<STATE> &),
-                 STATE (&constFunc)(const TPZVec<REAL> &));
+                 const STATE &param,const std::string &prefix, const bool &print);
 
 void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
-                 const REAL wDomain, const int xDiv, const int zDiv);
+                 const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print);
 
 void RunSimulation(const int nDiv, const int pOrder,
                    const enum meshTypeE meshType, bool filterEquations,
                    bool usingFullMtrx, bool optimizeBandwidth,
                    const int nThreads, bool genVTK, bool l2error,
                    TPZVec<REAL> &errorVec);
-#undef TESTING_FUNCS
+
 bool usingHDivRot = false;
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
@@ -116,18 +108,15 @@ void RunSimulation(const int nDiv, const int pOrder,
     timer.start();
 
     TPZGeoMesh *gmesh = NULL;
-    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, nDiv);
-
+    const std::string prefix;//PARAMS
+    const bool print = true;//PARAMS
+    const STATE param = 1.;//PARAMS
+    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, nDiv, prefix, print);
+    //(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
+    //const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print);
     TPZCompMesh *cmeshHCurl = NULL;
     CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec,
-                constitutiveFunc); // funcao para criar a malha computacional
-    {
-        std::string fileName("../cmeshHCurl");
-        fileName.append(std::to_string(nDiv * nDiv * 2));
-        fileName.append(".txt");
-        std::ofstream fileHCurl(fileName.c_str());
-        cmeshHCurl->Print(fileHCurl);
-    }
+                param,prefix,print); // funcao para criar a malha computacional
     TPZAnalysis an(cmeshHCurl, optimizeBandwidth);
     // configuracoes do objeto de analise
     TPZManVector<long, 1000> activeEquations;
@@ -162,46 +151,7 @@ void RunSimulation(const int nDiv, const int pOrder,
     an.SetSolver(step);
 
     an.Assemble();
-	
-#ifdef TESTING_FUNCS
-    {
-        std::string fileName("../stiff.csv");
-        std::ofstream fileA(fileName.c_str());
-
-        TPZMatrix<STATE> *stiffPtr = NULL;
-
-        if (usingFullMtrx) {
-            stiffPtr = new TPZFMatrix<STATE>(*dynamic_cast<TPZFMatrix<STATE> *>(
-                an.Solver().Matrix().operator->()));
-        } else {
-            stiffPtr =
-                new TPZSBMatrix<STATE>(*dynamic_cast<TPZSBMatrix<STATE> *>(
-                    an.Solver().Matrix().operator->()));
-        }
-        char number[256];
-        for (int i = 0; i < stiffPtr->Rows(); i++) {
-            for (int j = 0; j < stiffPtr->Rows(); j++) {
-                sprintf(number, "%16.16Lf",
-                        (long double)TPZExtractVal::val(
-                            std::real(stiffPtr->GetVal(i, j))));
-                fileA << number;
-
-                fileA << " + I * ";
-
-                sprintf(number, "%16.16Lf",
-                        (long double)TPZExtractVal::val(
-                            std::imag(stiffPtr->GetVal(i, j))));
-                fileA << number;
-                if (j != stiffPtr->Rows() - 1) {
-                    fileA << " , ";
-                }
-            }
-            fileA << std::endl;
-        }
-        fileA.close();
-    }
-#endif
-	an.Run();
+	an.Solve();
 	timer.stop();
     an.LoadSolution();
 
@@ -249,7 +199,8 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
         if (cel->Reference() == NULL) {
             continue;
         }
-        if (cel->Reference()->MaterialId() == -1) {
+        TPZBndCond *mat = dynamic_cast<TPZBndCond *>(cmeshHCurl->MaterialVec()[cel->Reference()->MaterialId()]);
+        if (mat && mat->Type() == 0) {
             std::set<long> boundConnectsEl;
             cel->BuildConnectList(boundConnectsEl);
 
@@ -299,10 +250,9 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
 }
 
 void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
-                 const REAL wDomain, const int xDiv, const int yDiv) {
+                 const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print){
     TPZManVector<int, 3> nx(3, 0);
-    TPZManVector<REAL, 3> llCoord(3, 0.), ulCoord(3, 0.), urCoord(3, 0.),
-        lrCoord(3, 0.);
+    TPZManVector<REAL, 3> llCoord(3, 0.), ulCoord(3, 0.), urCoord(3, 0.),lrCoord(3, 0.);
     llCoord[0] = -wDomain / 2;
     llCoord[1] = -hDomain / 2;
 
@@ -350,48 +300,49 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
     gengrid->SetBC(gmesh, lrCoord, urCoord, bc0);
     gengrid->SetBC(gmesh, llCoord, lrCoord, bc0);
 
-    // gmesh->ResetConnectivities();
-
     gmesh->BuildConnectivity();
-#ifdef PZDEBUG
-    std::ofstream outTxt, outVtk;
-    switch (meshType) {
-    case createRectangular: {
-        outTxt.open("../gmeshRectangular.txt"); // define arquivo de saida para
-                                                // impressao da malha no
-        outVtk.open("../gmeshRectangular.vtk"); // define arquivo de saida para
-        // impressao da malha no paraview
+    if(print) {
+        std::ofstream outTxt, outVtk;
+        switch (meshType) {
+            case createRectangular: {
+                outTxt.open(prefix + "gmeshRec.txt"); // define arquivo de saida para
+                // impressao da malha no
+                outVtk.open("gmeshRec.vtk"); // define arquivo de saida para
+                // impressao da malha no paraview
 
-    } break;
-    case createTriangular: {
-        outTxt.open("../gmeshTriangular.txt"); // define arquivo de saida para
-                                               // impressao da malha no
-        outVtk.open("../gmeshTriangular.vtk"); // define arquivo de saida para
-                                               // impressao da malha no paraview
+            }
+                break;
+            case createTriangular: {
+                outTxt.open("gmeshTri.txt"); // define arquivo de saida para
+                // impressao da malha no
+                outVtk.open("gmeshTri.vtk"); // define arquivo de saida para
+                // impressao da malha no paraview
 
-    } break;
-    case createZigZag: {
-        outTxt.open("../gmeshZigZag.txt"); // define arquivo de saida para
-                                           // impressao da malha no
-        outVtk.open("../gmeshZigZag.vtk"); // define arquivo de saida para
-                                           // impressao da malha no paraview
-    } break;
-    default:
-        DebugStop();
-        break;
+            }
+                break;
+            case createZigZag: {
+                outTxt.open("gmeshZig.txt"); // define arquivo de saida para
+                // impressao da malha no
+                outVtk.open("gmeshZig.vtk"); // define arquivo de saida para
+                // impressao da malha no paraview
+            }
+                break;
+            default:
+                DebugStop();
+                break;
+        }
+        gmesh->Print(outTxt);
+        outTxt.close();
+        TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVtk,
+                                     true); // imprime a malha no formato vtk
+        outVtk.close();
     }
-    gmesh->Print(outTxt);
-    outTxt.close();
-    TPZVTKGeoMesh::PrintGMeshVTK(gmesh, outVtk,
-                                 true); // imprime a malha no formato vtk
-    outVtk.close();
-#endif
     delete gengrid;
 }
 
 void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
                  void (&loadVec)(const TPZVec<REAL> &, TPZVec<STATE> &),
-                 STATE (&constFunc)(const TPZVec<REAL> &)) {
+                 const STATE &param, const std::string &prefix, const bool &print) {
     const int dim = 2;   // dimensao do problema
     const int matId = 1; // define id para um material(formulacao fraca)
     const int bc0 = -1;  // define id para um material(cond contorno dirichlet)
@@ -407,8 +358,7 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
     // Inserindo material na malha
     TPZMatHelmholtz2D *matHCurl = NULL;
-    if (!usingHDivRot) matHCurl = new TPZMatHelmholtz2D(matId, constFunc);
-    else matHCurl = new TPZMatHelmholtz2DHDivRot(matId, constFunc);
+    matHCurl = new TPZMatHelmholtz2D(matId, param);
     matHCurl->SetForcingFunction(loadVec, 4);
     cmeshHCurl->InsertMaterialObject(matHCurl);
 
@@ -425,4 +375,10 @@ void CreateCMesh(TPZCompMesh *&cmeshHCurl, TPZGeoMesh *gmesh, int pOrder,
     if(!usingHDivRot)cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
     else cmeshHCurl->SetAllCreateFunctionsHDiv(); // define espaco de aproximacao
     cmeshHCurl->AutoBuild();
+    if(print){
+        std::string fileName(prefix+ "cmesh");
+        fileName.append(".txt");
+        std::ofstream fileHCurl(fileName.c_str());
+        cmeshHCurl->Print(fileHCurl);
+    }
 }
