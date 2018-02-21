@@ -7,23 +7,21 @@
  * @since 2017
  */
 
+#include <TPZSSpStructMatrix.h>
+#include <TPZSpStructMatrix.h>
+#include <pzskylstrmatrix.h>
+#include <pzsbstrmatrix.h>
 #include "TPZMatHelmholtz2D.h"
 #include "TPZTimer.h"
 #include "TPZVTKGeoMesh.h"
 #include "pzanalysis.h"
 #include "pzbndcond.h"
-#include "pzbuildmultiphysicsmesh.h"
 #include "pzelchdiv.h"
 #include "pzfstrmatrix.h"
 #include "pzgengrid.h"
 #include "pzgmesh.h"
-#include "pzlog.h"
-#include "pzmatred.h"
-#include "pzsbndmat.h"
-#include "pzsbstrmatrix.h"
 #include "pzshapequad.h"
 #include "pzshapetriang.h"
-#include "pzskylstrmatrix.h"
 #include "pzstepsolver.h"
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
@@ -56,14 +54,10 @@ void CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder,
                  void (&func)(const TPZVec<REAL> &, TPZVec<STATE> &),
                  const STATE &param,const std::string &prefix, const bool &print);
 
-void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
-                 const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print);
+void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain, const REAL wDomain, const int xDiv,
+                 const std::string &prefix, const bool &print, const REAL &scale);
 
-void RunSimulation(const int nDiv, const int pOrder,
-                   const enum meshTypeE meshType, bool filterEquations,
-                   bool usingFullMtrx, bool optimizeBandwidth,
-                   const int nThreads, bool genVTK, bool l2error,
-                   TPZVec<REAL> &errorVec);
+void RunSimulation(const int &nDiv, const int &pOrder);
 
 bool usingHDivRot = false;
 int main(int argc, char *argv[]) {
@@ -71,111 +65,108 @@ int main(int argc, char *argv[]) {
     InitializePZLOG();
 #endif
 
-    int pOrder = 2; // ordem polinomial de aproximacao
-    int nDiv = 4;
-
-    bool filterEquations = false;
-    bool usingFullMtrx = false;
-    bool optimizeBandwidth = true;
-    const int nThreads = 8; // TODO: fix multithread issue
-    bool genVTK = false;
-    bool l2error = true;
-    const enum meshTypeE meshType = createTriangular;
+    int pOrder = 2; //PARAMS
+    int nDiv = 4; //PARAMS
+    const int nThreads = 8; //PARAMS
+    const bool l2error = true; //PARAMS
 
     TPZVec<REAL> errorVec(1, 0);
     const int nSim = 5;
     for (int iDiv = 0; iDiv < nSim; iDiv++) {
         std::cout << "beginning simulation with nEl = " << nDiv * nDiv * 2
                   << std::endl;
-        RunSimulation(nDiv, pOrder, meshType, filterEquations, usingFullMtrx,
-                      optimizeBandwidth, nThreads, genVTK, l2error, errorVec);
+        RunSimulation(nDiv, pOrder);
         nDiv *= 2;
     }
 
     return 0;
 }
 
-void RunSimulation(const int nDiv, const int pOrder,
-                   const enum meshTypeE meshType, bool filterEquations,
-                   bool usingFullMtrx, bool optimizeBandwidth,
-                   const int nThreads, bool genVTK, bool l2error,
-                   TPZVec<REAL> &errorVec) {
+void RunSimulation(const int &nDiv, const int &pOrder) {
     // PARAMETROS FISICOS DO PROBLEMA
+    const enum meshTypeE meshType = createTriangular;
     const REAL hDomain = 2;
     const REAL wDomain = 2;
+    const int nThreads = 8; //PARAMS
+    const bool l2error = true; //PARAMS
+    const bool genVTK = false; //PARAMS
+    const std::string prefix = "../";//PARAMS
+    const bool print = true;//PARAMS
+    const STATE param = 1.;//PARAMS
+    const int postprocessRes = 0;//PARAMS
+    const REAL scale = 1.;//PARAMS
 
     TPZTimer timer;
     timer.start();
 
     TPZGeoMesh *gmesh = NULL;
-    const std::string prefix;//PARAMS
-    const bool print = true;//PARAMS
-    const STATE param = 1.;//PARAMS
-    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, nDiv, prefix, print);
+    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, prefix, print, scale);
     //(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
     //const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print);
     TPZCompMesh *cmeshHCurl = NULL;
     CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec,
                 param,prefix,print); // funcao para criar a malha computacional
-    TPZAnalysis an(cmeshHCurl, optimizeBandwidth);
+    TPZAnalysis an(cmeshHCurl);
     // configuracoes do objeto de analise
     TPZManVector<long, 1000> activeEquations;
     int neq = 0;
     int neqOriginal = 0;
-	if(filterEquations){
-		FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
-	}
 
-    TPZAutoPointer<TPZSBandStructMatrix> sbstr;
+//  TPZAutoPointer<TPZStructMatrix> strmtrx;
+//  strmtrx = new TPZSpStructMatrix(cmeshHCurl);
+//  strmtrx->SetNumThreads(nThreads);
+//  FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
+//  strmtrx->EquationFilter().SetActiveEquations(activeEquations);
+//  an.SetStructuralMatrix(strmtrx);
 
-    TPZAutoPointer<TPZFStructMatrix> fmtrx;
-
-    if (usingFullMtrx) {
-        fmtrx = new TPZFStructMatrix(cmeshHCurl);
-        fmtrx->SetNumThreads(nThreads);
-        if (filterEquations) {
-            fmtrx->EquationFilter().SetActiveEquations(activeEquations);
-        }
-
-        an.SetStructuralMatrix(fmtrx);
-    } else {
-        sbstr = new TPZSBandStructMatrix(cmeshHCurl);
-        sbstr->SetNumThreads(nThreads);
-        if (filterEquations) {
-            sbstr->EquationFilter().SetActiveEquations(activeEquations);
-        }
-        an.SetStructuralMatrix(sbstr);
-    }
+    //TPZSymetricSpStructMatrix matrix(cmeshHCurl);
+    TPZSBandStructMatrix matrix(cmeshHCurl);
+    matrix.SetNumThreads(nThreads);
+    FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
+    matrix.EquationFilter().SetActiveEquations(activeEquations);
     TPZStepSolver<STATE> step;
-    step.SetDirect(ECholesky); // caso simetrico
+    step.SetDirect(ECholesky);
     an.SetSolver(step);
+    an.SetStructuralMatrix(matrix);
+
+//  FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
+//    TPZAutoPointer<TPZSpStructMatrix> fmtrx;
+//    fmtrx = new TPZSpStructMatrix(cmeshHCurl);
+//    fmtrx->SetNumThreads(nThreads);
+//    fmtrx->EquationFilter().SetActiveEquations(activeEquations);
+//    an.SetStructuralMatrix(fmtrx);
+
+//    TPZStepSolver<STATE> step;
+//    step.SetDirect(ELDLt); // caso simetrico
+//    an.SetSolver(step);
 
     an.Assemble();
-	an.Solve();
-	timer.stop();
+    an.Solve();
+	  timer.stop();
     an.LoadSolution();
 
     if (genVTK) {
         TPZStack<std::string> scalnames, vecnames;
         vecnames.Push("E");
-        std::string plotfile = "../sol";
+        std::string plotfile = prefix+"sol";
         plotfile.append(std::to_string(cmeshHCurl->NElements()));
         plotfile.append(".vtk");
 
         an.DefineGraphMesh(2, scalnames, vecnames,
                            plotfile);  // define malha grafica
-        int postProcessResolution = 5; // define resolucao do pos processamento
+        int postProcessResolution = postprocessRes; // define resolucao do pos processamento
         an.PostProcess(postProcessResolution);
     }
     if (l2error) {
+        TPZVec<REAL> errorVec(1,0);
         an.SetExact(&exactSol);
         errorVec.Resize(2, 0.);
         an.SetThreadsForError(nThreads);
         an.PostProcessError(errorVec);
-        std::string fileName = "../errorHDiv";
+        std::string fileName = prefix + "errorHDiv";
         fileName.append(std::to_string(nDiv * nDiv * 2));
-		fileName.append("_p");
-		fileName.append(std::to_string(pOrder));
+		    fileName.append("_p");
+		    fileName.append(std::to_string(pOrder));
         fileName.append(".csv");
         std::ofstream errorFile(fileName.c_str());
         errorFile << errorVec[0] << "," << errorVec[1] << "," << errorVec[2]
@@ -249,8 +240,11 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
     return;
 }
 
-void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
-                 const REAL wDomain, const int xDiv, const int yDiv, const std::string &prefix, const bool &print){
+void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomainOrig, const REAL wDomainOrig, const int nDiv,
+                 const std::string &prefix, const bool &print, const REAL &scale) {
+    const REAL wDomain = wDomainOrig/scale;
+    const REAL hDomain = hDomainOrig/scale;
+
     TPZManVector<int, 3> nx(3, 0);
     TPZManVector<REAL, 3> llCoord(3, 0.), ulCoord(3, 0.), urCoord(3, 0.),lrCoord(3, 0.);
     llCoord[0] = -wDomain / 2;
@@ -265,8 +259,8 @@ void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain,
     lrCoord[0] = wDomain / 2;
     lrCoord[1] = -hDomain / 2;
 
-    nx[0] = xDiv;
-    nx[1] = yDiv;
+    nx[0] = nDiv;
+    nx[1] = nDiv;
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {

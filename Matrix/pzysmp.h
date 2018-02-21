@@ -220,7 +220,7 @@ protected:
 #ifdef USING_MKL
     friend class TPZPardisoControl<TVar>;
 
-//    TPZPardisoControl<TVar> fPardisoControl;
+    TPZPardisoControl<TVar> fPardisoControl;
 #endif
 protected:
 	
