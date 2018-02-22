@@ -14,8 +14,9 @@
 class TPZMatHelmholtz2D : public TPZVecL2 {
   protected:
     const STATE fC;
+    const REAL fScale;
   public:
-    TPZMatHelmholtz2D(int id, const STATE &);
+    TPZMatHelmholtz2D(int id, const STATE &, const REAL &scale = 1.);
 
     TPZMatHelmholtz2D(int id);
 

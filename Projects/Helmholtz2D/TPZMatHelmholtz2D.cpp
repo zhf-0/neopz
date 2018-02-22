@@ -5,20 +5,23 @@
 #include "pzlog.h"
 
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id,
-                                     const STATE &c)
-    : TPZVecL2(id), fC(c) {
+                                     const STATE &c,
+                                    const REAL &scale)
+    : TPZVecL2(id), fC(c) , fScale(scale) {
     fDim = 2;
 }
 
-TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(1.) {
+TPZMatHelmholtz2D::TPZMatHelmholtz2D(int id) : TPZVecL2(id), fC(1.) , fScale(1.) {
     fDim = 2;
 }
 
 /** @brief Default constructor */
-TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(1.) { fDim = 2; }
+TPZMatHelmholtz2D::TPZMatHelmholtz2D() : TPZVecL2(), fC(1.) , fScale(1.) {
+    fDim = 2;
+}
 
 TPZMatHelmholtz2D::TPZMatHelmholtz2D(const TPZMatHelmholtz2D &mat)
-    : TPZVecL2(mat), fC(mat.fC) {
+    : TPZVecL2(mat), fC(mat.fC) , fScale(mat.fScale) {
     fDim = mat.fDim;
 }
 
@@ -64,9 +67,9 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
 
     for (int iVec = 0; iVec < nHCurlFunctions; iVec++) {
         STATE load = 0.;
-        load += phiHCurl(iVec, 0) * force[0];
-        load += phiHCurl(iVec, 1) * force[1];
-        load += phiHCurl(iVec, 2) * force[2];
+        load += phiHCurl(iVec, 0) * force[0];// * (fScale*fScale);
+        load += phiHCurl(iVec, 1) * force[1];// * (fScale*fScale);
+        load += phiHCurl(iVec, 2) * force[2];// * (fScale*fScale);
         ef(iVec) += load * weight;
         for (int jVec = 0; jVec < nHCurlFunctions; jVec++) {
             STATE stiff = 0.;
@@ -81,7 +84,7 @@ void TPZMatHelmholtz2D::Contribute(TPZMaterialData &data, REAL weight,
             curlPhiIvecCurlPhiJ += curlPhi(1, iVec) * curlPhi(1, jVec);
             curlPhiIvecCurlPhiJ += curlPhi(2, iVec) * curlPhi(2, jVec);
 
-            stiff = curlPhiIvecCurlPhiJ + fC * phiIdotPhiJ;
+            stiff = curlPhiIvecCurlPhiJ + fC * fScale * fScale * phiIdotPhiJ;
             ek(iVec, jVec) += stiff * weight;
         }
     }

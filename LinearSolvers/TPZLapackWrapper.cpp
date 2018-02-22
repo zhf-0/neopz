@@ -119,24 +119,6 @@ int TPZLapackWrapper<TVar>::SolveGeneralisedEigenProblem(TPZSBMatrix<TVar> &A, T
   DebugStop();
   return 0;
 }
-
-#ifdef USING_LAPACK
-
-#ifdef USING_MKL //mkl version is faster
-#include <mkl.h>
-typedef MKL_Complex16 vardoublecomplex;
-typedef MKL_Complex8 varfloatcomplex;
-#elif MACOSX //accelerate
-#include <Accelerate/Accelerate.h>
-typedef __CLPK_doublecomplex vardoublecomplex;
-typedef __CLPK_complex varfloatcomplex;
-#else //openblas, standalone lapack, etc
-#define lapack_complex_double std::complex<double>
-#define lapack_complex_float std::complex<float>
-#include "lapacke.h"
-typedef lapack_complex_double vardoublecomplex;
-typedef lapack_complex_float varfloatcomplex;
-#endif
 /*******************
 *    TPZFMATRIX    *
 *******************/
@@ -1470,7 +1452,6 @@ TPZLapackWrapper<std::complex<double>>::SolveGeneralisedEigenProblem(TPZSBMatrix
 
   return( 1 );
 }
-#endif//USING_LAPACK
 
 template class TPZLapackWrapper< std::complex<float> >;
 template class TPZLapackWrapper< std::complex<double> >;

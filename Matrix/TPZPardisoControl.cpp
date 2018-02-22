@@ -110,27 +110,55 @@ int DataType(float a)
     return 1;
 }
 
+template<>
+int DataType(std::complex<double> a)
+{
+    return 0;
+}
+
+template<>
+int DataType(std::complex<float> a)
+{
+    return 1;
+}
 
 template<class TVar>
 long long TPZPardisoControl<TVar>::MatrixType()
 {
-    // should not happen
-    if (fStructure == EStructureNonSymmetric) {
-        DebugStop();
+    if((std::is_same<typename SPZAlwaysComplex<TVar>::type,TVar>::value)){//COMPLEX
+        if (fStructure == EStructureNonSymmetric) {// should not happen
+            DebugStop();
+        }
+        if (fSystemType == ESymmetric && fProperty == EIndefinite) {
+            fMatrixType = -4;
+        }
+        if (fSystemType == ESymmetric && fProperty == EPositiveDefinite) {
+            fMatrixType = 4;
+        }
+        if (fSystemType == ENonSymmetric && fStructure == EStructureSymmetric) {
+            fMatrixType = 3;
+        }
+        if (fSystemType == ENonSymmetric && fProperty == EPositiveDefinite) {
+            DebugStop();
+        }
+    } else{//REAL
+        if (fStructure == EStructureNonSymmetric) {// should not happen
+            DebugStop();
+        }
+        if (fSystemType == ESymmetric && fProperty == EIndefinite) {
+            fMatrixType = -2;
+        }
+        if (fSystemType == ESymmetric && fProperty == EPositiveDefinite) {
+            fMatrixType = 2;
+        }
+        if (fSystemType == ENonSymmetric && fStructure == EStructureSymmetric) {
+            fMatrixType = 1;
+        }
+        if (fSystemType == ENonSymmetric && fProperty == EPositiveDefinite) {
+            DebugStop();
+        }
     }
-    if (fSystemType == ESymmetric && fProperty == EIndefinite) {
-        fMatrixType = -2;
-    }
-    if (fSystemType == ESymmetric && fProperty == EPositiveDefinite) {
-        fMatrixType = 2;
-    }
-    if (fSystemType == ENonSymmetric && fStructure == EStructureSymmetric) {
-        fMatrixType = 1;
-    }
-    if (fSystemType == ENonSymmetric && fProperty == EPositiveDefinite) {
-        DebugStop();
-    }
-    
+
 //    void pardiso (_MKL_DSS_HANDLE_t pt, const MKL_INT *maxfct, const MKL_INT *mnum, const
 //                  MKL_INT *mtype, const MKL_INT *phase, const MKL_INT *n, const void *a, const MKL_INT
 //                  *ia, const MKL_INT *ja, MKL_INT *perm, const MKL_INT *nrhs, MKL_INT *iparm, const
@@ -326,6 +354,10 @@ TPZPardisoControl<TVar>::~TPZPardisoControl()
 template class TPZPardisoControl<double>;
 template class TPZPardisoControl<long double>;
 template class TPZPardisoControl<float>;
+
+template class TPZPardisoControl<std::complex<double>>;
+template class TPZPardisoControl<std::complex<long double>>;
+template class TPZPardisoControl<std::complex<float>>;
 
 
 

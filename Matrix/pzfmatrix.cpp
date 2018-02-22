@@ -43,19 +43,7 @@ static LoggerPtr loggerCheck(Logger::getLogger("pz.checkconsistency"));
 #endif
 
 #ifdef USING_LAPACK
-/** CBlas Math Library */
-#ifdef MACOSX
-#include <Accelerate/Accelerate.h>
-typedef __CLPK_doublecomplex vardoublecomplex;
-typedef __CLPK_complex varfloatcomplex;
-#elif USING_MKL
-#include <mkl.h>
-typedef MKL_Complex16 vardoublecomplex;
-typedef MKL_Complex8 varfloatcomplex;
-#else
-#include "cblas.h"
-#define BLAS_MULT
-#endif
+#include "TPZLapackWrapper.h"
 #endif
 
 

@@ -200,6 +200,13 @@ void RunSimulation(SPZModalAnalysisData &simData) {
             an.PostProcess(simData.pzOpts.vtkRes);
         }
     }
+    gmesh->SetReference(nullptr);
+    for (int k = 0; k < meshVec.size(); ++k) {
+        meshVec[k]->SetReference(nullptr);
+        delete meshVec[k];
+        meshVec[k] = nullptr;
+    }
+    delete gmesh;
     std::cout << "FINISHED!" << std::endl;
     return;
 }
