@@ -80,8 +80,9 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
     TPZVec<int> matIdVec;
+    const REAL scaleMesh = simData.pzOpts.isMeshScaled ? 1. : simData.pzOpts.scaleFactor;
     ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec, simData.pzOpts.prefix,
-              simData.pzOpts.exportGMesh,simData.pzOpts.scaleFactor);
+              simData.pzOpts.exportGMesh,scaleMesh);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
