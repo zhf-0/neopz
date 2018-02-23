@@ -9,6 +9,7 @@
 #include "pzshapetriang.h"
 #include "pzvec_extras.h"
 #include "tpzgraphelt2dmapped.h"
+#include "TPZHCurlNedFLinEl.h"
 
 using namespace pzshape;
 
@@ -85,7 +86,7 @@ TPZHCurlNedFTriEl::ClonePatchEl(TPZCompMesh &mesh,
     DebugStop();
 }
 
-int TPZHCurlNedFTriEl::Dimension() const { return TPZShapeTriang::Dimension; }
+int TPZHCurlNedFTriEl::Dimension() const{ return TPZShapeTriang::Dimension; }
 
 int TPZHCurlNedFTriEl::NCornerConnects() const { return 0; }
 
@@ -174,8 +175,53 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const {
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point,
                                           TPZFMatrix<REAL> &phi,
                                           TPZFMatrix<REAL> &dphi) {
-    std::cout << __PRETTY_FUNCTION__ << " Please implement me!"<<std::endl;
-	DebugStop();
+    int nc = TPZShapeTriang::NContainedSides(side);
+    int nn = TPZShapeTriang::NSideNodes(side);
+    nc -= nn;//nedelec elements of the 1st kind dont have
+             // connects associated to sides with dim == 0
+    TPZManVector<long,27> id(nn);
+    TPZManVector<int,27> order(nc);
+    TPZManVector<int,27> nShapeF(nc);
+    int n,c;
+    TPZGeoEl *ref = Reference();
+    for (n=0;n<nn;n++){
+        int nodloc = TPZShapeTriang::SideNodeLocId(side,n);
+        id [n] = ref->NodePtr(nodloc)->Id();
+    }
+    for (c=0;c<nc;c++){
+        int conloc = SideConnectLocId(c,side);
+        order[c] = Connect(conloc).Order();
+        nShapeF[c] = NConnectShapeF(conloc, order[c]);
+    }
+    if(side<3 || side>6) PZError << "TPZHCurlNedFTriEl::SideShape. Bad paramenter side.\n";
+    else if(side==6) {
+        TPZHCurlNedFTriEl::CalcShape(point,phi,dphi,order,nShapeF);
+        const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
+        int iPhi = 0;
+        for (int iCon = 0; iCon < order.size(); iCon++) {
+            const int sideIt =
+                iCon + TPZShapeTriang::NSides -
+                TPZShapeTriang::NumSides(TPZShapeTriang::Dimension - 1) - 1;
+            const int orient =
+                sideIt == firstSide + 3 ? 1 : fSideOrient[sideIt - firstSide];
+            const int nShapeConnect = nShapeF[iCon];
+            for (int iPhiAux = 0; iPhiAux < nShapeConnect; iPhiAux++) {
+                const int funcOrient = (iPhiAux % 2)*1 + ((iPhiAux+1) % 2)*orient;
+                phi(iPhi, 0) *= funcOrient;
+                phi(iPhi, 1) *= funcOrient;
+                dphi(0, iPhi) *= funcOrient;
+                iPhi++;
+            }
+        }
+    }
+    else {
+        TPZHCurlNedFLinEl::CalcShape(point,phi,dphi,order,nShapeF);
+        const int sideOrient = this->Reference()->NormalOrientation(side);
+        for (int iPhi = 0; iPhi < phi.Rows(); iPhi++) {
+            const int funcOrient = (iPhi % 2)*1 + ((iPhi+1) % 2)*sideOrient;
+            phi(iPhi, 0) *= funcOrient;
+        }
+    }
 }
 
 void TPZHCurlNedFTriEl::SetIntegrationRule(int ord) {
@@ -326,6 +372,17 @@ void TPZHCurlNedFTriEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
     this->Shape(intpoint, phiHat, curlPhiHat);
     this->ShapeTransform(phiHat, jacinv, phi);
     this->CurlTransform(curlPhiHat, jacinv, curlPhi);
+}
+
+void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+                              TPZFMatrix<REAL> &curlPhiHat) {
+  TPZVec<int> order(NConnects(),0);
+  TPZVec<int> nShapeF(NConnects(),0);
+  for(int iCon = 0; iCon < NConnects() ; iCon++){
+    order[iCon] = ConnectOrder(iCon);
+    nShapeF[iCon] = NConnectShapeF(iCon, ConnectOrder(iCon));
+  }
+  TPZHCurlNedFTriEl::CalcShape(qsi,phi,curlPhiHat,order,nShapeF);
 }
 
 void TPZHCurlNedFTriEl::ShapeTransform(const TPZFMatrix<REAL> &phiHat,

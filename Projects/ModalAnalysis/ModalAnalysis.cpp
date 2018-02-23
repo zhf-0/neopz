@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 #endif
 	
 	  const bool isRectangularWG = true;//true = rectangular , false = circular
-    const bool isCutOff = true;//analysis of cutoff frequencies for eigenmodes
+    const bool isCutOff = false;//analysis of cutoff frequencies for eigenmodes
     const meshTypeE meshType = createTriangular;
     int pOrder = 1;           // polynomial order of basis functions
     bool genVTK = false;      // generate vtk for fields visualisation
@@ -227,7 +227,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     std::cout << "Time for assembly " << t2 - t1 << " Time for solving "
               << t4 - t3 << std::endl;
 #endif
-    return;
+
     TPZManVector<SPZAlwaysComplex<STATE>::type> eValues = an.GetEigenvalues();
     TPZFMatrix<SPZAlwaysComplex<STATE>::type> eVectors = an.GetEigenvectors();
     std::set<std::pair<REAL, TPZFMatrix<STATE>>> eigenValuesRe;
@@ -454,8 +454,8 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 
     nx[0] = nDiv + 1;
     nx[1] = nDiv + 1;
-//    nx[0] = 2;//REFINEMENT TEST
-//    nx[1] = 1;//REFINEMENT TEST
+     //nx[0] = 1;//REFINEMENT TEST
+    //nx[1] = 1;//REFINEMENT TEST
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {
@@ -492,33 +492,42 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     gengrid->SetBC(gmesh, llCoord, lrCoord, bc0);
 
     gmesh->BuildConnectivity();
-    
-//    //REFINEMENT TEST                                                       //
-//    TPZManVector<TPZGeoEl *, 3> sons;                                       //
-//    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);                                //
-//    qsi[0]= 0.5;                                                            //
-//    qsi[1]= 0.5;                                                            //
-//    TPZManVector<REAL,3> refPointsX(2,0.);                                  //
-//    TPZManVector<REAL,2> refPointsY(2,0.);                                  //
-//    refPointsX[0] = wDomain/2;                                              //
-//    refPointsX[1] = wDomain/2;                                              //
-//    refPointsY[0] = 0;                                                      //
-//    refPointsY[1] = hDomain/2;                                              //
-//    for (int iref = 0; iref < 2; iref++) {                                  //
-//        int nel = gmesh->NElements();                                       //
-//        for (int iel = 0; iel < nel; iel++) {                               //
-//            TPZGeoEl *gel = gmesh->ElementVec()[iel];                       //
-//            gel->X(qsi, x);//gets center of element                         //
-//                                                                            //
-//            if(x[0]>refPointsX[iref] && x[1] > refPointsY[iref]){           //
-//                if (gel->HasSubElement()) {                                 //
-//                    continue;                                               //
-//                }                                                           //
-//                gel->Divide(sons);                                          //
-//            }                                                               //
-//        }                                                                   //
-//    }                                                                       //
-    
+
+    //REFINEMENT TEST
+    TPZManVector<TPZGeoEl *, 3> sons;
+    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);
+    qsi[0]= 0.5;
+    qsi[1]= 0.5;
+    TPZManVector<REAL,3> refPointsX(1,0.);
+    TPZManVector<REAL,2> refPointsY(1,0.);
+    refPointsX[0] = wDomain/2;
+    //refPointsX[1] = wDomain/2;
+    refPointsY[0] = 0;
+    //refPointsY[1] = hDomain/2;
+    for (int iref = 0; iref < refPointsX.size(); iref++) {
+        int nel = gmesh->NElements();
+        for (int iel = 0; iel < nel; iel++) {
+            TPZGeoEl *gel = gmesh->ElementVec()[iel];
+            if(gel->Dimension() < 2) continue;
+            gel->X(qsi, x);//gets center of element
+
+            if(x[0]>refPointsX[iref] && x[1] > refPointsY[iref]){
+                if (gel->HasSubElement()) {
+                    continue;
+                }
+                for(int iSide =0 ; iSide < 3; iSide++){
+                    long neighIndex = gel->Neighbour(iSide+3).Id();
+                    TPZGeoEl *neighbor = gmesh->ElementVec()[neighIndex];
+                    if(neighbor->Dimension() == 1 && !neighbor->HasSubElement()){
+                        neighbor->Divide(sons);
+                    }
+                }
+                gel->Divide(sons);
+            }
+        }
+    }
+    //END REFINEMENT TEST
+
 #ifdef PZDEBUG
     std::ofstream outTxt, outVtk;
 	std::string meshFileName("gmesh");

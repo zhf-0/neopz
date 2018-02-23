@@ -233,6 +233,9 @@ class TPZHCurlNedFLinEl : public TPZInterpolatedElement {
 					  REAL &detjac, TPZFMatrix<REAL> &jacinv,
 					  TPZFMatrix<REAL> &phi, TPZFMatrix<REAL> &curlPhiHat,
 					  TPZFMatrix<REAL> &curlPhi);
+
+	static void CalcShape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+	                                  TPZFMatrix<REAL> &curlPhiHat, TPZVec<int> &order, TPZVec<int> nShapeF);
 	
 	/**
 	 Applies Piola covariant transformation for proper calculation

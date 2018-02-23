@@ -238,6 +238,17 @@ TPZTransform<> TPZHCurlNedFLinEl::TransformSideToElement(int side) {
     DebugStop();
 }
 
+void TPZHCurlNedFLinEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+                              TPZFMatrix<REAL> &curlPhiHat) {
+    TPZVec<int> order(NConnects(),0);
+    TPZVec<int> nShapeF(NConnects(),0);
+    for(int iCon = 0; iCon < NConnects() ; iCon++){
+        order[iCon] = ConnectOrder(iCon);
+        nShapeF[iCon] = NConnectShapeF(iCon, ConnectOrder(iCon));
+    }
+    TPZHCurlNedFLinEl::CalcShape(qsi,phi,curlPhiHat,order,nShapeF);
+}
+
 void TPZHCurlNedFLinEl::ComputeShape(TPZVec<REAL> &intpoint, TPZVec<REAL> &X,
                                      TPZFMatrix<REAL> &jacobian,
                                      TPZFMatrix<REAL> &axes, REAL &detjac,

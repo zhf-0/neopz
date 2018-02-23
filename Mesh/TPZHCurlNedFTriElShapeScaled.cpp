@@ -8,29 +8,29 @@
 
 using namespace pzshape;
 
-void TPZHCurlNedFTriEl::Shape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
-                              TPZFMatrix<REAL> &curlPhiHat) {
-    const int dim = Dimension();
-    const int nCon = NConnects();
+void TPZHCurlNedFTriEl::CalcShape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
+                              TPZFMatrix<REAL> &curlPhiHat, TPZVec<int> &order, TPZVec<int> nShapeF){
+
+
+
+    const int dim = TPZShapeTriang::Dimension;
+    const int nCon = order.size();
     const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
 
     TPZManVector<int, 4> firstConFuncPos(nCon, 0);
     for (int iCon = 1; iCon < nCon; iCon++) {
-        firstConFuncPos[iCon] = firstConFuncPos[iCon - 1] +
-                                NConnectShapeF(iCon - 1, ConnectOrder(iCon));
+        firstConFuncPos[iCon] = firstConFuncPos[iCon - 1] + nShapeF[iCon - 1];
     }
-    int lastFuncPos = firstConFuncPos[nCon - 1] +
-                      NConnectShapeF(nCon - 1, ConnectOrder(nCon - 1)) - 1;
+    int lastFuncPos = firstConFuncPos[nCon - 1] + nShapeF[nCon - 1] - 1;
 
     phi.Resize(lastFuncPos + 1, dim);
     curlPhiHat.Resize(1, lastFuncPos + 1);
     for (int iCon = 0; iCon < nCon; iCon++) {
-        const int pOrder = ConnectOrder(iCon);
+        const int pOrder = order[iCon];
         const int side =
             iCon + TPZShapeTriang::NSides -
             TPZShapeTriang::NumSides(TPZShapeTriang::Dimension - 1) - 1;
-        int currentFuncPos =
-            firstConFuncPos[iCon] + NConnectShapeF(iCon, pOrder) - 1;
+        int currentFuncPos = firstConFuncPos[iCon] + nShapeF[iCon] - 1;
         switch (side) {
         case firstSide:
             switch (pOrder) {

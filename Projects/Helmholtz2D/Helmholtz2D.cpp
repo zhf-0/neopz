@@ -57,34 +57,38 @@ CreateCMesh(TPZCompMesh *&cmesh, TPZGeoMesh *gmesh, int pOrder, void (&func)(con
 void CreateGMesh(TPZGeoMesh *&gmesh, const int meshType, const REAL hDomain, const REAL wDomain, const int xDiv,
                  const std::string &prefix, const bool &print, const REAL &scale);
 
-void RunSimulation(const int &nDiv, const int &pOrder);
+void RunSimulation(const int &nDiv, const int &pOrder, const std::string &prefix);
 
 
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
-
+    const std::string prefix = "Helmholtz2D/";//PARAMS
     int pOrder = 1; //PARAMS
     const int nDivIni = 4; //PARAMS
     const int nPcycles = 3;
-    const int nHcycles = 5;
-
+    const int nHcycles = 6;
+    boost::posix_time::ptime t1 =
+        boost::posix_time::microsec_clock::local_time();
     for (int iP = 0; iP < nPcycles; ++iP, ++pOrder) {
         int nDiv = nDivIni;
         for (int iH = 0; iH < nHcycles; ++iH) {
             std::cout << iH+1<<"/"<<nHcycles<<": Beginning simulation with nEl = "
                       << nDiv * nDiv * 2
                       <<" and p = "<<pOrder<< std::endl;
-            RunSimulation(nDiv, pOrder);
+          RunSimulation(nDiv, pOrder, prefix);
             nDiv *= 2;
             std::cout << "************************************" << std::endl;
         }
     }
+    boost::posix_time::ptime t2 =
+        boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Total time: "<<t2-t1<<std::endl;
     return 0;
 }
 
-void RunSimulation(const int &nDiv, const int &pOrder) {
+void RunSimulation(const int &nDiv, const int &pOrder, const std::string &prefix) {
     // PARAMETROS FISICOS DO PROBLEMA
     const enum meshTypeE meshType = createTriangular;
     const REAL hDomain = 2;
@@ -92,8 +96,8 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
     const int nThreads = 8; //PARAMS
     const bool l2error = true; //PARAMS
     const bool genVTK = false; //PARAMS
-    const std::string prefix = "../";//PARAMS
-    const bool print = true;//PARAMS
+    const bool printG = false;//PARAMS
+    const bool printC = false;//PARAMS
     const STATE param = 1.;//PARAMS
     const int postprocessRes = 0;//PARAMS
     const REAL scale = 1.;//PARAMS
@@ -102,7 +106,7 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
     TPZGeoMesh *gmesh = NULL;
-    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, prefix, print, scale);
+    CreateGMesh(gmesh, meshType, hDomain, wDomain, nDiv, prefix, printG, scale);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created! "<<t2_g-t1_g<<std::endl;
@@ -111,7 +115,7 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
     boost::posix_time::ptime t1_c =
         boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshHCurl = NULL;
-    CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec, param, prefix, print,
+    CreateCMesh(cmeshHCurl, gmesh, pOrder, loadVec, param, prefix, printC,
                 scale); // funcao para criar a malha computacional
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
@@ -130,8 +134,8 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
 //  strmtrx->EquationFilter().SetActiveEquations(activeEquations);
 //  an.SetStructuralMatrix(strmtrx);
 
-    TPZSymetricSpStructMatrix matrix(cmeshHCurl);
-    //TPZSBandStructMatrix matrix(cmeshHCurl);
+    //TPZSymetricSpStructMatrix matrix(cmeshHCurl);
+    TPZSBandStructMatrix matrix(cmeshHCurl);
     matrix.SetNumThreads(nThreads);
     FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
     matrix.EquationFilter().SetActiveEquations(activeEquations);
@@ -162,7 +166,7 @@ void RunSimulation(const int &nDiv, const int &pOrder) {
         errorVec.Resize(2, 0.);
         an.SetThreadsForError(nThreads);
         an.PostProcessError(errorVec);
-        std::string fileName = prefix + "errorHDiv";
+        std::string fileName = prefix + "error_nel";
         fileName.append(std::to_string(nDiv * nDiv * 2));
         fileName.append("_p");
         fileName.append(std::to_string(pOrder));
@@ -221,7 +225,7 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
             }
         }
     }
-
+    neqOriginal = cmeshHCurl->NEquations();
     for (int iCon = 0; iCon < cmeshHCurl->NConnects(); iCon++) {
         if (boundConnects.find(iCon) == boundConnects.end()) {
             TPZConnect &con = cmeshHCurl->ConnectVec()[iCon];
@@ -235,25 +239,13 @@ void FilterBoundaryEquations(TPZCompMesh *cmeshHCurl,
             activeEquations.Resize(vs + blocksize);
             for (int ieq = 0; ieq < blocksize; ieq++) {
                 activeEquations[vs + ieq] = pos + ieq;
+                neq++;
             }
         }
     }
     neqOriginal = cmeshHCurl->NEquations();
-
-    //  std::cout << "activeEquations" << std::endl;
-    long nEq = 0;
-    for (int iCon = 0; iCon < cmeshHCurl->NConnects(); iCon++) {
-        if (boundConnects.find(iCon) == boundConnects.end()) {
-            int seqnum = cmeshHCurl->ConnectVec()[iCon].SequenceNumber();
-            int blocksize = cmeshHCurl->Block().Size(seqnum);
-            if (blocksize == 0)
-                continue;
-            nEq++;
-        }
-    }
     std::cout << "# equations(before): " << neqOriginal << std::endl;
-    std::cout << "# equations(after): " << nEq << std::endl;
-    neq = nEq;
+    std::cout << "# equations(after): " << neq << std::endl;
     return;
 }
 
