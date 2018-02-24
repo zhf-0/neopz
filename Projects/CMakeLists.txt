@@ -103,7 +103,9 @@ ENABLE_TESTING()
 		if(BUILD_COMPLEX_PROJECTS)
 
 			#Example to work with scalar as complex
+			if(USING_LAPACK)
 			add_subdirectory(ModalAnalysis)
+			endif()
 			if(USING_BOOST)#ParameterHandler class needs boost
 				if(USING_SLEPC)
 					add_subdirectory(NewModalAnalysis)

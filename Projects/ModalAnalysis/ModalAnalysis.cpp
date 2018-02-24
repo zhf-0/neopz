@@ -35,11 +35,7 @@
 #ifdef USING_BOOST
 #include "boost/date_time/posix_time/posix_time.hpp"
 #endif
-#ifdef USING_SLEPC
-#include <TPZSlepcEPSHandler.h>
-#include <TPZLapackWrapper.h>
-
-#elif defined USING_LAPACK
+#ifdef USING_LAPACK
 #include <TPZLapackWrapper.h>
 #endif
 #include "TPZRefPatternDataBase.h"
@@ -185,11 +181,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     an.SetStructuralMatrix(strmtrx);
 
     const int nSolutions = 10;// neq >= 10 ? 10 : neq;
-    #ifdef USING_SLEPC
     TPZLapackWrapper<STATE> solver;
-    #elif defined USING_LAPACK
-    TPZLapackWrapper<STATE> solver;
-    #endif
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
     an.SetSolver(solver);
@@ -454,8 +446,8 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 
     nx[0] = nDiv + 1;
     nx[1] = nDiv + 1;
-    nx[0] = 5;//REFINEMENT TEST
-    nx[1] = 5;//REFINEMENT TEST
+    nx[0] = 4;//REFINEMENT TEST
+    nx[1] = 4;//REFINEMENT TEST
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {
