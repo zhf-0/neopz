@@ -174,7 +174,7 @@ int TPZHCurlNedFTriEl::NConnectShapeF(int icon, int order) const {
 
 void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point,
                                           TPZFMatrix<REAL> &phi,
-                                          TPZFMatrix<REAL> &dphi) {
+                                          TPZFMatrix<REAL> &curlPhi) {
     int nc = TPZShapeTriang::NContainedSides(side);
     int nn = TPZShapeTriang::NSideNodes(side);
     nc -= nn;//nedelec elements of the 1st kind dont have
@@ -193,9 +193,17 @@ void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point,
         order[c] = Connect(conloc).Order();
         nShapeF[c] = NConnectShapeF(conloc, order[c]);
     }
+    //calculate jacobian for Piola mapping
+    TPZGeoElSide gelside = TPZGeoElSide(this->Reference(),side);
+    int dim = this->Reference()->SideDimension(side);
+    TPZFNMatrix<9,REAL> jac(dim,dim),jacinv(dim,dim),axes(dim,3);
+    REAL detjac;
+    gelside.Jacobian(point, jac, axes, detjac, jacinv);
+    TPZFMatrix<REAL> phiHat(phi);
+    TPZFMatrix<REAL> curlPhiHat(curlPhi);
     if(side<3 || side>6) PZError << "TPZHCurlNedFTriEl::SideShape. Bad paramenter side.\n";
     else if(side==6) {
-        TPZHCurlNedFTriEl::CalcShape(point,phi,dphi,order,nShapeF);
+        TPZHCurlNedFTriEl::CalcShape(point,phiHat,curlPhiHat,order,nShapeF);
         const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
         int iPhi = 0;
         for (int iCon = 0; iCon < order.size(); iCon++) {
@@ -207,19 +215,22 @@ void TPZHCurlNedFTriEl::SideShapeFunction(int side, TPZVec<REAL> &point,
             const int nShapeConnect = nShapeF[iCon];
             for (int iPhiAux = 0; iPhiAux < nShapeConnect; iPhiAux++) {
                 const int funcOrient = (iPhiAux % 2)*1 + ((iPhiAux+1) % 2)*orient;
-                phi(iPhi, 0) *= funcOrient;
-                phi(iPhi, 1) *= funcOrient;
-                dphi(0, iPhi) *= funcOrient;
+                phi(iPhi, 0) = funcOrient *( jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0) +
+                                             jacinv.GetVal(1, 0) * phiHat.GetVal(iPhi, 1));
+                phi(iPhi, 1) = funcOrient *( jacinv.GetVal(0, 1) * phiHat.GetVal(iPhi, 0) +
+                                             jacinv.GetVal(1, 1) * phiHat.GetVal(iPhi, 1));
+                curlPhi(0, iPhi) = funcOrient * curlPhiHat.GetVal(0, iPhi) / detjac;
                 iPhi++;
             }
         }
     }
     else {
-        TPZHCurlNedFLinEl::CalcShape(point,phi,dphi,order,nShapeF);
-        const int sideOrient = this->Reference()->NormalOrientation(side);
+        TPZHCurlNedFLinEl::CalcShape(point,phiHat,curlPhiHat,order,nShapeF);
+        const int firstSide = TPZShapeTriang::NSides - TPZShapeTriang::NFaces - 1;
+        const int sideOrient = fSideOrient[side - firstSide];
         for (int iPhi = 0; iPhi < phi.Rows(); iPhi++) {
             const int funcOrient = (iPhi % 2)*1 + ((iPhi+1) % 2)*sideOrient;
-            phi(iPhi, 0) *= funcOrient;
+            phi(iPhi, 0) = funcOrient * jacinv.GetVal(0, 0) * phiHat.GetVal(iPhi, 0);
         }
     }
 }

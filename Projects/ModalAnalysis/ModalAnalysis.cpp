@@ -89,8 +89,8 @@ int main(int argc, char *argv[]) {
     bool genVTK = false;      // generate vtk for fields visualisation
     bool l2error = false;     // TODO: implement error analysis
     bool exportEigen = false; // export eigen values
-    const int nThreads = 8;
-    bool optimizeBandwidth = true; //whether to renumber equations (OFF for debugging purposes)
+    const int nThreads = 0;
+    bool optimizeBandwidth = false; //whether to renumber equations (OFF for debugging purposes)
     bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
 	
 	TPZManVector<REAL, 2> geoParams(1,-1);
@@ -184,7 +184,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     }
     an.SetStructuralMatrix(strmtrx);
 
-    const int nSolutions = neq >= 10 ? 10 : neq;
+    const int nSolutions = 10;// neq >= 10 ? 10 : neq;
     #ifdef USING_SLEPC
     TPZLapackWrapper<STATE> solver;
     #elif defined USING_LAPACK
@@ -382,7 +382,7 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
     for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
         if (boundConnects.find(iCon) == boundConnects.end()) {
             TPZConnect &con = cmesh->ConnectVec()[iCon];
-            if(con.HasDependency())continue; 
+            if(con.HasDependency())continue;
             int seqnum = con.SequenceNumber();
             int pos = cmesh->Block().Position(seqnum);
             int blocksize = cmesh->Block().Size(seqnum);
@@ -454,8 +454,8 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 
     nx[0] = nDiv + 1;
     nx[1] = nDiv + 1;
-     //nx[0] = 1;//REFINEMENT TEST
-    //nx[1] = 1;//REFINEMENT TEST
+    nx[0] = 5;//REFINEMENT TEST
+    nx[1] = 5;//REFINEMENT TEST
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {
@@ -500,9 +500,9 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     qsi[1]= 0.5;
     TPZManVector<REAL,3> refPointsX(1,0.);
     TPZManVector<REAL,2> refPointsY(1,0.);
-    refPointsX[0] = wDomain/2;
+    refPointsX[0] = wDomain/4;
     //refPointsX[1] = wDomain/2;
-    refPointsY[0] = 0;
+    refPointsY[0] = hDomain/4;
     //refPointsY[1] = hDomain/2;
     for (int iref = 0; iref < refPointsX.size(); iref++) {
         int nel = gmesh->NElements();
@@ -511,7 +511,8 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
             if(gel->Dimension() < 2) continue;
             gel->X(qsi, x);//gets center of element
 
-            if(x[0]>refPointsX[iref] && x[1] > refPointsY[iref]){
+            if(x[0]> refPointsX[iref] && wDomain - x[0] > refPointsX[iref]
+               && x[1] > refPointsY[iref] && hDomain - x[1] > refPointsY[iref]){
                 if (gel->HasSubElement()) {
                     continue;
                 }
@@ -755,6 +756,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
         TPZMatModalAnalysis *dummy = NULL;
         if(!usingHDivRot) dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
         else dummy = new TPZMatMFHDivRotH1(matId, f0, ur, er);
+        TPZMaterial::gBigNumber = 1e30;
         matMultiPhysics = dummy;
     }
     meshVec[matMultiPhysics->H1Index()] = cmeshH1;

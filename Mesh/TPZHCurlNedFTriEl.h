@@ -138,7 +138,7 @@ class TPZHCurlNedFTriEl : public TPZInterpolatedElement {
 	
     virtual void SideShapeFunction(int side, TPZVec<REAL> &point,
                                    TPZFMatrix<REAL> &phi,
-                                   TPZFMatrix<REAL> &curlPhiHat);
+                                   TPZFMatrix<REAL> &curlPhi);
 	
 	
     /**
