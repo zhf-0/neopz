@@ -81,7 +81,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         boost::posix_time::microsec_clock::local_time();
     TPZVec<int> matIdVec;
     const REAL scaleMesh = simData.pzOpts.isMeshScaled ? 1. : simData.pzOpts.scaleFactor;
-    ReadGMesh(gmesh, simData.physicalOpts.meshFile, matIdVec, simData.pzOpts.prefix,
+    ReadGMesh(gmesh, simData.pzOpts.meshFile, matIdVec, simData.pzOpts.prefix,
               simData.pzOpts.exportGMesh,scaleMesh);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
@@ -93,7 +93,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
 
     CreateCMesh(meshVec, gmesh, simData.pzOpts.pOrder, matIdVec,
                 simData.physicalOpts.urVec, simData.physicalOpts.erVec,
-                simData.physicalOpts.fOp,simData.physicalOpts.isCutOff,
+                simData.physicalOpts.lambda,simData.physicalOpts.isCutOff,
                 simData.pzOpts.prefix,simData.pzOpts.exportCMesh,
                 simData.pzOpts.scaleFactor); // funcao para criar a malha computacional
 

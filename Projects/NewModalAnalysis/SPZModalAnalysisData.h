@@ -12,9 +12,8 @@
 
 struct SPZModalAnalysisData{
   struct SPZPhysicalOpts{
-    std::string meshFile;
     bool isCutOff;
-    REAL fOp;
+    REAL lambda;
     int nMaterials;
     TPZVec<STATE> urVec;
     TPZVec<STATE> erVec;
@@ -43,6 +42,7 @@ struct SPZModalAnalysisData{
     bool exportCMesh;
     REAL scaleFactor;
     bool isMeshScaled;
+    std::string meshFile;
   };
   SPZPzOpts pzOpts;
   

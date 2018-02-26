@@ -30,14 +30,14 @@ protected:
     const STATE fUr;
     const STATE fEr;
     const REAL fScaleFactor;
-    REAL fW;
+    REAL fLambda;
     const int h1meshindex = 1;
     const int hcurlmeshindex = 0;
     bool isTesting;
     
 public:
     
-    TPZMatModalAnalysis(int id, REAL freq, const STATE &ur, const STATE &er, const REAL &scale = 1.);
+    TPZMatModalAnalysis(int id, REAL lambda, const STATE &ur, const STATE &er, const REAL &scale = 1.);
     
     TPZMatModalAnalysis(int id);
     
