@@ -121,15 +121,13 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetTolerances(simData.solverOpts.eps_tol,simData.solverOpts.eps_max_its);
     solver.SetConvergenceTest(simData.solverOpts.eps_conv_test);
     solver.SetWhichEigenpairs(simData.solverOpts.eps_which_eig);
-    //k'0 = scale * k0
-    const STATE normalisedTarget = simData.solverOpts.target * simData.pzOpts.scaleFactor * simData.pzOpts.scaleFactor;
-    solver.SetTargetEigenvalue(normalisedTarget);
+    solver.SetTargetEigenvalue(simData.solverOpts.target);
 
     stHandler.SetPrecond(simData.solverOpts.st_precond);
     stHandler.SetSolver(simData.solverOpts.st_solver);
     stHandler.SetSolverTol(simData.solverOpts.ksp_rtol,simData.solverOpts.ksp_atol,
                            simData.solverOpts.ksp_dtol,simData.solverOpts.ksp_max_its);
-    stHandler.SetType(simData.solverOpts.st_type,normalisedTarget);
+    stHandler.SetType(simData.solverOpts.st_type,simData.solverOpts.target);
     solver.SetST(stHandler);
 
     solver.SetTrueResidual(simData.solverOpts.eps_true_res);

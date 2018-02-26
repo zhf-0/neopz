@@ -116,6 +116,8 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                         "If set to true, the eigenvalues will be beta/k0 and scale factor will be ignored.");
       prm.declare_entry("Is mesh scaled","false",Patterns::Bool(),
                         "Whether the .msh file is already scaled(frequency/lambda will be scaled)");
+      prm.declare_entry("Is target scaled","true",Patterns::Bool(),
+                        "Whether the target value is already scaled(frequency/lambda will be scaled)");
     }
     prm.leave_subsection ();
   }
@@ -278,6 +280,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
                                 data.physicalOpts.lambda/(2*M_PI) :
                                 prm.get_double("Scale factor");//double
       data.pzOpts.isMeshScaled = prm.get_bool("Is mesh scaled");//bool
+      data.pzOpts.isTargetScaled = prm.get_bool("Is target scaled");//bool
     }
     prm.leave_subsection ();
 
@@ -431,6 +434,9 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       }
 
       data.solverOpts.target = prm.get_double("Target eigenvalue");//double
+      if(! data.pzOpts.isTargetScaled){
+        data.solverOpts.target = data.solverOpts.target * data.pzOpts.scaleFactor * data.pzOpts.scaleFactor;
+      }
       data.solverOpts.eps_tol = prm.get_double("Eigensolver tolerance");//double
       if (!data.solverOpts.eps_tol) data.solverOpts.eps_tol = -2;//PETSC_DEFAULT
       data.solverOpts.eps_max_its = (int) prm.get_integer("Eigensolver maximum iterations");//integer
