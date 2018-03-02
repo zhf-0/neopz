@@ -23,7 +23,7 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                       Patterns::Selection("frequency|wavelength"),
                       "Whether to specify the wavelength in free space(lambda) or the frequency(f) at "
                           "which the system operates.");
-    prm.declare_entry("Operational wavelength/frequency", "1.55e-9",
+    prm.declare_entry("Operational wavelength/frequency", "1.55e-6",
                       Patterns::Double(0.),
                       "Wavelength(in free-space) or ferquency at which the analysis is being done"
                           "(it will be ignored if Cut-off analysis is true)");
@@ -72,13 +72,23 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
 
     prm.declare_entry("Mesh file", "",
                       Patterns::Anything(),
-                      "Path to .msh gmsh generated mesh");
+                      "Path to .geo gmsh description of the mesh");
+    prm.declare_entry("Mesh order", "1",
+                      Patterns::Integer(1),
+                      "Order of the geometrical mapping");
     prm.declare_entry("Number of threads","4",Patterns::Integer(0),
                       "Number of threads to use in NeoPZ assembly.");
     prm.declare_entry("Polynomial order","1", Patterns::Integer(1),
                       "Default polynomial order of the Pk space used to build"
                           "the Nédélec elements(The H1 elements"
                           " will be built accordingly)");
+    prm.declare_entry("Number of iterations(p)","1",Patterns::Integer(0),
+                    "Option with self-explaining name.");
+    prm.declare_entry("Number of iterations(h)","1",Patterns::Integer(0),
+                    "Option with self-explaining name.");
+    prm.declare_entry("Factor","1.",Patterns::List(Patterns::Double(0),1),
+                    "Vector with factor values related to element "
+                    "sizes(gmsh var must be named factor)");
 
     prm.enter_subsection("Export options");
     {
@@ -110,14 +120,26 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
 
     prm.enter_subsection("Scaling");
     {
-      prm.declare_entry("Scale factor","1.",Patterns::Double(0),
-                        "Maximum dimension for geometric domain(frequency/lambda will be scaled)");
-      prm.declare_entry("Scale by k0","true",Patterns::Bool(),
-                        "If set to true, the eigenvalues will be beta/k0 and scale factor will be ignored.");
-      prm.declare_entry("Is mesh scaled","false",Patterns::Bool(),
-                        "Whether the .msh file is already scaled(frequency/lambda will be scaled)");
       prm.declare_entry("Is target scaled","true",Patterns::Bool(),
                         "Whether the target value is already scaled(frequency/lambda will be scaled)");
+      prm.declare_entry("Scale by k0","true",Patterns::Bool(),
+                        "If set to true, the eigenvalues will be beta/k0 and scale factor will be ignored.");
+      prm.declare_entry("Scale factor","1.",Patterns::Double(0),
+                        "Maximum dimension for geometric domain(frequency/lambda will be scaled)");
+    }
+    prm.leave_subsection();
+
+    prm.enter_subsection("Frequency sweep");
+    {
+      prm.declare_entry("Frequency sweep","false",Patterns::Bool(),
+                        "If frequency sweep is true the operational frequency"
+                        " defined in physical options will be ignored.");
+      prm.declare_entry("Number of steps","1",Patterns::Integer(1),
+                        "Number of simulations executed with lambdaIni<=lambda<=lambdaMax");
+      prm.declare_entry("First frequency/wavelength","1.55e-9",Patterns::Double(0),
+                        "Option with self-explaining name.");
+      prm.declare_entry("Last frequency/wavelength","1.56e-9",Patterns::Double(0),
+                        "Option with self-explaining name.");
     }
     prm.leave_subsection ();
   }
@@ -249,17 +271,31 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
   {
     data.pzOpts.meshFile = path + prm.get("Mesh file");//anything
     std::string &str = data.pzOpts.meshFile;
-    if(str.size() == 0 || str.substr(str.size()-4,4) != ".msh" || !FileExists(str)){
-      std::cout<<"Must input a valid mesh file: "<<std::endl;
+    if(str.size() == 0 || str.substr(str.size()-4,4) != ".geo" || !FileExists(str)){
+      std::cout<<"Input a valid mesh file: "<<std::endl;
       std::cin >> data.pzOpts.meshFile;
-      if(str.size() == 0 || str.substr(str.size()-4,4) != ".msh" || !FileExists(str)) {
+        if(str.size() == 0 || str.substr(str.size()-4,4) != ".geo" || !FileExists(str)){
         std::cout<<"Not a valid name."<<std::endl;
         DebugStop();
       }
     }
+    data.pzOpts.meshOrder = (int) prm.get_integer("Mesh order");
     data.pzOpts.nThreads = (int) prm.get_integer("Number of threads");//integer
     data.pzOpts.pOrder = (int) prm.get_integer("Polynomial order");//integer
-
+    data.pzOpts.pSteps  = prm.get_integer("Number of iterations(p)");
+    data.pzOpts.hSteps  = prm.get_integer("Number of iterations(h)");
+    std::string rawVec = prm.get("Factor");
+    const std::vector<std::string> split_list =
+            Utilities::split_string_list(rawVec, ",");
+    if(data.pzOpts.hSteps != split_list.size() ){
+      std::cout<<"Input data error while reading "<<"Factor"<<".\n";
+      DebugStop();
+    }
+    data.pzOpts.factorVec.Resize(data.pzOpts.hSteps);
+    for (int i = 0; i < split_list.size() ; i++){
+      const std::string & string = split_list[i];
+      data.pzOpts.factorVec[i] = (REAL)Utilities::string_to_double(string);
+    }
     prm.enter_subsection("Export options");
     {
       data.pzOpts.exportCMesh = prm.get_bool("Export compmesh");//bool
@@ -279,11 +315,18 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       data.pzOpts.scaleFactor = prm.get_bool("Scale by k0") ?
                                 data.physicalOpts.lambda/(2*M_PI) :
                                 prm.get_double("Scale factor");//double
-      data.pzOpts.isMeshScaled = prm.get_bool("Is mesh scaled");//bool
       data.pzOpts.isTargetScaled = prm.get_bool("Is target scaled");//bool
     }
     prm.leave_subsection ();
 
+    prm.enter_subsection("Frequency sweep");
+    {
+      data.pzOpts.freqSweep = prm.get_bool("Frequency sweep");
+      data.pzOpts.freqSteps = prm.get_integer("Number of steps");
+      data.pzOpts.lambdaMin = prm.get_double("First frequency/wavelength");
+      data.pzOpts.lambdaMax = prm.get_double("Last frequency/wavelength");
+    }
+    prm.leave_subsection ();
   }
   prm.leave_subsection();
   prm.enter_subsection("SLEPc solver options");
@@ -755,4 +798,8 @@ bool SPZModalAnalysisDataReader::FileExists(const std::string &name) const {
   } else {
     return false;
   }
+}
+
+const std::string &SPZModalAnalysisDataReader::GetPath() const {
+    return path;
 }

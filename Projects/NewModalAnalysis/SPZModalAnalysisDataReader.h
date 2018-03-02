@@ -14,16 +14,20 @@ class SPZModalAnalysisData;
 
 struct SPZModalAnalysisDataReader{
 private:
-  std::string path;
-  ParameterHandler &prm;
-  SPZModalAnalysisDataReader();
-  inline bool FileExists(const std::string &) const;
-  void DeclareParameters();
-  void PrintUsageMessage();
-  void ParseCommandLine(const int argc, char *const *argv);
-  void ReadComplexVector(const int &nEntries,const std::string &rName, const std::string &iName, const std::string &condName,TPZVec<STATE> &dest);
+    ParameterHandler &prm;
+    std::string path;
 public:
-  SPZModalAnalysisDataReader(ParameterHandler &prm, const int  argc, char *const *argv);
+    const std::string &GetPath() const;
+
+private:
+    SPZModalAnalysisDataReader();
+    inline bool FileExists(const std::string &) const;
+    void DeclareParameters();
+    void PrintUsageMessage();
+    void ParseCommandLine(const int argc, char *const *argv);
+    void ReadComplexVector(const int &nEntries,const std::string &rName, const std::string &iName, const std::string &condName,TPZVec<STATE> &dest);
+public:
+    SPZModalAnalysisDataReader(ParameterHandler &prm, const int  argc, char *const *argv);
   void ReadParameters(SPZModalAnalysisData &data);
 };
 

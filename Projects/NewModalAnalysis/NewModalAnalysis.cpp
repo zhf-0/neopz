@@ -46,7 +46,7 @@
 void RunSimulation(SPZModalAnalysisData &simData);
 
 void
-ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print, const REAL &scale);
+ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print, const REAL &scale = 1.);
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
@@ -56,6 +56,10 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              TPZVec<long> &activeEquations, int &neq,
                              int &neqOriginal);
 
+
+void CreateGmshMesh(const std::string &meshName, const std::string &newName,
+                    const REAL &factor, const int &nThreads,
+                    const REAL &scale, const int &meshOrder);
 
 int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
@@ -68,10 +72,61 @@ int main(int argc, char *argv[]) {
     SPZModalAnalysisDataReader reader(prm,argc,argv);
     SPZModalAnalysisData simData;
     reader.ReadParameters(simData);
+    //freq sweep
+    int nSteps = 1;
+    REAL firstLambda = simData.physicalOpts.lambda;
+    REAL lastLambda = firstLambda;
+    REAL stepSize = 0;
 
-    RunSimulation(simData);
+    if(simData.pzOpts.freqSweep){
+        firstLambda = simData.pzOpts.lambdaMin;
+        lastLambda = simData.pzOpts.lambdaMax;
+        stepSize = (lastLambda-firstLambda)/nSteps;
+    }
+    std::string meshOriginal = simData.pzOpts.meshFile;
+    for (int i = 0; i < simData.pzOpts.hSteps; ++i) {
+        const REAL factorVal = simData.pzOpts.factorVec[i];
+        simData.pzOpts.meshFile = meshOriginal.substr(0,meshOriginal.size()-4)
+                                  +"ord"+std::to_string(simData.pzOpts.meshOrder)
+                                  +"h"+std::to_string(i)
+                                  +".msh";
+        CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
+                       factorVal, simData.pzOpts.nThreads,
+                       simData.pzOpts.scaleFactor,simData.pzOpts.meshOrder);
+        for (int j = 0; j < simData.pzOpts.pSteps; ++j) {
+            for (int k = 0; k < simData.pzOpts.freqSteps; ++k) {
+                simData.physicalOpts.lambda = firstLambda + k * stepSize;
+                RunSimulation(simData);
+            }
+            simData.pzOpts.pOrder++;
+        }
+    }
 
     return 0;
+}
+
+void CreateGmshMesh(const std::string &meshName, const std::string &newName,
+                    const REAL &factor, const int &nThreads,
+                    const REAL &scale, const int &meshOrder){
+    std::ostringstream str_factor;
+    str_factor << std::setprecision(20) << factor;
+    std::ostringstream str_scale;
+    str_scale<< std::setprecision(20) << scale;
+
+    std::string command = "gmsh " + meshName + " -2 -match ";
+    command += " -nt " + std::to_string(nThreads);
+    command += " -tol 1e-16 ";
+    command += " -v 2 ";
+    command += " -setnumber scale "+str_scale.str();
+    command += " -setnumber factor "+str_factor.str();
+    command += " -order " + std::to_string(meshOrder);
+    command += " -o " + newName;
+    //gmsh $outDir/$meshRaw.geo -2 -match -nt 8 -tol 1e-16  -v 2 -setnumber scale $scale -order $geoOrder -o  $outDir/$meshRaw$suffix.msh
+    FILE *fp = popen(command.c_str(), "r");
+    if (!fp)
+    {
+        DebugStop();
+    }
 }
 
 void RunSimulation(SPZModalAnalysisData &simData) {
@@ -80,9 +135,8 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     boost::posix_time::ptime t1_g =
         boost::posix_time::microsec_clock::local_time();
     TPZVec<int> matIdVec;
-    const REAL scaleMesh = simData.pzOpts.isMeshScaled ? 1. : simData.pzOpts.scaleFactor;
     ReadGMesh(gmesh, simData.pzOpts.meshFile, matIdVec, simData.pzOpts.prefix,
-              simData.pzOpts.exportGMesh,scaleMesh);
+              simData.pzOpts.exportGMesh);
     boost::posix_time::ptime t2_g =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created!  "<<t2_g-t1_g<<std::endl;
@@ -159,9 +213,10 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     const TPZManVector<SPZAlwaysComplex<STATE>::type> eigenValues = an.GetEigenvalues();
     const TPZFMatrix<SPZAlwaysComplex<STATE>::type> eigenVectors = an.GetEigenvectors();
 
-    std::cout<<"de-normalized eigenvalues:"<<std::endl;
+    typedef std::numeric_limits< double > dbl;
+    std::cout.precision(dbl::max_digits10);
     for(int i = 0; i < eigenValues.size() ; i++){
-        std::cout<<"\t"<<eigenValues[i]/simData.pzOpts.scaleFactor/simData.pzOpts.scaleFactor<<std::endl;
+        std::cout<<std::fixed<<eigenValues[i]<<std::endl;
     }
 
     if (simData.pzOpts.genVTK) {
