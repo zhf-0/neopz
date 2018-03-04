@@ -24,8 +24,11 @@
 #include "pzsave.h"
 #include "pzvec.h"
 #include "tpzverysparsematrix.h"
-#include "TPZLapackWrapper.h"
+#include "TPZEigenSolver.h"
 
+#ifdef USING_LAPACK
+#include "TPZLapackWrapper.h"
+#endif
 #ifdef _AUTODIFF
 #include "tfad.h"
 #include "fad.h"
@@ -40,10 +43,6 @@ class TPZStream;
 #ifdef LOG4CXX
 static LoggerPtr logger(Logger::getLogger("pz.matrix.tpzfmatrix"));
 static LoggerPtr loggerCheck(Logger::getLogger("pz.checkconsistency"));
-#endif
-
-#ifdef USING_LAPACK
-#include "TPZLapackWrapper.h"
 #endif
 
 

@@ -429,6 +429,12 @@ if(USING_PETSC)
 		endif()
 	endif()
 
+	if(NOT DEFINED PETSC_ARCH)
+		if(DEFINED ENV{PETSC_ARCH})
+			set(PETSC_ARCH $ENV{PETSC_ARCH})
+		endif()
+	endif()
+
 	find_package(PETSc REQUIRED)
 	get_target_property(PETSC_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
 	include_directories(${PETSC_INCLUDE_DIRECTORIES})

@@ -3,6 +3,7 @@
 //
 
 #include "TPZLapackWrapper.h"
+#ifdef USING_LAPACK
 /*******************
 *    GENERAL       *
 *******************/
@@ -1460,3 +1461,4 @@ template class TPZLapackWrapper< std::complex<long double> >;
 template class TPZLapackWrapper<float >;
 template class TPZLapackWrapper<double >;
 template class TPZLapackWrapper<long double>;
+#endif
