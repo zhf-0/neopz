@@ -121,12 +121,16 @@ void CreateGmshMesh(const std::string &meshName, const std::string &newName,
     command += " -setnumber factor "+str_factor.str();
     command += " -order " + std::to_string(meshOrder);
     command += " -o " + newName;
-    //gmsh $outDir/$meshRaw.geo -2 -match -nt 8 -tol 1e-16  -v 2 -setnumber scale $scale -order $geoOrder -o  $outDir/$meshRaw$suffix.msh
-    FILE *fp = popen(command.c_str(), "r");
-    if (!fp)
-    {
-        DebugStop();
+    std::cout<<"Generating mesh with: "<<std::endl<<command<<std::endl;
+
+    std::array<char, 128> buffer;
+    std::string result;
+    std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    while (fgets(buffer.data(), 128, pipe.get()) != nullptr){
+        result += buffer.data();
     }
+    std::cout<<result<<std::endl;
 }
 
 void RunSimulation(SPZModalAnalysisData &simData) {
@@ -150,7 +154,6 @@ void RunSimulation(SPZModalAnalysisData &simData) {
                 simData.physicalOpts.lambda,simData.physicalOpts.isCutOff,
                 simData.pzOpts.prefix,simData.pzOpts.exportCMesh,
                 simData.pzOpts.scaleFactor); // funcao para criar a malha computacional
-
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
@@ -193,6 +196,17 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetAbsoluteValue(simData.pzOpts.absVal);
     an.SetSolver(solver);
 
+    bool printMaterial = true;
+    if(printMaterial){
+        TPZStack<std::string> scalnames, vecnames;
+        scalnames.Push("Material");
+        std::string plotfile = simData.pzOpts.prefix + "Material" + ".vtk";
+        // estara na pasta debug
+        const int dim = 2;
+        an.DefineGraphMesh(dim, scalnames, vecnames,
+                           plotfile);  // define malha grafica
+        an.PostProcess(simData.pzOpts.vtkRes);
+    }
     std::cout << "Assembling..." << std::endl;
     boost::posix_time::ptime t1 =
         boost::posix_time::microsec_clock::local_time();
@@ -230,7 +244,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
         std::cout << "Post Processing..." << std::endl;
 
         TPZStack<std::string> scalnames, vecnames;
-        scalnames.Push("Ez"); // setando para imprimir u
+        scalnames.Push("Ez");
         vecnames.Push("Et");
         std::string plotfile = simData.pzOpts.prefix + "fieldPlot" + ".vtk";
                                                         // estara na pasta debug
