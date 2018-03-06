@@ -2255,7 +2255,7 @@ void TPZFMatrix<TVar>::PrintStatic(const TVar *ptr, long rows, long cols, const 
             out << "\n{ ";
             for ( long col = 0; col < cols; col++ ) {
                 TVar val = SELECTEL(ptr,rows,row, col);
-                sprintf(number, "%16.16lf", (double)fabs(val));
+                sprintf(number, "%14.14lf", (double)fabs(val));
                 out << number;
                 if(col < cols-1)
                     out << ", ";
