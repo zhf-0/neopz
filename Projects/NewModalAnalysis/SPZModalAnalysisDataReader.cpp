@@ -62,6 +62,18 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                             " of the dielectric materials, "
                             "separated by commas (it will be ignored"
                             " if Lossless(mu) is false");
+      prm.declare_entry("PML", "false",
+                          Patterns::Bool(),
+                          "Whether the domain is surrounded by a PML.\n"
+                                "If true, the material ids of the PML regions "
+                                "are expected to be the last one, just before "
+                                "the boundary id, and precedeed by the outermost "
+                                "domain, e.g., air_id, pml_r,pml_u,"
+                                "pml_l,pml_d,pml_lr,pml_ur,pml_ul,pml_ll,bound_Id");
+      prm.declare_entry("PML attenuation constant", "20.",
+                          Patterns::Double(0.),
+                          "The module of the IMAGINARY part of "
+                                "the s parameters of the PML");
     }
     prm.leave_subsection ();
   }
@@ -263,6 +275,9 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
       ReadComplexVector(data.physicalOpts.nMaterials,"Magnetic permeability vector",
                         "Dielectric losses vector(mu)","Lossless(mu)",
                         data.physicalOpts.urVec);
+
+      data.physicalOpts.hasPML = prm.get_bool("PML");
+      data.physicalOpts.alphaMax = prm.get_double("PML attenuation constant");
     }
     prm.leave_subsection ();
   }

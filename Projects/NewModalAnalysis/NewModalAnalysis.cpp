@@ -35,6 +35,8 @@
 #ifdef USING_SLEPC
 #include <TPZSlepcEPSHandler.h>
 #include <TPZSlepcSTHandler.h>
+#include <Complex/TPZMatWaveguidePml.h>
+
 #endif
 #include "parameter_handler.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
@@ -50,7 +52,8 @@ ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdV
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &er, REAL f0, bool isCutOff,const std::string &prefix, const bool &print, const REAL &scale);
+                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix,
+                 const bool &print, const REAL &scale, const bool &hasPML, const REAL &alphaMax);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              TPZVec<long> &activeEquations, int &neq,
@@ -153,7 +156,8 @@ void RunSimulation(SPZModalAnalysisData &simData) {
                 simData.physicalOpts.urVec, simData.physicalOpts.erVec,
                 simData.physicalOpts.lambda,simData.physicalOpts.isCutOff,
                 simData.pzOpts.prefix,simData.pzOpts.exportCMesh,
-                simData.pzOpts.scaleFactor); // funcao para criar a malha computacional
+                simData.pzOpts.scaleFactor,
+                simData.physicalOpts.hasPML, simData.physicalOpts.alphaMax); // funcao para criar a malha computacional
     boost::posix_time::ptime t2_c =
         boost::posix_time::microsec_clock::local_time();
     std::cout<<"Created! "<<t2_c-t1_c<<std::endl;
@@ -405,7 +409,8 @@ ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdV
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, TPZVec<int> &matIdVec, TPZVec<STATE> &urVec,
-                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix, const bool &print, const REAL &scale) {
+                 TPZVec<STATE> &erVec, REAL f0, bool isCutOff, const std::string &prefix,
+                 const bool &print, const REAL &scale, const bool &hasPML, const REAL &alphaMax) {
     enum {
       dirichlet = 0
     }; // tipo da condicao de contorno do problema
@@ -416,7 +421,8 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
       volMatId[i] = matIdVec[i];
     }
     const int boundMatId = matIdVec[matIdVec.size()-1];
-    if(volMatId.size()!=urVec.size()) DebugStop();
+    const int nPML = hasPML ? 8 : 0;
+    if(volMatId.size() - nPML !=urVec.size()) DebugStop();
 
     /// criar malha computacional H1
     std::cout<<"Creating H1 mesh... ";
@@ -489,6 +495,19 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
             boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshMF = new TPZCompMesh(gmesh);
     TPZVec<TPZMatModalAnalysis *>matMultiPhysics(volMatId.size());
+
+    ///PML Materials
+    TPZVec<int> pmlIds(0,0);
+    int outerMaterial = 0;
+    if(hasPML){
+        pmlIds.Resize(8);
+        for(int i = 0; i < 8 ; i++){
+            pmlIds[i] = volMatId[volMatId.size()-8 + i];
+        }
+        volMatId.Resize(volMatId.size()-8);
+        outerMaterial = volMatId.size()-1;
+    }
+
     if (isCutOff) {
         for (int i = 0; i < volMatId.size(); ++i) {
             matMultiPhysics[i] =
@@ -503,6 +522,75 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
         }
     }
 
+    if(hasPML){
+        REAL xR=1e20,xL=-1e20,yU=1e20,yD=-1e20,d=-1e20;
+        TPZGeoMesh * gmesh = cmeshMF->Reference();
+        const int urId = pmlIds[5];
+        const int llId = pmlIds[7];
+        for (int i = 0; i < gmesh->NElements(); ++i) {
+            TPZGeoEl *geo = gmesh->Element(i);
+            if(geo->MaterialId() == urId){
+                for (int j = 0; j < geo->NCornerNodes(); ++j) {
+                    TPZManVector<REAL,3> co(3);
+                    geo->Node(j).GetCoordinates(co);
+                    const REAL & xP = co[0];
+                    const REAL & yP = co[1];
+                    if( xP < xR ){
+                        xR = xP;
+                    }
+                    if( yP < yU ){
+                        yU = yP;
+                    }
+                    if( xP > d){
+                        d = xP;
+                    }
+                }
+            }
+            else if(geo->MaterialId() == llId){
+                for (int j = 0; j < geo->NCornerNodes(); ++j) {
+                    TPZManVector<REAL,3> co(3);
+                    geo->Node(j).GetCoordinates(co);
+                    const REAL & xP = co[0];
+                    const REAL & yP = co[1];
+                    if( xP > xL ){
+                        xL = xP;
+                    }
+                    if( yP > yD ){
+                        yD = yP;
+                    }
+                }
+            }
+            else{
+                continue;
+            }
+        }
+        d = d - xR;
+        REAL xP;
+        REAL yP;
+        bool attx = true;
+        bool atty = false;
+        for(int i = 0; i < nPML; i++){
+            xP = (i / 2) % 2 ? xL : xR;
+            yP = !((i / 2) % 2) != !(i%2)? yU : yD;
+            if(i <4){
+                attx = !(i % 2);
+                atty = !(attx);
+            }
+            if(i == 4){
+                attx = true;
+                atty = true;
+                d = M_SQRT2 * d;
+            }
+            matMultiPhysics[volMatId.size() + i] =
+                    new TPZMatWaveguidePml(pmlIds[i],
+                                           *matMultiPhysics[outerMaterial],
+                                           attx,xP,
+                                           atty,yP,
+                                           alphaMax,d);
+            cmeshMF->InsertMaterialObject(matMultiPhysics[volMatId.size() + i]);
+        }
+    }
+
     val1(0, 0) = 0.;
     val2(0, 0) = 0.;
     TPZMaterial *BCondMFDir =
@@ -513,6 +601,9 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     std::set<int> set;
     for (int i = 0; i < volMatId.size(); ++i) {
         set.insert(volMatId[i]);
+    }
+    for (int i = 0; i < nPML; ++i) {
+        set.insert(pmlIds[i]);
     }
     set.insert(boundMatId);
 

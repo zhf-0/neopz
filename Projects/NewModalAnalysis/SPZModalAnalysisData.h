@@ -17,6 +17,8 @@ struct SPZModalAnalysisData{
     int nMaterials;
     TPZVec<STATE> urVec;
     TPZVec<STATE> erVec;
+    bool hasPML;
+    REAL alphaMax;
   };
   SPZPhysicalOpts physicalOpts;
   struct SPZPzOpts{
