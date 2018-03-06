@@ -1143,7 +1143,7 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
             detjac      = norm_v_1;
             jacinv(0,0) = 1.0/detjac;
             
-            detjac = fabs(detjac);            
+//            detjac = fabs(detjac);
             
             if(IsZero(detjac))
             {
@@ -1210,7 +1210,7 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
             jacinv(0,1) = -jac(0,1)/detjac;
             jacinv(1,0) = -jac(1,0)/detjac;
             
-            detjac = fabs(detjac);
+//            detjac = fabs(detjac);
             
             if(IsZero(detjac))
             {
@@ -1261,7 +1261,7 @@ void TPZGeoEl::Jacobian(const TPZFMatrix<REAL> &gradx, TPZFMatrix<REAL> &jac,TPZ
             jacinv(2,1) = ( jac(0,1)*jac(2,0)-jac(0,0)*jac(2,1))/detjac;//a01 a20 - a00 a21
             jacinv(2,2) = (-jac(0,1)*jac(1,0)+jac(0,0)*jac(1,1))/detjac;//-a01 a10 + a00 a11
             
-            detjac = fabs(detjac);
+//            detjac = fabs(detjac);
             
             if(IsZero(detjac))
             {
