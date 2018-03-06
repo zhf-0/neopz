@@ -8,7 +8,10 @@
 
 #include "pzfmatrix.h"
 #include "pzsbndmat.h"
+#include "TPZEigenSolver.h"
+#ifdef USING_LAPACK
 #include "TPZLapackWrapper.h"
+#endif
 
 #include <sstream>
 #include "pzlog.h"

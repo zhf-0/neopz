@@ -57,9 +57,9 @@ find_package(PkgConfig REQUIRED)
 find_package(MPI REQUIRED)
 
 # Find SLEPc pkg-config file
-set(ENV{PKG_CONFIG_PATH} "${SLEPC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:${SLEPC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/$ENV{PETSC_ARCH}/lib/pkgconfig:${PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/$ENV{PETSC_ARCH}:${PETSC_DIR}:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${SLEPC_DIR}/${PETSC_ARCH}/lib/pkgconfig:${SLEPC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig:${PETSC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/${PETSC_ARCH}:${PETSC_DIR}:$ENV{PKG_CONFIG_PATH}")
 pkg_search_module(SLEPC SLEPc)
 
 # Extract major, minor, etc from version string

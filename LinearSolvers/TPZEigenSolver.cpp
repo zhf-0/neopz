@@ -99,3 +99,4 @@ template class TPZEigenSolver< std::complex<long double> >;
 template class TPZEigenSolver<float >;
 template class TPZEigenSolver<double >;
 template class TPZEigenSolver<long double>;
+
