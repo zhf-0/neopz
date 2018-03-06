@@ -428,7 +428,7 @@ int TPZMatModalAnalysis::NSolutionVariables(int var)
         case 1://Ez
             return 1;
         case 2://material
-            return 1;
+            return 2;
         default:
             DebugStop();
             break;
@@ -464,7 +464,9 @@ void TPZMatModalAnalysis::Solution(TPZVec<TPZMaterialData> &datavec, int var, TP
         }
 
         case 2:{//material
-            Solout = fEr;
+            Solout.Resize(2);
+            Solout[0] = fEr;
+            Solout[1] = fEr;
             break;
         }
         default:

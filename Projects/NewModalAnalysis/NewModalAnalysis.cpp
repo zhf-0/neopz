@@ -200,10 +200,10 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetAbsoluteValue(simData.pzOpts.absVal);
     an.SetSolver(solver);
 
-    bool printMaterial = true;
+    bool printMaterial = false;
     if(printMaterial){
         TPZStack<std::string> scalnames, vecnames;
-        scalnames.Push("Material");
+        vecnames.Push("Material");
         std::string plotfile = simData.pzOpts.prefix + "Material" + ".vtk";
         // estara na pasta debug
         const int dim = 2;
@@ -579,7 +579,6 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
             if(i == 4){
                 attx = true;
                 atty = true;
-                d = M_SQRT2 * d;
             }
             matMultiPhysics[volMatId.size() + i] =
                     new TPZMatWaveguidePml(pmlIds[i],

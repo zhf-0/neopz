@@ -82,8 +82,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE stiffAtt = 0.;
             STATE stiffBtt = 0.;
             STATE curlIdotCurlJ = 0.;
-            curlIdotCurlJ += curlPhi(0 , iVec) * curlPhi(0 , jVec) * sx / ( sy * sz );//ok
-            curlIdotCurlJ += curlPhi(1 , iVec) * curlPhi(1 , jVec) * sy / ( sz * sx );//ok
+            //curlIdotCurlJ += curlPhi(0 , iVec) * curlPhi(0 , jVec) * sx / ( sy * sz );//ok
+            //curlIdotCurlJ += curlPhi(1 , iVec) * curlPhi(1 , jVec) * sy / ( sz * sx );//ok
             curlIdotCurlJ += curlPhi(2 , iVec) * curlPhi(2 , jVec) * sz / ( sx * sy );//ok
             STATE phiIdotPhiJx = 0.;
             phiIdotPhiJx += phiHCurl(iVec , 0) * phiHCurl(jVec , 0);
@@ -95,10 +95,10 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             stiffAtt = 1./fUr * curlIdotCurlJ;
             stiffAtt -= k0 * k0 * fEr * (phiIdotPhiJx * ( sy * sz ) / sx);
             stiffAtt -= k0 * k0 * fEr * (phiIdotPhiJy * ( sz * sx ) / sy);
-            stiffAtt -= k0 * k0 * fEr * (phiIdotPhiJz * ( sx * sy ) / sz);
+            //stiffAtt -= k0 * k0 * fEr * (phiIdotPhiJz * ( sx * sy ) / sz);
             stiffBtt = 1./fUr * phiIdotPhiJx* sx / ( sy * sz );
             stiffBtt = 1./fUr * phiIdotPhiJy* sy / ( sz * sx );
-            stiffBtt = 1./fUr * phiIdotPhiJz* sz / ( sx * sy );
+            //stiffBtt = 1./fUr * phiIdotPhiJz* sz / ( sx * sy );
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -116,7 +116,7 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
 
             phiVecDotGradPhiSca += phiHCurl(iVec , 0) * gradPhiH1(jSca , 0) * sx / ( sy * sz );
             phiVecDotGradPhiSca += phiHCurl(iVec , 1) * gradPhiH1(jSca , 1) * sy / ( sz * sx );
-            phiVecDotGradPhiSca += phiHCurl(iVec , 2) * gradPhiH1(jSca , 2) * sz / ( sx * sy );
+            //phiVecDotGradPhiSca += phiHCurl(iVec , 2) * gradPhiH1(jSca , 2) * sz / ( sx * sy );
 
             stiffBzt = 1./fUr * phiVecDotGradPhiSca;
             if (this->fAssembling == A) {
@@ -136,7 +136,7 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE stiffBtz = 0.;
             phiVecDotGradPhiSca += phiHCurl(jVec , 0) * gradPhiH1(iSca , 0) * sx / ( sy * sz );
             phiVecDotGradPhiSca += phiHCurl(jVec , 1) * gradPhiH1(iSca , 1) * sy / ( sz * sx );
-            phiVecDotGradPhiSca += phiHCurl(jVec , 2) * gradPhiH1(iSca , 2) * sz / ( sx * sy );
+            //phiVecDotGradPhiSca += phiHCurl(jVec , 2) * gradPhiH1(iSca , 2) * sz / ( sx * sy );
             stiffBtz = 1./fUr * phiVecDotGradPhiSca;
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
@@ -153,7 +153,7 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE stiffBzz = 0.;
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 0) * gradPhiH1(jSca , 0) * sx / ( sy * sz );
             gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 1) * gradPhiH1(jSca , 1) * sy / ( sz * sx );
-            gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 2) * gradPhiH1(jSca , 2) * sz / ( sx * sy );
+            //gradPhiScaDotGradPhiSca += gradPhiH1(iSca , 2) * gradPhiH1(jSca , 2) * sz / ( sx * sy );
 
             stiffBzz =  1./fUr * gradPhiScaDotGradPhiSca;
             stiffBzz -=  k0 * k0 * fEr * phiH1( iSca , 0 ) * phiH1( jSca , 0 ) * (sx * sy) / sz;
@@ -193,19 +193,15 @@ void TPZMatWaveguidePml::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZ
             /*****************CALCULATE S PML PARAMETERS*************************/
             TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
             REAL sx = 1, sy = 1 , sz = 1;
-            if(fAttX && fAttY){
-                sx = fAlphaMax * ((x[0]-fPmlBeginX) / fD ) * ((x[0]-fPmlBeginX) / fD );
-                sy = fAlphaMax * ((x[1]-fPmlBeginY) / fD ) * ((x[1]-fPmlBeginY) / fD );
-                Solout = fEr * sqrt((sy * sz / sx) * (sy * sz / sx) * (sz * sx / sy) * (sz * sx / sy));
+            Solout.Resize(2);
+            if(fAttX){
+                sx = 1 + fAlphaMax * ((x[0]-fPmlBeginX) / fD ) * ((x[0]-fPmlBeginX) / fD );
             }
-            else if(fAttX){
-                sx = fAlphaMax * ((x[0]-fPmlBeginX) / fD ) * ((x[0]-fPmlBeginX) / fD );
-                Solout = fEr * sy * sz / sx;
+            if(fAttY){
+                sy = 1 + fAlphaMax * ((x[1]-fPmlBeginY) / fD ) * ((x[1]-fPmlBeginY) / fD );
             }
-            else if(fAttY){
-                sy = fAlphaMax * ((x[1]-fPmlBeginY) / fD ) * ((x[1]-fPmlBeginY) / fD );
-                Solout = fEr * sz * sx / sy;
-            }
+            Solout[0] = fEr * sx;
+            Solout[1] = fEr * sy;
             break;
         }
         default:
