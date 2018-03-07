@@ -402,7 +402,7 @@ void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFM
 
 int TPZMatModalAnalysis::IntegrationRuleOrder(int elPMaxOrder) const
 {
-    return 2+elPMaxOrder*2;
+    return elPMaxOrder*2;
 }
 
 

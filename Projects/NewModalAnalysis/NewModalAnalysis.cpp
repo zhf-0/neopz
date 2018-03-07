@@ -200,8 +200,7 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     solver.SetAbsoluteValue(simData.pzOpts.absVal);
     an.SetSolver(solver);
 
-    bool printMaterial = false;
-    if(printMaterial){
+    if(simData.pzOpts.exportGMesh){
         TPZStack<std::string> scalnames, vecnames;
         vecnames.Push("Material");
         std::string plotfile = simData.pzOpts.prefix + "Material" + ".vtk";
