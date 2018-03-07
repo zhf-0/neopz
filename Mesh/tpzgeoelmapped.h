@@ -349,7 +349,8 @@ public:
             TPZVec<int> LowEdgeSides;
             TPZVec<REAL> nonlinear(3), s(3), linear(3);
             double cf;
-            for(int side = Geo::NNodes; side < Geo::NSides-1; side ++)
+            int initialSide = (Geo::Dimension==2) ? Geo::NNodes : Geo::NSides-1 - Geo::NFaces;
+            for(int side = initialSide; side < Geo::NSides-1; side ++)
             {
                 TPZGeoElSide gelside(TBase::Neighbour(side));
                 if (gelside.Id()!=TBase::Id()) {

@@ -71,6 +71,76 @@ namespace pzgeom {
             TShape(loc, phi, dphi);
         }
         
+        static void CorrectFact (TPZVec<REAL> &ksi, int &EdgeSides ,REAL &cf)
+        {
+            if (EdgeSides == 20)
+            {
+                cf = (1 - ksi[2])/2;
+            }
+            else if (EdgeSides == 21)
+            {
+                cf = (1 - ksi[1])/2;
+            }
+            else if (EdgeSides == 22)
+            {
+                cf = (1 + ksi[0])/2;
+            }
+            else if(EdgeSides == 23)
+            {
+                cf = (1 + ksi[1])/2;
+            }
+            else if(EdgeSides == 24)
+            {
+                cf = (1 - ksi[0])/2;
+            }
+            else if(EdgeSides == 25)
+            {
+                cf = (1 + ksi[2])/2;
+            }
+        }
+        
+        /** @brief Returns the equivalent ksi from a quadrilateral element to a linear element */
+        
+        static void LinearKsi(int &EdgeSides, TPZVec<REAL> &ksi, TPZVec<REAL> &s) {
+            
+            if (EdgeSides == 20) {
+                s[0] = ksi[0];
+                s[1] = ksi[1];
+            }
+            else if (EdgeSides == 21) {
+                s[0] = ksi[0];
+                s[1] = ksi[2];
+            }
+            else if (EdgeSides == 22) {
+                s[0] = ksi[1];
+                s[1] = ksi[2];
+            }
+            else if (EdgeSides == 23) {
+                s[0] = -ksi[0];
+                s[1] = -ksi[2];
+            }
+            else if (EdgeSides == 24) {
+                s[0] = -ksi[1];
+                s[1] = -ksi[2];
+            }
+            else if (EdgeSides == 25) {
+                s[0] = -ksi[0];
+                s[1] = -ksi[1];
+            }
+
+
+        }
+
+        //Needs implementation
+        template<class T>
+        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
+        {
+            TPZFNMatrix<3*NNodes> coord(3,NNodes);
+            CornerCoordinates(gel, coord);
+            X(coord,ksi,result);
+        }
+
+        
         /* @brief Compute x mapping from local parametric coordinates */
         template<class T>
         void X(const TPZGeoEl &gel,TPZVec<T> &loc,TPZVec<T> &x) const
@@ -100,15 +170,6 @@ namespace pzgeom {
             GradX(nodes,loc,gradx);
         }
         
-        //Needs implementation
-        template<class T>
-        void XLinearMapping(const TPZGeoEl &gel,TPZVec<T> &ksi, TPZVec<T> &result) const
-        {
-            TPZFNMatrix<3*NNodes> coord(3,NNodes);
-            CornerCoordinates(gel, coord);
-            X(coord,ksi,result);
-        }
-
         
         /** @brief Compute x mapping from element nodes and local parametric coordinates */
         template<class T>

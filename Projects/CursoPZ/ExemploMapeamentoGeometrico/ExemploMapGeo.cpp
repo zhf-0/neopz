@@ -23,7 +23,8 @@ void ExemploIni();
 
 int main(int argc, char *argv[])
 {
-    TriCircleMapped();
+    
+    CubeWavyMapped();
 	return 0;
 }
 
@@ -140,8 +141,8 @@ void QuadWavyMapped()
     TPZVec<REAL> coord(3,0.);
     
     //no 0
-    coord[0] = 0.;
-    coord[1] = 0.;
+    coord[0] = -1.;
+    coord[1] = -1.;
     coord[2] = 0.;
     node0.SetNodeId(0);
     node0.SetCoord(coord);
@@ -149,7 +150,7 @@ void QuadWavyMapped()
     
     //no 1
     coord[0] = 1.;
-    coord[1] = 0.;
+    coord[1] = -1.;
     coord[2] = 0.;
     node1.SetNodeId(1);
     node1.SetCoord(coord);
@@ -157,14 +158,14 @@ void QuadWavyMapped()
     
     //no 2
     coord[0] = 1.;
-    coord[1] = 2.;
+    coord[1] = 1.;
     coord[2] = 0.;
     node2.SetNodeId(2);
     node2.SetCoord(coord);
     geomesh->NodeVec()[2] = node2;
     
     //no 3
-    coord[0] = 0.;
+    coord[0] = -1.;
     coord[1] = 1.;
     coord[2] = 0.;
     node3.SetNodeId(3);
@@ -498,43 +499,43 @@ void CubeWavyMapped()
     
     
     //no 0
-    coord[0] = 0.;
-    coord[1] = 0.;
-    coord[2] = 0.;
+    coord[0] = -1.;
+    coord[1] = -1.;
+    coord[2] = -1.;
     node0.SetCoord(coord);
     geomesh->NodeVec()[0] = node0;
     
     //no 1
     coord[0] = 1.;
-    coord[1] = 0.;
-    coord[2] = 0.;
+    coord[1] = -1.;
+    coord[2] = -1.;
     node1.SetCoord(coord);
     geomesh->NodeVec()[1] = node1;
     
     //no 2
     coord[0] = 1.;
     coord[1] = 1.;
-    coord[2] = 0.;
+    coord[2] = -1.;
     node2.SetCoord(coord);
     geomesh->NodeVec()[2] = node2;
     
     //no 3
-    coord[0] = 0.;
+    coord[0] = -1.;
     coord[1] = 1.;
-    coord[2] = 0.;
+    coord[2] = -1.;
     node3.SetCoord(coord);
     geomesh->NodeVec()[3] = node3;
     
     //no 4
-    coord[0] = 0.;
-    coord[1] = 0.;
+    coord[0] = -1.;
+    coord[1] = -1.;
     coord[2] = 1.;
     node4.SetCoord(coord);
     geomesh->NodeVec()[4] = node4;
     
     //no 5
     coord[0] = 1.;
-    coord[1] = 0.;
+    coord[1] = -1.;
     coord[2] = 1.;
     node5.SetCoord(coord);
     geomesh->NodeVec()[5] = node5;
@@ -547,7 +548,7 @@ void CubeWavyMapped()
     geomesh->NodeVec()[6] = node6;
     
     //no 7
-    coord[0] = 0.;
+    coord[0] = -1.;
     coord[1] = 1.;
     coord[2] = 1.;
     node7.SetCoord(coord);
@@ -557,13 +558,13 @@ void CubeWavyMapped()
     
     //Instanciacao e inicializacao do elemento cubico
 
-//    TPZVec<long> topologyCube(8);
-//    topologyCube[0] = 0; topologyCube[1] = 1; topologyCube[2] = 2; topologyCube[3] = 3; //no local 0,1,2,3 correspondem aos nos 0,1,2,3 na malha global
-//    topologyCube[4] = 4; topologyCube[5] = 5; topologyCube[6] = 6; topologyCube[7] = 7; //no local 4,5,6,7 correspondem aos nos 4,5,6,7 na malha global
-//
-//    
-//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > > *cube =
-//    new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > >(topologyCube,materialId,*geomesh);
+    TPZVec<long> topologyCube(8);
+    topologyCube[0] = 0; topologyCube[1] = 1; topologyCube[2] = 2; topologyCube[3] = 3; //no local 0,1,2,3 correspondem aos nos 0,1,2,3 na malha global
+    topologyCube[4] = 4; topologyCube[5] = 5; topologyCube[6] = 6; topologyCube[7] = 7; //no local 4,5,6,7 correspondem aos nos 4,5,6,7 na malha global
+
+    
+    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > > *cube =
+    new TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoCube > >(topologyCube,materialId,*geomesh);
     
     //Instanciacao e inicializacao do elemento quadrilateral 0
     TPZVec<long> topologyQuad0(4);
@@ -588,60 +589,57 @@ void CubeWavyMapped()
     
     //Instanciacao e inicializacao do elemento quadrilateral 3
     TPZVec<long> topologyQuad3(4);
-    topologyQuad3[0] = 5; //no local 0 corresponde ao no 4 da malha global
-    topologyQuad3[1] = 4; //no local 1 corresponde ao no 5 da malha global
-    topologyQuad3[2] = 7; //no local 2 corresponde ao no 6 da malha global
-    topologyQuad3[3] = 6; //no local 3 corresponde ao no 7 da malha global
+    topologyQuad3[0] = 6; //no local 0 corresponde ao no 4 da malha global
+    topologyQuad3[1] = 7; //no local 1 corresponde ao no 5 da malha global
+    topologyQuad3[2] = 3; //no local 2 corresponde ao no 6 da malha global
+    topologyQuad3[3] = 2; //no local 3 corresponde ao no 7 da malha global
     
     //Instanciacao e inicializacao do elemento quadrilateral 4
     TPZVec<long> topologyQuad4(4);
-    topologyQuad4[0] = 2; //no local 0 corresponde ao no 4 da malha global
-    topologyQuad4[1] = 3; //no local 1 corresponde ao no 5 da malha global
-    topologyQuad4[2] = 7; //no local 2 corresponde ao no 6 da malha global
-    topologyQuad4[3] = 6; //no local 3 corresponde ao no 7 da malha global
+    topologyQuad4[0] = 7; //no local 0 corresponde ao no 4 da malha global
+    topologyQuad4[1] = 4; //no local 1 corresponde ao no 5 da malha global
+    topologyQuad4[2] = 0; //no local 2 corresponde ao no 6 da malha global
+    topologyQuad4[3] = 3; //no local 3 corresponde ao no 7 da malha global
     
     //Instanciacao e inicializacao do elemento quadrilateral 5
     TPZVec<long> topologyQuad5(4);
-    topologyQuad5[0] = 3; //no local 0 corresponde ao no 4 da malha global
-    topologyQuad5[1] = 0; //no local 1 corresponde ao no 5 da malha global
+    topologyQuad5[0] = 6; //no local 0 corresponde ao no 4 da malha global
+    topologyQuad5[1] = 7; //no local 1 corresponde ao no 5 da malha global
     topologyQuad5[2] = 4; //no local 2 corresponde ao no 6 da malha global
-    topologyQuad5[3] = 7; //no local 3 corresponde ao no 7 da malha global
-    
-    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad0 =
-    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad0,materialId,*geomesh);
-
-//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad1 =
-//    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad1,materialId,*geomesh);
-//
-//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad2 =
-//    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad2,materialId,*geomesh);
-//    
-//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad3 =
-//    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad3,materialId,*geomesh);
-
-    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad4 =
-    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad4,materialId,*geomesh);
-
-//    TPZGeoElMapped<TPZGeoElRefPattern< pzgeom::TPZGeoQuad > > *quad5 =
-//    new TPZGeoElMapped<TPZGeoElRefPattern<pzgeom::TPZGeoQuad> > (topologyQuad5,materialId,*geomesh);
-    
-    //Instanciacao e inicializacao do elemento senoidal
-    TPZVec<long> topologyWavy(2);
-    topologyWavy[0] = 2; //no local 0 corresponde ao no 5 da malha global
-    topologyWavy[1] = 3; //no local 0 corresponde ao no 6 da malha global
+    topologyQuad5[3] = 5; //no local 3 corresponde ao no 7 da malha global
     
     int materialIdW = -1;
     
-    TPZGeoElRefPattern<pzgeom::TPZWavyLine> *wavy =
-    new TPZGeoElRefPattern<pzgeom::TPZWavyLine> (topologyWavy,materialIdW,*geomesh);
+//    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad0 =
+//    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad0,materialIdW,*geomesh);
+   
+//    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad1 =
+//    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad1,materialIdW,*geomesh);
+
+    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad2 =
+    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad2,materialIdW,*geomesh);
     
-    TPZVec<REAL> wavydir (3,0);
-    wavydir[0] = 0;
-    wavydir[1] = 0.1;
-    wavydir[2] = 0;
-    int numwaves;
-    numwaves = 4;
-    wavy->Geom().SetData(wavydir, numwaves);
+    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad3 =
+    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad3,materialIdW,*geomesh);
+//
+//    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad4 =
+//    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad4,materialIdW,*geomesh);
+
+//    TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > * quad5 =
+//    new TPZGeoElRefPattern< pzgeom::TPZQuadSphere <> > (topologyQuad5,materialIdW,*geomesh);
+    
+    const REAL r = sqrt(3);
+    TPZManVector<REAL,3> xc(3,0.);
+    xc[0] = 0.;
+    xc[1] = 0.;
+    xc[2] = 0.;
+
+//    quad0->Geom().SetData(r,xc);
+//    quad1->Geom().SetData(r,xc);
+    quad2->Geom().SetData(r,xc);
+    quad3->Geom().SetData(r,xc);
+//    quad4->Geom().SetData(r,xc);
+//    quad5->Geom().SetData(r,xc);
     
     //Definindo qsi, eta e zeta para a malha
     
@@ -655,7 +653,7 @@ void CubeWavyMapped()
     ///Refinando o elemento quadrilateral em subelementos (chamados de "filhos")
     TPZVec<TPZGeoEl *> sons;
     
-    const int nref = 7;
+    const int nref = 4;
     for (int iref = 0; iref < nref; iref++) {
         int nel = geomesh->NElements();
         for (int iel = 0; iel < nel; iel++) {

@@ -155,14 +155,14 @@ TPZGeoEl *CreateGeoElementMapped(TPZGeoMesh &mesh,
 				new TPZGeoElMapped<TPZGeoElRefPattern < TPZGeoPrism > >
 				(nodeindexes, matid, mesh, index);
 				return gel;
-			}
+			} */
 			case 7://cube
 			{
 				TPZGeoEl*gel =
 				new TPZGeoElMapped<TPZGeoElRefPattern < TPZGeoCube > >
 				(nodeindexes, matid, mesh, index);
 				return gel;
-			} */
+			}
 			default:
 			{
 				PZError << "TPZGeoMesh::CreateGeoElement type element not exists:"
@@ -190,7 +190,7 @@ template class TPZGeoElMapped<TPZGeoElRefPattern<TCL> >;
 INSERTCLASS(TPZGeoLinear,TPZGEOELMAPPEDLINEID)
 INSERTCLASS(TPZGeoTriangle,TPZGEOELMAPPEDTRIANGLEID)
 INSERTCLASS(TPZGeoQuad,TPZGEOELREFPATMAPPEDQUADRILATERALID)
-//INSERTCLASS(TPZGeoCube,TPZGEOELMAPPEDCUBEID)
+INSERTCLASS(TPZGeoCube,TPZGEOELMAPPEDCUBEID)
 //INSERTCLASS(TPZGeoPrism,TPZGEOELMAPPEDPRISMID)
 //INSERTCLASS(TPZGeoTetrahedra,TPZGEOELMAPPEDTETRAHEDRAID)
 //INSERTCLASS(TPZGeoPyramid,TPZGEOELMAPPEDPYRAMIDID)
