@@ -208,5 +208,5 @@ void TPZMatWaveguidePml::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZ
 
 int TPZMatWaveguidePml::IntegrationRuleOrder(int elPMaxOrder) const
 {
-    return 8+elPMaxOrder*2;
+    return 4+elPMaxOrder*2;
 }

@@ -96,6 +96,9 @@ ENABLE_TESTING()
 	endif(BUILD_BROKEN)
 
 	if(BUILD_PROJECTS)
+		if(USING_LAPACK)
+			add_subdirectory(Helmholtz2D)
+		endif()
 		#
 		# COMPLEX NUMBER PROJECTS
 		#
@@ -109,9 +112,6 @@ ENABLE_TESTING()
 			if(USING_BOOST)#ParameterHandler class needs boost
 				if(USING_SLEPC)
 					add_subdirectory(NewModalAnalysis)
-				endif()
-				if(USING_LAPACK)
-					add_subdirectory(Helmholtz2D)
 				endif()
 			endif()
 			add_subdirectory(MFHCurlH1Lag)

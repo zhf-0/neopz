@@ -18,9 +18,7 @@
 #include <stdlib.h>
 
 #ifdef BLAS
-extern "C" {
-#include <cblas.h>
-}
+#include "TPZLapackWrapper.h"
 #endif
 
 #include "pzfmatrix.h"
@@ -1715,9 +1713,7 @@ template class TPZSkylMatrix<TPZFlopCounter>;
 #include <stdlib.h>
 
 #ifdef BLAS
-extern "C" {
-#include <cblas.h>
-}
+#include "TPZLapackWrapper.h"
 #endif
 
 #include "pzfmatrix.h"

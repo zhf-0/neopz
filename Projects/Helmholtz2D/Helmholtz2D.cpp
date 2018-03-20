@@ -67,8 +67,8 @@ int main(int argc, char *argv[]) {
     const std::string prefix = "Helmholtz2D/";//PARAMS
     int pOrder = 1; //PARAMS
     const int nDivIni = 4; //PARAMS
-    const int nPcycles = 3;
-    const int nHcycles = 6;
+    const int nPcycles = 4;
+    const int nHcycles = 7;
     boost::posix_time::ptime t1 =
         boost::posix_time::microsec_clock::local_time();
     for (int iP = 0; iP < nPcycles; ++iP, ++pOrder) {
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
             std::cout << iH+1<<"/"<<nHcycles<<": Beginning simulation with nEl = "
                       << nDiv * nDiv * 2
                       <<" and p = "<<pOrder<< std::endl;
-          RunSimulation(nDiv, pOrder, prefix);
+            RunSimulation(nDiv, pOrder, prefix);
             nDiv *= 2;
             std::cout << "************************************" << std::endl;
         }
@@ -134,8 +134,8 @@ void RunSimulation(const int &nDiv, const int &pOrder, const std::string &prefix
 //  strmtrx->EquationFilter().SetActiveEquations(activeEquations);
 //  an.SetStructuralMatrix(strmtrx);
 
-    //TPZSymetricSpStructMatrix matrix(cmeshHCurl);
-    TPZSBandStructMatrix matrix(cmeshHCurl);
+    TPZSymetricSpStructMatrix matrix(cmeshHCurl);
+    //TPZSBandStructMatrix matrix(cmeshHCurl);
     matrix.SetNumThreads(nThreads);
     FilterBoundaryEquations(cmeshHCurl, activeEquations, neq, neqOriginal);
     matrix.EquationFilter().SetActiveEquations(activeEquations);

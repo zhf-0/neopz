@@ -13,10 +13,7 @@ static LoggerPtr logger(Logger::getLogger("pz.mesh.tpzcondensedcompel"));
 #endif
 
 #ifdef USING_LAPACK
-#define USING_DGER2
-#ifdef MACOSX
-#include <Accelerate/Accelerate.h>
-#endif
+#include "TPZLapackWrapper.h"
 #endif
 
 TPZCondensedCompEl::TPZCondensedCompEl(TPZCompEl *ref)

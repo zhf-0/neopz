@@ -7,14 +7,7 @@
 #include "pzfmatrix.h"
 #include "pzbndmat.h"
 #ifdef USING_LAPACK
-/** CBlas Math Library */
-#ifdef MACOSX
-#include <Accelerate/Accelerate.h>
-#elif USING_MKL
-#include <mkl.h>
-#else
-//#include "clapack.h"
-#endif
+#include "TPZLapackWrapper.h"
 #endif
 
 #include <stdlib.h>

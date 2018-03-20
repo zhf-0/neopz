@@ -54,7 +54,7 @@
 #include <set>
 
 #ifdef USING_BLAS
-#include "cblas.h"
+#include "TPZLapackWrapper.h"
 #endif
 
 #include "run_stats_table.h"

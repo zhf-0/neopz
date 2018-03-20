@@ -22,10 +22,7 @@
 #include <stdlib.h>
 
 #ifdef BLAS
-extern "C"
-{
-#include <cblas.h>
-}
+#include "TPZLapackWrapper.h"
 #endif
 
 //const int templatedepth = 10;
