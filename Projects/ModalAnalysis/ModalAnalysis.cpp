@@ -44,15 +44,15 @@
 #include "tpzquadratictrig.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
-#include "TPZMatMFHDivRotH1.h"
 #include "TPZGmshReader.h"
+#include "TPZMatMFHDivRotH1.h"
 
 enum meshTypeE { createRectangular = 1, createTriangular, createZigZag };
 
 void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType, int pOrder,
                    int nDiv, const TPZVec<REAL> geoParams, REAL f0, bool genVTK,
                    bool l2error, bool exportEigen, const int nThreads,
-                   bool optimizeBandwidth, bool filterEquations);
+                   bool optimizeBandwidth, bool filterEquations, const REAL scale);
 
 void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
                              TPZVec<long> &activeEquations, int &neq,
@@ -60,12 +60,12 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> cmeshMF,
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, const STATE &ur,
-                 const STATE &er, REAL f0, bool isCutOff);
+                 const STATE &er, REAL f0, bool isCutOff, const REAL scale);
 
 void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
                                      const meshTypeE meshType,
                                      const REAL wDomain, const REAL hDomain, 
-                                     const int nDiv);
+                                     const int nDiv, const REAL scale);
 
 void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
                                   const REAL rDomain, const int nDiv);
@@ -85,19 +85,21 @@ int main(int argc, char *argv[]) {
     bool genVTK = false;      // generate vtk for fields visualisation
     bool l2error = false;     // TODO: implement error analysis
     bool exportEigen = false; // export eigen values
-    const int nThreads = 0;
+    const int nThreads = 4;
     bool optimizeBandwidth = false; //whether to renumber equations (OFF for debugging purposes)
     bool filterEquations = true; //whether to impose dirichlet conditions removing boundary equations
 	
 	TPZManVector<REAL, 2> geoParams(1,-1);
     REAL fOp = -1;//operational frequency
     int nDiv = -1;//number of mesh divisions
+    REAL scale;
 	if (isRectangularWG) { //WR-90 waveguide
 		geoParams.Resize(2, 0.);
 		geoParams[0] = 9 * 2.54 * 1e-3;//width
 		geoParams[1] = 4 * 2.54 * 1e-3;//height
-        fOp = 25e+9;
-      nDiv = 10;
+        fOp = 299792458 / (25e+9);
+        scale = fOp/(2*M_PI);
+      nDiv = 5;
 	}
 	else{
 		geoParams.Resize(1, 0.);
@@ -108,13 +110,13 @@ int main(int argc, char *argv[]) {
 //        fOp = 25e+9;
 	}
 
-    const int nSim = 1;
+    const int nSim = 5;
     for (int i = 0; i < nSim; i++) {
         std::cout << "iteration " << i + 1 << " of " << nSim << std::endl;
         RunSimulation(isRectangularWG, isCutOff, meshType, pOrder, nDiv, geoParams, fOp,
                       genVTK, l2error, exportEigen, nThreads, optimizeBandwidth,
-                      filterEquations);
-        nDiv *= 2;
+                      filterEquations, scale);
+        nDiv +=5;
     }
 
     return 0;
@@ -123,7 +125,7 @@ int main(int argc, char *argv[]) {
 void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType, int pOrder,
                    int nDiv, const TPZVec<REAL> geoParams, REAL f0, bool genVTK,
                    bool l2error, bool exportEigen, const int nThreads,
-                   bool optimizeBandwidth, bool filterEquations) {
+                   bool optimizeBandwidth, bool filterEquations, const REAL scale) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
     std::cout<<"Creating GMesh...";
     #ifdef USING_BOOST
@@ -131,7 +133,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
             boost::posix_time::microsec_clock::local_time();
     #endif
 	if (isRectangularWG) {
-		CreateGMeshRectangularWaveguide(gmesh, meshType, geoParams[0], geoParams[1], nDiv);
+		CreateGMeshRectangularWaveguide(gmesh, meshType, geoParams[0], geoParams[1], nDiv, scale);
 	}
 	else{
 		CreateGMeshCircularWaveguide(gmesh, meshType, geoParams[0], nDiv);
@@ -150,7 +152,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     const STATE ur = 1.0;
     const STATE er = 1.0;
     CreateCMesh(meshVec, gmesh, pOrder, ur, er, f0,
-                isCutOff); // funcao para criar a malha computacional
+                isCutOff,scale); // funcao para criar a malha computacional
     #ifdef USING_BOOST
     boost::posix_time::ptime t2_c =
             boost::posix_time::microsec_clock::local_time();
@@ -180,7 +182,7 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
     }
     an.SetStructuralMatrix(strmtrx);
 
-    const int nSolutions = 10;// neq >= 10 ? 10 : neq;
+    const int nSolutions = 2;// neq >= 10 ? 10 : neq;
     TPZLapackWrapper<STATE> solver;
     solver.SetAsGeneralised(true);
     solver.SetAbsoluteValue(false);
@@ -253,7 +255,8 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 			}
     }
 	int i = 0;
-
+    typedef std::numeric_limits< double > dbl;
+    std::cout.precision(dbl::max_digits10);
     for (std::set<std::pair<REAL, TPZFMatrix<STATE>>>::iterator iT =
              eigenValuesRe.begin();
          iT != eigenValuesRe.end(); iT++) {
@@ -265,7 +268,8 @@ void RunSimulation(bool isRectangularWG, bool isCutOff, const meshTypeE meshType
 		if (i >= nSolutions) {
 			break;
 		}
-		std::cout << iT->first << std::endl;
+        std::cout<<std::fixed<< iT->first << std::endl;
+
 		i++;
     }
 //
@@ -427,7 +431,7 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
 void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
                                      const meshTypeE meshType,
                                      const REAL wDomain, const REAL hDomain,
-                                     const int nDiv) {
+                                     const int nDiv, const REAL scale) {
 
     TPZManVector<int, 3> nx(3, 0);
     TPZManVector<REAL, 3> llCoord(3, 0.), ulCoord(3, 0.), urCoord(3, 0.),
@@ -436,18 +440,18 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     llCoord[1] = 0.;
 
     ulCoord[0] = 0.;
-    ulCoord[1] = hDomain;
+    ulCoord[1] = hDomain/scale;
 
-    urCoord[0] = wDomain;
-    urCoord[1] = hDomain;
+    urCoord[0] = wDomain/scale;
+    urCoord[1] = hDomain/scale;
 
-    lrCoord[0] = wDomain;
+    lrCoord[0] = wDomain/scale;
     lrCoord[1] = 0.;
 
     nx[0] = nDiv + 1;
     nx[1] = nDiv + 1;
-    nx[0] = 4;//REFINEMENT TEST
-    nx[1] = 4;//REFINEMENT TEST
+//    nx[0] = 4;//REFINEMENT TEST
+//    nx[1] = 4;//REFINEMENT TEST
     int numl = 1;
     TPZGenGrid *gengrid = NULL;
     switch (meshType) {
@@ -485,41 +489,41 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
 
     gmesh->BuildConnectivity();
 
-    //REFINEMENT TEST
-    TPZManVector<TPZGeoEl *, 3> sons;
-    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);
-    qsi[0]= 0.5;
-    qsi[1]= 0.5;
-    TPZManVector<REAL,3> refPointsX(1,0.);
-    TPZManVector<REAL,2> refPointsY(1,0.);
-    refPointsX[0] = wDomain/4;
-    //refPointsX[1] = wDomain/2;
-    refPointsY[0] = hDomain/4;
-    //refPointsY[1] = hDomain/2;
-    for (int iref = 0; iref < refPointsX.size(); iref++) {
-        int nel = gmesh->NElements();
-        for (int iel = 0; iel < nel; iel++) {
-            TPZGeoEl *gel = gmesh->ElementVec()[iel];
-            if(gel->Dimension() < 2) continue;
-            gel->X(qsi, x);//gets center of element
-
-            if(x[0]> refPointsX[iref] && wDomain - x[0] > refPointsX[iref]
-               && x[1] > refPointsY[iref] && hDomain - x[1] > refPointsY[iref]){
-                if (gel->HasSubElement()) {
-                    continue;
-                }
-                for(int iSide =0 ; iSide < 3; iSide++){
-                    long neighIndex = gel->Neighbour(iSide+3).Id();
-                    TPZGeoEl *neighbor = gmesh->ElementVec()[neighIndex];
-                    if(neighbor->Dimension() == 1 && !neighbor->HasSubElement()){
-                        neighbor->Divide(sons);
-                    }
-                }
-                gel->Divide(sons);
-            }
-        }
-    }
-    //END REFINEMENT TEST
+//    //REFINEMENT TEST
+//    TPZManVector<TPZGeoEl *, 3> sons;
+//    TPZManVector<REAL,3> qsi(3,0.), x(3,0.);
+//    qsi[0]= 0.5;
+//    qsi[1]= 0.5;
+//    TPZManVector<REAL,3> refPointsX(1,0.);
+//    TPZManVector<REAL,2> refPointsY(1,0.);
+//    refPointsX[0] = wDomain/4;
+//    //refPointsX[1] = wDomain/2;
+//    refPointsY[0] = hDomain/4;
+//    //refPointsY[1] = hDomain/2;
+//    for (int iref = 0; iref < refPointsX.size(); iref++) {
+//        int nel = gmesh->NElements();
+//        for (int iel = 0; iel < nel; iel++) {
+//            TPZGeoEl *gel = gmesh->ElementVec()[iel];
+//            if(gel->Dimension() < 2) continue;
+//            gel->X(qsi, x);//gets center of element
+//
+//            if(x[0]> refPointsX[iref] && wDomain - x[0] > refPointsX[iref]
+//               && x[1] > refPointsY[iref] && hDomain - x[1] > refPointsY[iref]){
+//                if (gel->HasSubElement()) {
+//                    continue;
+//                }
+//                for(int iSide =0 ; iSide < 3; iSide++){
+//                    long neighIndex = gel->Neighbour(iSide+3).Id();
+//                    TPZGeoEl *neighbor = gmesh->ElementVec()[neighIndex];
+//                    if(neighbor->Dimension() == 1 && !neighbor->HasSubElement()){
+//                        neighbor->Divide(sons);
+//                    }
+//                }
+//                gel->Divide(sons);
+//            }
+//        }
+//    }
+//    //END REFINEMENT TEST
 
 #ifdef PZDEBUG
     std::ofstream outTxt, outVtk;
@@ -677,7 +681,7 @@ void CreateGMeshCircularWaveguide(TPZGeoMesh *&gmesh, const meshTypeE meshType,
 
 void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                  int pOrder, const STATE &ur,
-                 const STATE &er, REAL f0, bool isCutOff) {
+                 const STATE &er, REAL f0, bool isCutOff, const REAL scale) {
 
     const int dim = 2;   // dimensao do problema
     const int matId = 1; // define id para um material(formulacao fraca)
@@ -732,7 +736,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
                                   // contorno de dirichlet
 
     cmeshHCurl->InsertMaterialObject(BCondHCurlDir); // insere material na malha
-    
+
     if(!usingHDivRot)cmeshHCurl->SetAllCreateFunctionsHCurl(); // define espaco de aproximacao
     else cmeshHCurl->SetAllCreateFunctionsHDiv();
     cmeshHCurl->AutoBuild();
@@ -746,7 +750,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
         matMultiPhysics = dummy;
     } else {
         TPZMatModalAnalysis *dummy = NULL;
-        if(!usingHDivRot) dummy = new TPZMatModalAnalysis(matId, f0, ur, er);
+        if(!usingHDivRot) dummy = new TPZMatModalAnalysis(matId, f0, ur, er,scale);
         else dummy = new TPZMatMFHDivRotH1(matId, f0, ur, er);
         TPZMaterial::gBigNumber = 1e30;
         matMultiPhysics = dummy;

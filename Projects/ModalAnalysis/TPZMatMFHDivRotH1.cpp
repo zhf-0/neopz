@@ -265,7 +265,7 @@ void TPZMatMFHDivRotH1::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight
     TPZFNMatrix<40,REAL> curlPhi;
     ComputeCurl(gradPhiForHCurl, ivecHCurl, curlPhi);
 
-    REAL k0 = fW*sqrt(M_EZERO*M_UZERO);
+    const REAL k0 = fScaleFactor * 2*M_PI/fLambda;
     //*****************ACTUAL COMPUTATION OF CONTRIBUTION****************//
     
     const int nHCurlFunctions  = phrq;
