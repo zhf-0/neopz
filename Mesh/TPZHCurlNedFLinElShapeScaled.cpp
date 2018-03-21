@@ -50,6 +50,7 @@ void TPZHCurlNedFLinEl::CalcShape(TPZVec<REAL> &qsi, TPZFMatrix<REAL> &phi,
         phi(currentFuncPos, 0) = 1;
         break;
     default:
+        std::cout<<"Polynomial order "<<pOrder<<" is not implemented!"<<std::endl;
         DebugStop(); // polynomial order not implemented!
     }
 }

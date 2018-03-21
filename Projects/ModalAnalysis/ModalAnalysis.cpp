@@ -399,7 +399,7 @@ void FilterBoundaryEquations(TPZVec<TPZCompMesh *> meshVec,
     TPZCompMesh *cmeshH1 = meshVec[2];
     int nHCurlEquations = 0, nH1Equations = 0;
     TPZMatModalAnalysis *mat =
-        dynamic_cast<TPZMatModalAnalysis *>(cmesh->FindMaterial(1));
+            dynamic_cast<TPZMatModalAnalysis *>(cmesh->FindMaterial(1));
     for (int iCon = 0; iCon < cmesh->NConnects(); iCon++) {
         bool isH1;
         if (boundConnects.find(iCon) == boundConnects.end()) {
@@ -448,8 +448,8 @@ void CreateGMeshRectangularWaveguide(TPZGeoMesh *&gmesh,
     lrCoord[0] = wDomain/scale;
     lrCoord[1] = 0.;
 
-    nx[0] = nDiv + 1;
-    nx[1] = nDiv + 1;
+    nx[0] = nDiv;
+    nx[1] = nDiv;
 //    nx[0] = 4;//REFINEMENT TEST
 //    nx[1] = 4;//REFINEMENT TEST
     int numl = 1;

@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 #ifdef LOG4CXX
     InitializePZLOG();
 #endif
-    const std::string prefix = "Helmholtz2D/";//PARAMS
+    const std::string prefix = "results/";//PARAMS
     int pOrder = 1; //PARAMS
     const int nDivIni = 4; //PARAMS
     const int nPcycles = 4;
