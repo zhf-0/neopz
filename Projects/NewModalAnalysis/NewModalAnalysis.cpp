@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
         stepSize = (lastLambda-firstLambda)/nSteps;
     }
     std::string meshOriginal = simData.pzOpts.meshFile;
+    const int pOrderOrig = simData.pzOpts.pOrder;
     for (int i = 0; i < simData.pzOpts.hSteps; ++i) {
         const REAL factorVal = simData.pzOpts.factorVec[i];
         simData.pzOpts.meshFile = meshOriginal.substr(0,meshOriginal.size()-4)
@@ -96,6 +97,7 @@ int main(int argc, char *argv[]) {
         CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
                        factorVal, simData.pzOpts.nThreads,
                        simData.pzOpts.scaleFactor,simData.pzOpts.meshOrder);
+        simData.pzOpts.pOrder = pOrderOrig;
         for (int j = 0; j < simData.pzOpts.pSteps; ++j) {
             for (int k = 0; k < simData.pzOpts.freqSteps; ++k) {
                 simData.physicalOpts.lambda = firstLambda + k * stepSize;
