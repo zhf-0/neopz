@@ -45,7 +45,7 @@
 #include "SPZModalAnalysisDataReader.h"
 #include "SPZModalAnalysisData.h"
 
-void RunSimulation(SPZModalAnalysisData &simData);
+void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo);
 
 void
 ReadGMesh(TPZGeoMesh *&gmesh, const std::string mshFileName, TPZVec<int> &matIdVec, const std::string &prefix, const bool &print, const REAL &scale = 1.);
@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
     }
     std::string meshOriginal = simData.pzOpts.meshFile;
     const int pOrderOrig = simData.pzOpts.pOrder;
+    std::ostringstream eigeninfo;
     for (int i = 0; i < simData.pzOpts.hSteps; ++i) {
         const REAL factorVal = simData.pzOpts.factorVec[i];
         simData.pzOpts.meshFile = meshOriginal.substr(0,meshOriginal.size()-4)
@@ -101,12 +102,29 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < simData.pzOpts.pSteps; ++j) {
             for (int k = 0; k < simData.pzOpts.freqSteps; ++k) {
                 simData.physicalOpts.lambda = firstLambda + k * stepSize;
-                RunSimulation(simData);
+                RunSimulation(simData,eigeninfo);
             }
             simData.pzOpts.pOrder++;
         }
     }
+    if(simData.pzOpts.exportEigen){
+        std::string eigenFileName = simData.pzOpts.prefix;
+        if(simData.pzOpts.freqSweep){
+            eigenFileName+="from_l_"+std::to_string(firstLambda)+"_to_"+std::to_string(lastLambda)+"_";
+        }else{
+            eigenFileName+="l_"+std::to_string(firstLambda)+"_";
+        }
+        if(simData.pzOpts.pSteps>1){
+            eigenFileName+="from_p_"+std::to_string(pOrderOrig)+"_to_";
+            eigenFileName+=std::to_string(pOrderOrig+simData.pzOpts.pSteps)+"_";
+        }else{
+            eigenFileName+="p_"+std::to_string(pOrderOrig);
+        }
+        eigenFileName+="_n_hsteps_"+std::to_string(simData.pzOpts.hSteps)+".csv";
 
+        std::ofstream file(eigenFileName.c_str());
+        file << eigeninfo.str();
+    }
     return 0;
 }
 
@@ -138,7 +156,7 @@ void CreateGmshMesh(const std::string &meshName, const std::string &newName,
     std::cout<<result<<std::endl;
 }
 
-void RunSimulation(SPZModalAnalysisData &simData) {
+void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) {
     TPZGeoMesh *gmesh = new TPZGeoMesh();
     std::cout<<"Creating GMesh..."<<std::endl;
     boost::posix_time::ptime t1_g =
@@ -236,6 +254,34 @@ void RunSimulation(SPZModalAnalysisData &simData) {
     std::cout.precision(dbl::max_digits10);
     for(int i = 0; i < eigenValues.size() ; i++){
         std::cout<<std::fixed<<eigenValues[i]<<std::endl;
+    }
+    if(simData.pzOpts.exportEigen){
+        eigeninfo.precision(dbl::max_digits10);
+        std::cout<<"Exporting eigen info..."<<std::endl;
+        REAL hSize = 1e12;
+        REAL elRadius = 0;
+        for (int j = 0; j < gmesh->NElements(); ++j) {
+            TPZGeoEl &el = *(gmesh->ElementVec()[j]);
+            TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
+            if(!mat){
+                elRadius = el.ElementRadius();
+                hSize = elRadius < hSize ? elRadius : hSize;
+            }
+        }
+        eigeninfo << std::fixed << hSize << "," << simData.pzOpts.pOrder<<",";
+        eigeninfo << std::fixed << simData.physicalOpts.lambda<<",";
+        eigeninfo << eigenValues.size()<<",";
+        for(int i = 0; i < eigenValues.size() ; i++){
+            eigeninfo<<std::fixed<<std::real(eigenValues[i])<<",";
+            eigeninfo<<std::fixed<<std::imag(eigenValues[i]);
+            if(i == eigenValues.size() - 1 ) {
+                eigeninfo << std::endl;
+            }else{
+                eigeninfo << ",";
+            }
+        }
+
+        std::cout<<" Done!"<<std::endl;
     }
 
     if (simData.pzOpts.genVTK) {
