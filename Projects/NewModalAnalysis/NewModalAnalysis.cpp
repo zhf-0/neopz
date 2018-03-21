@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     }
     if(simData.pzOpts.exportEigen){
         std::string eigenFileName = simData.pzOpts.prefix;
+        eigenFileName +="mapord_"+std::to_string(simData.pzOpts.meshOrder)+"_";
         if(simData.pzOpts.freqSweep){
             eigenFileName+="from_l_"+std::to_string(firstLambda)+"_to_"+std::to_string(lastLambda)+"_";
         }else{
