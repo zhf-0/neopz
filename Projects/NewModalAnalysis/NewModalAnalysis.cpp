@@ -86,6 +86,10 @@ int main(int argc, char *argv[]) {
         lastLambda = simData.pzOpts.lambdaMax;
         stepSize = (lastLambda-firstLambda)/nSteps;
     }
+    else{
+        stepSize = 0;
+        simData.pzOpts.freqSteps = 1;
+    }
     std::string meshOriginal = simData.pzOpts.meshFile;
     const int pOrderOrig = simData.pzOpts.pOrder;
     std::ostringstream eigeninfo;
@@ -139,11 +143,12 @@ void CreateGmshMesh(const std::string &meshName, const std::string &newName,
 
     std::string command = "gmsh " + meshName + " -2 -match ";
     command += " -nt " + std::to_string(nThreads);
-    command += " -tol 1e-16 ";
+    command += " -tol 1e-20 ";
     command += " -v 2 ";
     command += " -setnumber scale "+str_scale.str();
     command += " -setnumber factor "+str_factor.str();
     command += " -order " + std::to_string(meshOrder);
+    if( meshOrder > 1 ) command += " -optimize_ho";
     command += " -o " + newName;
     std::cout<<"Generating mesh with: "<<std::endl<<command<<std::endl;
 
