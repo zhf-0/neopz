@@ -54,7 +54,6 @@ unset(SLEPC_VERSION_SUBMINOR CACHE)
 
 # Load CMake pkg-config module
 find_package(PkgConfig REQUIRED)
-find_package(MPI REQUIRED)
 
 # Find SLEPc pkg-config file
 set(ENV{PKG_CONFIG_PATH} "${SLEPC_DIR}/${PETSC_ARCH}/lib/pkgconfig:${SLEPC_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
@@ -70,12 +69,6 @@ if (SLEPC_VERSION)
   list(GET VERSION_LIST 2 SLEPC_VERSION_SUBMINOR)
 endif()
 
-if (MPI_CXX_FOUND)
-  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${MPI_CXX_INCLUDE_PATH})
-  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${MPI_CXX_LIBRARIES})
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
-  set(SLEPC_INCLUDE_DIRS ${SLEPC_INCLUDE_DIRS} ${MPI_CXX_INCLUDE_PATH})
-endif()
 # Configure SLEPc IMPORT (this involves creating an 'imported' target
 # and attaching 'properties')
 if (SLEPC_FOUND AND NOT TARGET SLEPC::slepc)
@@ -101,7 +94,7 @@ if (SLEPC_FOUND AND NOT TARGET SLEPC::slepc_static)
   # Add libraries (static)
   unset(_libs)
   foreach (lib ${SLEPC_STATIC_LIBRARIES})
-    find_library(LIB_${lib} ${lib} HINTS ${SLEPC_STATIC_LIBRARY_DIRS})
+    find_library(LIB_${lib} ${lib} HINTS ${SLEPC_STATIC_LIBRARY_DIRS} NO_DEFAULT_PATH)
     list(APPEND _libs ${LIB_${lib}})
   endforeach()
   set_property(TARGET SLEPC::slepc_static PROPERTY INTERFACE_LINK_LIBRARIES "${_libs}")
