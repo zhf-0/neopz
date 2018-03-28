@@ -168,7 +168,7 @@ if(USING_SLEPC)
 endif(USING_SLEPC)
 
 
-target_link_libraries(pz ${PZ_LIBRARIES})
+target_link_libraries(pz ${NEOPZ_LIBRARIES})
 ## inserting definitions
 #specifying the path to neopz source code
 set(PZSOURCEDIR ${PROJECT_SOURCE_DIR})

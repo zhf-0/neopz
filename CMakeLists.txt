@@ -138,7 +138,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(PZ_LIBRARIES Threads::Threads)
+set(NEOPZ_LIBRARIES Threads::Threads)
 
 #To enable unit test using boost UnitTest framework
 if(BUILD_UNITTESTING)
@@ -153,7 +153,7 @@ if(USING_BOOST)
 	ENDIF()
 	find_package( Boost COMPONENTS unit_test_framework REQUIRED )
 	include_directories(${Boost_INCLUDE_DIRS})
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${Boost_LIBRARIES})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${Boost_LIBRARIES})
 	include_directories(Pre/ParameterHandler)
 endif(USING_BOOST)
 
@@ -189,9 +189,9 @@ if(USING_LOG4CXX)
 		message(FATAL_ERROR "log4cxx lib not found")
 	endif()
 
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LOG4CXX_LIBRARIES})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${LOG4CXX_LIBRARIES})
 	if(WIN32)
-		set(PZ_LIBRARIES ${PZ_LIBRARIES} odbc32.lib ws2_32.lib mswsock.lib)
+		set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} odbc32.lib ws2_32.lib mswsock.lib)
 	endif(WIN32)
 
 endif(USING_LOG4CXX)
@@ -213,7 +213,7 @@ if(USING_TBB)
 		set (TBB_LIB "" CACHE PATH "Directory where the tbb library can be found")
 		message(FATAL_ERROR "tbb lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${TBB_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${TBB_LIB})
 endif(USING_TBB)
 
 #enabling OpenMP runtime and library
@@ -229,7 +229,7 @@ if(USING_OPENMP)
 		set (TBB_OPENMP "" CACHE PATH "Directory where the OpenMP library can be found")
 		message(FATAL_ERROR "openmp lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${OPENMP_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${OPENMP_LIB})
 endif(USING_OPENMP)
 
 #enabling LIKWID library
@@ -246,7 +246,7 @@ if(USING_LIKWID)
 		set (LIKWID_LIB "" CACHE PATH "Directory where the likwid library can be found")
 		message(FATAL_ERROR "likwid lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LIKWID_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${LIKWID_LIB})
 endif(USING_LIKWID)
 
 #enabling numa library
@@ -263,7 +263,7 @@ if(USING_LIBNUMA)
 		set (LIBNUMA_LIB "" CACHE PATH "Directory where the libnuma library can be found")
 		message(FATAL_ERROR "Lib NUMA lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LIBNUMA_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${LIBNUMA_LIB})
 endif(USING_LIBNUMA)
 
 #enabling MatLab library
@@ -283,7 +283,7 @@ if(USING_PAPI)
 		set (PAPI_LIB "" CACHE PATH "Directory where the papi library can be found")
 		message(FATAL_ERROR "Lib PAPI lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${PAPI_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${PAPI_LIB})
 endif(USING_PAPI)
 
 #enabling HWLOC library
@@ -297,7 +297,7 @@ if(USING_HWLOC)
 		set (HWLOC_LIB "" CACHE PATH "Directory where the hwloc library can be found")
 	endif()
 		message(FATAL_ERROR "Lib HWLOC lib not found")
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${HWLOC_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${HWLOC_LIB})
 endif(USING_HWLOC)
 
 #enabling METIS library
@@ -314,7 +314,7 @@ if(USING_METIS)
 		set (METIS_LIB "" CACHE PATH "Directory where the metis library can be found")
 		message(FATAL_ERROR "metis lib not found")
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${METIS_LIB})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${METIS_LIB})
 endif(USING_METIS)
 
 #enabling QWT library
@@ -374,7 +374,7 @@ if(USING_MKL)
 	endif()
 	find_package(MKL REQUIRED)
 	include_directories(${MKL_INCLUDE_DIRS})
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${MKL_LIBRARIES})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${MKL_LIBRARIES})
 	#enabling BLAS library  (it wont search for it, though, since MKL contains it)
 	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
 	#enabling LAPACK library (it wont search for it, though, since MKL contains it)
@@ -390,7 +390,7 @@ elseif(USING_LAPACK)
 	if(NOT LAPACK_FOUND)#trying other LAPACK implementations
 		find_package(LAPACK REQUIRED)
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${LAPACK_LIBRARIES})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${LAPACK_LIBRARIES})
 	#enabling BLAS library  (it wont search for it, though, since LAPACK contains it)
 	set(USING_BLAS ON CACHE BOOL "Whether the Basic Linear Algebra Subprograms (BLAS) library will be linked in" FORCE)
 elseif(USING_BLAS)
@@ -406,7 +406,7 @@ elseif(USING_BLAS)
 	if(NOT BLAS_FOUND)#trying other BLAS implementations
 		find_package(BLAS REQUIRED)
 	endif()
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} ${BLAS_LIBRARIES})
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} ${BLAS_LIBRARIES})
 endif(USING_MKL)
 
 #enabling SLEPc library's dependency on PETSc
@@ -438,7 +438,7 @@ if(USING_PETSC)
 	find_package(PETSc REQUIRED)
 	get_target_property(PETSC_INCLUDE_DIRECTORIES PETSC::petsc INTERFACE_INCLUDE_DIRECTORIES)
 	include_directories(${PETSC_INCLUDE_DIRECTORIES})
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} PETSC::petsc MPI::MPI_CXX)
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} PETSC::petsc MPI::MPI_CXX)
 endif(USING_PETSC)
 
 if(USING_SLEPC)
@@ -457,7 +457,7 @@ if(USING_SLEPC)
 	find_package(SLEPc REQUIRED)
 	get_target_property(SLEPC_INCLUDE_DIRECTORIES SLEPC::slepc INTERFACE_INCLUDE_DIRECTORIES)
 	include_directories(${SLEPC_INCLUDE_DIRECTORIES})
-	set(PZ_LIBRARIES ${PZ_LIBRARIES} SLEPC::slepc)
+	set(NEOPZ_LIBRARIES ${NEOPZ_LIBRARIES} SLEPC::slepc)
 endif(USING_SLEPC)
 
 ##############PZ configuration##############

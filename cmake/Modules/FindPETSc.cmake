@@ -61,7 +61,7 @@ unset(HAVE_PETSC_INT_SIZE CACHE)
 
 # Load pkg-config module (provided by CMake)
 find_package(PkgConfig REQUIRED)
-find_package(MPI REQUIRED)
+find_package(MPI REQUIRED CXX)
 # Find PETSc pkg-config file.
 set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/lib/pkgconfig:${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_search_module(PETSC PETSc)
