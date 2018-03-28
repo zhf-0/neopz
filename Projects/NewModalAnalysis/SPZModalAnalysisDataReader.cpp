@@ -328,7 +328,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     prm.enter_subsection("Scaling");
     {
       data.pzOpts.scaleFactor = prm.get_bool("Scale by k0") ?
-                                data.physicalOpts.lambda/(2*M_PI) :
+                                (2*M_PI) / data.physicalOpts.lambda:
                                 prm.get_double("Scale factor");//double
       data.pzOpts.isTargetScaled = prm.get_bool("Is target scaled");//bool
     }
@@ -493,7 +493,7 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
 
       data.solverOpts.target = prm.get_double("Target eigenvalue");//double
       if(! data.pzOpts.isTargetScaled){
-        data.solverOpts.target = data.solverOpts.target * data.pzOpts.scaleFactor * data.pzOpts.scaleFactor;
+        data.solverOpts.target = data.solverOpts.target /( data.pzOpts.scaleFactor * data.pzOpts.scaleFactor);
       }
       data.solverOpts.eps_tol = prm.get_double("Eigensolver tolerance");//double
       if (!data.solverOpts.eps_tol) data.solverOpts.eps_tol = -2;//PETSC_DEFAULT

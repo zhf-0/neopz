@@ -564,13 +564,13 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     if (isCutOff) {
         for (int i = 0; i < volMatId.size(); ++i) {
             matMultiPhysics[i] =
-                new TPZMatWaveguideCutOffAnalysis(volMatId[i], f0, urVec[i], erVec[i], scale);
+                new TPZMatWaveguideCutOffAnalysis(volMatId[i], f0, urVec[i], erVec[i], 1./scale);
             cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
         }
     } else {
         for (int i = 0; i < volMatId.size(); ++i) {
             matMultiPhysics[i] =
-                new TPZMatModalAnalysis(volMatId[i], f0, urVec[i], erVec[i], scale);
+                new TPZMatModalAnalysis(volMatId[i], f0, urVec[i], erVec[i], 1./scale);
             cmeshMF->InsertMaterialObject(matMultiPhysics[i]);
         }
     }
