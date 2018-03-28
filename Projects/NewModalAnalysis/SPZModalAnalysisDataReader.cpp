@@ -1,5 +1,5 @@
 
-#include <complex.h>
+#include <complex>
 #include <fstream>
 #include "SPZModalAnalysisDataReader.h"
 #include "SPZModalAnalysisData.h"
