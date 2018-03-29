@@ -94,8 +94,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             stiffAtt -= k0 * k0 * (fEr * sy/sx) * phiIdotPhiJx;
             stiffAtt -= k0 * k0 * (fEr * sx/sy) * phiIdotPhiJy;
             STATE stiffBtt = 0.;
-            stiffBtt += (sx/(sy * fUr)) * phiIdotPhiJx;
-            stiffBtt += (sy/(sx * fUr)) * phiIdotPhiJy;
+            stiffBtt += (sy/(sx * fUr)) * phiIdotPhiJx;
+            stiffBtt += (sx/(sy * fUr)) * phiIdotPhiJy;
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -112,8 +112,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE phiVecDotGradPhiScay = phiHCurl(iVec , 1) * gradPhiH1(jSca , 1);
 
             STATE stiffBzt = 0.;
-            stiffBzt += (sx/(sy * fUr)) * phiVecDotGradPhiScax;
-            stiffBzt += (sy/(sx * fUr)) * phiVecDotGradPhiScay;
+            stiffBzt += (sy/(sx * fUr)) * phiVecDotGradPhiScax;
+            stiffBzt += (sx/(sy * fUr)) * phiVecDotGradPhiScay;
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += 0. ;
             }
@@ -131,8 +131,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE phiVecDotGradPhiScay = phiHCurl(jVec , 1) * gradPhiH1(iSca , 1);
 
             STATE stiffBtz = 0.;
-            stiffBtz += (sx/(sy * fUr)) * phiVecDotGradPhiScax;
-            stiffBtz += (sy/(sx * fUr)) * phiVecDotGradPhiScay;
+            stiffBtz += (sy/(sx * fUr)) * phiVecDotGradPhiScax;
+            stiffBtz += (sx/(sy * fUr)) * phiVecDotGradPhiScay;
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
             }
@@ -148,8 +148,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE gradPhiScaDotGradPhiScay = gradPhiH1(iSca , 1) * gradPhiH1(jSca , 1);
 
             STATE stiffBzz = 0.;
-            stiffBzz +=  (sx/(sy * fUr)) * gradPhiScaDotGradPhiScax;
-            stiffBzz +=  (sy/(sx * fUr)) * gradPhiScaDotGradPhiScay;
+            stiffBzz +=  (sy/(sx * fUr)) * gradPhiScaDotGradPhiScax;
+            stiffBzz +=  (sx/(sy * fUr)) * gradPhiScaDotGradPhiScay;
             stiffBzz -=  k0 * k0 * (fEr * sx * sy) * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
 
             if (this->fAssembling == A) {
