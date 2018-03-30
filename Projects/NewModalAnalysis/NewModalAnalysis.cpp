@@ -265,14 +265,24 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
         eigeninfo.precision(dbl::max_digits10);
         std::cout<<"Exporting eigen info..."<<std::endl;
         REAL hSize = 1e12;
+        REAL tol = 0.1;
         REAL elRadius = 0;
+        TPZVec<REAL> qsi(2,0.25);
+        TPZVec<REAL> x(3,0.);
         for (int j = 0; j < gmesh->NElements(); ++j) {
             TPZGeoEl &el = *(gmesh->ElementVec()[j]);
-            TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
-            if(!mat){
-                elRadius = el.ElementRadius();
-                hSize = elRadius < hSize ? elRadius : hSize;
+            for (int i = 0; i < el.NCornerNodes() ; ++i) {
+                auto node = el.Node(i);
+                if(node.Coord(0) < tol && node.Coord(1) < tol){
+                    elRadius = el.ElementRadius();
+                    hSize = elRadius < hSize ? elRadius : hSize;
+                }
             }
+//            TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
+//            if(!mat){
+//                elRadius = el.ElementRadius();
+//                hSize = elRadius < hSize ? elRadius : hSize;
+//            }
         }
         eigeninfo << std::fixed << hSize << "," << simData.pzOpts.pOrder<<",";
         eigeninfo << std::fixed << simData.physicalOpts.lambda<<",";
