@@ -265,7 +265,7 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
         eigeninfo.precision(dbl::max_digits10);
         std::cout<<"Exporting eigen info..."<<std::endl;
         REAL hSize = 1e12;
-        REAL tol = 0.1;
+        REAL tol = 0.000001;
         REAL elRadius = 0;
         TPZVec<REAL> qsi(2,0.25);
         TPZVec<REAL> x(3,0.);
