@@ -34,7 +34,7 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
      * for the z-component of the hcurl functions, the x and y components of
      * their curl and so on.
      */
-    TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
+    TPZManVector<REAL,3> x = datavec[ h1meshindex ].XCenter;
     STATE sx = 1, sy = 1;
     if(fAttX){
         sx = 1. - imaginary * fAlphaMax * ((x[0]-fPmlBeginX) / fD ) * ((x[0]-fPmlBeginX) / fD );
