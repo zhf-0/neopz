@@ -94,7 +94,12 @@ int main(int argc, char *argv[]) {
     std::string meshOriginal = simData.pzOpts.meshFile;
     const int pOrderOrig = simData.pzOpts.pOrder;
     std::ostringstream eigeninfo;
+
+    boost::posix_time::ptime t1_total =
+            boost::posix_time::microsec_clock::local_time();
+
     for (int i = 0; i < simData.pzOpts.hSteps; ++i) {
+        std::cout<<"Beginning step "<<i+1<<" out of "<<simData.pzOpts.hSteps<<"h steps."<<std::endl;
         const REAL factorVal = simData.pzOpts.factorVec[i];
         simData.pzOpts.meshFile = meshOriginal.substr(0,meshOriginal.size()-4)
                                   +"ord"+std::to_string(simData.pzOpts.meshOrder)
@@ -105,14 +110,23 @@ int main(int argc, char *argv[]) {
                        simData.pzOpts.scaleFactor,simData.pzOpts.meshOrder);
         simData.pzOpts.pOrder = pOrderOrig;
         for (int j = 0; j < simData.pzOpts.pSteps; ++j) {
+            std::cout<<"h step: "<< i+1<<". Beginning step "<<j+1<<" out of "<<simData.pzOpts.hSteps<<"p steps."<<std::endl;
             for (int k = 0; k < simData.pzOpts.freqSteps; ++k) {
+                if(simData.pzOpts.freqSteps > 1){
+                    std::cout<<"h step: "<< i+1<<". p step: "<<j+1;
+                    std::cout<<". Beginning step "<<k+1<<" out of "<<simData.pzOpts.freqSteps<<"freq steps."<<std::endl;
+                }
                 simData.physicalOpts.lambda = firstLambda + k * stepSize;
                 RunSimulation(simData,eigeninfo);
             }
             simData.pzOpts.pOrder++;
         }
     }
+    boost::posix_time::ptime t2_total =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Total time: "<<t2_total-t1_total<<std::endl;
     if(simData.pzOpts.exportEigen){
+        std::cout<<"Exporting results..."<<std::endl;
         std::string eigenFileName = simData.pzOpts.prefix;
         eigenFileName +="mapord_"+std::to_string(simData.pzOpts.meshOrder)+"_";
         if(simData.pzOpts.freqSweep){
@@ -122,7 +136,7 @@ int main(int argc, char *argv[]) {
         }
         if(simData.pzOpts.pSteps>1){
             eigenFileName+="from_p_"+std::to_string(pOrderOrig)+"_to_";
-            eigenFileName+=std::to_string(pOrderOrig+simData.pzOpts.pSteps)+"_";
+            eigenFileName+=std::to_string(pOrderOrig+simData.pzOpts.pSteps-1)+"_";
         }else{
             eigenFileName+="p_"+std::to_string(pOrderOrig);
         }
