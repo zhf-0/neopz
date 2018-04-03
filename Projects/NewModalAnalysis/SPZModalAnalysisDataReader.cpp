@@ -23,10 +23,15 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                       Patterns::Selection("frequency|wavelength"),
                       "Whether to specify the wavelength in free space(lambda) or the frequency(f) at "
                           "which the system operates.");
-    prm.declare_entry("Operational wavelength/frequency", "1.55e-6",
-                      Patterns::Double(0.),
-                      "Wavelength(in free-space) or ferquency at which the analysis is being done"
-                          "(it will be ignored if Cut-off analysis is true)");
+    prm.enter_subsection("Frequency sweep");
+    {
+      prm.declare_entry("Wavelengths/frequencies vector", "1.55e-6",
+                        Patterns::List(Patterns::Double(0.),1),
+                        "Wavelength(in free-space) or ferquency at which the analysis is being done"
+                                "(it will be ignored if Cut-off analysis is true)");
+    }
+    prm.leave_subsection ();
+
     prm.enter_subsection("Material Properties");
     {
       prm.declare_entry("Number of materials", "1",
@@ -140,20 +145,6 @@ void SPZModalAnalysisDataReader::DeclareParameters() {
                         "Maximum dimension for geometric domain(frequency/lambda will be scaled)");
     }
     prm.leave_subsection();
-
-    prm.enter_subsection("Frequency sweep");
-    {
-      prm.declare_entry("Frequency sweep","false",Patterns::Bool(),
-                        "If frequency sweep is true the operational frequency"
-                        " defined in physical options will be ignored.");
-      prm.declare_entry("Number of steps","1",Patterns::Integer(1),
-                        "Number of simulations executed with lambdaIni<=lambda<=lambdaMax");
-      prm.declare_entry("First frequency/wavelength","1.55e-9",Patterns::Double(0),
-                        "Option with self-explaining name.");
-      prm.declare_entry("Last frequency/wavelength","1.56e-9",Patterns::Double(0),
-                        "Option with self-explaining name.");
-    }
-    prm.leave_subsection ();
   }
   prm.leave_subsection ();
   //IN THE FOLLOWING OPTIONS, -1 =  PETSC_DECIDE and -2 = PETSC_DEFAULT
@@ -254,11 +245,26 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
   {
 
     data.physicalOpts.isCutOff = prm.get_bool("Cut-off analysis");//bool
-    bool isLambda = prm.get("Frequency or wavelength")
+    data.physicalOpts.isLambda = prm.get("Frequency or wavelength")
                     == "wavelength" ? true : false;
-    data.physicalOpts.lambda = (REAL)prm.get_double("Operational wavelength/frequency");//double
+    prm.enter_subsection("Frequency sweep");
+    {
+      std::string rawVec = prm.get("Wavelengths/frequencies vector");
+      const std::vector<std::string> split_list =
+              Utilities::split_string_list(rawVec, ",");
+      if(split_list.size() <1){
+        std::cout<<"At least one frequency must be provided. Terminating..."<<std::endl;
+        DebugStop();
+      }
+      data.physicalOpts.freqVec.Resize(split_list.size());
+      for (int i = 0; i < split_list.size() ; i++){
+        const std::string & string = split_list[i];
+        data.physicalOpts.freqVec[i] = (REAL)Utilities::string_to_double(string);
+      }
+    }
+    prm.leave_subsection ();
     //get wavelength from frequency
-    data.physicalOpts.lambda = isLambda ? data.physicalOpts.lambda : 299792458 / data.physicalOpts.lambda;
+    //data.physicalOpts.lambda = isLambda ? data.physicalOpts.lambda : 299792458 / data.physicalOpts.lambda;
     prm.enter_subsection("Material Properties");
     {
       data.physicalOpts.nMaterials=(int)prm.get_integer("Number of materials");//int
@@ -327,19 +333,9 @@ void SPZModalAnalysisDataReader::ReadParameters(SPZModalAnalysisData &data) {
     prm.leave_subsection();
     prm.enter_subsection("Scaling");
     {
-      data.pzOpts.scaleFactor = prm.get_bool("Scale by k0") ?
-                                (2*M_PI) / data.physicalOpts.lambda:
-                                prm.get_double("Scale factor");//double
+      data.pzOpts.scaleByk0 = prm.get_bool("Scale by k0");
+      data.pzOpts.scaleFactor = prm.get_double("Scale factor");//double
       data.pzOpts.isTargetScaled = prm.get_bool("Is target scaled");//bool
-    }
-    prm.leave_subsection ();
-
-    prm.enter_subsection("Frequency sweep");
-    {
-      data.pzOpts.freqSweep = prm.get_bool("Frequency sweep");
-      data.pzOpts.freqSteps = prm.get_integer("Number of steps");
-      data.pzOpts.lambdaMin = prm.get_double("First frequency/wavelength");
-      data.pzOpts.lambdaMax = prm.get_double("Last frequency/wavelength");
     }
     prm.leave_subsection ();
   }

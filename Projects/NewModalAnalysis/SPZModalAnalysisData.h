@@ -19,6 +19,8 @@ struct SPZModalAnalysisData{
     TPZVec<STATE> erVec;
     bool hasPML;
     REAL alphaMax;
+    TPZVec<REAL> freqVec;
+    bool isLambda;
   };
   SPZPhysicalOpts physicalOpts;
   struct SPZPzOpts{
@@ -46,15 +48,12 @@ struct SPZModalAnalysisData{
     bool isTargetScaled;
     std::string meshFile;
     int meshOrder;
-    bool freqSweep;
-    int freqSteps;
-    REAL lambdaMin;
-    REAL lambdaMax;
     bool refineP;
     int pSteps;
     bool refineH;
     int hSteps;
     TPZVec<REAL> factorVec;
+    bool scaleByk0;
   };
   SPZPzOpts pzOpts;
   

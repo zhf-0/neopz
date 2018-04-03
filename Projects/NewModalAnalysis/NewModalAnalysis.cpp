@@ -76,21 +76,7 @@ int main(int argc, char *argv[]) {
     SPZModalAnalysisDataReader reader(prm,argc,argv);
     SPZModalAnalysisData simData;
     reader.ReadParameters(simData);
-    //freq sweep
-    int nSteps = 1;
-    REAL firstLambda = simData.physicalOpts.lambda;
-    REAL lastLambda = firstLambda;
-    REAL stepSize = 0;
 
-    if(simData.pzOpts.freqSweep){
-        firstLambda = simData.pzOpts.lambdaMin;
-        lastLambda = simData.pzOpts.lambdaMax;
-        stepSize = (lastLambda-firstLambda)/nSteps;
-    }
-    else{
-        stepSize = 0;
-        simData.pzOpts.freqSteps = 1;
-    }
     std::string meshOriginal = simData.pzOpts.meshFile;
     const int pOrderOrig = simData.pzOpts.pOrder;
     std::ostringstream eigeninfo;
@@ -98,28 +84,33 @@ int main(int argc, char *argv[]) {
     boost::posix_time::ptime t1_total =
             boost::posix_time::microsec_clock::local_time();
 
-    for (int i = 0; i < simData.pzOpts.hSteps; ++i) {
-        std::cout<<"Beginning step "<<i+1<<" out of "<<simData.pzOpts.hSteps<<"h steps."<<std::endl;
-        const REAL factorVal = simData.pzOpts.factorVec[i];
-        simData.pzOpts.meshFile = meshOriginal.substr(0,meshOriginal.size()-4)
-                                  +"ord"+std::to_string(simData.pzOpts.meshOrder)
-                                  +"h"+std::to_string(i)
-                                  +".msh";
-        CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
-                       factorVal, simData.pzOpts.nThreads,
-                       simData.pzOpts.scaleFactor,simData.pzOpts.meshOrder);
-        simData.pzOpts.pOrder = pOrderOrig;
-        for (int j = 0; j < simData.pzOpts.pSteps; ++j) {
-            std::cout<<"h step: "<< i+1<<". Beginning step "<<j+1<<" out of "<<simData.pzOpts.hSteps<<"p steps."<<std::endl;
-            for (int k = 0; k < simData.pzOpts.freqSteps; ++k) {
-                if(simData.pzOpts.freqSteps > 1){
-                    std::cout<<"h step: "<< i+1<<". p step: "<<j+1;
-                    std::cout<<". Beginning step "<<k+1<<" out of "<<simData.pzOpts.freqSteps<<"freq steps."<<std::endl;
-                }
-                simData.physicalOpts.lambda = firstLambda + k * stepSize;
+
+    for (int iFreq = 0; iFreq < simData.physicalOpts.freqVec.size(); ++iFreq) {
+        simData.physicalOpts.lambda = simData.physicalOpts.freqVec[iFreq];
+        simData.physicalOpts.lambda = simData.physicalOpts.isLambda ? simData.physicalOpts.lambda : 299792458 / simData.physicalOpts.lambda;
+        simData.pzOpts.scaleFactor = simData.pzOpts.scaleByk0 ? 2 * M_PI / simData.physicalOpts.lambda : simData.pzOpts.scaleFactor;
+        if(simData.physicalOpts.freqVec.size() > 1){
+            std::cout<<"Beginning step "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<"freq steps."<<std::endl;
+            std::cout<<"lambda = "<<simData.physicalOpts.lambda<<std::endl;
+        }
+        for (int iH = 0; iH < simData.pzOpts.hSteps; ++iH) {
+            std::cout << "Beginning step " << iH + 1 << " out of " << simData.pzOpts.hSteps << "h steps."
+                      << std::endl;
+            const REAL factorVal = simData.pzOpts.factorVec[iH];
+            simData.pzOpts.meshFile = meshOriginal.substr(0, meshOriginal.size() - 4)
+                                      + "ord" + std::to_string(simData.pzOpts.meshOrder)
+                                      + "h" + std::to_string(iH)
+                                      + ".msh";
+            CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
+                           factorVal, simData.pzOpts.nThreads,
+                           simData.pzOpts.scaleFactor, simData.pzOpts.meshOrder);
+            simData.pzOpts.pOrder = pOrderOrig;
+            for (int iP = 0; iP < simData.pzOpts.pSteps; ++iP) {
+                std::cout<<"freq step: "<<iFreq+1<<" h step: "<< iH+1<<". Beginning p step "<<iP+1;
+                std::cout<<" out of "<<simData.pzOpts.hSteps<<"p steps."<<std::endl;
                 RunSimulation(simData,eigeninfo);
+                simData.pzOpts.pOrder++;
             }
-            simData.pzOpts.pOrder++;
         }
     }
     boost::posix_time::ptime t2_total =
@@ -129,10 +120,11 @@ int main(int argc, char *argv[]) {
         std::cout<<"Exporting results..."<<std::endl;
         std::string eigenFileName = simData.pzOpts.prefix;
         eigenFileName +="mapord_"+std::to_string(simData.pzOpts.meshOrder)+"_";
-        if(simData.pzOpts.freqSweep){
-            eigenFileName+="from_l_"+std::to_string(firstLambda)+"_to_"+std::to_string(lastLambda)+"_";
+        if(simData.physicalOpts.freqVec.size() > 1){
+            eigenFileName+="from_l_"+std::to_string(simData.physicalOpts.freqVec[0]);
+            eigenFileName+="_to_"+std::to_string(simData.physicalOpts.freqVec[simData.physicalOpts.freqVec.size()])+"_";
         }else{
-            eigenFileName+="l_"+std::to_string(firstLambda)+"_";
+            eigenFileName+="l_"+std::to_string(simData.physicalOpts.freqVec[0])+"_";
         }
         if(simData.pzOpts.pSteps>1){
             eigenFileName+="from_p_"+std::to_string(pOrderOrig)+"_to_";
