@@ -34,7 +34,7 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
      * for the z-component of the hcurl functions, the x and y components of
      * their curl and so on.
      */
-    TPZManVector<REAL,3> x = datavec[ h1meshindex ].XCenter;
+    TPZManVector<REAL,3> x = datavec[ h1meshindex ].x;
     STATE sx = 1, sy = 1;
     if(fAttX){
         sx = 1. - imaginary * fAlphaMax * ((x[0]-fPmlBeginX) / fD ) * ((x[0]-fPmlBeginX) / fD );
@@ -42,6 +42,12 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
     if(fAttY){
         sy = 1. - imaginary * fAlphaMax * ((x[1]-fPmlBeginY) / fD ) * ((x[1]-fPmlBeginY) / fD );
     }
+    const STATE uxx = fUr * sy / sx;
+    const STATE uyy = fUr * sx / sy;
+    const STATE uzz = fUr * sy * sx;
+    const STATE exx = fEr * sy / sx;
+    const STATE eyy = fEr * sx / sy;
+    const STATE ezz = fEr * sy * sx;
     /*********************CREATE H1 FUNCTIONS****************************/
     TPZFNMatrix<12,REAL> phiH1 = datavec[ h1meshindex ].phi;
     TPZFNMatrix<36,REAL> dphiH1daxes = datavec[ h1meshindex ].dphix;
@@ -90,12 +96,12 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE phiIdotPhiJy = phiHCurl(iVec , 1) * phiHCurl(jVec , 1);
 
             STATE stiffAtt = 0.;
-            stiffAtt = 1./(sx * sy * fUr) * curlIzdotCurlJz;
-            stiffAtt -= k0 * k0 * (fEr * sy/sx) * phiIdotPhiJx;
-            stiffAtt -= k0 * k0 * (fEr * sx/sy) * phiIdotPhiJy;
+            stiffAtt = (1./uzz) * curlIzdotCurlJz;
+            stiffAtt -= k0 * k0 * exx * phiIdotPhiJx;
+            stiffAtt -= k0 * k0 * eyy * phiIdotPhiJy;
             STATE stiffBtt = 0.;
-            stiffBtt += (sy/(sx * fUr)) * phiIdotPhiJx;
-            stiffBtt += (sx/(sy * fUr)) * phiIdotPhiJy;
+            stiffBtt += (1./uyy) * phiIdotPhiJx;
+            stiffBtt += (1./uxx) * phiIdotPhiJy;
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstHCurl + jVec ) += stiffAtt * weight ;
             }
@@ -112,8 +118,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE phiVecDotGradPhiScay = phiHCurl(iVec , 1) * gradPhiH1(jSca , 1);
 
             STATE stiffBzt = 0.;
-            stiffBzt += (sy/(sx * fUr)) * phiVecDotGradPhiScax;
-            stiffBzt += (sx/(sy * fUr)) * phiVecDotGradPhiScay;
+            stiffBzt += (1./uyy) * phiVecDotGradPhiScax;
+            stiffBzt += (1./uxx) * phiVecDotGradPhiScay;
             if (this->fAssembling == A) {
                 ek( firstHCurl + iVec , firstH1 + jSca ) += 0. ;
             }
@@ -131,8 +137,8 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE phiVecDotGradPhiScay = phiHCurl(jVec , 1) * gradPhiH1(iSca , 1);
 
             STATE stiffBtz = 0.;
-            stiffBtz += (sy/(sx * fUr)) * phiVecDotGradPhiScax;
-            stiffBtz += (sx/(sy * fUr)) * phiVecDotGradPhiScay;
+            stiffBtz += (1./uyy) * phiVecDotGradPhiScax;
+            stiffBtz += (1./uxx) * phiVecDotGradPhiScay;
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstHCurl +  jVec) += 0. ;
             }
@@ -148,9 +154,9 @@ void TPZMatWaveguidePml::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weigh
             STATE gradPhiScaDotGradPhiScay = gradPhiH1(iSca , 1) * gradPhiH1(jSca , 1);
 
             STATE stiffBzz = 0.;
-            stiffBzz +=  (sy/(sx * fUr)) * gradPhiScaDotGradPhiScax;
-            stiffBzz +=  (sx/(sy * fUr)) * gradPhiScaDotGradPhiScay;
-            stiffBzz -=  k0 * k0 * (fEr * sx * sy) * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
+            stiffBzz +=  (1./uyy) * gradPhiScaDotGradPhiScax;
+            stiffBzz +=  (1./uxx) * gradPhiScaDotGradPhiScay;
+            stiffBzz -=  k0 * k0 * ezz * phiH1( iSca , 0 ) * phiH1( jSca , 0 );
 
             if (this->fAssembling == A) {
                 ek( firstH1 + iSca , firstH1 + jSca) += 0. ;

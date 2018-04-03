@@ -41,6 +41,7 @@
 #include "parameter_handler.h"
 #include "TPZMatWaveguideCutOffAnalysis.h"
 #include "TPZMatModalAnalysis.h"
+#include "pzintel.h"
 #include "TPZGmshReader.h"
 #include "SPZModalAnalysisDataReader.h"
 #include "SPZModalAnalysisData.h"
@@ -488,9 +489,6 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     if(volMatId.size() - nPML !=urVec.size()) DebugStop();
 
     /// criar malha computacional H1
-    std::cout<<"Creating H1 mesh... ";
-    boost::posix_time::ptime h1_b =
-            boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshH1 = new TPZCompMesh(gmesh);
     cmeshH1->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshH1->SetDimModel(dim);        // seta dimensao do modelo
@@ -517,13 +515,7 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     // malha
     cmeshH1->AutoBuild();
     cmeshH1->CleanUpUnconnectedNodes();
-    boost::posix_time::ptime h1_e =
-            boost::posix_time::microsec_clock::local_time();
-    std::cout<<"Created!  "<<h1_e-h1_b<<std::endl;
-    /// criar malha computacional HCurl
-    std::cout<<"Creating HCurl mesh... ";
-    boost::posix_time::ptime hc_b =
-            boost::posix_time::microsec_clock::local_time();
+
     TPZCompMesh *cmeshHCurl = new TPZCompMesh(gmesh);
     cmeshHCurl->SetDefaultOrder(pOrder); // seta ordem polimonial de aproximacao
     cmeshHCurl->SetDimModel(dim);        // seta dimensao do modelo
@@ -549,13 +541,6 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshHCurl->AutoBuild();
     cmeshHCurl->CleanUpUnconnectedNodes();
 
-    boost::posix_time::ptime hc_e =
-            boost::posix_time::microsec_clock::local_time();
-    std::cout<<"Created!  "<<hc_e-hc_b<<std::endl;
-
-    std::cout<<"Creating Multiphysics mesh... ";
-    boost::posix_time::ptime hmf_b =
-            boost::posix_time::microsec_clock::local_time();
     TPZCompMesh *cmeshMF = new TPZCompMesh(gmesh);
     TPZVec<TPZMatModalAnalysis *>matMultiPhysics(volMatId.size());
 
@@ -569,6 +554,48 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
         }
         volMatId.Resize(volMatId.size()-8);
         outerMaterial = volMatId.size()-1;
+
+        for (int i = 0; i < cmeshH1->NElements(); ++i) {
+            TPZCompEl *compel = cmeshH1->Element(i);
+            TPZGeoEl *geo = cmeshH1->Element(i)->Reference();
+            const int matId = geo->MaterialId();
+            if (matId == pmlIds[0] ||
+                matId == pmlIds[1] ||
+                matId == pmlIds[2] ||
+                matId == pmlIds[3] ||
+                matId == pmlIds[4] ||
+                matId == pmlIds[5] ||
+                matId == pmlIds[6] ||
+                matId == pmlIds[7]) {
+                TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
+                cel->PRefine(1);
+            }
+        }
+        for (int i = 0; i < cmeshHCurl->NElements(); ++i) {
+            TPZCompEl *compel = cmeshHCurl->Element(i);
+            TPZGeoEl *geo = cmeshHCurl->Element(i)->Reference();
+            const int matId = geo->MaterialId();
+            if (matId == pmlIds[0] ||
+                matId == pmlIds[1] ||
+                matId == pmlIds[2] ||
+                matId == pmlIds[3] ||
+                matId == pmlIds[4] ||
+                matId == pmlIds[5] ||
+                matId == pmlIds[6] ||
+                matId == pmlIds[7]) {
+                TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
+                cel->PRefine(1);
+            }
+        }
+
+        cmeshH1->ExpandSolution();
+        cmeshH1->ComputeNodElCon();
+        cmeshH1->CleanUpUnconnectedNodes();
+
+        cmeshHCurl->ExpandSolution();
+        cmeshHCurl->ComputeNodElCon();
+        cmeshHCurl->CleanUpUnconnectedNodes();
+
     }
 
     if (isCutOff) {
@@ -687,9 +714,6 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
     cmeshMF->ComputeNodElCon();
     cmeshMF->CleanUpUnconnectedNodes();
 
-    boost::posix_time::ptime hmf_e =
-            boost::posix_time::microsec_clock::local_time();
-    std::cout<<"Created!  "<<hmf_e-hmf_b<<std::endl;
     if(print){
         std::ofstream fileH1(prefix + "cmeshH1.txt");
         cmeshH1->Print(fileH1);
