@@ -272,7 +272,7 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
     if(simData.pzOpts.exportEigen){
         eigeninfo.precision(dbl::max_digits10);
         std::cout<<"Exporting eigen info..."<<std::endl;
-        REAL hSize = 1e12;
+        REAL hSize = -1e12;
         REAL elRadius = 0;
         TPZVec<REAL> qsi(2,0.25);
         TPZVec<REAL> x(3,0.);
@@ -285,10 +285,11 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
             //         hSize = elRadius < hSize ? elRadius : hSize;
             //     }
             // }
-           TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
-           if(!mat){
+           TPZBndCond *matBound = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
+           TPZMatWaveguidePml *matPml = dynamic_cast<TPZMatWaveguidePml *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
+           if(!matBound && !matPml){
                elRadius = el.ElementRadius();
-               hSize = elRadius < hSize ? elRadius : hSize;
+               hSize = elRadius > hSize ? elRadius : hSize;
            }
         }
         eigeninfo << std::fixed << hSize << "," << simData.pzOpts.pOrder<<",";
