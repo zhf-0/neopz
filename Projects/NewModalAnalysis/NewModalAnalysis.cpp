@@ -297,12 +297,11 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
         for(int i = 0; i < eigenValues.size() ; i++){
             eigeninfo<<std::fixed<<std::real(eigenValues[i])<<",";
             eigeninfo<<std::fixed<<std::imag(eigenValues[i]);
-            if(i == eigenValues.size() - 1 ) {
-                eigeninfo << std::endl;
-            }else{
+            if(i != eigenValues.size() - 1 ) {
                 eigeninfo << ",";
             }
         }
+        eigeninfo << std::endl;
 
         std::cout<<" Done!"<<std::endl;
     }
