@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         simData.physicalOpts.lambda = simData.physicalOpts.isLambda ? simData.physicalOpts.lambda : 299792458 / simData.physicalOpts.lambda;
         simData.pzOpts.scaleFactor = simData.pzOpts.scaleByk0 ? 2 * M_PI / simData.physicalOpts.lambda : simData.pzOpts.scaleFactor;
         if(simData.physicalOpts.freqVec.size() > 1){
-            std::cout<<"Beginning step "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<"freq steps."<<std::endl;
+            std::cout<<"Beginning step "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<" freq steps."<<std::endl;
             std::cout<<"lambda = "<<simData.physicalOpts.lambda<<std::endl;
         }
         for (int iH = 0; iH < simData.pzOpts.hSteps; ++iH) {
@@ -106,8 +106,9 @@ int main(int argc, char *argv[]) {
                            simData.pzOpts.scaleFactor, simData.pzOpts.meshOrder);
             simData.pzOpts.pOrder = pOrderOrig;
             for (int iP = 0; iP < simData.pzOpts.pSteps; ++iP) {
-                std::cout<<"freq step: "<<iFreq+1<<" h step: "<< iH+1<<". Beginning p step "<<iP+1;
-                std::cout<<" out of "<<simData.pzOpts.hSteps<<"p steps."<<std::endl;
+                std::cout<<"freq step: "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<std::endl;
+                std::cout<<"h    step: "<< iH+1<<" out of "<<simData.pzOpts.hSteps<<std::endl;
+                std::cout<<"Beginning p step "<<iP+1<<" out of "<<simData.pzOpts.pSteps<<std::endl;
                 RunSimulation(simData,eigeninfo);
                 simData.pzOpts.pOrder++;
             }
@@ -151,7 +152,7 @@ void CreateGmshMesh(const std::string &meshName, const std::string &newName,
     std::string command = "gmsh " + meshName + " -2 -match ";
     command += " -nt " + std::to_string(nThreads);
     command += " -tol 1e-20 ";
-    command += " -v 2 ";
+    command += " -v 3 ";
     command += " -setnumber scale "+str_scale.str();
     command += " -setnumber factor "+str_factor.str();
     command += " -order " + std::to_string(meshOrder);
@@ -272,24 +273,23 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
         eigeninfo.precision(dbl::max_digits10);
         std::cout<<"Exporting eigen info..."<<std::endl;
         REAL hSize = 1e12;
-        REAL tol = 0.000001;
         REAL elRadius = 0;
         TPZVec<REAL> qsi(2,0.25);
         TPZVec<REAL> x(3,0.);
         for (int j = 0; j < gmesh->NElements(); ++j) {
             TPZGeoEl &el = *(gmesh->ElementVec()[j]);
-            for (int i = 0; i < el.NCornerNodes() ; ++i) {
-                auto node = el.Node(i);
-                if(node.Coord(0) < tol && node.Coord(1) < tol){
-                    elRadius = el.ElementRadius();
-                    hSize = elRadius < hSize ? elRadius : hSize;
-                }
-            }
-//            TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
-//            if(!mat){
-//                elRadius = el.ElementRadius();
-//                hSize = elRadius < hSize ? elRadius : hSize;
-//            }
+            // for (int i = 0; i < el.NCornerNodes() ; ++i) {
+            //     auto node = el.Node(i);
+            //     if(node.Coord(0) < tol && node.Coord(1) < tol){
+            //         elRadius = el.ElementRadius();
+            //         hSize = elRadius < hSize ? elRadius : hSize;
+            //     }
+            // }
+           TPZBndCond *mat = dynamic_cast<TPZBndCond *>(meshVec[0]->MaterialVec()[el.MaterialId()]);
+           if(!mat){
+               elRadius = el.ElementRadius();
+               hSize = elRadius < hSize ? elRadius : hSize;
+           }
         }
         eigeninfo << std::fixed << hSize << "," << simData.pzOpts.pOrder<<",";
         eigeninfo << std::fixed << simData.physicalOpts.lambda<<",";
