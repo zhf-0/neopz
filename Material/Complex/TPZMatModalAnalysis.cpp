@@ -304,10 +304,6 @@ void TPZMatModalAnalysis::Contribute(TPZVec<TPZMaterialData> &datavec, REAL weig
     DebugStop();
 }
 
-void TPZMatModalAnalysis::ContributeForcingRTBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc){
-    DebugStop();
-}
-
 void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef, TPZBndCond &bc)
 {
     DebugStop();
@@ -399,12 +395,6 @@ void TPZMatModalAnalysis::ContributeBC(TPZMaterialData &data, REAL weight, TPZFM
 {
     DebugStop();
 }
-
-int TPZMatModalAnalysis::IntegrationRuleOrder(int elPMaxOrder) const
-{
-    return elPMaxOrder*2;
-}
-
 
 int TPZMatModalAnalysis::VariableIndex(const std::string &name)
 {

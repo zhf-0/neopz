@@ -212,7 +212,14 @@ void TPZMatWaveguidePml::Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZ
     }
 }
 
-int TPZMatWaveguidePml::IntegrationRuleOrder(int elPMaxOrder) const
+int TPZMatWaveguidePml::IntegrationRuleOrder(TPZVec<int> &elPMaxOrder) const
 {
-    return 4+elPMaxOrder*2;
+    int pmax = 0;
+    for (int ip=0;  ip<elPMaxOrder.size(); ip++)
+    {
+        if(elPMaxOrder[ip] > pmax) pmax = elPMaxOrder[ip];
+    }
+    const int integrationorder = 4+2*pmax;
+
+    return  integrationorder;
 }

@@ -15,9 +15,9 @@ public:
                        const bool &att_y, REAL &pmlBeginY,
                        const REAL &alphaMax, const REAL &d);
     ~TPZMatWaveguidePml();
-    void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef);
+    void Contribute(TPZVec<TPZMaterialData> &datavec, REAL weight, TPZFMatrix<STATE> &ek, TPZFMatrix<STATE> &ef) override;
     void Solution(TPZVec<TPZMaterialData> &datavec, int var, TPZVec<STATE> &Solout) override;
-    virtual int IntegrationRuleOrder(int elPMaxOrder) const;
+    int IntegrationRuleOrder(TPZVec<int> &elPMaxOrder) const override;
 private:
     TPZMatWaveguidePml(const TPZMatModalAnalysis &mat);//this does not exist
     TPZMatWaveguidePml(int id);//this does not exist
