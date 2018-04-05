@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
             const REAL factorVal = simData.pzOpts.factorVec[iH];
             simData.pzOpts.meshFile = meshOriginal.substr(0, meshOriginal.size() - 4);
             if(simData.physicalOpts.freqVec.size() > 1 ) {
-                simData.pzOpts.meshFile =+ "f" + std::to_string(iFreq);
+                simData.pzOpts.meshFile += "f" + std::to_string(iFreq);
             }
             simData.pzOpts.meshFile += "ord" + std::to_string(simData.pzOpts.meshOrder);
             simData.pzOpts.meshFile += "h" + std::to_string(iH);
