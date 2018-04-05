@@ -79,47 +79,11 @@ int main(int argc, char *argv[]) {
 
     std::string meshOriginal = simData.pzOpts.meshFile;
     const int pOrderOrig = simData.pzOpts.pOrder;
-    std::ostringstream eigeninfo;
 
     boost::posix_time::ptime t1_total =
             boost::posix_time::microsec_clock::local_time();
-
-
-    for (int iFreq = 0; iFreq < simData.physicalOpts.freqVec.size(); ++iFreq) {
-        simData.physicalOpts.lambda = simData.physicalOpts.freqVec[iFreq];
-        simData.physicalOpts.lambda = simData.physicalOpts.isLambda ? simData.physicalOpts.lambda : 299792458 / simData.physicalOpts.lambda;
-        simData.pzOpts.scaleFactor = simData.pzOpts.scaleByk0 ? 2 * M_PI / simData.physicalOpts.lambda : simData.pzOpts.scaleFactor;
-        if(simData.physicalOpts.freqVec.size() > 1){
-            std::cout<<"Beginning step "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<" freq steps."<<std::endl;
-            std::cout<<"lambda = "<<simData.physicalOpts.lambda<<std::endl;
-        }
-        for (int iH = 0; iH < simData.pzOpts.hSteps; ++iH) {
-            std::cout << "Beginning step " << iH + 1 << " out of " << simData.pzOpts.hSteps << "h steps."
-                      << std::endl;
-            const REAL factorVal = simData.pzOpts.factorVec[iH];
-            simData.pzOpts.meshFile = meshOriginal.substr(0, meshOriginal.size() - 4)
-                                      + "ord" + std::to_string(simData.pzOpts.meshOrder)
-                                      + "h" + std::to_string(iH)
-                                      + ".msh";
-            CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
-                           factorVal, simData.pzOpts.nThreads,
-                           simData.pzOpts.scaleFactor, simData.pzOpts.meshOrder);
-            simData.pzOpts.pOrder = pOrderOrig;
-            for (int iP = 0; iP < simData.pzOpts.pSteps; ++iP) {
-                std::cout<<"freq step: "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<std::endl;
-                std::cout<<"h    step: "<< iH+1<<" out of "<<simData.pzOpts.hSteps<<std::endl;
-                std::cout<<"Beginning p step "<<iP+1<<" out of "<<simData.pzOpts.pSteps<<std::endl;
-                RunSimulation(simData,eigeninfo);
-                simData.pzOpts.pOrder++;
-            }
-        }
-    }
-    boost::posix_time::ptime t2_total =
-            boost::posix_time::microsec_clock::local_time();
-    std::cout<<"Total time: "<<t2_total-t1_total<<std::endl;
+    std::string eigenFileName = simData.pzOpts.prefix;
     if(simData.pzOpts.exportEigen){
-        std::cout<<"Exporting results..."<<std::endl;
-        std::string eigenFileName = simData.pzOpts.prefix;
         eigenFileName +="mapord_"+std::to_string(simData.pzOpts.meshOrder)+"_";
         if(simData.physicalOpts.freqVec.size() > 1){
             eigenFileName+="from_l_"+std::to_string(simData.physicalOpts.freqVec[0]);
@@ -135,9 +99,50 @@ int main(int argc, char *argv[]) {
         }
         eigenFileName+="_n_hsteps_"+std::to_string(simData.pzOpts.hSteps)+".csv";
 
-        std::ofstream file(eigenFileName.c_str());
-        file << eigeninfo.str();
+        std::ofstream file(eigenFileName.c_str(), std::ios::trunc);
+        file.close();
     }
+    for (int iFreq = 0; iFreq < simData.physicalOpts.freqVec.size(); ++iFreq) {
+        simData.physicalOpts.lambda = simData.physicalOpts.freqVec[iFreq];
+        simData.physicalOpts.lambda = simData.physicalOpts.isLambda ? simData.physicalOpts.lambda : 299792458 / simData.physicalOpts.lambda;
+        simData.pzOpts.scaleFactor = simData.pzOpts.scaleByk0 ? 2 * M_PI / simData.physicalOpts.lambda : simData.pzOpts.scaleFactor;
+        if(simData.physicalOpts.freqVec.size() > 1){
+            std::cout<<"Beginning step "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<" freq steps."<<std::endl;
+            std::cout<<"lambda = "<<simData.physicalOpts.lambda<<std::endl;
+        }
+        for (int iH = 0; iH < simData.pzOpts.hSteps; ++iH) {
+            std::cout << "Beginning step " << iH + 1 << " out of " << simData.pzOpts.hSteps << "h steps."
+                      << std::endl;
+            const REAL factorVal = simData.pzOpts.factorVec[iH];
+            simData.pzOpts.meshFile = meshOriginal.substr(0, meshOriginal.size() - 4);
+            if(simData.physicalOpts.freqVec.size() > 1 ) {
+                simData.pzOpts.meshFile =+ "f" + std::to_string(iFreq);
+            }
+            simData.pzOpts.meshFile += "ord" + std::to_string(simData.pzOpts.meshOrder);
+            simData.pzOpts.meshFile += "h" + std::to_string(iH);
+            simData.pzOpts.meshFile += ".msh";
+            CreateGmshMesh(meshOriginal, simData.pzOpts.meshFile,
+                           factorVal, simData.pzOpts.nThreads,
+                           simData.pzOpts.scaleFactor, simData.pzOpts.meshOrder);
+            simData.pzOpts.pOrder = pOrderOrig;
+            for (int iP = 0; iP < simData.pzOpts.pSteps; ++iP) {
+                std::cout<<"freq step: "<<iFreq+1<<" out of "<<simData.physicalOpts.freqVec.size()<<std::endl;
+                std::cout<<"h    step: "<< iH+1<<" out of "<<simData.pzOpts.hSteps<<std::endl;
+                std::cout<<"Beginning p step "<<iP+1<<" out of "<<simData.pzOpts.pSteps<<std::endl;
+                std::ostringstream eigeninfo;
+                RunSimulation(simData,eigeninfo);
+                if(simData.pzOpts.exportEigen){
+                    std::ofstream file(eigenFileName.c_str(),std::ios::app);
+                    file << eigeninfo.str();
+                    file.close();
+                }
+                simData.pzOpts.pOrder++;
+            }
+        }
+    }
+    boost::posix_time::ptime t2_total =
+            boost::posix_time::microsec_clock::local_time();
+    std::cout<<"Total time: "<<t2_total-t1_total<<std::endl;
     return 0;
 }
 
