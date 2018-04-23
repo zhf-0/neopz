@@ -567,46 +567,46 @@ void CreateCMesh(TPZVec<TPZCompMesh *> &meshVecOut, TPZGeoMesh *gmesh,
         volMatId.Resize(volMatId.size()-8);
         outerMaterial = volMatId.size()-1;
 
-        for (int i = 0; i < cmeshH1->NElements(); ++i) {
-            TPZCompEl *compel = cmeshH1->Element(i);
-            TPZGeoEl *geo = cmeshH1->Element(i)->Reference();
-            const int matId = geo->MaterialId();
-            if (matId == pmlIds[0] ||
-                matId == pmlIds[1] ||
-                matId == pmlIds[2] ||
-                matId == pmlIds[3] ||
-                matId == pmlIds[4] ||
-                matId == pmlIds[5] ||
-                matId == pmlIds[6] ||
-                matId == pmlIds[7]) {
-                TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
-                cel->PRefine(1);
-            }
-        }
-        for (int i = 0; i < cmeshHCurl->NElements(); ++i) {
-            TPZCompEl *compel = cmeshHCurl->Element(i);
-            TPZGeoEl *geo = cmeshHCurl->Element(i)->Reference();
-            const int matId = geo->MaterialId();
-            if (matId == pmlIds[0] ||
-                matId == pmlIds[1] ||
-                matId == pmlIds[2] ||
-                matId == pmlIds[3] ||
-                matId == pmlIds[4] ||
-                matId == pmlIds[5] ||
-                matId == pmlIds[6] ||
-                matId == pmlIds[7]) {
-                TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
-                cel->PRefine(1);
-            }
-        }
+        // for (int i = 0; i < cmeshH1->NElements(); ++i) {
+        //     TPZCompEl *compel = cmeshH1->Element(i);
+        //     TPZGeoEl *geo = cmeshH1->Element(i)->Reference();
+        //     const int matId = geo->MaterialId();
+        //     if (matId == pmlIds[0] ||
+        //         matId == pmlIds[1] ||
+        //         matId == pmlIds[2] ||
+        //         matId == pmlIds[3] ||
+        //         matId == pmlIds[4] ||
+        //         matId == pmlIds[5] ||
+        //         matId == pmlIds[6] ||
+        //         matId == pmlIds[7]) {
+        //         TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
+        //         cel->PRefine(2);
+        //     }
+        // }
+        // for (int i = 0; i < cmeshHCurl->NElements(); ++i) {
+        //     TPZCompEl *compel = cmeshHCurl->Element(i);
+        //     TPZGeoEl *geo = cmeshHCurl->Element(i)->Reference();
+        //     const int matId = geo->MaterialId();
+        //     if (matId == pmlIds[0] ||
+        //         matId == pmlIds[1] ||
+        //         matId == pmlIds[2] ||
+        //         matId == pmlIds[3] ||
+        //         matId == pmlIds[4] ||
+        //         matId == pmlIds[5] ||
+        //         matId == pmlIds[6] ||
+        //         matId == pmlIds[7]) {
+        //         TPZInterpolatedElement *cel = dynamic_cast<TPZInterpolatedElement *>(compel);
+        //         cel->PRefine(2);
+        //     }
+        // }
 
-        cmeshH1->ExpandSolution();
-        cmeshH1->ComputeNodElCon();
-        cmeshH1->CleanUpUnconnectedNodes();
+        // cmeshH1->ExpandSolution();
+        // cmeshH1->ComputeNodElCon();
+        // cmeshH1->CleanUpUnconnectedNodes();
 
-        cmeshHCurl->ExpandSolution();
-        cmeshHCurl->ComputeNodElCon();
-        cmeshHCurl->CleanUpUnconnectedNodes();
+        // cmeshHCurl->ExpandSolution();
+        // cmeshHCurl->ComputeNodElCon();
+        // cmeshHCurl->CleanUpUnconnectedNodes();
 
     }
 
