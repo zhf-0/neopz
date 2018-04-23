@@ -143,6 +143,14 @@ if(BUILD_UNITTESTING)
 endif()
 
 
+#enabling CGAL library
+option(USING_CGAL "Whether the CGAL package will be linked with the library" OFF)
+
+if(USING_CGAL)
+	find_package( CGAL REQUIRED )
+endif()
+
+
 option(USING_FAD "Whether the FAD package will be linked with the library" OFF)
 
 if(USING_FAD)
