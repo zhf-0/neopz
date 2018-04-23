@@ -240,6 +240,7 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
     an.SetSolver(solver);
 
     if(simData.pzOpts.exportGMesh){
+        std::cout<<"Printing mesh..."<<std::endl;
         TPZStack<std::string> scalnames, vecnames;
         vecnames.Push("Material");
         std::string plotfile = simData.pzOpts.prefix + "Material" + ".vtk";
@@ -247,7 +248,7 @@ void RunSimulation(SPZModalAnalysisData &simData,std::ostringstream &eigeninfo) 
         const int dim = 2;
         an.DefineGraphMesh(dim, scalnames, vecnames,
                            plotfile);  // define malha grafica
-        an.PostProcess(simData.pzOpts.vtkRes);
+        an.PostProcess(0);
     }
     std::cout << "Assembling..." << std::endl;
     boost::posix_time::ptime t1 =
