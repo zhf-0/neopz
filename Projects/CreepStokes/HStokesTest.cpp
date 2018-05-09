@@ -14,6 +14,11 @@
 #include "pzelchdiv.h"
 #include "pzshapequad.h"
 
+#include "TPZPardisoControl.h"
+#include "mkl_pardiso.h"
+#include "pzsysmp.h"
+#include "pzysmp.h"
+
 const REAL Pi=M_PI;
 
 HStokesTest::HStokesTest()
@@ -86,7 +91,7 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
         TPZVTKGeoMesh::PrintGMeshVTK(gmesh, filegvtk,true);
     }
 #endif
-
+    
     //Resolvendo o Sistema:
     int numthreads = 0;
     
@@ -94,7 +99,9 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema
     
     //TPZFStructMatrix matskl(cmesh_m); //caso nao simetrico ***
-    TPZSkylineNSymStructMatrix matskl(cmesh_m); //OK para Hdiv
+    //TPZSkylineNSymStructMatrix matskl(cmesh_m);
+    TPZSymetricSpStructMatrix matskl(cmesh_m); //OK para Hdiv
+    
     
     matskl.SetNumThreads(numthreads);
     std::set<int> matids;
@@ -111,7 +118,7 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
     matskl.SetMaterialIds(matids);
     an.SetStructuralMatrix(matskl);
     TPZStepSolver<STATE> step;
-    step.SetDirect(ELU);
+    step.SetDirect(ELDLt);
     an.SetSolver(step);
     
     
@@ -121,8 +128,14 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
     an.Assemble();//Assembla a matriz de rigidez (e o vetor de carga) global
     
     
+    //#ifdef USING_MKL
+    //
+    //
+    //#endif
+    
 #ifdef PZDEBUG
     //Imprimir Matriz de rigidez Global:
+    if(0)
     {
         std::ofstream filestiff("stiffness.txt");
         an.Solver().Matrix()->Print("K1 = ",filestiff,EMathematicaInput);
@@ -149,17 +162,22 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
 #endif
     
     //Calculo do erro
-//    std::cout << "Computing Error " << std::endl;
-//    TPZManVector<REAL,3> Errors;
-//    ofstream ErroOut("Erro.txt");
-//    an.SetExact(Sol_exact);
-//    an.PostProcessError(Errors,ErroOut);
+    //    std::cout << "Computing Error " << std::endl;
+    //    TPZManVector<REAL,3> Errors;
+    //    ofstream ErroOut("Erro.txt");
+    //    an.SetExact(Sol_exact);
+    //    an.PostProcessError(Errors,ErroOut);
     
     //Calculo do erro
     std::cout << "Comuting Error " << std::endl;
-    TPZManVector<REAL,6> Errors;
+    TPZManVector<REAL,6> Errors(6);
     ofstream ErroOut("Error_HStokes.txt", std::ofstream::app);
     an.SetExact(Sol_exact);
+    
+    cmesh_m->ElementSolution().Redim(cmesh_m->NElements(),6);
+    
+    
+    
     an.PostProcessError(Errors);
     
     ErroOut <<"Sigma = "<< Sigma/(pOrder*pOrder*(nx-1)) << "  //  Ordem = "<< pOrder << "  //  Tamanho da malha = "<< nx-1 <<" x "<< ny-1 << std::endl;
@@ -188,8 +206,8 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
     int postProcessResolution = 3; //  keep low as possible
     
     int dim = gmesh->Dimension();
-//    an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
-//    an.PostProcess(postProcessResolution,dim);
+    //    an.DefineGraphMesh(dim,scalnames,vecnames,plotfile);
+    //    an.PostProcess(postProcessResolution,dim);
     
     std::cout << "FINISHED!" << std::endl;
     
@@ -257,13 +275,13 @@ TPZGeoMesh *HStokesTest::CreateGMesh(int nx, int ny, double hx, double hy)
     
     
     //Gerando informação da vizinhança:
-
+    
     gmesh->BuildConnectivity();
     {
         TPZCheckGeom check1(gmesh);
         check1.CheckUniqueId();
     }
-        
+    
     int64_t el, numelements = gmesh->NElements();
     
     TPZManVector <int64_t> TopolPlate(4);
@@ -402,7 +420,7 @@ TPZGeoMesh *HStokesTest::CreateGMesh(int nx, int ny, double hx, double hy)
     }
     return gmesh;
     
-
+    
 }
 
 TPZCompEl *HStokesTest::CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,int64_t &index) {
@@ -420,7 +438,6 @@ TPZCompEl *HStokesTest::CreateInterfaceEl(TPZGeoEl *gel,TPZCompMesh &mesh,int64_
 //    DebugStop();
 //
 //}
-
 
 void HStokesTest::Sol_exact(const TPZVec<REAL> &x, TPZVec<STATE> &sol, TPZFMatrix<STATE> &dsol){
     
@@ -452,6 +469,8 @@ void HStokesTest::Sol_exact(const TPZVec<REAL> &x, TPZVec<STATE> &sol, TPZFMatri
     dsol(2,1)= 2*yv;
     
 }
+
+
 
 void HStokesTest::F_source(const TPZVec<REAL> &x, TPZVec<STATE> &f, TPZFMatrix<STATE>& gradu){
     
@@ -488,10 +507,10 @@ TPZCompMesh *HStokesTest::CMesh_v(TPZGeoMesh *gmesh, int Space, int pOrder)
     TPZMat2dLin *material = new TPZMat2dLin(fmatID); //Criando material que implementa a formulação fraca do problema modelo
     TPZMat2dLin *material2 = new TPZMat2dLin(fmatIDFlux);
     //Criando material que implementa a formulação fraca do problema modelo
-
+    
     cmesh->InsertMaterialObject(material); //Insere material na malha
     cmesh->InsertMaterialObject(material2); //Insere material na malha
-
+    
     if (Space==1) {
         cmesh->SetAllCreateFunctionsHDiv(); //Criando funções HDIV:
         
@@ -573,21 +592,21 @@ TPZCompMesh *HStokesTest::CMesh_v(TPZGeoMesh *gmesh, int Space, int pOrder)
     matids.insert(fmatBCtop);
     matids.insert(fmatBCleft);
     cmesh->AutoBuild(matids);
-
-//    int64_t nel = cmesh->NElements();
-//    for (int64_t el=0; el<nel; el++) {
-//        TPZCompEl *cel = cmesh->Element(el);
-//        TPZCompElHDiv<pzshape::TPZShapeQuad> *celhdiv = dynamic_cast<TPZCompElHDiv<pzshape::TPZShapeQuad> *>(cel);
     
-//        if(0 && celhdiv)
-//        {
-//            TPZGeoEl *gel = celhdiv->Reference();
-//            TPZGeoElBC gelbc(gel,gel->NSides()-1,fmatID);  //oioioi IDFlux -> ID
-//            int64_t index;
-//            TPZCompElHDiv<pzshape::TPZShapeQuad> *newel = new TPZCompElHDiv<pzshape::TPZShapeQuad>(*cmesh,*celhdiv,index);
-//            newel->SetReference(gelbc.CreatedElement()->Index());
-//        }
-//    }
+    //    int64_t nel = cmesh->NElements();
+    //    for (int64_t el=0; el<nel; el++) {
+    //        TPZCompEl *cel = cmesh->Element(el);
+    //        TPZCompElHDiv<pzshape::TPZShapeQuad> *celhdiv = dynamic_cast<TPZCompElHDiv<pzshape::TPZShapeQuad> *>(cel);
+    
+    //        if(0 && celhdiv)
+    //        {
+    //            TPZGeoEl *gel = celhdiv->Reference();
+    //            TPZGeoElBC gelbc(gel,gel->NSides()-1,fmatID);  //oioioi IDFlux -> ID
+    //            int64_t index;
+    //            TPZCompElHDiv<pzshape::TPZShapeQuad> *newel = new TPZCompElHDiv<pzshape::TPZShapeQuad>(*cmesh,*celhdiv,index);
+    //            newel->SetReference(gelbc.CreatedElement()->Index());
+    //        }
+    //    }
     
     gmesh->ResetReference();
     matids.clear();
@@ -601,7 +620,7 @@ TPZCompMesh *HStokesTest::CMesh_v(TPZGeoMesh *gmesh, int Space, int pOrder)
     cmesh->CleanUpUnconnectedNodes();
     
     return cmesh;
-   
+    
     
 }
 
@@ -699,8 +718,8 @@ TPZCompMesh *HStokesTest::CMesh_p(TPZGeoMesh *gmesh, int Space, int pOrder)
         newnod.SetLagrangeMultiplier(1);
     }
     
-        cmesh->AdjustBoundaryElements();
-        cmesh->CleanUpUnconnectedNodes();
+    cmesh->AdjustBoundaryElements();
+    cmesh->CleanUpUnconnectedNodes();
     
     return cmesh;
     
@@ -730,10 +749,10 @@ TPZCompMesh *HStokesTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, STAT
     
     material->SetForcingFunction(fp);
     material->SetForcingFunctionExact(solp);
-
+    
     cmesh->InsertMaterialObject(material);
     cmesh->InsertMaterialObject(material2);
-
+    
     
     //Condições de contorno:
     
@@ -764,30 +783,30 @@ TPZCompMesh *HStokesTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, STAT
     }
     {
         TPZMaterial * BCond0 = material->CreateBC(material, fmatIntBCbott, fneumann, val1, val2); //Cria material que implementa a condição de contorno inferior
-                                                                                                   //BCond0->SetForcingFunction(p_exact1, bc_inte_order);
-                                                                                                   //BCond0->SetForcingFunction(Sol_exact,bc_inte_order);
+        //BCond0->SetForcingFunction(p_exact1, bc_inte_order);
+        //BCond0->SetForcingFunction(Sol_exact,bc_inte_order);
         cmesh->InsertMaterialObject(BCond0); //Insere material na malha
         
         TPZMaterial * BCond1 = material->CreateBC(material, fmatIntBCtop, fneumann, val1, val2); //Cria material que implementa a condicao de contorno superior
-                                                                                                  //BCond1->SetForcingFunction(p_exact1,bc_inte_order);
-                                                                                                  //BCond1->SetForcingFunction(Sol_exact,bc_inte_order);
+        //BCond1->SetForcingFunction(p_exact1,bc_inte_order);
+        //BCond1->SetForcingFunction(Sol_exact,bc_inte_order);
         cmesh->InsertMaterialObject(BCond1); //Insere material na malha
         
         TPZMaterial * BCond2 = material->CreateBC(material, fmatIntBCleft, fneumann, val1, val2); //Cria material que implementa a condicao de contorno esquerda
-                                                                                                   //BCond2->SetForcingFunction(p_exact1,bc_inte_order);
-                                                                                                   //BCond2->SetForcingFunction(Sol_exact,bc_inte_order);
+        //BCond2->SetForcingFunction(p_exact1,bc_inte_order);
+        //BCond2->SetForcingFunction(Sol_exact,bc_inte_order);
         cmesh->InsertMaterialObject(BCond2); //Insere material na malha
         
         TPZMaterial * BCond3 = material->CreateBC(material, fmatIntBCright, fneumann, val1, val2); //Cria material que implementa a condicao de contorno direita
-                                                                                                    //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
-                                                                                                    //BCond3->SetForcingFunction(Sol_exact,bc_inte_order);
+        //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
+        //BCond3->SetForcingFunction(Sol_exact,bc_inte_order);
         cmesh->InsertMaterialObject(BCond3); //Insere material na malha
         TPZMaterial * BCond4 = material->CreateBC(material, ftangentVelocity, fneumann, val1, val2); //Cria material que implementa a condicao de contorno direita
-                                                                                                       //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
-                                                                                                       //BCond3->SetForcingFunction(Sol_exact,bc_inte_order);
+        //BCond3->SetForcingFunction(p_exact1,bc_inte_order);
+        //BCond3->SetForcingFunction(Sol_exact,bc_inte_order);
         cmesh->InsertMaterialObject(BCond4); //Insere material na malha
     }
-
+    
     
     //Ponto
     
@@ -798,7 +817,7 @@ TPZCompMesh *HStokesTest::CMesh_m(TPZGeoMesh *gmesh, int Space, int pOrder, STAT
     cmesh->InsertMaterialObject(BCPoint); //Insere material na malha
     
     
-
+    
     int ncel = cmesh->NElements();
     for(int i =0; i<ncel; i++){
         TPZCompEl * compEl = cmesh->ElementVec()[i];
@@ -855,7 +874,7 @@ void HStokesTest::AddMultiphysicsInterfaces(TPZCompMesh &cmesh)
                             DebugStop();
                         }
                         std::cout << "Created an element between volumetric element " << neighbour.Element()->Index() <<
-                        " side " << neighbour.Side() << 
+                        " side " << neighbour.Side() <<
                         " and interface element " << gelside.Element()->Index() << std::endl;
                         TPZGeoElBC gelbc(gelside,fmatID);
                         int64_t index;
