@@ -93,7 +93,7 @@ void HStokesTest::Run(int Space, int pOrder, int nx, int ny, double hx, double h
 #endif
     
     //Resolvendo o Sistema:
-    int numthreads = 0;
+    int numthreads = 6; //Please, set here the optimal number of threads to improve assembling
     
     bool optimizeBandwidth = true; //Impede a renumeração das equacoes do problema (para obter o mesmo resultado do Oden)
     TPZAnalysis an(cmesh_m, optimizeBandwidth); //Cria objeto de análise que gerenciará a analise do problema

@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
         STATE hE=hx/h_level;
         STATE s0=2.0;
       
-        h_level = 8;
+        h_level = 64;
         for (int it=0; it<=0.; it++) {
             nx=h_level+1 ,ny=h_level+1;
             hE=hx/h_level;
